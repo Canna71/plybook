@@ -32,3 +32,32 @@ pnpm install
 pnpm tauri dev
 ```
 
+## Links
+
+https://github.com/lichess-org/chessground
+
+https://github.com/lichess-org/pgn-viewer
+
+https://lichess.org/editor
+
+https://github.com/nmrugg/stockfish.js
+
+https://niklasf.github.io/chessops/
+
+https://github.com/victorocna/chessground-stockfish/tree/master
+
+https://stockfishchess.org/
+
+https://lczero.org/
+
+https://github.com/lichess-org/stockfish.js
+
+https://github.com/hi-ogawa/Stockfish
+
+https://stackoverflow.com/questions/77194959/how-to-integrate-stockfish-in-html-with-chess-js-and-chessboard-js
+
+https://lichess.org/source
+
+https://github.com/lichess-org/lila/tree/master/ui
+
+https://www.chessboardjsx.com/integrations/stockfish
