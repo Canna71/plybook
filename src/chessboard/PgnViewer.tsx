@@ -1,5 +1,5 @@
 import { Chess, pgn } from "chessops";
-import { Chessboard } from "./chessboard";
+import { Chessboard } from "./Chessboard";
 import { Config } from "chessground/config";
 import { makeFen, parseFen } from 'chessops/fen';
 import { parseSan } from 'chessops/san';

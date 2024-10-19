@@ -1,10 +1,7 @@
 import { createSignal } from "solid-js";
-import logo from "./assets/logo.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.scss";
-import { Chess, fen } from "chessops";
-import { Chessboard } from "./chessboard/chessboard";
-import PgnViewer from "./chessboard/PgnViewer";
+import BoardEditor from "./chessboard/BoardEditor";
 
 function App() {
   const [greetMsg, setGreetMsg] = createSignal("");
@@ -24,7 +21,7 @@ function App() {
       <h1>♘ Welcome to Rechess ♘</h1>
 
     <div style="max-width: 600px">
-      <PgnViewer  />
+      <BoardEditor  />
 
     </div>
       
