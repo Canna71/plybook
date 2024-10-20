@@ -4,6 +4,7 @@ import { Api } from "chessground/api";
 import { Chessboard } from "../chessboard/Chessboard";
 import { Key } from "chessground/types";
 import { Piece } from "chessops";
+// import { Stockfish } from "../declarations";
 // import  StockfishInit  from "/node_modules/stockfish-nnue.wasm/stockfish.js";
 // import { Worker } from "stockfish-nnue.wasm";
 

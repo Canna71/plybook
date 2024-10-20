@@ -61,3 +61,7 @@ https://lichess.org/source
 https://github.com/lichess-org/lila/tree/master/ui
 
 https://www.chessboardjsx.com/integrations/stockfish
+
+https://codesandbox.io/p/sandbox/chess-with-react-chessground-forked-qwjntr?file=%2Fsrc%2Fengine%2Fenginegame.js%3A4%2C27
+
+https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
