@@ -3,124 +3,148 @@
 @import "/node_modules/chessground/assets/chessground.cburnett.css";
 
 .chess-container {
-	width: 100%;
-	height: 100%;
-	position: relative;
+    width: 100%;
+    height: 100%;
+    position: relative;
 
-	.chessboard {
-		width: 100%;
-		height: 100%;
-		display: table;
-		padding-bottom: 100%;
-	}
+    .chessboard {
+        width: 100%;
+        height: 100%;
+        display: table;
+        padding-bottom: 100%;
+    }
 
-	button {
-		height: auto;
+    button {
+        height: auto;
 
-		&.selected {
-			background-color:  var(--background-modifier-form-field);
-		}
-	}
+        &.selected {
+            background-color: var(--background-modifier-form-field);
+        }
+    }
 
-	.pieces-toolbar {
-
-		
-
-		piece {
-			cursor: pointer;
-			pointer-events: auto;
-			width: 24px;
-			height: 24px;
-			position: relative;
-			display: inline-block;
-		}
-	}
+    .pieces-toolbar {
+        piece {
+            cursor: pointer;
+            pointer-events: auto;
+            width: 24px;
+            height: 24px;
+            position: relative;
+            display: inline-block;
+        }
+    }
 }
 
-
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    
+}
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+#root {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
+    display: grid;
+    grid-template-columns: var(--sidebar-width, 250px) 1fr;
+    grid-template-rows: 1fr;
+    height: 100%;
+    background-color: #333;
+    color: white;
+
+    .sidebar {
+      
+      padding: 10px;
+      resize: horizontal;
+      overflow: auto;
+      min-width: 150px;
+      max-width: 500px;
+    }
+
+    .main-content {
+      padding: 20px;
+    }
 }
 
+.navbar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items:start;
+    padding: 10px 20px;
 
-
+}
 
 h1 {
-  text-align: center;
+    text-align: center;
 }
 
 input,
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    color: #0f0f0f;
+    background-color: #ffffff;
+    transition: border-color 0.25s;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
 }
 
 button {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 button:hover {
-  border-color: #396cd8;
+    border-color: #396cd8;
 }
 button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
+    border-color: #396cd8;
+    background-color: #e8e8e8;
 }
 
 input,
 button {
-  outline: none;
+    outline: none;
 }
 
 #greet-input {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
+    :root {
+        color: #f6f6f6;
+        background-color: #2f2f2f;
+    }
 
-  a:hover {
-    color: #24c8db;
-  }
+    a:hover {
+        color: #24c8db;
+    }
 
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
-  }
+    input,
+    button {
+        color: #ffffff;
+        background-color: #0f0f0f98;
+    }
+    button:active {
+        background-color: #0f0f0f69;
+    }
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
 }

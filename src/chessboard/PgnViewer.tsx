@@ -3,7 +3,7 @@ import { Chessboard } from "./Chessboard";
 import { Config } from "chessground/config";
 import { makeFen, parseFen } from 'chessops/fen';
 import { parseSan } from 'chessops/san';
-import { createSignal } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 import { Game, parsePgn, PgnNodeData, startingPosition } from "chessops/pgn";
 import { Api } from "chessground/api";
 
@@ -79,7 +79,7 @@ const PgnViewer = () => {
 
     }
 
-    const onParsePgn = () => {
+    createEffect(() => {
 		const cg = api();
 		if (!cg) {
 			return;
@@ -98,7 +98,7 @@ const PgnViewer = () => {
 		cg.set({
 			fen: fen
 		});
-	}
+	});
 
     const onNext = () => {
 		const cg = api();
@@ -138,7 +138,6 @@ const PgnViewer = () => {
             <Chessboard config={config} setApi={setApi} />
             <div>
                 <button onClick={onNext} >&gt;|</button>
-                <button onClick={onParsePgn} >pgn</button>
             </div>
         </div>
     );
