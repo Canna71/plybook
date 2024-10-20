@@ -1,6 +1,5 @@
 /* @refresh reload */
 import { render } from "solid-js/web";
-import App from "./App";
 import { Route, Router } from "@solidjs/router";
 import Home from "./Views/Home";
 import Layout from "./Views/Layout";
