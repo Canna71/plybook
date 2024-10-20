@@ -1,7 +1,12 @@
-// import { createSignal } from "solid-js";
-// import { invoke } from "@tauri-apps/api/core";
-import "./App.scss";
 
+import "./App.scss";
+import { Router, Route } from "@solidjs/router";
+import Home from "./Views/Home";
+import Layout from "./Views/Layout";
+import Viewer from "./Views/Viewer";
+import PgnView from "./Views/PgnView";
+import Editor from "./Views/Editor";
+import Play from "./Views/Play";
 function App() {
   // const [greetMsg, setGreetMsg] = createSignal("");
   // const [name, setName] = createSignal("");
@@ -14,7 +19,14 @@ function App() {
 
 
   return (
-    <div></div>
+    <Router root={Layout}>
+            <Route path="/" component={Home} />
+            <Route path="/viewer" component={Viewer} />
+            <Route path="/pgn" component={PgnView} />
+            <Route path="/editor" component={Editor} />
+            <Route path="/play" component={Play} />
+
+        </Router>
   );
 }
 
