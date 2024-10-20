@@ -20,7 +20,7 @@
     "chessground": "^9.1.1",
     "chessops": "^0.14.1",
     "solid-js": "^1.7.8",
-    "stockfish": "^16.0.0"
+    "stockfish-nnue.wasm": "1.0.0-1946a675.smolnet"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

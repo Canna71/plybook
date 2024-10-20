@@ -7,6 +7,7 @@ const Sidebar = () => {
             <a href="/viewer">Viewer</a>
             <a href="/pgn">Pgn</a>
             <a href="/editor">Editor</a>
+            <a href="/play">Play</a>
 
         </nav>
     );

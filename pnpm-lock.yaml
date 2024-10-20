@@ -32,9 +32,9 @@ importers:
       solid-js:
         specifier: ^1.7.8
         version: 1.9.2
-      stockfish:
-        specifier: ^16.0.0
-        version: 16.0.0
+      stockfish-nnue.wasm:
+        specifier: 1.0.0-1946a675.smolnet
+        version: 1.0.0-1946a675.smolnet
     devDependencies:
       '@tauri-apps/cli':
         specifier: ^2
@@ -825,9 +825,8 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
-  stockfish@16.0.0:
-    resolution: {integrity: sha512-uu4AqsE2x0tD+SsYzZy4UtqeH4U9zDi1V8loDFDbMwCtvumGXF9j81Pg1ZmIkUgZhwQqPxQAv8IN5oy6hZa7Bw==}
-    hasBin: true
+  stockfish-nnue.wasm@1.0.0-1946a675.smolnet:
+    resolution: {integrity: sha512-ofHHGb60dsMuz1SFurbkUBStMz6zmSLEculHUYdryX3782dys785hWgY9HJVgxMZQW+uhAARFcwPtPlyeW/nZg==}
 
   supports-color@5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
@@ -1582,7 +1581,7 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  stockfish@16.0.0: {}
+  stockfish-nnue.wasm@1.0.0-1946a675.smolnet: {}
 
   supports-color@5.5.0:
     dependencies:
