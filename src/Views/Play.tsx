@@ -65,30 +65,9 @@ const Play = () => {
 
             sf.postMessage("uci");
 
-            // await sf.ready
-            // sf.postMessage("position startpos");
-            // sf.postMessage("init");
-
-            sf.postMessage('position fen ' + "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-            // await sf.ready
-
-            sf.postMessage('go depth 16');
-            // await sf.ready
-
         });
     });
     // const stockfish = new Worker('node_modules/stockfish-nnue.wasm/stockfish.js');
-
-    function onDragStart(source, piece, position, orientation) {
-        // do not pick up pieces if the game is over
-        if (game().isGameOver()) return false
-
-        // only pick up pieces for the side to move
-        if ((game().turn() === 'w' && piece.search(/^b/) !== -1) ||
-            (game().turn() === 'b' && piece.search(/^w/) !== -1)) {
-            return false
-        }
-    }
 
 
     function onMove(from: Key, to: Key, captured: Piece | undefined) {
@@ -109,11 +88,7 @@ const Play = () => {
 
     }
 
-    // update the board position after the piece snap
-    // for castling, en passant, pawn promotion
-    function onSnapEnd() {
-        api()?.set({ fen: game().fen() });
-    }
+
 
     const config = {
         events: {
