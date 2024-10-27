@@ -1,114 +1,184 @@
-import { Chess, pgn } from "chessops";
+import { Chess, Color, makeUci, pgn, Position } from "chessops";
 import { Chessboard } from "./Chessboard";
 import { Config } from "chessground/config";
 import { makeFen, parseFen } from 'chessops/fen';
-import { parseSan } from 'chessops/san';
+import { makeSanAndPlay, parseSan } from 'chessops/san';
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
-import { Game, parsePgn, PgnNodeData, startingPosition } from "chessops/pgn";
+import { Game, parseComment, parsePgn, PgnNodeData, Node, startingPosition, transform } from "chessops/pgn";
 import { Api } from "chessground/api";
+import { Clocks, Comments, Initial, Metadata, MoveData, Path, State, Headers, Players, Player, GameModel } from "../models/pgn";
+import { scalachessCharPair } from "chessops/compat";
 
-const TESTPGN = `
-[Event "San Sebastian"]
-[Site "San Sebastian"]
-[Date "1911.??.??"]
-[Round "?"]
-[White "Capablanca, Jose"]
-[Black "Burn, Amos"]
-[Result "1-0"] 
-1.e4 e5 
-2.Nf3 Nc6 
-3.Bb5 a6 
-4.Ba4 Nf6 
-5.d3 { This is a very solid development, to which I was much addicted at the time, because of my ignorance of the multiple variations of the openings. } 
-5...d6 
-6.c3 Be7 ( { In this variation there is the alternative of developing this Bishop via **g7**, after } 6...g6 ) 
-7.Nbd2 O-O 
-8.Nf1 b5 
-9.Bc2 d5 
-10.Qe2 dxe4 
-11.dxe4 Bc5 { Evidently to make room for the Queen at **e7**, but I do not think the move advisable at this stage. } ( 11...Be6 { is a more natural and effective move. It develops a piece and threatens Bc4 which would have to be stopped. } ) 
-12.Bg5 Be6 { Now it is not so effective, because White\'s Queen\'s Bishop is out, and the Knight, in going to **e3** } 
-13.Ne3 { defends **c4** and does not block the Queen\'s Bishop. } 
-13...Re8 
-14.O-O Qe7 { # This is bad. Black\'s game was already not good. He probably had no choice but to take the Knight with the Bishop before making this move. } 
-15.Nd5 Bxd5 
-16.exd5 Nb8 { In order to bring it to **d7**, to support the other Knight and also his King\'s Pawn. White, however, does not allow time for this, and by taking advantage of his superior position is able to win a Pawn. } 
-17.a4 b4 ( { Since he had no way to prevent the loss of a Pawn, he should have given it up where it is, and played } 
-17...Nbd7 { in order to make his position more solid. The text move not only loses a Pawn, but leaves Black\'s game very much weakened. } ) 
-18.cxb4 Bxb4 
-19.Bxf6 Qxf6 
-20.Qe4 Bd6 
-21.Qxh7+ Kf8 { With a Pawn more and all his pieces ready for action, while Black is still backward in development, it only remains for White to drive home his advantage before Black can come out with his pieces, in which case, by using the open h-file, Black might be able to start a strong attack against White\'s King. White is able by his next move to eliminate all danger. # } 
-22.Nh4 Qh6 { This is practically forced. } ( { Black could not play } 
-22...g6 { because of } 23.Bxg6 { White meanwhile threatened } ) 
-23.Qxh6 gxh6 
-24.Nf5 h5 
-25.Bd1 Nd7 
-26.Bxh5 Nf6 
-27.Be2 Nxd5 
-28.Rfd1 Nf4 
-29.Bc4 Red8 
-30.h4 a5 { Black must lose time assuring the safety of this Pawn. } 
-31.g3 Ne6 
-32.Bxe6 fxe6 
-33.Ne3 Rdb8 
-34.Nc4 Ke7 { Black fights a hopeless battle. He is two Pawns down for all practical purposes, and the Pawns he has are isolated and have to be defended by pieces. } 
-35.Rac1 Ra7 { White threatened } 
-36.Re1 Kf6 
-37.Re4 Rb4 
-38.g4 Ra6 ( { If } 38...Rxa4 { then } 39.Nxd6 { would of course win a piece. } ) 
-39.Rc3 Bc5 
-40.Rf3+ Kg7 
-41.b3 Bd4 
-42.Kg2 Ra8 
-43.g5 Ra6 
-44.h5 Rxc4 
-45.bxc4 Rc6 
-46.g6 { Black resigns. } 
+// see: https://github.com/lichess-org/pgn-viewer
 
-1-0
-`;
 
 // PgnViwer options
 
 export type PgnViewerOptions = {
 	pgn: Accessor<string | undefined>;
-	
+
 }
 
-const PgnViewer : Component<PgnViewerOptions> = ({pgn}) => {
+function makeMetadata(headers: Headers): Metadata {
+	const site = headers.get('source') || headers.get('site');
+	const tcs = headers
+		.get('timecontrol')
+		?.split('+')
+		.map(x => parseInt(x));
+	const timeControl =
+		tcs && tcs[0]
+			? {
+				initial: tcs[0],
+				increment: tcs[1] || 0,
+			}
+			: undefined;
+	const orientation = headers.get('orientation');
+	return {
+		externalLink: site && site.match(/^https?:\/\//) ? site : undefined,
+		timeControl,
+		orientation: orientation === 'white' || orientation === 'black' ? orientation : undefined,
+		result: headers.get('result') || undefined,
+	};
+}
+
+const makeClocks = (prev: Clocks, turn: Color, clk?: number): Clocks =>
+	turn == 'white' ? { ...prev, black: clk } : { ...prev, white: clk };
+
+
+
+const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: Metadata) =>
+	transform<PgnNodeData, MoveData, State>(moves, new State(start, Path.root, {}), (state, node, _index) => {
+		const move = parseSan(state.pos, node.san);
+		if (!move) return undefined;
+		const moveId = scalachessCharPair(move);
+		const path = state.path.append(moveId);
+		const san = makeSanAndPlay(state.pos, move);
+		state.path = path;
+		const setup = state.pos.toSetup();
+		const comments = parseComments(node.comments || []);
+		const startingComments = parseComments(node.startingComments || []);
+		const shapes = [...comments.shapes, ...startingComments.shapes];
+		const ply = (setup.fullmoves - 1) * 2 + (state.pos.turn === 'white' ? 0 : 1);
+		let clocks = (state.clocks = makeClocks(state.clocks, state.pos.turn, comments.clock));
+		if (ply < 2 && metadata.timeControl)
+			clocks = {
+				white: metadata.timeControl.initial,
+				black: metadata.timeControl.initial,
+				...clocks,
+			};
+		const moveNode: MoveData = {
+			path,
+			ply,
+			move,
+			san,
+			uci: makeUci(move),
+			fen: makeFen(state.pos.toSetup()),
+			turn: state.pos.turn,
+			check: state.pos.isCheck(),
+			comments: comments.texts,
+			startingComments: startingComments.texts,
+			nags: node.nags || [],
+			shapes,
+			clocks,
+			emt: comments.emt,
+		};
+		return moveNode;
+	});
+
+function makePlayers(headers: Headers, metadata: Metadata): Players {
+	const get = (color: Color, field: string): string | undefined => {
+		const raw = headers.get(`${color}${field}`);
+		return raw == '?' || raw == '' ? undefined : raw;
+	};
+	const makePlayer = (color: Color): Player => {
+		const name = get(color, '');
+		return {
+			name,
+			title: get(color, 'title'),
+			rating: parseInt(get(color, 'elo') || '') || undefined,
+		};
+	};
+	return {
+		white: makePlayer('white'),
+		black: makePlayer('black'),
+	};
+}
+
+function makeGame(pgnString: string): [Game<PgnNodeData>, string] {
+	const game = parsePgn(pgnString)[0];
+
+	const start = startingPosition(game.headers).unwrap();
+	const setup = start.toSetup();
+	const fen = makeFen(setup);
+	// const moves = pgn.moves;
+	const comments = parseComments(game.comments || []);
+	console.log(comments);
+	const headers: Headers = new Map(Array.from(game.headers, ([key, value]) => [key.toLowerCase(), value]));
+	const metadata = makeMetadata(headers);
+	console.log("metadata", metadata);
+
+	console.log(game, start, setup, fen);
+
+	const initial: Initial = {
+		fen,
+		turn: start.turn,
+		check: start.isCheck(),
+		pos: start.clone(),
+		comments: comments.texts,
+		shapes: comments.shapes,
+		clocks: {
+			white: metadata.timeControl?.initial || comments.clock,
+			black: metadata.timeControl?.initial || comments.clock,
+		},
+	};
+	const moves = makeMoves(start, game.moves, metadata);
+	const players = makePlayers(headers, metadata);
+
+	const gameModel = new GameModel(initial, moves, players, metadata);
+
+	console.log(gameModel);
+
+	return [game, fen];
+}
+
+function parseComments(strings: string[]): Comments {
+	const comments = strings.map(parseComment);
+	const reduceTimes = (times: Array<number | undefined>) =>
+		times.reduce<number | undefined>((last, time) => (typeof time == undefined ? last : time), undefined);
+	return {
+		texts: comments.map(c => c.text).filter(t => !!t),
+		shapes: comments.flatMap(c => c.shapes),
+		clock: reduceTimes(comments.map(c => c.clock)),
+		emt: reduceTimes(comments.map(c => c.emt)),
+	};
+};
+
+const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	const [currentMove, setCurrentMove] = createSignal<pgn.Node<PgnNodeData> | undefined>(undefined);
 	const [game, setGame] = createSignal<Game<PgnNodeData> | undefined>(undefined);
 
-    const [api, setApi] = createSignal<Api | undefined>(undefined);
+	const [api, setApi] = createSignal<Api | undefined>(undefined);
 
-    const config: Config = {    
+	const config: Config = {
 
-    }
+	}
 
-    createEffect(() => {
+	createEffect(() => {
 		const cg = api();
 		const pgnString = pgn();
 		if (!cg || !pgnString) {
 			return;
 		}
-		
-		const game = parsePgn(pgnString)[0];
-		setGame(game);
-		const start = startingPosition(game.headers).unwrap();
-		const setup = start.toSetup();
-		const fen = makeFen(setup);
-		// const moves = pgn.moves;
-		// const comments = parseComments(game.comments || []);
-		// const headers = new Map(Array.from(game.headers, ([key, value]) => [key.toLowerCase(), value]));
-		// const metadata = makeMetadata(headers, lichess);
-		console.log(game, start, setup, fen);
+
+		const [g, fen] = makeGame(pgnString);
+		setGame(g);
+
 		cg.set({
 			fen: fen
 		});
 	});
 
-    const onNext = () => {
+	const onNext = () => {
 		const cg = api();
 		if (!cg) {
 			return;
@@ -122,8 +192,8 @@ const PgnViewer : Component<PgnViewerOptions> = ({pgn}) => {
 			return;
 		}
 		let next = current_move.children[0];
-		if(!next.data) next = next.children[0];
-		const fen : string = (cg.state as any).fen;
+		if (!next.data) next = next.children[0];
+		const fen: string = (cg.state as any).fen;
 		const setup = parseFen(fen).unwrap();
 		// const fen = next.fen;
 		// cg.set({
@@ -133,7 +203,7 @@ const PgnViewer : Component<PgnViewerOptions> = ({pgn}) => {
 		const san = next.data.san;
 		const chess = Chess.fromSetup(setup).unwrap();
 		const move = parseSan(chess, san);
-		if(!move) return;
+		if (!move) return;
 		chess.play(move);
 		const fen2 = makeFen(chess.toSetup());
 		cg.set({
@@ -141,14 +211,14 @@ const PgnViewer : Component<PgnViewerOptions> = ({pgn}) => {
 		});
 	}
 
-    return (
-        <div>
-            <Chessboard config={config} setApi={setApi} />
-            <div>
-                <button onClick={onNext} >&gt;|</button>
-            </div>
-        </div>
-    );
+	return (
+		<div>
+			<Chessboard config={config} setApi={setApi} />
+			<div>
+				<button onClick={onNext} >&gt;|</button>
+			</div>
+		</div>
+	);
 }
 
 export default PgnViewer;
