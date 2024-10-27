@@ -3,7 +3,7 @@ import { Chessboard } from "./Chessboard";
 import { Config } from "chessground/config";
 import { makeFen, parseFen } from 'chessops/fen';
 import { parseSan } from 'chessops/san';
-import { createEffect, createSignal } from "solid-js";
+import { Accessor, Component, createEffect, createSignal } from "solid-js";
 import { Game, parsePgn, PgnNodeData, startingPosition } from "chessops/pgn";
 import { Api } from "chessground/api";
 
@@ -69,7 +69,14 @@ const TESTPGN = `
 1-0
 `;
 
-const PgnViewer = () => {
+// PgnViwer options
+
+export type PgnViewerOptions = {
+	pgn: Accessor<string | undefined>;
+	
+}
+
+const PgnViewer : Component<PgnViewerOptions> = ({pgn}) => {
 	const [currentMove, setCurrentMove] = createSignal<pgn.Node<PgnNodeData> | undefined>(undefined);
 	const [game, setGame] = createSignal<Game<PgnNodeData> | undefined>(undefined);
 
@@ -81,20 +88,21 @@ const PgnViewer = () => {
 
     createEffect(() => {
 		const cg = api();
-		if (!cg) {
+		const pgnString = pgn();
+		if (!cg || !pgnString) {
 			return;
 		}
 		
-		const pgn = parsePgn(TESTPGN)[0];
-		setGame(pgn);
-		const start = startingPosition(pgn.headers).unwrap();
+		const game = parsePgn(pgnString)[0];
+		setGame(game);
+		const start = startingPosition(game.headers).unwrap();
 		const setup = start.toSetup();
 		const fen = makeFen(setup);
 		// const moves = pgn.moves;
 		// const comments = parseComments(game.comments || []);
 		// const headers = new Map(Array.from(game.headers, ([key, value]) => [key.toLowerCase(), value]));
 		// const metadata = makeMetadata(headers, lichess);
-		console.log(pgn, start, setup, fen);
+		console.log(game, start, setup, fen);
 		cg.set({
 			fen: fen
 		});
