@@ -48,6 +48,7 @@ export class State {
 
 export type Id = string;
 export type San = string;
+export type Fan = string;
 export type Uci = string;
 export type Ply = number;
 
@@ -83,6 +84,7 @@ export interface MoveData extends InitialOrMove {
     ply: number;
     move: Move;
     san: San;
+    fan: Fan,
     uci: Uci;
     startingComments: string[];
     nags: number[];

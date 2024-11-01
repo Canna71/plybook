@@ -44,6 +44,39 @@ function makeMetadata(headers: Headers): Metadata {
 const makeClocks = (prev: Clocks, turn: Color, clk?: number): Clocks =>
 	turn == 'white' ? { ...prev, black: clk } : { ...prev, white: clk };
 
+function sanToFan(san: string, turn: Color): string {
+    // Define the mapping from SAN piece letters to FAN symbols
+
+	function isPiece(letter: string): boolean {
+		return 'KQRBN'.includes(letter);
+	}
+
+    const fanMap: { [key: string]: string } = {
+        K: '♔',  // King
+        Q: '♕',  // Queen
+        R: '♖',  // Rook
+        B: '♗',  // Bishop
+        N: '♘',  // Knight
+		// black pieces
+		k: '♚',  // King
+		q: '♛',  // Queen
+		r: '♜',  // Rook
+		b: '♝',  // Bishop
+		n: '♞',  // Knight
+
+        // Pawns do not need an entry, as they are not represented by a letter in SAN
+    };
+
+    // Convert SAN notation to FAN by replacing each piece letter with its corresponding symbol
+    let fan = '';
+    for (const char of san) {
+		const lookup = turn === 'white' ? char.toUpperCase() : char.toLowerCase();
+        fan += isPiece(char) ? fanMap[lookup] : char;  // Replace piece letter or leave character as-is if no match
+    }
+
+    return fan;
+}
+
 
 
 const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: Metadata) =>
@@ -53,6 +86,7 @@ const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: Metadata
 		const moveId = scalachessCharPair(move);
 		const path = state.path.append(moveId);
 		const san = makeSanAndPlay(state.pos, move);
+		const fan = sanToFan(san, state.pos.turn);
 		state.path = path;
 		const setup = state.pos.toSetup();
 		const comments = parseComments(node.comments || []);
@@ -71,6 +105,7 @@ const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: Metadata
 			ply,
 			move,
 			san,
+			fan,
 			uci: makeUci(move),
 			fen: makeFen(state.pos.toSetup()),
 			turn: state.pos.turn,
