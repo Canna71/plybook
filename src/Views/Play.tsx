@@ -9,7 +9,7 @@ import { Piece } from "chessops";
 // import { Worker } from "stockfish-nnue.wasm";
 
 const Play = () => {
-
+    // @ts-ignore
     const [game, setGame] = createSignal(new Chess());
     const [api, setApi] = createSignal<Api | undefined>(undefined);
     const [stockfish, setStockfish] = createSignal<any | undefined>(undefined);
@@ -71,6 +71,7 @@ const Play = () => {
     // const stockfish = new Worker('node_modules/stockfish-nnue.wasm/stockfish.js');
 
 
+    // @ts-ignore
     function onMove(from: Key, to: Key, captured: Piece | undefined) {
         // see if the move is legal
         var move = game().move({

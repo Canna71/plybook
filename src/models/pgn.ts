@@ -1,6 +1,6 @@
 import { FEN } from "chessground/types";
-import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, Game, parsePgn, startingPosition } from "chessops/pgn";
-import { Color, makeUci,  Position, Move } from "chessops";
+import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition } from "chessops/pgn";
+import { Color, makeUci, Position, Move } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
 import { makeFen } from "chessops/fen";
@@ -208,6 +208,7 @@ const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: Metadata
         return moveNode;
     });
 
+//@ts-ignore
 function makePlayers(headers: Headers, metadata: Metadata): Players {
     const get = (color: Color, field: string): string | undefined => {
         const raw = headers.get(`${color}${field}`);
@@ -232,48 +233,48 @@ function makePlayers(headers: Headers, metadata: Metadata): Players {
 
 
 function parseComments(strings: string[]): Comments {
-	const comments = strings.map(parseComment);
-	const reduceTimes = (times: Array<number | undefined>) =>
-		times.reduce<number | undefined>((last, time) => (typeof time == undefined ? last : time), undefined);
-	return {
-		texts: comments.map(c => c.text).filter(t => !!t),
-		shapes: comments.flatMap(c => c.shapes),
-		clock: reduceTimes(comments.map(c => c.clock)),
-		emt: reduceTimes(comments.map(c => c.emt)),
-	};
+    const comments = strings.map(parseComment);
+    const reduceTimes = (times: Array<number | undefined>) =>
+        times.reduce<number | undefined>((last, time) => (typeof time == undefined ? last : time), undefined);
+    return {
+        texts: comments.map(c => c.text).filter(t => !!t),
+        shapes: comments.flatMap(c => c.shapes),
+        clock: reduceTimes(comments.map(c => c.clock)),
+        emt: reduceTimes(comments.map(c => c.emt)),
+    };
 };
 
 function makeMetadata(headers: Headers): Metadata {
-	const site = headers.get('source') || headers.get('site');
-	const tcs = headers
-		.get('timecontrol')
-		?.split('+')
-		.map(x => parseInt(x));
-	const timeControl =
-		tcs && tcs[0]
-			? {
-				initial: tcs[0],
-				increment: tcs[1] || 0,
-			}
-			: undefined;
-	const orientation = headers.get('orientation');
-	return {
-		externalLink: site && site.match(/^https?:\/\//) ? site : undefined,
-		timeControl,
-		orientation: orientation === 'white' || orientation === 'black' ? orientation : undefined,
-		result: headers.get('result') || undefined,
-	};
+    const site = headers.get('source') || headers.get('site');
+    const tcs = headers
+        .get('timecontrol')
+        ?.split('+')
+        .map(x => parseInt(x));
+    const timeControl =
+        tcs && tcs[0]
+            ? {
+                initial: tcs[0],
+                increment: tcs[1] || 0,
+            }
+            : undefined;
+    const orientation = headers.get('orientation');
+    return {
+        externalLink: site && site.match(/^https?:\/\//) ? site : undefined,
+        timeControl,
+        orientation: orientation === 'white' || orientation === 'black' ? orientation : undefined,
+        result: headers.get('result') || undefined,
+    };
 }
 
 const makeClocks = (prev: Clocks, turn: Color, clk?: number): Clocks =>
-	turn == 'white' ? { ...prev, black: clk } : { ...prev, white: clk };
+    turn == 'white' ? { ...prev, black: clk } : { ...prev, white: clk };
 
 function sanToFan(san: string, turn: Color): string {
     // Define the mapping from SAN piece letters to FAN symbols
 
-	function isPiece(letter: string): boolean {
-		return 'KQRBN'.includes(letter);
-	}
+    function isPiece(letter: string): boolean {
+        return 'KQRBN'.includes(letter);
+    }
 
     const fanMap: { [key: string]: string } = {
         K: '♔',  // King
@@ -281,12 +282,12 @@ function sanToFan(san: string, turn: Color): string {
         R: '♖',  // Rook
         B: '♗',  // Bishop
         N: '♘',  // Knight
-		// black pieces
-		k: '♚',  // King
-		q: '♛',  // Queen
-		r: '♜',  // Rook
-		b: '♝',  // Bishop
-		n: '♞',  // Knight
+        // black pieces
+        k: '♚',  // King
+        q: '♛',  // Queen
+        r: '♜',  // Rook
+        b: '♝',  // Bishop
+        n: '♞',  // Knight
 
         // Pawns do not need an entry, as they are not represented by a letter in SAN
     };
@@ -294,46 +295,46 @@ function sanToFan(san: string, turn: Color): string {
     // Convert SAN notation to FAN by replacing each piece letter with its corresponding symbol
     let fan = '';
     for (const char of san) {
-		const lookup = turn === 'white' ? char.toUpperCase() : char.toLowerCase();
+        const lookup = turn === 'white' ? char.toUpperCase() : char.toLowerCase();
         fan += isPiece(char) ? fanMap[lookup] : char;  // Replace piece letter or leave character as-is if no match
     }
 
     return fan;
 }
 
-export function makeGame(pgnString: string): [Game<PgnNodeData>, string] {
-	const game = parsePgn(pgnString)[0];
+export function makeGame(pgnString: string): GameModel {
+    const game = parsePgn(pgnString)[0];
 
-	const start = startingPosition(game.headers).unwrap();
-	const setup = start.toSetup();
-	const fen = makeFen(setup);
-	// const moves = pgn.moves;
-	const comments = parseComments(game.comments || []);
-	console.log(comments);
-	const headers: Headers = new Map(Array.from(game.headers, ([key, value]) => [key.toLowerCase(), value]));
-	const metadata = makeMetadata(headers);
-	console.log("metadata", metadata);
+    const start = startingPosition(game.headers).unwrap();
+    const setup = start.toSetup();
+    const fen = makeFen(setup);
+    // const moves = pgn.moves;
+    const comments = parseComments(game.comments || []);
+    console.log(comments);
+    const headers: Headers = new Map(Array.from(game.headers, ([key, value]) => [key.toLowerCase(), value]));
+    const metadata = makeMetadata(headers);
+    console.log("metadata", metadata);
 
-	console.log(game, start, setup, fen);
+    console.log(game, start, setup, fen);
 
-	const initial: Initial = {
-		fen,
-		turn: start.turn,
-		check: start.isCheck(),
-		pos: start.clone(),
-		comments: comments.texts,
-		shapes: comments.shapes,
-		clocks: {
-			white: metadata.timeControl?.initial || comments.clock,
-			black: metadata.timeControl?.initial || comments.clock,
-		},
-	};
-	const moves = makeMoves(start, game.moves, metadata);
-	const players = makePlayers(headers, metadata);
+    const initial: Initial = {
+        fen,
+        turn: start.turn,
+        check: start.isCheck(),
+        pos: start.clone(),
+        comments: comments.texts,
+        shapes: comments.shapes,
+        clocks: {
+            white: metadata.timeControl?.initial || comments.clock,
+            black: metadata.timeControl?.initial || comments.clock,
+        },
+    };
+    const moves = makeMoves(start, game.moves, metadata);
+    const players = makePlayers(headers, metadata);
 
-	const gameModel = new GameModel(initial, moves, players, metadata);
+    const gameModel = new GameModel(initial, moves, players, metadata);
 
-	console.log(gameModel);
+    console.log(gameModel);
 
-	return [game, fen];
+    return gameModel;
 }

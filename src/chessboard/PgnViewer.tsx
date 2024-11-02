@@ -1,12 +1,8 @@
-import { Chess, Color, makeUci, pgn, Position } from "chessops";
 import { Chessboard } from "./Chessboard";
 import { Config } from "chessground/config";
-import { makeFen, parseFen } from 'chessops/fen';
-import {  parseSan } from 'chessops/san';
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
 import { Api } from "chessground/api";
-import { makeGame } from "../models/pgn";
-import { Game, PgnNodeData } from "chessops/pgn";
+import { GameModel, makeGame, Path } from "../models/pgn";
 
 
 // see: https://github.com/lichess-org/pgn-viewer
@@ -20,21 +16,39 @@ export type PgnViewerOptions = {
 }
 
 
-
-
-
-
-
-
-
 const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
-	const [currentMove, setCurrentMove] = createSignal<pgn.Node<PgnNodeData> | undefined>(undefined);
-	const [game, setGame] = createSignal<Game<PgnNodeData> | undefined>(undefined);
+	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
+	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
 
 	const [api, setApi] = createSignal<Api | undefined>(undefined);
 
 	const config: Config = {
 
+	}
+
+	const currentNode = () => {
+		const g = game();
+		if (!g) {
+			return;
+		}
+		const path = currentPath();
+		if (!path) {
+			return;
+		}
+		return g.nodeAt(path);
+	}
+
+	// @ts-ignore
+	const currentData = () => {
+		const g = game();
+		if (!g) {
+			return;
+		}
+		const path = currentPath();
+		if (!path) {
+			return;
+		}
+		return g.dataAt(path);
 	}
 
 	createEffect(() => {
@@ -44,11 +58,12 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 			return;
 		}
 
-		const [g, fen] = makeGame(pgnString);
-		setGame(g);
-
+		const gameModel = makeGame(pgnString);
+		setGame(gameModel);
+		setCurrentPath(gameModel.pathAtMainlinePly(0));
+		// setCurrentPath(gameModel
 		cg.set({
-			fen: fen
+			fen: gameModel.initial.fen
 		});
 	});
 
@@ -61,28 +76,16 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		if (!g) {
 			return;
 		}
-		const current_move = currentMove() || g.moves;
-		if (current_move.children.length === 0) {
-			return;
+		
+		const nextNode = currentNode()?.children[0];
+		// TODO: use reactivity
+		setCurrentPath(nextNode?.data.path);
+		
+		const config = {
+			fen: nextNode?.data.fen
+			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
-		let next = current_move.children[0];
-		if (!next.data) next = next.children[0];
-		const fen: string = (cg.state as any).fen;
-		const setup = parseFen(fen).unwrap();
-		// const fen = next.fen;
-		// cg.set({
-		// 	fen: fen
-		// });
-		setCurrentMove(next);
-		const san = next.data.san;
-		const chess = Chess.fromSetup(setup).unwrap();
-		const move = parseSan(chess, san);
-		if (!move) return;
-		chess.play(move);
-		const fen2 = makeFen(chess.toSetup());
-		cg.set({
-			fen: fen2
-		});
+		cg.set(config);
 	}
 
 	return (
