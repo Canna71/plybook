@@ -1,8 +1,8 @@
 import { Chessboard } from "./Chessboard";
 import { Config } from "chessground/config";
-import { Accessor, Component, createEffect, createSignal } from "solid-js";
+import { Accessor, Component, createEffect, createSignal, For } from "solid-js";
 import { Api } from "chessground/api";
-import { GameModel, makeGame, Path } from "../models/pgn";
+import { GameModel, makeGame, MoveData, Path } from "../models/pgn";
 
 
 // see: https://github.com/lichess-org/pgn-viewer
@@ -24,6 +24,23 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	const config: Config = {
 
+	}
+
+	const mainlineGroups = (): [number, MoveData, MoveData][] => {
+		const mainline = game()?.mainline;
+		if (!mainline) {
+			return [];
+		}
+		// group the mainline moves by 2, and add the index starting from 1
+		const groups = [];
+		for (let i = 0; i < mainline.length; i += 2) {
+			groups.push(mainline.slice(i, i + 2));
+		}
+		const ret: [number, MoveData, MoveData][] = groups.map((group, index) => [index + 1, group[0], group[1]]);
+
+		console.log("groups", ret);
+
+		return ret;
 	}
 
 	const currentNode = () => {
@@ -76,24 +93,62 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		if (!g) {
 			return;
 		}
-		
+
 		const nextNode = currentNode()?.children[0];
-		// TODO: use reactivity
 		setCurrentPath(nextNode?.data.path);
-		
+
+
+	}
+
+	createEffect(() => {
+		const cg = api()!;
+		const node = currentNode();
+		const data = currentData();
+		if (!data) {
+			return;
+		}
 		const config = {
-			fen: nextNode?.data.fen
+			fen: data.fen
 			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
 		cg.set(config);
-	}
+	});
 
 	return (
-		<div>
-			<Chessboard config={config} setApi={setApi} />
-			<div>
-				<button onClick={onNext} >&gt;|</button>
+		<div class="pgnviewer-container">
+			<div class="pgnviewer-content">
+				<div class="pgnviewer-chessboard">
+					<Chessboard config={config} setApi={setApi} />
+
+				</div>
+				<div>
+					TODO: ???
+				</div>
 			</div>
+			<div class="pgnviewer-sidebar">
+				<div class="pgnviewer-mainline-wrapper">
+
+					<div class="pgnviewer-mainline">
+						<For each={mainlineGroups()}>
+							{
+								(line) => <div class="pgnviewer-moveline">
+									<div class="pgnviewer-movenumber">{line[0]}.</div>
+									<div class="pgnviewer-move white-move">{line[1].fan}</div>
+									<div class="pgnviewer-move black-move">{line[2]?.fan}</div>
+								</div>
+							}
+						</For>
+					</div>
+				</div>
+
+				<div>
+					TODO: buttons ???
+					<div class="pgn-viewer-buttonbar">
+						<button onClick={onNext} >&gt;|</button>
+					</div>
+				</div>
+			</div>
+
 		</div>
 	);
 }
