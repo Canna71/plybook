@@ -16,9 +16,9 @@ const PgnView = () => {
     });
 
     return (
-        <div style="max-width: 60%">
+        // <div>
             <PgnViewer pgn={pgn} />
-        </div>
+        // </div>
     );
 }
 

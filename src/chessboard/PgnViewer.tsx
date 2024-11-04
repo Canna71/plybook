@@ -141,12 +141,11 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 					</div>
 				</div>
 
-				<div>
-					TODO: buttons ???
-					<div class="pgn-viewer-buttonbar">
-						<button onClick={onNext} >&gt;|</button>
-					</div>
+
+				<div class="pgn-viewer-buttonbar">
+					<button onClick={onNext} >&gt;|</button>
 				</div>
+
 			</div>
 
 		</div>
