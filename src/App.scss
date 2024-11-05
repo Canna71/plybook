@@ -34,6 +34,10 @@
     }
 }
 
+body {
+    overflow: hidden;
+}
+
 :root {
     font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
     font-size: 16px;
@@ -51,13 +55,15 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .container {
     display: grid;
     grid-template-columns: var(--sidebar-width, 250px) 1fr;
     grid-template-rows: 1fr;
-    height: 100%;
+    height: 100vh;
+    width: 100vw;
     background-color: #333;
     color: white;
     overflow: hidden;
@@ -72,6 +78,10 @@
 
     .main-content {
         padding: 20px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
     }
 }
 
@@ -80,44 +90,45 @@
     // flex-direction: row;
     // justify-content ;
     // align-items: start;
-    width: 100%;
-    height: 100%;
+    // width: 100%;
     padding: 20px;
     overflow: hidden;
     display: grid;
     
+
     grid-template-areas:
     "board sidebar";
-    grid-template-columns: minmax(200px, calc(100vh )) minmax(50%, 1fr);
-    grid-template-rows: auto ;
+    // grid-template-columns: minmax(200px, calc(100vh )) minmax(50%, 1fr);
+    grid-template-columns: auto 1fr;
+    grid-template-rows: minmax(0, 1fr); ;
 
     .pgnviewer-content {
         flex: 0 0 70%;
         padding: 24px;
         grid-area: board;
+        aspect-ratio: 1 / 1;
     }
 
     .pgnviewer-sidebar {
         grid-area: sidebar;
+        height: 100%;
         // flex: 0 0 30%;
         padding: 24px;
         display: flex;
         min-height: 100px;
         flex-direction: column;
-        overflow-y: hidden;
-        height: 100%;
 
         .pgnviewer-mainline-wrapper {
             // flex: 1 1 0;
-            flex: 1;
+            // flex: 1;
             overflow-y: auto;
             display: flex;
-            height: 100%;
-
+            flex-direction: column;
 
             .pgnviewer-mainline {
-                display:none;
-                flex: 1 0 0;
+                flex: 1;
+
+                // flex: 1 0 0;
                 
                 padding: 12px;
                 display: flex;

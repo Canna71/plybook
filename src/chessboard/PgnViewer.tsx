@@ -115,6 +115,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	});
 
 	return (
+		<>
 		<div class="pgnviewer-container">
 			<div class="pgnviewer-content">
 				<div class="pgnviewer-chessboard">
@@ -139,6 +140,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 							}
 						</For>
 					</div>
+					
 				</div>
 
 
@@ -149,6 +151,10 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 			</div>
 
 		</div>
+		<div class="pfn-viewer-bottom">
+			
+		</div>
+		</>
 	);
 }
 
