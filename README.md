@@ -32,6 +32,12 @@ pnpm install
 pnpm tauri dev
 ```
 
+## Dependencies
+
+LLVM 
+https://releases.llvm.org/
+https://users.rust-lang.org/t/unable-to-find-libclang-the-libclang-issue/70746
+
 ## Links
 
 https://github.com/lichess-org/chessground
