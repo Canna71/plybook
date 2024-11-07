@@ -56,22 +56,39 @@ async fn init_db(db_state: State<'_, DatabaseConnection>) -> Result<String, Stri
     Ok("Database initialized successfully".to_string())
 }
 
+// define a string constant for the table name
+const GAMES_TABLE: &str = "games";
+
 #[tauri::command]
 // #[tokio::main]
-async fn create_record(
+async fn index_game(
     db_state: State<'_, DatabaseConnection>,
-    table: String,
-    data: Game,
+    game: Game,
 ) -> Result<Game, String> {
     let db = db_state.0.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
 
     let created: Game = db
-        .create(table.as_str())
-        .content(data)
+        .create(GAMES_TABLE)
+        .content(game)
         .await
         .map_err(|e| e.to_string())?
         .ok_or("Failed to create record")?;
+
+    Ok(created)
+}
+
+#[tauri::command]
+// #[tokio::main]
+async fn list_games(
+    db_state: State<'_, DatabaseConnection>
+) -> Result<Vec<Game>, String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let created: Vec<Game> = db
+        .select(GAMES_TABLE).await
+        .map_err(|e| e.to_string())?;
 
     Ok(created)
 }
@@ -82,7 +99,12 @@ pub fn run() {
         .manage(DatabaseConnection(Mutex::new(None)))
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
-        .invoke_handler(tauri::generate_handler![greet, init_db, create_record])
+        .invoke_handler(tauri::generate_handler![
+            greet, 
+            init_db, 
+            index_game,
+            list_games
+            ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -24,10 +24,10 @@ const DBTest = () => {
     }
 
     const createRecord = async () => {
-        const pgnString = await readTextFile('testdata/01.pgn', 
+        const pgnString = await readTextFile('testdata/01.pgn',
             {
-            baseDir: BaseDirectory.Resource
-        });
+                baseDir: BaseDirectory.Resource
+            });
         const gameModel = makeGame(pgnString);
         const game: IGame = {
             file: "01.pgn",
@@ -42,18 +42,22 @@ const DBTest = () => {
             blackTitle: gameModel.players.black.title || "",
             blackRating: gameModel.players.black.rating || -1,
         };
-        await invoke("create_record", {
-            table: "games",
-            data:game
+        await invoke("index_game", {
+            game
         });
+    }
+
+    const listGames = async () => {
+        const games = await invoke("list_games");
+        console.log(games);
     }
 
     return (
         <div>
             <div>
-               <button onClick={initDB}>Init DB</button>
-               <button onClick={createRecord}>Create Record</button>
-                
+                <button onClick={initDB}>Init DB</button>
+                <button onClick={createRecord}>Index Game</button>
+                <button onClick={listGames}>List Games</button>
             </div>
         </div>
     );
