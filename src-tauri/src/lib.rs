@@ -18,6 +18,22 @@ use tauri::State;
 // Wrap database connection in a managed state
 struct DatabaseConnection(Mutex<Option<Surreal<Db>>>);
 
+#[derive(Debug, Serialize, Deserialize)]
+struct Game {
+    file: String,
+    timeControlInitial: i16,
+    timeControlIncrement: i16,
+    orientation: String,
+    result: String,
+    whiteName: String,
+    whiteRating: i16,
+    whiteTitle: String,
+    blackName: String,
+    blackRating: i16,
+    blackTitle: String
+
+}
+
 #[tauri::command]
 // #[tokio::main]
 async fn init_db(db_state: State<'_, DatabaseConnection>) -> Result<String, String> {
@@ -45,12 +61,12 @@ async fn init_db(db_state: State<'_, DatabaseConnection>) -> Result<String, Stri
 async fn create_record(
     db_state: State<'_, DatabaseConnection>,
     table: String,
-    data: serde_json::Value,
-) -> Result<serde_json::Value, String> {
+    data: Game,
+) -> Result<Game, String> {
     let db = db_state.0.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
 
-    let created: serde_json::Value = db
+    let created: Game = db
         .create(table.as_str())
         .content(data)
         .await
