@@ -11,7 +11,7 @@ use tokio::sync::Mutex;
 use surrealdb::RecordId;
 use surrealdb::Surreal;
 use surrealdb::engine::local::RocksDb;
-
+use pgnparse::parser::*;
 
 use tauri::State;
 
@@ -102,6 +102,10 @@ async fn upload_pgn(
     let db = db_state.0.lock().await;
 
     println!("Received PGN: {}", pgn);
+
+    let parsedPgn = parse_pgn_to_rust_struct(pgn);
+
+    println!("Parsed PGN: {:?}", parsedPgn);
 
     let game: Game = 
     Game {
