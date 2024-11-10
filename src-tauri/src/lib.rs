@@ -4,6 +4,7 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+
 /// https://surrealdb.com/docs/surrealdb/embedding/rust
 use serde::{Deserialize, Serialize};
 use surrealdb::engine::local::Db;
@@ -23,14 +24,16 @@ struct Game {
     file: String,
     timeControlInitial: i16,
     timeControlIncrement: i16,
-    orientation: String,
+    // orientation: String,
     result: String,
     whiteName: String,
     whiteRating: i16,
-    whiteTitle: String,
+    // whiteTitle: String,
     blackName: String,
     blackRating: i16,
-    blackTitle: String
+    // blackTitle: String,
+    eventDate: String,
+    round: i16,
 
 }
 
@@ -103,24 +106,46 @@ async fn upload_pgn(
 
     println!("Received PGN: {}", pgn);
 
-    let parsedPgn = parse_pgn_to_rust_struct(pgn);
+    let mut parsedPgn = parse_pgn_to_rust_struct(pgn);
+
+    
 
     println!("Parsed PGN: {:?}", parsedPgn);
 
+    let timeControl = parsedPgn.get_header("TimeControl");
+    let timeControlParts: Vec<&str> = timeControl.split("+").collect();
+    // let orientation = parsedPgn.get_header("FEN");
+    let result = parsedPgn.get_header("Result");
+    let whiteName = parsedPgn.get_header("White");
+    let whiteRating = parsedPgn.get_header("WhiteElo");
+    // let whiteTitle = parsedPgn.get_header("WhiteTitle");
+    let blackName = parsedPgn.get_header("Black");
+    let blackRating = parsedPgn.get_header("BlackElo");
+    // let blackTitle = parsedPgn.get_header("BlackTitle");
+    let eventDate = parsedPgn.get_header("Date");    
+    let round = parsedPgn.get_header("Round"); 
+
+    println!("{:?}",parsedPgn.headers);
+
     let game: Game = 
-    Game {
-        file: "todo".to_string(),
-        timeControlInitial: -1,
-        timeControlIncrement: -1,
-        orientation: String::new(),
-        result: String::new(),
-        whiteName: String::new(),
-        whiteRating: -1,
-        whiteTitle: String::new(),
-        blackName: String::new(),
-        blackRating: -1,
-        blackTitle: String::new(),
-    };
+        Game {
+            file: "todo".to_string(),
+            timeControlInitial: timeControlParts.get(0).unwrap_or(&"").parse().unwrap_or(-1),
+            timeControlIncrement: timeControlParts.get(1).unwrap_or(&"").parse().unwrap_or(-1),
+            // orientation: String::new(),
+            result: result.to_string(),
+            whiteName: whiteName.to_string(),
+            whiteRating: whiteRating.parse().unwrap_or(-1),
+            // whiteTitle: whiteTitle.to_string(),
+            blackName: blackName.to_string(),
+            blackRating: blackRating.parse().unwrap_or(-1),
+            // blackTitle: blackTitle.to_string(),
+            eventDate: eventDate.to_string(),
+            round: round.parse().unwrap_or(-1),
+        };
+
+    println!("Game: {:?}", game);
+    
 
     Ok(game)
 }
