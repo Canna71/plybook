@@ -1,5 +1,5 @@
 
-import "./App.scss";
+import "./styles/App.scss";
 import { Router, Route } from "@solidjs/router";
 import Home from "./Views/Home";
 import Layout from "./Views/Layout";

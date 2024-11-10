@@ -1,0 +1,86 @@
+.pgnviewer-container {
+    // display: flex;
+    // flex-direction: row;
+    // justify-content ;
+    // align-items: start;
+    // width: 100%;
+    padding: 20px;
+    overflow: hidden;
+    display: grid;
+    
+
+    grid-template-areas:
+    "board sidebar";
+    // grid-template-columns: minmax(200px, calc(100vh )) minmax(50%, 1fr);
+    grid-template-columns: auto 1fr;
+    grid-template-rows: minmax(0, 1fr); ;
+
+    .pgnviewer-content {
+        flex: 0 0 70%;
+        padding: 24px;
+        grid-area: board;
+        aspect-ratio: 1 / 1;
+    }
+
+    .pgnviewer-sidebar {
+        grid-area: sidebar;
+        height: 100%;
+        // flex: 0 0 30%;
+        padding: 24px;
+        display: flex;
+        min-height: 100px;
+        flex-direction: column;
+
+        .pgnviewer-mainline-wrapper {
+            // flex: 1 1 0;
+            // flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+
+            .pgnviewer-mainline {
+                flex: 1;
+
+                // flex: 1 0 0;
+                
+                padding: 12px;
+                display: flex;
+                flex-direction: column;
+
+                .pgnviewer-moveline {
+                    display: flex;
+                    flex-direction: row;
+                    width: 100%;
+                    position: relative;
+                    line-height: 32px;
+                    height: 32px;
+
+                    .pgnviewer-move {
+                        padding: 4px;
+                        margin: 4px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        transition: background-color 0.25s;
+                        position: absolute;
+                        display: inline-block;
+                    }
+                    .white-move {
+                        left: 30%;
+                    }
+
+                    .black-move {
+                        left: 70%;
+                    }
+                }
+            }
+        }
+
+        .pgnviewer-buttonbar {
+            flex: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+        }
+    }
+}

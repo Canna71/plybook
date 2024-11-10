@@ -93,6 +93,34 @@ async fn list_games(
     Ok(created)
 }
 
+#[tauri::command]
+// #[tokio::main]
+async fn upload_pgn(
+    db_state: State<'_, DatabaseConnection>,
+    pgn: String
+) -> Result<Game, String> {
+    let db = db_state.0.lock().await;
+
+    println!("Received PGN: {}", pgn);
+
+    let game: Game = 
+    Game {
+        file: "todo".to_string(),
+        timeControlInitial: -1,
+        timeControlIncrement: -1,
+        orientation: String::new(),
+        result: String::new(),
+        whiteName: String::new(),
+        whiteRating: -1,
+        whiteTitle: String::new(),
+        blackName: String::new(),
+        blackRating: -1,
+        blackTitle: String::new(),
+    };
+
+    Ok(game)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -103,7 +131,8 @@ pub fn run() {
             greet, 
             init_db, 
             index_game,
-            list_games
+            list_games,
+            upload_pgn
             ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
