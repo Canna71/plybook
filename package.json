@@ -21,7 +21,8 @@
     "chessops": "^0.14.1",
     "solid-js": "^1.7.8",
     "stockfish-nnue.wasm": "1.0.0-1946a675.smolnet",
-    "stockfish.wasm": "^0.10.0"
+    "stockfish.wasm": "^0.10.0",
+    "vite-plugin-static-copy": "^2.1.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

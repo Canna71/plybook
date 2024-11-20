@@ -9,6 +9,7 @@ import { Piece } from "chessops";
 // import { Worker } from "stockfish-nnue.wasm";
 // import Stockfish from "stockfish.wasm";
 import StockFish from "stockfish.wasm";
+
 const Play = () => {
     // @ts-ignore
     const [game, setGame] = createSignal(new Chess());
@@ -51,14 +52,16 @@ const Play = () => {
     onMount(async () => {
         // const engine = new Worker("stockfish.wasm?worker");
         // const engine = new MyWorker()
+        // const engine = await StockFish("stockfish.wasm");
+        // const engine = new Worker("stockfish.wasm");
         const engine = await StockFish();
         setStockfish(engine);
         console.log(engine);
         // var sf = await Stockfish();
         var sf = engine;
-        sf.onmessage = (event) => {
-            console.log(event.data);
-        }
+        // sf.onmessage = (event) => {
+        //     console.log(event.data);
+        // }
         // Stockfish().then(async (sf) => {
             // setStockfish(sf);
             // sf.addMessageListener((line: any) => {
