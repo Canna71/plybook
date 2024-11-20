@@ -7,8 +7,12 @@ import { Piece } from "chessops";
 // import { Stockfish } from "../declarations";
 // import  StockfishInit  from "/node_modules/stockfish-nnue.wasm/stockfish.js";
 // import { Worker } from "stockfish-nnue.wasm";
-// import Stockfish from "stockfish.wasm";
 import StockFish from "stockfish.wasm";
+// import StockFish from "/node_modules/stockfish.wasm/stockfish.wasm?init";
+// import StockFish from "/node_modules/stockfish.wasm/stockfish.worker.js?worker";
+// import * as StockFish  from "/node_modules/stockfish.wasm/stockfish.js";
+// import StockFish = require("/node_modules/stockfish.wasm/stockfish.js")
+// const StockFish = require("./stockfish.js")
 
 const Play = () => {
     // @ts-ignore
@@ -53,31 +57,40 @@ const Play = () => {
         // const engine = new Worker("stockfish.wasm?worker");
         // const engine = new MyWorker()
         // const engine = await StockFish("stockfish.wasm");
-        // const engine = new Worker("stockfish.wasm");
-        const engine = await StockFish();
-        setStockfish(engine);
-        console.log(engine);
-        // var sf = await Stockfish();
-        var sf = engine;
+        // const engine = require("stockfish.js");
+        // engine.postMessage({cmd: "load"});
+        // const engine = await StockFish();
+        // const engine = new Worker(new URL('/node_modules/stockfish.wasm/stockfish.worker.js', import.meta.url))
+
+        StockFish().then((engine) => {
+            engine.onmessage = (event) => {
+                console.log(event.data);
+            }
+            engine.postMessage("uci");
+        });
+        // setStockfish(engine);
+        // console.log(engine);
+        // // var sf = await Stockfish();
+        // var sf = engine;
         // sf.onmessage = (event) => {
         //     console.log(event.data);
         // }
         // Stockfish().then(async (sf) => {
-            // setStockfish(sf);
-            // sf.addMessageListener((line: any) => {
-            //     // var line = event.data;
-            //     console.log("line", line);
-            //     if (line.startsWith('bestmove')) {
-            //         var bestMove = line.split(' ')[1];
-            //         game().move({ from: bestMove.slice(0, 2), to: bestMove.slice(2, 4), promotion: 'q' });
-            //         api()?.set({
-            //             fen: game().fen()
-            //         });
-            //         updateStatus();
-            //     }
-            // });
+        // setStockfish(sf);
+        // sf.addMessageListener((line: any) => {
+        //     // var line = event.data;
+        //     console.log("line", line);
+        //     if (line.startsWith('bestmove')) {
+        //         var bestMove = line.split(' ')[1];
+        //         game().move({ from: bestMove.slice(0, 2), to: bestMove.slice(2, 4), promotion: 'q' });
+        //         api()?.set({
+        //             fen: game().fen()
+        //         });
+        //         updateStatus();
+        //     }
+        // });
 
-            sf.postMessage("uci");
+        // sf.postMessage("uci");
 
         // });
     });

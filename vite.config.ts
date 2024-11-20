@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
 import httpHeaders from 'vite-plugin-http-headers';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import commonjs from 'vite-plugin-commonjs'
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
@@ -19,8 +20,13 @@ export default defineConfig(async () => ({
           src: './node_modules/stockfish.wasm/stockfish.wasm',
           dest: './',
         },
+        {
+          src: './node_modules/stockfish.wasm/stockfish.js',
+          dest: './',
+        },
       ],
-    })
+    }),
+    commonjs()
   ],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
@@ -48,4 +54,7 @@ export default defineConfig(async () => ({
       "Cross-Origin-Embedder-Policy": "require-corp"
     }
   },
+  build: {
+    commonjsOptions: { transformMixedEsModules: true }
+  }
 }));
