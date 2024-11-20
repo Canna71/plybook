@@ -7,7 +7,8 @@ import { Piece } from "chessops";
 // import { Stockfish } from "../declarations";
 // import  StockfishInit  from "/node_modules/stockfish-nnue.wasm/stockfish.js";
 // import { Worker } from "stockfish-nnue.wasm";
-
+// import Stockfish from "stockfish.wasm";
+import StockFish from "stockfish.wasm";
 const Play = () => {
     // @ts-ignore
     const [game, setGame] = createSignal(new Chess());
@@ -47,26 +48,35 @@ const Play = () => {
         // $pgn.html(game.pgn())
     }
 
-    onMount(() => {
-        // console.log(Stockfish);
-        Stockfish().then(async (sf) => {
-            setStockfish(sf);
-            sf.addMessageListener((line: any) => {
-                // var line = event.data;
-                console.log("line", line);
-                if (line.startsWith('bestmove')) {
-                    var bestMove = line.split(' ')[1];
-                    game().move({ from: bestMove.slice(0, 2), to: bestMove.slice(2, 4), promotion: 'q' });
-                    api()?.set({
-                        fen: game().fen()
-                    });
-                    updateStatus();
-                }
-            });
+    onMount(async () => {
+        // const engine = new Worker("stockfish.wasm?worker");
+        // const engine = new MyWorker()
+        const engine = await StockFish();
+        setStockfish(engine);
+        console.log(engine);
+        // var sf = await Stockfish();
+        var sf = engine;
+        sf.onmessage = (event) => {
+            console.log(event.data);
+        }
+        // Stockfish().then(async (sf) => {
+            // setStockfish(sf);
+            // sf.addMessageListener((line: any) => {
+            //     // var line = event.data;
+            //     console.log("line", line);
+            //     if (line.startsWith('bestmove')) {
+            //         var bestMove = line.split(' ')[1];
+            //         game().move({ from: bestMove.slice(0, 2), to: bestMove.slice(2, 4), promotion: 'q' });
+            //         api()?.set({
+            //             fen: game().fen()
+            //         });
+            //         updateStatus();
+            //     }
+            // });
 
             sf.postMessage("uci");
 
-        });
+        // });
     });
     // const stockfish = new Worker('node_modules/stockfish-nnue.wasm/stockfish.js');
 
