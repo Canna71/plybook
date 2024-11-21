@@ -18,7 +18,12 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": {
+        "default-src": ["'self'"],
+        "script-src": ["'self'", "'unsafe-eval'", "'wasm-unsafe-eval'"],
+        "worker-src": ["'self'", "blob:"],
+        "style-src": ["'self'", "'unsafe-inline'"]
+      }
     }
   },
   "bundle": {

@@ -2,31 +2,36 @@ import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
 import httpHeaders from 'vite-plugin-http-headers';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import commonjs from 'vite-plugin-commonjs'
+import commonjs from 'vite-plugin-commonjs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
+// @ts-expect-error process is a nodejs global
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
   plugins: [solid(),
 
-    viteStaticCopy({
-      targets: [
-        {
-          src: './node_modules/stockfish.wasm/stockfish.worker.js',
-          dest: './',
-        },
-        {
-          src: './node_modules/stockfish.wasm/stockfish.wasm',
-          dest: './',
-        },
-        {
-          src: './node_modules/stockfish.wasm/stockfish.js',
-          dest: './',
-        },
-      ],
-    }),
-    commonjs()
+  viteStaticCopy({
+    targets: [
+      {
+        src: './node_modules/stockfish.wasm/stockfish.worker.js',
+        dest: './',
+      },
+      {
+        src: './node_modules/stockfish.wasm/stockfish.wasm',
+        dest: './',
+      },
+      {
+        src: './node_modules/stockfish.wasm/stockfish.js',
+        dest: './',
+      },
+    ],
+  }),
+    // commonjs()
   ],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
@@ -40,10 +45,10 @@ export default defineConfig(async () => ({
     host: host || false,
     hmr: host
       ? {
-          protocol: "ws",
-          host,
-          port: 1421,
-        }
+        protocol: "ws",
+        host,
+        port: 1421,
+      }
       : undefined,
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
@@ -55,6 +60,25 @@ export default defineConfig(async () => ({
     }
   },
   build: {
-    commonjsOptions: { transformMixedEsModules: true }
+    commonjsOptions: { transformMixedEsModules: true },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // stockfish: ['stockfish.wasm']
+        }
+      }
+    },
+    target: 'esnext'
+  },
+  // resolve: {
+  //   alias: {
+  //     '@': resolve(__dirname, './src')
+  //   }
+  // },
+  // optimizeDeps: {
+  //   exclude: ['stockfish.wasm']
+  // },
+  worker: {
+    format: 'es'
   }
 }));

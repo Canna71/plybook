@@ -4,16 +4,9 @@ import { Api } from "chessground/api";
 import { Chessboard } from "../chessboard/Chessboard";
 import { Key } from "chessground/types";
 import { Piece } from "chessops";
-// import { Stockfish } from "../declarations";
-// import  StockfishInit  from "/node_modules/stockfish-nnue.wasm/stockfish.js";
-// import { Worker } from "stockfish-nnue.wasm";
-import StockFish from "stockfish.wasm";
-// import StockFish from "/node_modules/stockfish.wasm/stockfish.wasm?init";
-// import StockFish from "/node_modules/stockfish.wasm/stockfish.worker.js?worker";
-// import * as StockFish  from "/node_modules/stockfish.wasm/stockfish.js";
-// import StockFish = require("/node_modules/stockfish.wasm/stockfish.js")
-// const StockFish = require("./stockfish.js")
 
+// import * as Stockfish from "stockfish.wasm";
+import StockfishWorker from 'stockfish.wasm';
 const Play = () => {
     // @ts-ignore
     const [game, setGame] = createSignal(new Chess());
@@ -54,21 +47,30 @@ const Play = () => {
     }
 
     onMount(async () => {
-        // const engine = new Worker("stockfish.wasm?worker");
-        // const engine = new MyWorker()
-        // const engine = await StockFish("stockfish.wasm");
-        // const engine = require("stockfish.js");
-        // engine.postMessage({cmd: "load"});
-        // const engine = await StockFish();
-        // const engine = new Worker(new URL('/node_modules/stockfish.wasm/stockfish.worker.js', import.meta.url))
+        const StockfishModule = await import('./stockfish.wasm');
+        const Stockfish = StockfishModule.default || StockfishModule;
 
-        StockFish().then((engine) => {
-            engine.onmessage = (event) => {
-                console.log(event.data);
-            }
-            engine.postMessage("uci");
-        });
-        // setStockfish(engine);
+        const stockfish = await Stockfish();
+        console.log(stockfish);
+        stockfish.onmessage = (e) => {
+            console.log(e.data);
+        }
+        
+        stockfish.postMessage('uci');
+        // Wait for the engine to be ready
+        // stockfish.addMessageListener((message: string) => {
+        //   console.log(message);
+        // })
+        
+        // // Initialize UCI mode
+        // stockfish.postMessage('uci')
+        // Stockfish().then((engine) => {
+        //     engine.onmessage = (event) => {
+        //         console.log(event.data);
+        //     }
+        //     engine.postMessage("uci");
+        // });
+        // // setStockfish(engine);
         // console.log(engine);
         // // var sf = await Stockfish();
         // var sf = engine;
