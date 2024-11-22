@@ -47,21 +47,23 @@ const Play = () => {
     }
 
     onMount(async () => {
-        const StockfishModule = await import('./stockfish.wasm');
+        const StockfishModule = await import('stockfish.wasm');
         const Stockfish = StockfishModule.default || StockfishModule;
+        Stockfish().then((stockfish) => {
+            // ...
+            console.log(stockfish);
+            stockfish.onmessage = (e) => {
+                console.log(e.data);
+            }
 
-        const stockfish = await Stockfish();
-        console.log(stockfish);
-        stockfish.onmessage = (e) => {
-            console.log(e.data);
-        }
-        
-        stockfish.postMessage('uci');
+            stockfish.postMessage('uci');
+        });
+
         // Wait for the engine to be ready
         // stockfish.addMessageListener((message: string) => {
         //   console.log(message);
         // })
-        
+
         // // Initialize UCI mode
         // stockfish.postMessage('uci')
         // Stockfish().then((engine) => {
