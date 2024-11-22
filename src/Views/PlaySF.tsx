@@ -48,18 +48,33 @@ const PlaySF = () => {
     onMount(async () => {
         // console.log(Stockfish);
         let sf = await Command.sidecar('./binaries/stockfish-windows-x86-64-avx2', [
-            "uci"
+            "help"
             // 'isready',
             // 'ucinewgame',
             // 'position startpos moves e2e4 e7e5 g1f3',
             // 'go depth 15'
         ]);
 
+        sf.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+        });
+
+
         sf.stdout.on('data', (data) => {
             console.log(`stdout: ${data}`);
             if(data.includes('uciok')){
-                stockfish()!.write('isready\n');
+                var sf = stockfish();
+                console.log('sf', sf);
+                sf!.write('isready\n');
             }
+        });
+
+        sf.on('close', (code) => {
+            console.log(`child process exited with code ${code}`, code);
+        });
+
+        sf.on('error', (err) => {
+            console.error(`error: ${err}`);
         });
 
         sf.spawn().then((result) => {
