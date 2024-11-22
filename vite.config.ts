@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
-import httpHeaders from 'vite-plugin-http-headers';
+// import httpHeaders from 'vite-plugin-http-headers';
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;

@@ -32,8 +32,10 @@
       "icons/icon.ico"
     ],
     "resources": [
-
-        "testdata/01.pgn"
-      ]
+      "testdata/01.pgn"
+    ],
+    "externalBin": [
+      "./binaries/stockfish-windows-x86-64-avx2"
+    ]
   }
 }

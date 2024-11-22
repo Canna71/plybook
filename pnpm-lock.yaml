@@ -17,8 +17,11 @@ importers:
       '@tauri-apps/plugin-fs':
         specifier: ^2.0.0
         version: 2.0.0
+      '@tauri-apps/plugin-process':
+        specifier: ~2
+        version: 2.0.0
       '@tauri-apps/plugin-shell':
-        specifier: ^2
+        specifier: ^2.0.0
         version: 2.0.0
       chess.js:
         specifier: 1.0.0-beta.8
@@ -540,6 +543,9 @@ packages:
 
   '@tauri-apps/plugin-fs@2.0.0':
     resolution: {integrity: sha512-BNEeQQ5aH8J5SwYuWgRszVyItsmquRuzK2QRkVj8Z0sCsLnSvJFYI3JHRzzr3ltZGq1nMPtblrlZzuKqVzRawA==}
+
+  '@tauri-apps/plugin-process@2.0.0':
+    resolution: {integrity: sha512-OYzi0GnkrF4NAnsHZU7U3tjSoP0PbeAlO7T1Z+vJoBUH9sFQ1NSLqWYWQyf8hcb3gVWe7P1JggjiskO+LST1ug==}
 
   '@tauri-apps/plugin-shell@2.0.0':
     resolution: {integrity: sha512-OpW2+ycgJLrEoZityWeWYk+6ZWP9VyiAfbO+N/O8VfLkqyOym8kXh7odKDfINx9RAotkSGBtQM4abyKfJDkcUg==}
@@ -1288,6 +1294,10 @@ snapshots:
       '@tauri-apps/cli-win32-x64-msvc': 2.0.3
 
   '@tauri-apps/plugin-fs@2.0.0':
+    dependencies:
+      '@tauri-apps/api': 2.0.2
+
+  '@tauri-apps/plugin-process@2.0.0':
     dependencies:
       '@tauri-apps/api': 2.0.2
 

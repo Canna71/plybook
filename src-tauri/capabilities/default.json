@@ -2,7 +2,9 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "shell:allow-open",
@@ -11,6 +13,50 @@
       "allow": [
         {
           "path": "*/**"
+        }
+      ]
+    },
+    "process:default",
+    "shell:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "./binaries/stockfish-windows-x86-64-avx2",
+          "args": [
+            {
+              "validator": "\\S+"
+            }
+          ],
+          "sidecar": true
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "./binaries/stockfish-windows-x86-64-avx2",
+          "args": [
+            {
+              "validator": "\\S+"
+            }
+          ],
+          "sidecar": true
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-stdin-write",
+      "allow": [
+        {
+          "name": "./binaries/stockfish-windows-x86-64-avx2",
+          "args": [
+            {
+              "validator": "\\S+"
+            }
+          ],
+          "sidecar": true
         }
       ]
     }

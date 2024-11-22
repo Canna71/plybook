@@ -8,6 +8,8 @@ const Sidebar = () => {
             <a href="/pgn">Pgn</a>
             <a href="/editor">Editor</a>
             <a href="/play">Play</a>
+            <a href="/playsf">Play SF</a>
+
             <a href="/db">DB Test</a>
 
         </nav>

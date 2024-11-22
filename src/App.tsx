@@ -8,6 +8,7 @@ import PgnView from "./Views/PgnView";
 import Editor from "./Views/Editor";
 import Play from "./Views/Play";
 import DBTest from "./Views/DBTest";
+import PlaySF from "./Views/PlaySF";
 function App() {
   // const [greetMsg, setGreetMsg] = createSignal("");
   // const [name, setName] = createSignal("");
@@ -27,6 +28,7 @@ function App() {
             <Route path="/editor" component={Editor} />
             <Route path="/play" component={Play} />
             <Route path="/db" component={DBTest} />
+            <Route path="/playsf" component={PlaySF} />
 
         </Router>
   );

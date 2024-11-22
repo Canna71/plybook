@@ -71,3 +71,10 @@ https://www.chessboardjsx.com/integrations/stockfish
 https://codesandbox.io/p/sandbox/chess-with-react-chessground-forked-qwjntr?file=%2Fsrc%2Fengine%2Fenginegame.js%3A4%2C27
 
 https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
+
+
+# Sidecar
+
+https://medium.com/@samuelint/tauri-how-to-start-stop-a-sidecar-and-pipe-sidecar-stdout-stderr-to-app-logs-from-rust-8f81a92111ad
+
+https://github.com/tauri-apps/tauri/discussions/3273
