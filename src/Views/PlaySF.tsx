@@ -4,13 +4,13 @@ import { Api } from "chessground/api";
 import { Chessboard } from "../chessboard/Chessboard";
 import { Key } from "chessground/types";
 import { Piece } from "chessops";
-import { Child, Command } from '@tauri-apps/plugin-shell';
+import { StockfishManager } from "../engine/stockfish";
 
 const PlaySF = () => {
     // @ts-ignore
     const [game, setGame] = createSignal(new Chess());
     const [api, setApi] = createSignal<Api | undefined>(undefined);
-    const [stockfish, setStockfish] = createSignal<Child | undefined>(undefined);
+    const [stockfish, setStockfish] = createSignal<StockfishManager | undefined>(undefined);
 
     const updateStatus = () => {
         var status = ''
@@ -45,49 +45,25 @@ const PlaySF = () => {
         // $pgn.html(game.pgn())
     }
 
+    const onEngineEvent = (event: string, ...args: any[]) => {
+        console.log(event, args);
+        if (event === 'bestmove') {
+            var bestMove = args[0];
+            game().move({ from: bestMove.slice(0, 2), to: bestMove.slice(2, 4), promotion: 'q' });
+            api()?.set({
+                fen: game().fen()
+            });
+            updateStatus();
+        }
+    }
+
     onMount(async () => {
-        // console.log(Stockfish);
-        let sf = await Command.sidecar('./binaries/stockfish-windows-x86-64-avx2', [
-            "help"
-            // 'isready',
-            // 'ucinewgame',
-            // 'position startpos moves e2e4 e7e5 g1f3',
-            // 'go depth 15'
-        ]);
-
-        sf.stderr.on('data', (data) => {
-            console.error(`stderr: ${data}`);
-        });
-
-
-        sf.stdout.on('data', (data) => {
-            console.log(`stdout: ${data}`);
-            if(data.includes('uciok')){
-                var sf = stockfish();
-                console.log('sf', sf);
-                sf!.write('isready\n');
-            }
-        });
-
-        sf.on('close', (code) => {
-            console.log(`child process exited with code ${code}`, code);
-        });
-
-        sf.on('error', (err) => {
-            console.error(`error: ${err}`);
-        });
-
-        sf.spawn().then((result) => {
-            console.log(result);
-            setStockfish(result);
-            window.child = result;
-
-            result.write('uci\n');
-        
-
-        });
-
-
+        var engine = StockfishManager.GetEngine(onEngineEvent); 
+        console.log("waiting for engine to init");
+        await engine.init();
+        console.log("engine initialized");
+        setStockfish(engine);
+        engine.newGame();
     });
     // const stockfish = new Worker('node_modules/stockfish-nnue.wasm/stockfish.js');
 
@@ -104,7 +80,15 @@ const PlaySF = () => {
         // illegal move
         if (move === null) return 'snapback'
 
-        updateStatus()
+        updateStatus();
+
+        const moves = game().history({
+            verbose: true
+        }).map(move => move.lan);
+
+        stockfish()?.analyzeFromMoves(moves, {
+            depth: 15
+        });
 
         // stockfish().postMessage('position fen ' + game().fen());
         // stockfish().postMessage('go depth 15');

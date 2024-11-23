@@ -23,11 +23,7 @@
       "allow": [
         {
           "name": "./binaries/stockfish-windows-x86-64-avx2",
-          "args": [
-            {
-              "validator": "\\S+"
-            }
-          ],
+          "args": true,
           "sidecar": true
         }
       ]
@@ -37,11 +33,7 @@
       "allow": [
         {
           "name": "./binaries/stockfish-windows-x86-64-avx2",
-          "args": [
-            {
-              "validator": "\\S+"
-            }
-          ],
+          "args": true,
           "sidecar": true
         }
       ]
@@ -51,11 +43,7 @@
       "allow": [
         {
           "name": "./binaries/stockfish-windows-x86-64-avx2",
-          "args": [
-            {
-              "validator": "\\S+"
-            }
-          ],
+          "args": true,
           "sidecar": true
         }
       ]
