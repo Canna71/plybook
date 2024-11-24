@@ -7,8 +7,8 @@ const Sidebar = () => {
             <a href="/viewer">Viewer</a>
             <a href="/pgn">Pgn</a>
             <a href="/editor">Editor</a>
-            <a href="/play">Play</a>
-            <a href="/playsf">Play SF</a>
+            <a href="/playsf">Play</a>
+            <a href="/analysis">Analysis</a>
 
             <a href="/db">DB Test</a>
 
