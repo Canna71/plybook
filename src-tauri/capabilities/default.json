@@ -22,7 +22,7 @@
       "identifier": "shell:allow-execute",
       "allow": [
         {
-          "name": "./binaries/stockfish-windows-x86-64-avx2",
+          "name": "./binaries/stockfish",
           "args": true,
           "sidecar": true
         }
@@ -32,7 +32,7 @@
       "identifier": "shell:allow-spawn",
       "allow": [
         {
-          "name": "./binaries/stockfish-windows-x86-64-avx2",
+          "name": "./binaries/stockfish",
           "args": true,
           "sidecar": true
         }
@@ -42,7 +42,7 @@
       "identifier": "shell:allow-stdin-write",
       "allow": [
         {
-          "name": "./binaries/stockfish-windows-x86-64-avx2",
+          "name": "./binaries/stockfish",
           "args": true,
           "sidecar": true
         }

@@ -69,7 +69,7 @@ export class StockfishManager {
 
         if (this.isReady) return;
 
-        this.command = await Command.sidecar('./binaries/stockfish-windows-x86-64-avx2', [
+        this.command = await Command.sidecar('./binaries/stockfish', [
 
         ]);
 
