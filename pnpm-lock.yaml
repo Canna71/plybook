@@ -32,6 +32,9 @@ importers:
       chessops:
         specifier: ^0.14.1
         version: 0.14.1
+      es-toolkit:
+        specifier: ^1.27.0
+        version: 1.27.0
       solid-js:
         specifier: ^1.7.8
         version: 1.9.2
@@ -663,6 +666,9 @@ packages:
   entities@4.5.0:
     resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
     engines: {node: '>=0.12'}
+
+  es-toolkit@1.27.0:
+    resolution: {integrity: sha512-ETSFA+ZJArcuSCpzD2TjAy6UHpx4E4uqFsoDg9F/nTLogrLmVVZQ+zNxco5h7cWnA1nNak07IXsLcaSMih+ZPQ==}
 
   esbuild@0.21.5:
     resolution: {integrity: sha512-mg3OPMV4hXywwpoDxu3Qda5xCKQi+vCTZq8S9J/EpkhB2HzKXq4SNFZE3+NK93JYxc8VMSep+lOUSC/RVKaBqw==}
@@ -1417,6 +1423,8 @@ snapshots:
   electron-to-chromium@1.5.41: {}
 
   entities@4.5.0: {}
+
+  es-toolkit@1.27.0: {}
 
   esbuild@0.21.5:
     optionalDependencies:
