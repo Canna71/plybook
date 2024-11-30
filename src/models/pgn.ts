@@ -104,6 +104,12 @@ export interface PlyData extends InitialOrMove {
     fen: FEN;
 }
 
+// Type guard function to check if an object is PlyData
+export function isPlyData(obj: any): obj is PlyData {
+    // Check for specific properties that are unique to PlyData
+    return obj && typeof obj === 'object' && 'move' in obj;
+}
+
 export type Headers = Map<string, string>;
 
 export interface Player {

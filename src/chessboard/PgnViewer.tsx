@@ -2,8 +2,10 @@ import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
 import { Api } from "chessground/api";
-import { GameModel, makeGame, PlyData, Path, MoveData } from "../models/pgn";
+import { GameModel, makeGame, PlyData, Path, MoveData, isPlyData } from "../models/pgn";
 import  Moves  from "./Moves";
+import { last } from "es-toolkit";
+import { makeSquare } from "chessops";
 
 
 // see: https://github.com/lichess-org/pgn-viewer
@@ -75,7 +77,25 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		if (!path) {
 			return;
 		}
+
 		return g.dataAt(path);
+	}
+
+	const comments = () => {
+		const data = currentData();
+		if (!data) {
+			return;
+		}
+		return data.comments;
+	}
+
+	const lastMove = () => {
+		const data = currentData();
+		if (!isPlyData(data)) {	
+			return;
+		}
+		return data.move;
+		
 	}
 
 	createEffect(() => {
@@ -134,13 +154,17 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	createEffect(() => {
 		const cg = api()!;
-		const node = currentNode();
 		const data = currentData();
 		if (!data) {
 			return;
 		}
-		const config = {
-			fen: data.fen
+		var lm = lastMove();
+		
+		
+		// var key = cg.
+		const config : Config = {
+			fen: data.fen,
+			lastMove: lm && [makeSquare(lm.from), makeSquare(lm.to)],
 			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
 		cg.set(config);
@@ -154,8 +178,8 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 					<Chessboard config={config} setApi={setApi} />
 
 				</div>
-				<div>
-					TODO: ???
+				<div class="pgnviewer-comments">
+					{comments()}
 				</div>
 			</div>
 			<div class="pgnviewer-sidebar">
@@ -186,5 +210,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 }
 
 export default PgnViewer;
+
+
 
 
