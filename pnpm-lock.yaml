@@ -11,6 +11,9 @@ importers:
       '@solidjs/router':
         specifier: ^0.14.10
         version: 0.14.10(solid-js@1.9.2)
+      '@tabler/icons-solidjs':
+        specifier: ^3.23.0
+        version: 3.23.0(solid-js@1.9.2)
       '@tauri-apps/api':
         specifier: ^2
         version: 2.0.2
@@ -475,6 +478,14 @@ packages:
     resolution: {integrity: sha512-5B8LVgvvXijfXyXWPVLUm7RQ05BhjIpAyRkYVDZtrR3OaSvftXobWc6qSEwk4ICLoGi/IE9CUp2LUdCBIs9AXg==}
     peerDependencies:
       solid-js: ^1.8.6
+
+  '@tabler/icons-solidjs@3.23.0':
+    resolution: {integrity: sha512-9CgN3Yllqa52MyF5DCnjLBmArzbC0zEhoF5bt0E/Oq1JHAAjwXXPpGqFD5XRBUIn+2Wbeh0sMvjyQAd3mtlbVg==}
+    peerDependencies:
+      solid-js: ^1.4.7
+
+  '@tabler/icons@3.23.0':
+    resolution: {integrity: sha512-Cz+X58jfRm0g/KcupXXuPw5knj671lNR054AnmLXvCjudiQBWI0wZulDDSsqDoGezvBzMTNPQtNcjLkZs82ZxQ==}
 
   '@tauri-apps/api@2.0.2':
     resolution: {integrity: sha512-3wSwmG+1kr6WrgAFKK5ijkNFPp8TT3FLj3YHUb5EwMO+3FxX4uWlfSWkeeBy+Kc1RsKzugtYLuuya+98Flj+3w==}
@@ -1253,6 +1264,13 @@ snapshots:
   '@solidjs/router@0.14.10(solid-js@1.9.2)':
     dependencies:
       solid-js: 1.9.2
+
+  '@tabler/icons-solidjs@3.23.0(solid-js@1.9.2)':
+    dependencies:
+      '@tabler/icons': 3.23.0
+      solid-js: 1.9.2
+
+  '@tabler/icons@3.23.0': {}
 
   '@tauri-apps/api@2.0.2': {}
 

@@ -6,7 +6,7 @@ import { GameModel, makeGame, PlyData, Path, MoveData, isPlyData } from "../mode
 import  Moves  from "./Moves";
 import { last } from "es-toolkit";
 import { makeSquare, Move, NormalMove } from "chessops";
-
+import { IconArrowRight, IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled } from '@tabler/icons-solidjs';
 
 // see: https://github.com/lichess-org/pgn-viewer
 
@@ -197,8 +197,12 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 
 				<div class="pgn-viewer-buttonbar">
-					<button onClick={onPrev} >|&lt;</button>
-					<button onClick={onNext} >&gt;|</button>
+					<button onClick={onPrev} >
+						<IconPlayerSkipBackFilled size="14" />
+					</button>
+					<button onClick={onNext} >
+						<IconPlayerSkipForwardFilled size="14" />
+					</button>
 				</div>
 
 			</div>
