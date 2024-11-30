@@ -6,7 +6,7 @@ import { GameModel, makeGame, PlyData, Path, MoveData, isPlyData } from "../mode
 import  Moves  from "./Moves";
 import { last } from "es-toolkit";
 import { makeSquare, Move, NormalMove } from "chessops";
-import { IconArrowRight, IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled } from '@tabler/icons-solidjs';
+import { IconArrowRight, IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerTrackPrevFilled } from '@tabler/icons-solidjs';
 
 // see: https://github.com/lichess-org/pgn-viewer
 
@@ -75,7 +75,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		}
 		const path = currentPath();
 		if (!path) {
-			return;
+			return g.initial;
 		}
 
 		return g.dataAt(path);
@@ -117,9 +117,9 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		setGame(gameModel);
 		setCurrentPath(gameModel.pathAtMainlinePly(0));
 		// setCurrentPath(gameModel
-		cg.set({
-			fen: gameModel.initial.fen
-		});
+		// cg.set({
+		// 	fen: gameModel.initial.fen
+		// });
 	});
 
 	const onNext = () => {
@@ -138,14 +138,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	}
 
 	const onPrev = () => {
-		// const cg = api();
-		// if (!cg) {
-		// 	return;
-		// }
-		// const g = game();
-		// if (!g) {
-		// 	return;
-		// }
+		
 
 		const path = currentPath();
 		if (!path) {
@@ -153,6 +146,10 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		}
 		
 		setCurrentPath(path.previous());
+	}
+
+	const onRewind = () => {
+		setCurrentPath(game()!.pathAtMainlinePly(0));
 	}
 
 	const onPlyClick = (plyData: PlyData) => {
@@ -167,14 +164,13 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 			return;
 		}
 		const lm  = lastMove() as NormalMove | undefined;
-		if (!lm || !(lm as any).from) {
-			return;
-		}
 		
+		
+		const lastMoveKey = lm && [makeSquare(lm.from), makeSquare(lm.to)];
 		// var key = cg.
 		const config : Config = {
 			fen: data.fen,
-			lastMove: lm && [makeSquare(lm.from), makeSquare(lm.to)],
+			lastMove: lastMoveKey,
 			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
 		cg.set(config);
@@ -205,6 +201,9 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 
 				<div class="pgn-viewer-buttonbar">
+					<button onClick={onRewind} >
+						<IconPlayerTrackPrevFilled size="14" />
+					</button>
 					<button onClick={onPrev} >
 						<IconPlayerSkipBackFilled size="14" />
 					</button>
