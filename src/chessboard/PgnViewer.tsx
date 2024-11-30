@@ -1,12 +1,12 @@
 import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
-import { Accessor, Component, createEffect, createSignal } from "solid-js";
+import { Accessor, Component, createEffect, createSignal, Show } from "solid-js";
 import { Api } from "chessground/api";
 import { GameModel, makeGame, PlyData, Path, MoveData, isPlyData } from "../models/pgn";
-import  Moves  from "./Moves";
+import Moves from "./Moves";
 import { last } from "es-toolkit";
 import { makeSquare, Move, NormalMove } from "chessops";
-import { IconArrowRight, IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerTrackPrevFilled } from '@tabler/icons-solidjs';
+import { IconArrowRight, IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerTrackNextFilled, IconPlayerTrackPrevFilled } from '@tabler/icons-solidjs';
 
 // see: https://github.com/lichess-org/pgn-viewer
 
@@ -39,16 +39,16 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		for (let i = 0; i < mainline.length; i += 2) {
 			groups.push(mainline.slice(i, i + 2));
 		}
-		
 
-		const ret: MoveData[] = groups.map((group, index) => 
-			// [index + 1, group[0], group[1]]
+
+		const ret: MoveData[] = groups.map((group, index) =>
+		// [index + 1, group[0], group[1]]
 		({
 			number: index + 1,
 			white: group[0],
 			black: group[1]
 		})
-	);
+		);
 
 		console.log("groups", ret);
 
@@ -99,11 +99,11 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	const lastMove = () => {
 		const data = currentData();
-		if (!isPlyData(data)) {	
+		if (!isPlyData(data)) {
 			return;
 		}
 		return data.move;
-		
+
 	}
 
 	createEffect(() => {
@@ -131,25 +131,34 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		// if (!g) {
 		// 	return;
 		// }
-		
+
 
 		const nextNode = currentNode()?.children[0];
 		setCurrentPath(nextNode?.data.path);
 	}
 
 	const onPrev = () => {
-		
+
 
 		const path = currentPath();
 		if (!path) {
 			return;
 		}
-		
+
 		setCurrentPath(path.previous());
 	}
 
 	const onRewind = () => {
 		setCurrentPath(game()!.pathAtMainlinePly(0));
+	}
+
+	const onFastForward = () => {
+		const g = game();
+		if (!g) {
+			return;
+		}
+		const path = g.pathAtMainlinePly(g.mainline.length - 1);
+		setCurrentPath(path);
 	}
 
 	const onPlyClick = (plyData: PlyData) => {
@@ -163,12 +172,12 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		if (!data) {
 			return;
 		}
-		const lm  = lastMove() as NormalMove | undefined;
-		
-		
+		const lm = lastMove() as NormalMove | undefined;
+
+
 		const lastMoveKey = lm && [makeSquare(lm.from), makeSquare(lm.to)];
 		// var key = cg.
-		const config : Config = {
+		const config: Config = {
 			fen: data.fen,
 			lastMove: lastMoveKey,
 			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
@@ -178,46 +187,51 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	return (
 		<>
-		<div class="pgnviewer-container">
-			<div class="pgnviewer-content">
-				<div class="pgnviewer-chessboard">
-					<Chessboard config={config} setApi={setApi} />
+			<div class="pgnviewer-container">
+				<div class="pgnviewer-content">
+					<div class="pgnviewer-chessboard">
+						<Chessboard config={config} setApi={setApi} />
 
+					</div>
+					<div class="pgnviewer-comments">
+						{comments()}
+					</div>
 				</div>
-				<div class="pgnviewer-comments">
-					{comments()}
-				</div>
-			</div>
-			<div class="pgnviewer-sidebar">
-				<div class="pgnviewer-mainline-wrapper">
-					
-						<Moves 
-							mainline={mainline} 
+				<div class="pgnviewer-sidebar">
+					<div class="pgnviewer-mainline-wrapper">
+
+						<Moves
+							mainline={mainline}
 							currentPath={currentPath}
 							onPlyClick={onPlyClick}
 						/>
-					
-				</div>
+
+					</div>
 
 
-				<div class="pgn-viewer-buttonbar">
-					<button onClick={onRewind} >
-						<IconPlayerTrackPrevFilled size="14" />
-					</button>
-					<button onClick={onPrev} >
-						<IconPlayerSkipBackFilled size="14" />
-					</button>
-					<button onClick={onNext} >
-						<IconPlayerSkipForwardFilled size="14" />
-					</button>
+					<div class="pgn-viewer-buttonbar">
+						<Show when={game() && currentPath()}>
+							<button onClick={onRewind} >
+								<IconPlayerTrackPrevFilled size="14" />
+							</button>
+							<button onClick={onPrev} >
+								<IconPlayerSkipBackFilled size="14" />
+							</button>
+							<button onClick={onNext} >
+								<IconPlayerSkipForwardFilled size="14" />
+							</button>
+							<button onClick={onFastForward}>
+								<IconPlayerTrackNextFilled size="14" />
+							</button>
+						</Show>
+					</div>
+
 				</div>
 
 			</div>
+			<div class="pfn-viewer-bottom">
 
-		</div>
-		<div class="pfn-viewer-bottom">
-			
-		</div>
+			</div>
 		</>
 	);
 }
