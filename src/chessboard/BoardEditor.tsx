@@ -1,4 +1,4 @@
-import { Chessboard } from "./Chessboard";
+import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
 import { createSignal } from "solid-js";
 import { Api } from "chessground/api";

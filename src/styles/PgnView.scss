@@ -11,8 +11,8 @@
 
     grid-template-areas:
     "board sidebar";
-    // grid-template-columns: minmax(200px, calc(100vh )) minmax(50%, 1fr);
-    grid-template-columns: auto 1fr;
+    grid-template-columns: minmax(200px, calc(100vh )) minmax(50%, 1fr);
+    // grid-template-columns: 1fr 0;
     grid-template-rows: minmax(0, 1fr); ;
 
     .pgnviewer-content {
@@ -63,6 +63,12 @@
                         transition: background-color 0.25s;
                         position: absolute;
                         display: inline-block;
+
+                        &.current-move {
+                            background-color: var(--background-modifier-accent);
+                            color: (var(--color-inverse));
+                        }
+
                     }
                     .white-move {
                         left: 30%;

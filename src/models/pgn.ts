@@ -40,6 +40,13 @@ export interface Initial extends InitialOrMove {
     pos: Position;
 }
 
+// export type MoveData = [number, PlyData, PlyData];
+export interface MoveData {
+    number: number;
+    white: PlyData;
+    black: PlyData;
+}
+
 export class State {
     constructor(
         readonly pos: Position,
@@ -79,10 +86,12 @@ export class Path {
 
     equals = (other: Path) => this.path == other.path;
 
+    previous = (): Path => new Path(this.path.slice(0, -2));
+
     static root = new Path('');
 }
 
-export interface MoveData extends InitialOrMove {
+export interface PlyData extends InitialOrMove {
     path: Path;
     ply: number;
     move: Move;
@@ -109,12 +118,12 @@ export interface Players {
 
 
 
-export type AnyNode = Node<MoveData>;
-export type MoveNode = ChildNode<MoveData>;
+export type AnyNode = Node<PlyData>;
+export type MoveNode = ChildNode<PlyData>;
 
 // immutable
 export class GameModel {
-    mainline: MoveData[];
+    mainline: PlyData[];
 
     constructor(
         readonly initial: Initial,
@@ -127,7 +136,7 @@ export class GameModel {
 
     nodeAt = (path: Path): AnyNode | undefined => nodeAtPathFrom(this.moves, path);
 
-    dataAt = (path: Path): MoveData | Initial | undefined => {
+    dataAt = (path: Path): PlyData | Initial | undefined => {
         const node = this.nodeAt(path);
         return node ? (isMoveNode(node) ? node.data : this.initial) : undefined;
     };
@@ -165,10 +174,10 @@ const nodeAtPathFrom = (node: AnyNode, path: Path): AnyNode | undefined => {
 };
 
 export const isMoveNode = (n: AnyNode): n is MoveNode => 'data' in n;
-export const isMoveData = (d: InitialOrMove): d is MoveData => 'uci' in d;
+export const isMoveData = (d: InitialOrMove): d is PlyData => 'uci' in d;
 
 const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: Metadata) =>
-    transform<PgnNodeData, MoveData, State>(moves, new State(start, Path.root, {}), (state, node, _index) => {
+    transform<PgnNodeData, PlyData, State>(moves, new State(start, Path.root, {}), (state, node, _index) => {
         const move = parseSan(state.pos, node.san);
         if (!move) return undefined;
         const moveId = scalachessCharPair(move);
@@ -188,7 +197,7 @@ const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: Metadata
                 black: metadata.timeControl.initial,
                 ...clocks,
             };
-        const moveNode: MoveData = {
+        const moveNode: PlyData = {
             path,
             ply,
             move,

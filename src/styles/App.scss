@@ -4,6 +4,7 @@
 @use "./Layout.scss";
 @use "./PgnView.scss";
 @use "./DBTest.scss";
+
 .chess-container {
     width: 100%;
     height: 100%;
@@ -51,6 +52,11 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
+    --color: white;
+    --background: black;
+    --accent-color: #007bff;
+    --background-modifier-accent: #007bff;
+    --color-over-accent: white;
 }
 
 #root {

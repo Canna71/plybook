@@ -1,8 +1,9 @@
-import { Chessboard } from "./Chessboard";
+import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
-import { Accessor, Component, createEffect, createSignal, For } from "solid-js";
+import { Accessor, Component, createEffect, createSignal } from "solid-js";
 import { Api } from "chessground/api";
-import { GameModel, makeGame, MoveData, Path } from "../models/pgn";
+import { GameModel, makeGame, PlyData, Path, MoveData } from "../models/pgn";
+import  Moves  from "./Moves";
 
 
 // see: https://github.com/lichess-org/pgn-viewer
@@ -26,7 +27,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	}
 
-	const mainlineGroups = (): [number, MoveData, MoveData][] => {
+	const mainline = (): MoveData[] => {
 		const mainline = game()?.mainline;
 		if (!mainline) {
 			return [];
@@ -36,7 +37,16 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		for (let i = 0; i < mainline.length; i += 2) {
 			groups.push(mainline.slice(i, i + 2));
 		}
-		const ret: [number, MoveData, MoveData][] = groups.map((group, index) => [index + 1, group[0], group[1]]);
+		
+
+		const ret: MoveData[] = groups.map((group, index) => 
+			// [index + 1, group[0], group[1]]
+		({
+			number: index + 1,
+			white: group[0],
+			black: group[1]
+		})
+	);
 
 		console.log("groups", ret);
 
@@ -85,19 +95,41 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	});
 
 	const onNext = () => {
-		const cg = api();
-		if (!cg) {
-			return;
-		}
-		const g = game();
-		if (!g) {
-			return;
-		}
+		// const cg = api();
+		// if (!cg) {
+		// 	return;
+		// }
+		// const g = game();
+		// if (!g) {
+		// 	return;
+		// }
+		
 
 		const nextNode = currentNode()?.children[0];
 		setCurrentPath(nextNode?.data.path);
+	}
 
+	const onPrev = () => {
+		// const cg = api();
+		// if (!cg) {
+		// 	return;
+		// }
+		// const g = game();
+		// if (!g) {
+		// 	return;
+		// }
 
+		const path = currentPath();
+		if (!path) {
+			return;
+		}
+		
+		setCurrentPath(path.previous());
+	}
+
+	const onPlyClick = (plyData: PlyData) => {
+		console.log("onPlyClick", plyData);
+		setCurrentPath(plyData.path);
 	}
 
 	createEffect(() => {
@@ -128,23 +160,18 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 			</div>
 			<div class="pgnviewer-sidebar">
 				<div class="pgnviewer-mainline-wrapper">
-
-					<div class="pgnviewer-mainline">
-						<For each={mainlineGroups()}>
-							{
-								(line) => <div class="pgnviewer-moveline">
-									<div class="pgnviewer-movenumber">{line[0]}.</div>
-									<div class="pgnviewer-move white-move">{line[1].fan}</div>
-									<div class="pgnviewer-move black-move">{line[2]?.fan}</div>
-								</div>
-							}
-						</For>
-					</div>
+					
+						<Moves 
+							mainline={mainline} 
+							currentPath={currentPath}
+							onPlyClick={onPlyClick}
+						/>
 					
 				</div>
 
 
 				<div class="pgn-viewer-buttonbar">
+					<button onClick={onPrev} >|&lt;</button>
 					<button onClick={onNext} >&gt;|</button>
 				</div>
 
@@ -159,3 +186,5 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 }
 
 export default PgnViewer;
+
+

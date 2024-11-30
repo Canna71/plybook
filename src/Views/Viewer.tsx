@@ -1,4 +1,4 @@
-import { Chessboard } from "../chessboard/Chessboard";
+import { Chessboard } from "../chessboard/chessboard";
 
 const Viewer = () => {
 

@@ -1,8 +1,8 @@
-import { Chessboard } from "./Chessboard";
+import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
 import { Accessor, Component, createEffect, createSignal, For } from "solid-js";
 import { Api } from "chessground/api";
-import { GameModel, makeGame, MoveData, Path } from "../models/pgn";
+import { GameModel, makeGame, PlyData, Path } from "../models/pgn";
 
 
 // see: https://github.com/lichess-org/pgn-viewer
@@ -26,7 +26,7 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	}
 
-	const mainlineGroups = (): [number, MoveData, MoveData][] => {
+	const mainlineGroups = (): [number, PlyData, PlyData][] => {
 		const mainline = game()?.mainline;
 		if (!mainline) {
 			return [];
@@ -36,7 +36,7 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 		for (let i = 0; i < mainline.length; i += 2) {
 			groups.push(mainline.slice(i, i + 2));
 		}
-		const ret: [number, MoveData, MoveData][] = groups.map((group, index) => [index + 1, group[0], group[1]]);
+		const ret: [number, PlyData, PlyData][] = groups.map((group, index) => [index + 1, group[0], group[1]]);
 
 		console.log("groups", ret);
 
