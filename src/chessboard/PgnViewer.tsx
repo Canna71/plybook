@@ -5,7 +5,7 @@ import { Api } from "chessground/api";
 import { GameModel, makeGame, PlyData, Path, MoveData, isPlyData } from "../models/pgn";
 import  Moves  from "./Moves";
 import { last } from "es-toolkit";
-import { makeSquare } from "chessops";
+import { makeSquare, Move, NormalMove } from "chessops";
 
 
 // see: https://github.com/lichess-org/pgn-viewer
@@ -158,8 +158,10 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		if (!data) {
 			return;
 		}
-		var lm = lastMove();
-		
+		const lm  = lastMove() as NormalMove | undefined;
+		if (!lm || !(lm as any).from) {
+			return;
+		}
 		
 		// var key = cg.
 		const config : Config = {
