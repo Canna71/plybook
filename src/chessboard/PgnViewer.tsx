@@ -82,6 +82,14 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	}
 
 	const comments = () => {
+		const g = game();
+		if (!g) {
+			return;
+		}
+		const path = currentPath();
+		if (!path) {
+			return g.initial.comments;
+		}
 		const data = currentData();
 		if (!data) {
 			return;
