@@ -20,6 +20,9 @@ const Moves: Component<MovesProps> = (props) => {
 		}
 		// console.log("clicked", color, number);
 		const plyData = props.mainline()[parseInt(number) - 1][color === "w" ? "white" : "black"];
+		if (!plyData) {
+			return;
+		}
 		// console.log("plyData", plyData);
 		if (props.onPlyClick && typeof props.onPlyClick === "function") {
 			props.onPlyClick(plyData);
