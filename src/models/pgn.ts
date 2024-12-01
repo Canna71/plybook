@@ -1,3 +1,4 @@
+import { PlyData } from './pgn';
 import { FEN } from "chessground/types";
 import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition } from "chessops/pgn";
 import { Color, makeUci, Position, Move } from "chessops";
@@ -40,11 +41,13 @@ export interface Initial extends InitialOrMove {
     pos: Position;
 }
 
-// export type MoveData = [number, PlyData, PlyData];
+
 export interface MoveData {
     number: number;
-    white: PlyData;
-    black: PlyData;
+    white?: PlyData;
+    black?: PlyData;
+    variations?: MoveData[];
+    variationLevel?: number;
 }
 
 export class State {
@@ -183,7 +186,10 @@ export const isMoveNode = (n: AnyNode): n is MoveNode => 'data' in n;
 export const isMoveData = (d: InitialOrMove): d is PlyData => 'uci' in d;
 
 const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: Metadata) =>
-    transform<PgnNodeData, PlyData, State>(moves, new State(start, Path.root, {}), (state, node, _index) => {
+    transform<PgnNodeData, PlyData, State>(moves, new State(start, Path.root, {}), makeMove(metadata));
+
+function makeMove(metadata: Metadata): (ctx: State, data: PgnNodeData, childIndex: number) => PlyData | undefined {
+    return (state, node, _index) => {
         const move = parseSan(state.pos, node.san);
         if (!move) return undefined;
         const moveId = scalachessCharPair(move);
@@ -221,7 +227,8 @@ const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: Metadata
             emt: comments.emt,
         };
         return moveNode;
-    });
+    };
+}
 
 //@ts-ignore
 function makePlayers(headers: Headers, metadata: Metadata): Players {
@@ -317,6 +324,35 @@ function sanToFan(san: string, turn: Color): string {
     return fan;
 }
 
+// Makes a "tree" of moves grouping them by ply
+// if at some ply there is some variations (for example for white) leave the black move empty
+// variations will be added as variations of the PlyData and the UI will indent it
+function makeTree(root: Node<PlyData>): MoveData[] {
+    const tree: MoveData[] = [];
+    let currentPly = 0;
+    let currentMove: MoveData = { number: 1 };
+    let currentVariation: MoveData[] = [];
+    let node: Node<PlyData> = root;
+    if(!(node instanceof ChildNode)) {
+        node = node.children[0];
+    }
+    const childNode = node as ChildNode<PlyData>;
+    while (childNode.children.length) {
+        
+        const mainLine = node.children[0];
+        
+
+
+        const variations = node.children.slice(1);
+
+
+        node = mainLine; // temporary
+    }
+
+
+    return tree;
+}
+
 export function makeGame(pgnString: string): GameModel {
     const game = parsePgn(pgnString)[0];
 
@@ -325,12 +361,8 @@ export function makeGame(pgnString: string): GameModel {
     const fen = makeFen(setup);
     // const moves = pgn.moves;
     const comments = parseComments(game.comments || []);
-    console.log(comments);
     const headers: Headers = new Map(Array.from(game.headers, ([key, value]) => [key.toLowerCase(), value]));
     const metadata = makeMetadata(headers);
-    console.log("metadata", metadata);
-
-    console.log(game, start, setup, fen);
 
     const initial: Initial = {
         fen,
@@ -345,6 +377,8 @@ export function makeGame(pgnString: string): GameModel {
         },
     };
     const moves = makeMoves(start, game.moves, metadata);
+    const tree = makeTree(moves);
+    console.log(tree);
     const players = makePlayers(headers, metadata);
 
     const gameModel = new GameModel(initial, moves, players, metadata);
