@@ -4,10 +4,10 @@ import { Accessor, Component, createEffect, createSignal, Show } from "solid-js"
 import { Api } from "chessground/api";
 import { GameModel, makeGame, PlyData, Path, MoveData, isPlyData } from "../models/pgn";
 import Moves from "./Moves";
-import { last } from "es-toolkit";
-import { makeSquare, Move, NormalMove } from "chessops";
-import { IconArrowRight, IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerTrackNextFilled, IconPlayerTrackPrevFilled } from '@tabler/icons-solidjs';
 
+import { makeSquare, Move, NormalMove } from "chessops";
+import { IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerTrackNextFilled, IconPlayerTrackPrevFilled } from '@tabler/icons-solidjs';
+import { Node, ChildNode } from "chessops/pgn";
 // see: https://github.com/lichess-org/pgn-viewer
 
 
@@ -16,6 +16,51 @@ import { IconArrowRight, IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, 
 export type PgnViewerOptions = {
 	pgn: Accessor<string | undefined>;
 
+}
+
+export interface HierarchicalMoveData extends MoveData {
+	variations?: HierarchicalMoveData[][];
+	level?: number;
+}
+
+// Makes a "tree" of moves grouping them by ply
+// if at some ply there is some variations (for example for white) leave the black move empty
+// variations will be added as variations of the PlyData and the UI will indent it
+function makeTree(root: Node<PlyData>, level: number = 0): HierarchicalMoveData[] {
+    const list: MoveData[] = [];
+    let currentPly = 0;
+    let currentMove: HierarchicalMoveData = undefined as any;
+    let currentVariation: MoveData[] = [];
+    // let node: Node<PlyData> = root;
+    // if(!(node instanceof ChildNode)) {
+    //     node = node.children[0];
+    // }
+    let node = root as ChildNode<PlyData>;
+    while (node.children.length) {
+        
+        const mainLine = node.children[0];
+        const num = Math.ceil(mainLine.data.ply / 2);
+        if(num == currentMove?.number) {
+            
+        } else {
+            currentMove = { number: num };
+            list.push(currentMove);
+        }
+        const turn = mainLine.data.turn;
+        currentMove[turn === 'white' ? 'white' : 'black'] = mainLine.data;
+
+        const variations = node.children.slice(1);
+		if(variations.length) {
+			currentMove.variations = variations.map(v => makeTree(v, level + 1));
+			currentMove.level = level + 1;
+		}
+
+
+        node = mainLine; // temporary
+    }
+
+
+    return list;
 }
 
 
@@ -29,30 +74,36 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	}
 
-	const mainline = (): MoveData[] => {
-		const mainline = game()?.mainline;
-		if (!mainline) {
-			return [];
-		}
-		// group the mainline moves by 2, and add the index starting from 1
-		const groups = [];
-		for (let i = 0; i < mainline.length; i += 2) {
-			groups.push(mainline.slice(i, i + 2));
-		}
+	const mainline = (): HierarchicalMoveData[] => {
+
+		const moves = game()?.moves;
+		const tree = moves && makeTree(moves);
+		console.log("tree", tree);
+		return tree || [];
+
+		// const mainline = game()?.mainline;
+		// if (!mainline) {
+		// 	return [];
+		// }
+		// // group the mainline moves by 2, and add the index starting from 1
+		// const groups = [];
+		// for (let i = 0; i < mainline.length; i += 2) {
+		// 	groups.push(mainline.slice(i, i + 2));
+		// }
 
 
-		const ret: MoveData[] = groups.map((group, index) =>
-		// [index + 1, group[0], group[1]]
-		({
-			number: index + 1,
-			white: group[0],
-			black: group[1]
-		})
-		);
+		// const ret: MoveData[] = groups.map((group, index) =>
+		// // [index + 1, group[0], group[1]]
+		// ({
+		// 	number: index + 1,
+		// 	white: group[0],
+		// 	black: group[1]
+		// })
+		// );
 
-		console.log("groups", ret);
+		// console.log("groups", ret);
 
-		return ret;
+		// return ret;
 	}
 
 	const currentNode = () => {

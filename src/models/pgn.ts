@@ -45,8 +45,6 @@ export interface MoveData {
     number: number;
     white?: PlyData;
     black?: PlyData;
-    variations?: MoveData[];
-    variationLevel?: number;
 }
 
 export class State {
@@ -323,39 +321,7 @@ function sanToFan(san: string, turn: Color): string {
     return fan;
 }
 
-// Makes a "tree" of moves grouping them by ply
-// if at some ply there is some variations (for example for white) leave the black move empty
-// variations will be added as variations of the PlyData and the UI will indent it
-function makeTree(node: Node<PlyData>, list: MoveData[]=[], moveNum=1): MoveData[] {
-    
-    let currentPly = 0;
-    let currentMove: MoveData = list[list.length-1] || { number: moveNum };
-    let currentVariation: MoveData[] = [];
-    // let node: Node<PlyData> = root;
-    if(!(node instanceof ChildNode)) {
-        node = node.children[0];
-    }
-    const childNode = node as ChildNode<PlyData>;
-    while (childNode.children.length) {
-        
-        const mainLine = node.children[0];
-        const num = Math.ceil(mainLine.data.ply / 2);
-        if(num !== currentMove.number) {
-            currentMove = { number: num };
-            list.push(currentMove);
-        }
-        const turn = mainLine.data.turn;
-        currentMove[turn === 'white' ? 'white' : 'black'] = mainLine.data;
 
-        const variations = node.children.slice(1);
-
-
-        node = mainLine; // temporary
-    }
-
-
-    return list;
-}
 
 export function makeGame(pgnString: string): GameModel {
     const game = parsePgn(pgnString)[0];
@@ -381,8 +347,8 @@ export function makeGame(pgnString: string): GameModel {
         },
     };
     const moves = makeMoves(start, game.moves, metadata);
-    const tree = makeTree(moves);
-    console.log(tree);
+    
+
     const players = makePlayers(headers, metadata);
 
     const gameModel = new GameModel(initial, moves, players, metadata);
