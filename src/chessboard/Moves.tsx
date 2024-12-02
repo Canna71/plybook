@@ -2,6 +2,7 @@ import { For, Component } from "solid-js";
 import { MoveData, Path, PlyData } from "../models/pgn";
 
 import { Accessor } from "solid-js";
+import { Color } from "chessops/types";
 
 export type MovesProps = {
 	mainline: Accessor<MoveData[]>;
@@ -13,13 +14,13 @@ const Moves: Component<MovesProps> = (props) => {
 
 	const onClick = (e: Event) => {
 		const target = e.target as HTMLElement;
-		const color = target.dataset.color;
+		const color : Color = target.dataset.color as Color;
 		const number = target.dataset.number;
 		if (!color || !number) {
 			return;
 		}
 		// console.log("clicked", color, number);
-		const plyData = props.mainline()[parseInt(number) - 1][color === "w" ? "white" : "black"];
+		const plyData = props.mainline()[parseInt(number) - 1][color];
 		if (!plyData) {
 			return;
 		}
@@ -39,11 +40,15 @@ const Moves: Component<MovesProps> = (props) => {
 		<For each={props.mainline()}>
 			{(line) => <div class="pgnviewer-moveline">
 				<div class="pgnviewer-movenumber">{line.number}.</div>
-				<div classList={{...classList, "white-move": true, "current-move": line.white?.path === props.currentPath()}} data-color="w" data-number={line.number} >{line.white?.fan}</div>
-				<div classList={{...classList, "black-move": true, "current-move": line.black?.path === props.currentPath()}} data-color="b" data-number={line.number} >{line.black?.fan}</div>
+				<div classList={moveClass(line, "white")} data-color="white" data-number={line.number} >{line.white?.fan}</div>
+				<div classList={moveClass(line, "black")} data-color="black" data-number={line.number} >{line.black?.fan}</div>
 			</div>}
 		</For>
 	</div>;
+
+	function moveClass(line: MoveData, turn: Color): { [k: string]: boolean | undefined; } | undefined {
+		return { ...classList, "{turn}-move": true, "current-move": line[turn]?.path === props.currentPath() };
+	}
 };
 
 export default Moves;
