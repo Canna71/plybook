@@ -44,16 +44,22 @@
                 // flex: 1 0 0;
                 
                 padding: 12px;
-                display: flex;
+                display: table;
                 flex-direction: column;
 
+
+
                 .pgnviewer-moveline {
-                    display: flex;
+                    display: table-row;
                     flex-direction: row;
                     width: 100%;
                     position: relative;
                     line-height: 32px;
                     height: 32px;
+
+                    .pgnviewer-movenumber {
+                        display: table-cell;
+                    }
 
                     .pgnviewer-move {
                         padding: 4px;
@@ -61,8 +67,8 @@
                         border-radius: 4px;
                         cursor: pointer;
                         transition: background-color 0.25s;
-                        position: absolute;
-                        display: inline-block;
+                        // position: absolute;
+                        display: table-cell;
 
                         &.current-move {
                             background-color: var(--background-modifier-accent);
