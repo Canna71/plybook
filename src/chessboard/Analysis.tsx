@@ -123,7 +123,7 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 
 				</div>
 				<div>
-					TODO: ???
+					TODO: in analysis we don't need the comments
 				</div>
 			</div>
 			<div class="pgnviewer-sidebar">

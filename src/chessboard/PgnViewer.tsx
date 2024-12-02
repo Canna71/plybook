@@ -238,7 +238,11 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		}
 		cg.set(config);
 	});
-
+	// TODO: refactor variations into a separate component (recursive)
+	// TODO: display the variations as indented moves
+	// TODO: add a button to show/hide variations
+	// TODO: add an icon to indicate comments (also for starting comments of variations)
+	// TODO: add a hover with the chessboard position for each move
 	return (
 		<>
 			<div class="pgnviewer-container">
