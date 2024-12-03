@@ -14,6 +14,7 @@ export type MovesProps = {
 const Moves: Component<MovesProps> = (props) => {
 
 	const onClick = (e: Event) => {
+		// TODO: handle click on variation
 		const target = e.target as HTMLElement;
 		const color: Color = target.dataset.color as Color;
 		const number = target.dataset.number;
@@ -47,24 +48,24 @@ const Moves: Component<MovesProps> = (props) => {
 						<div classList={moveClass(line, "black")} data-color="black" data-number={line.number} >{line.black?.fan || "..."}</div>
 					</div>
 					<For each={line.variations}>
-						{(variation) => <div class="pgnviewer-variation">
+						{(variation) => <>
 							<For each={variation}>
 								{(line) =>
-									<div class="pgnviewer-moveline">
+									<div class="pgnviewer-variation" data-level={line.level}>
 										<div class="pgnviewer-movenumber">{line.number}.</div>
-										<div classList={moveClass(line, "white")} data-color="white" data-number={line.number} >{line.white?.fan}</div>
-										<div classList={moveClass(line, "black")} data-color="black" data-number={line.number} >{line.black?.fan}</div>
+										<div classList={moveClass(line, "white")} data-color="white" data-number={line.number} >{line.white?.fan || "..."}</div>
+										<div classList={moveClass(line, "black")} data-color="black" data-number={line.number} >{line.black?.fan || "..."}</div>
 									</div>
 								}
 							</For>
-						</div>}
+						</>}
 					</For>
 				</>}
 		</For>
 	</div>;
 
 	function moveClass(line: MoveData, turn: Color): { [k: string]: boolean | undefined; } | undefined {
-		return { ...classList, "{turn}-move": true, "current-move": line[turn]?.path === props.currentPath() };
+		return { ...classList, [turn+`-move`]: true, "current-move": line[turn]?.path === props.currentPath() };
 	}
 };
 

@@ -7,7 +7,7 @@ import Moves from "./Moves";
 
 import { makeSquare, Move, NormalMove } from "chessops";
 import { IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerTrackNextFilled, IconPlayerTrackPrevFilled } from '@tabler/icons-solidjs';
-import { Node, ChildNode } from "chessops/pgn";
+import { Node, ChildNode, extend } from "chessops/pgn";
 // see: https://github.com/lichess-org/pgn-viewer
 
 
@@ -27,43 +27,48 @@ export interface HierarchicalMoveData extends MoveData {
 // if at some ply there is some variations (for example for white) leave the black move empty
 // variations will be added as variations of the PlyData and the UI will indent it
 function makeTree(root: Node<PlyData>, level: number = 0): HierarchicalMoveData[] {
-    const list: MoveData[] = [];
-    let currentPly = 0;
-    let currentMove: HierarchicalMoveData = undefined as any;
-    let currentVariation: MoveData[] = [];
-    // let node: Node<PlyData> = root;
-    if(!(root instanceof ChildNode)) {
-        root = root.children[0];
-    }
-    let node = root as ChildNode<PlyData>;
-	// TODO: fix the while loop since last node could be missed
-    while (node.children.length) {
-        
-        const mainLine = node;
-        const num = Math.ceil(mainLine.data.ply / 2);
-        if(num == currentMove?.number) {
-            
-        } else {
-            currentMove = { number: num, level };
-            list.push(currentMove);
-        }
-        const turn = mainLine.data.turn;
-        currentMove[turn === 'white' ? 'black' : 'white'] = mainLine.data;
+	const list: MoveData[] = [];
+	let currentPly = 0;
+	let currentMove: HierarchicalMoveData = undefined as any;
+	let currentVariation: MoveData[] = [];
+	// let node: Node<PlyData> = root;
+	// if(!(root instanceof ChildNode)) {
+	//     root = root.children[0];
+	// }
+	// let node = root as ChildNode<PlyData>;
+	let node = root;
+	while (node.children.length) {
 
-        const variations = node.children.slice(1);
-		// TODO: fix here as variations are actually of the children ply, not this one
-		if(variations.length) {
-			currentMove.variations = variations.map(v => makeTree(v, level + 1));
+		const mainLine = node.children[0] as ChildNode<PlyData>;
+		const num = Math.ceil(mainLine.data.ply / 2);
+		if (num == currentMove?.number) {
+
+		} else {
 			currentMove = { number: num, level };
-            list.push(currentMove);
+			list.push(currentMove);
+		}
+		const turn = mainLine.data.turn;
+		currentMove[turn === 'white' ? 'black' : 'white'] = mainLine.data;
+
+		const variations = node.children.slice(1);
+		if (variations.length) {
+			currentMove.variations = variations.map(v => {
+				const tmp = new Node<PlyData>();
+				extend<PlyData>(tmp, [v.data]);
+				return makeTree(tmp, level + 1)
+			});
+			if (turn === 'black') {
+				currentMove = { number: num, level };
+				list.push(currentMove);
+			}
 		}
 
 
-        node = mainLine.children[0]; // temporary
-    }
+		node = mainLine; // temporary
+	}
 
 
-    return list;
+	return list;
 }
 
 

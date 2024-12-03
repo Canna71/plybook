@@ -49,13 +49,15 @@
 
 
 
-                .pgnviewer-moveline {
+                .pgnviewer-moveline, .pgnviewer-variation {
                     display: table-row;
                     flex-direction: row;
                     width: 100%;
                     position: relative;
                     line-height: 24px;
                     height: 24px;
+
+                    
 
                     .pgnviewer-movenumber {
                         display: table-cell;
@@ -83,6 +85,15 @@
                     .black-move {
                         left: 70%;
                     }
+                }
+
+                .pgnviewer-variation {
+                    font-size: 90%;
+                    
+                    border-left: 1px solid var(--color);
+                    margin-left: 8px;
+                    
+
                 }
             }
         }

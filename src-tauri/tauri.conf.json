@@ -32,7 +32,7 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "testdata/01.pgn"
+      "testdata/*"
     ],
     "externalBin": [
       "./binaries/stockfish"
