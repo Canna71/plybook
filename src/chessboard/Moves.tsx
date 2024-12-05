@@ -1,4 +1,4 @@
-import { For, Component } from "solid-js";
+import { For, Component, Setter } from "solid-js";
 import { MoveData, Path, PlyData } from "../models/pgn";
 
 import { Accessor } from "solid-js";
@@ -8,33 +8,50 @@ import { HierarchicalMoveData } from "./PgnViewer";
 export type MovesProps = {
 	mainline: Accessor<HierarchicalMoveData[]>;
 	currentPath: Accessor<Path | undefined>;
+	setCurrentPath: Setter<Path | undefined>;
 	onPlyClick?: (plyData: PlyData) => void;
 };
+
+const Ply: Component<{ line: HierarchicalMoveData, color: Color, currentPath: Accessor<Path | undefined> }> = ({ line, color, currentPath }) => {
+	
+	const turn = color;
+	const plyData = line[color];
+	const  moveClass = () => {
+		return { "pgnviewer-move": true, 
+			[turn + `-move`]: true, 
+			"current-move": currentPath() && plyData?.path.equals(currentPath()!) };
+	}
+
+	return <div classList={moveClass()} data-color={color} data-path={line[color]?.path.path}  >{line[color]?.fan || "..."}</div>;
+}
+
+const Move: Component<{
+	move: HierarchicalMoveData,
+	currentPath: Accessor<Path | undefined>
+}> = ({ move, currentPath }) => {
+	return <div class="pgnviewer-moveline">
+		<div class="pgnviewer-movenumber">{move.number}.</div>
+		<Ply line={move} color="white" currentPath={currentPath} />
+		<Ply line={move} color="black" currentPath={currentPath} />
+
+	</div>;
+}
 
 const Moves: Component<MovesProps> = (props) => {
 
 	const onClick = (e: Event) => {
 		// TODO: handle click on variation
 		const target = e.target as HTMLElement;
-		const color: Color = target.dataset.color as Color;
-		const number = target.dataset.number;
-		if (!color || !number) {
+		const path: string | undefined = target.dataset.path;
+		
+		if (!path) {
 			return;
 		}
 		// console.log("clicked", color, number);
-		const plyData = props.mainline()[parseInt(number) - 1][color];
-		if (!plyData) {
-			return;
-		}
-		// console.log("plyData", plyData);
-		if (props.onPlyClick && typeof props.onPlyClick === "function") {
-			props.onPlyClick(plyData);
-		}
+		props.setCurrentPath(new Path(path));
 	}
 
-	const classList = {
-		"pgnviewer-move": true,
-	}
+
 
 	return <div class="pgnviewer-mainline"
 		onClick={onClick}
@@ -42,19 +59,14 @@ const Moves: Component<MovesProps> = (props) => {
 		<For each={props.mainline()}>
 			{(line) =>
 				<>
-					<div class="pgnviewer-moveline">
-						<div class="pgnviewer-movenumber">{line.number}.</div>
-						<div classList={moveClass(line, "white")} data-color="white" data-number={line.number} >{line.white?.fan || "..."}</div>
-						<div classList={moveClass(line, "black")} data-color="black" data-number={line.number} >{line.black?.fan || "..."}</div>
-					</div>
+					<Move move={line} currentPath={props.currentPath} />
 					<For each={line.variations}>
 						{(variation) => <>
 							<For each={variation}>
 								{(line) =>
 									<div class="pgnviewer-variation" data-level={line.level}>
 										<div class="pgnviewer-movenumber">{line.number}.</div>
-										<div classList={moveClass(line, "white")} data-color="white" data-number={line.number} >{line.white?.fan || "..."}</div>
-										<div classList={moveClass(line, "black")} data-color="black" data-number={line.number} >{line.black?.fan || "..."}</div>
+										<Ply line={line} color="white" currentPath={props.currentPath} />
 									</div>
 								}
 							</For>
@@ -64,9 +76,7 @@ const Moves: Component<MovesProps> = (props) => {
 		</For>
 	</div>;
 
-	function moveClass(line: MoveData, turn: Color): { [k: string]: boolean | undefined; } | undefined {
-		return { ...classList, [turn+`-move`]: true, "current-move": line[turn]?.path === props.currentPath() };
-	}
+
 };
 
 export default Moves;

@@ -266,6 +266,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 						<Moves
 							mainline={mainline}
 							currentPath={currentPath}
+							setCurrentPath={setCurrentPath}
 							onPlyClick={onPlyClick}
 						/>
 
