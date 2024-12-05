@@ -34,6 +34,27 @@ const Move: Component<{
 		<Ply line={move} color="white" currentPath={currentPath} />
 		<Ply line={move} color="black" currentPath={currentPath} />
 
+		{move.variations && <For each={move.variations}>
+			{(variation) => <Variation variation={variation} currentPath={currentPath} />}
+		</For>}
+	</div>;
+}
+
+const Variation: Component<{
+	variation: HierarchicalMoveData[],
+	currentPath: Accessor<Path | undefined>
+}> = ({ variation, currentPath }) => {
+	return <div class="pgnviewer-variation" data-level={variation[0].level}>
+		<For each={variation}>
+			{(line) =>
+				<>
+					<div class="pgnviewer-movenumber">{line.number}.</div>
+					<Ply line={line} color="white" currentPath={currentPath} />
+					<Ply line={line} color="black" currentPath={currentPath} />
+
+				</>
+			}
+		</For>
 	</div>;
 }
 
@@ -60,18 +81,7 @@ const Moves: Component<MovesProps> = (props) => {
 			{(line) =>
 				<>
 					<Move move={line} currentPath={props.currentPath} />
-					<For each={line.variations}>
-						{(variation) => <>
-							<For each={variation}>
-								{(line) =>
-									<div class="pgnviewer-variation" data-level={line.level}>
-										<div class="pgnviewer-movenumber">{line.number}.</div>
-										<Ply line={line} color="white" currentPath={props.currentPath} />
-									</div>
-								}
-							</For>
-						</>}
-					</For>
+					
 				</>}
 		</For>
 	</div>;
