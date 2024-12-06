@@ -31,70 +31,50 @@
         min-height: 100px;
         flex-direction: column;
 
-        .pgnviewer-mainline-wrapper {
+        .pgnviewer-moves-wrapper {
             // flex: 1 1 0;
             // flex: 1;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            user-select: none;
 
-            .pgnviewer-mainline {
-                flex: 1;
-
-                // flex: 1 0 0;
+            table.pgnviewer-moves {
                 
-                padding: 12px;
-                display: table;
-                flex-direction: column;
+                padding: 8px;
 
-
-
-                .pgnviewer-moveline, .pgnviewer-variation {
-                    display: table-row;
-                    flex-direction: row;
-                    width: 100%;
-                    position: relative;
-                    line-height: 24px;
-                    height: 24px;
-
-                    
-
-                    .pgnviewer-movenumber {
-                        display: table-cell;
-                    }
-
-                    .pgnviewer-move {
-                        padding: 4px;
-                        margin: 4px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        transition: background-color 0.25s;
-                        // position: absolute;
-                        display: table-cell;
-
-                        &.current-move {
-                            background-color: var(--background-modifier-accent);
-                            color: (var(--color-inverse));
-                        }
-
-                    }
-                    .white-move {
-                        left: 30%;
-                    }
-
-                    .black-move {
-                        left: 70%;
-                    }
-                }
-
-                .pgnviewer-variation {
+                td.pgnviewer-variation-cell {
+                    padding-left: 12px;
                     font-size: 90%;
-                    
-                    border-left: 1px solid var(--color);
-                    margin-left: 8px;
-                    
 
+                    table.pgnviewer-moves {
+                        width: 100%;
+                    }
+                   
                 }
+
+                table.pgnviewer-variation-table {
+                    width: 100%;
+                }
+
+
+
+                .pgnviewer-move {
+                    cursor: pointer;
+                    padding: 8px;
+                    border-radius: 4px;
+                    transition: background-color 0.2s;
+                    font-size: 90%;
+
+                    &:not(.current-move):hover {
+                        background-color: var(--background-modifier-active);
+                    }
+                }
+
+                .current-move {
+                    background-color: var(--background-modifier-accent);
+                }
+
             }
         }
 

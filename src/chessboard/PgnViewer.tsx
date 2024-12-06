@@ -82,7 +82,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	}
 
-	const mainline = (): HierarchicalMoveData[] => {
+	const movesTree = (): HierarchicalMoveData[] => {
 
 		const moves = game()?.moves;
 		const tree = moves && makeTree(moves);
@@ -243,7 +243,6 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		}
 		cg.set(config);
 	});
-	// TODO: refactor variations into a separate component (recursive)
 	// TODO: display the variations as indented moves
 	// TODO: add a button to show/hide variations
 	// TODO: add an icon to indicate comments (also for starting comments of variations)
@@ -261,13 +260,12 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 					</div>
 				</div>
 				<div class="pgnviewer-sidebar">
-					<div class="pgnviewer-mainline-wrapper">
+					<div class="pgnviewer-moves-wrapper">
 
 						<Moves
-							mainline={mainline}
+							movesTree={movesTree}
 							currentPath={currentPath}
 							setCurrentPath={setCurrentPath}
-							onPlyClick={onPlyClick}
 						/>
 
 					</div>

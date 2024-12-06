@@ -41,6 +41,13 @@ body {
     overflow: hidden;
 }
 
+* {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+    cursor: default;
+}
+
 :root {
     font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
     font-size: 16px;
@@ -56,6 +63,7 @@ body {
     --background: black;
     --accent-color: #007bff;
     --background-modifier-accent: #007bff;
+    --background-modifier-active: #484848;
     --color-over-accent: white;
 }
 
