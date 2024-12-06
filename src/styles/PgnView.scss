@@ -40,28 +40,27 @@
             user-select: none;
 
             table.pgnviewer-moves {
-                
-                padding: 8px;
 
                 td.pgnviewer-variation-cell {
-                    padding-left: 12px;
+                    padding-left: 6px;
                     font-size: 90%;
 
                     table.pgnviewer-moves {
                         width: 100%;
                     }
+
+                    table.pgnviewer-moves {
+                        border-left: 1px solid var(--background-modifier-active);
+                    }
                    
                 }
 
-                table.pgnviewer-variation-table {
-                    width: 100%;
-                }
 
 
 
                 .pgnviewer-move {
                     cursor: pointer;
-                    padding: 8px;
+                    padding: 4px 8px;
                     border-radius: 4px;
                     transition: background-color 0.2s;
                     font-size: 90%;

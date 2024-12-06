@@ -54,7 +54,8 @@ function makeTree(root: Node<PlyData>, level: number = 0): HierarchicalMoveData[
 		if (variations.length) {
 			currentMove.variations = variations.map(v => {
 				const tmp = new Node<PlyData>();
-				extend<PlyData>(tmp, [v.data]);
+				tmp.children = [v];
+				// extend<PlyData>(tmp, [v.data]);
 				return makeTree(tmp, level + 1)
 			});
 			if (turn === 'black') {
@@ -86,32 +87,9 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 		const moves = game()?.moves;
 		const tree = moves && makeTree(moves);
+		console.log("moves", moves);
 		console.log("tree", tree);
 		return tree || [];
-
-		// const mainline = game()?.mainline;
-		// if (!mainline) {
-		// 	return [];
-		// }
-		// // group the mainline moves by 2, and add the index starting from 1
-		// const groups = [];
-		// for (let i = 0; i < mainline.length; i += 2) {
-		// 	groups.push(mainline.slice(i, i + 2));
-		// }
-
-
-		// const ret: MoveData[] = groups.map((group, index) =>
-		// // [index + 1, group[0], group[1]]
-		// ({
-		// 	number: index + 1,
-		// 	white: group[0],
-		// 	black: group[1]
-		// })
-		// );
-
-		// console.log("groups", ret);
-
-		// return ret;
 	}
 
 	const currentNode = () => {
