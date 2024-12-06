@@ -1,6 +1,7 @@
 import { For, Component, Setter } from "solid-js";
 import { MoveData, Path, PlyData } from "../models/pgn";
-
+import { createSignal } from 'solid-js';
+import { useFloating } from 'solid-floating-ui';
 import { Accessor } from "solid-js";
 import { Color } from "chessops/types";
 import { HierarchicalMoveData } from "./PgnViewer";
