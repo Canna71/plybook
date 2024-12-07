@@ -115,6 +115,8 @@ const Moves: Component<MovesProps> = (props) => {
 		setReference(anchor);
 	}
 
+	// See: https://github.com/lxsmnsyc/solid-floating-ui
+	// And: https://floating-ui.com/docs/tutorial
 	const position = useFloating(reference, floating);
 
 	return (
