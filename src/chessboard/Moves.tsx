@@ -1,9 +1,9 @@
 import { For, Component, Setter, Show } from "solid-js";
-import { MoveData, Path, PlyData } from "../models/pgn";
+import { MoveData, Path, PlyData, toMove } from "../models/pgn";
 import { createSignal } from 'solid-js';
 import { useFloating } from 'solid-floating-ui';
 import { Accessor } from "solid-js";
-import { Color } from "chessops/types";
+import { Color, NormalMove } from "chessops/types";
 import { HierarchicalMoveData } from "./PgnViewer";
 import { ReferenceElement } from "@floating-ui/dom";
 
@@ -18,7 +18,7 @@ type PlyProps = {
 	color: Color;
 	currentPath: Accessor<Path | undefined>;
 	// setCurrentPath: Setter<Path | undefined>;
-	showTooltip: (anchor: Element | undefined) => void;
+	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
 }
 
 const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => {
@@ -41,8 +41,8 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 	}
 
 	return <div 
-		onMouseEnter={(e) => isValid() && showTooltip(e.currentTarget)}	
-		onMouseLeave={() => showTooltip(undefined)}
+		onMouseEnter={(e) => isValid() && showTooltip(e.currentTarget, plyData)}	
+		onMouseLeave={() => showTooltip(undefined, undefined)}
 		classList={moveClass()} 
 		data-color={color} 
 		data-path={line[color]?.path.path}  >{line[color]?.fan || "..."}</div>;
@@ -73,14 +73,14 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 }
 
 type InternalMoveProps = MovesProps & {
-	showTooltip: (anchor: Element) => void;
+	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
 }
 
 type MoveProps = {
 	move: HierarchicalMoveData;
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: Setter<Path | undefined>;
-	showTooltip: (anchor: Element) => void;
+	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
 };
 
 const MovesTree: Component<InternalMoveProps> = ({ movesTree, currentPath, setCurrentPath, showTooltip }) => {
@@ -98,6 +98,7 @@ const MovesTree: Component<InternalMoveProps> = ({ movesTree, currentPath, setCu
 const Moves: Component<MovesProps> = (props) => {
 	const [reference, setReference] = createSignal<ReferenceElement | null | undefined>(undefined);
 	const [floating, setFloating] = createSignal<HTMLElement>();
+	const [ply, setPly] = createSignal<PlyData>();
 
 	const onClick = (e: Event) => {
 		const target = e.target as HTMLElement;
@@ -110,8 +111,9 @@ const Moves: Component<MovesProps> = (props) => {
 		props.setCurrentPath(new Path(path));
 	}
 
-	const showTooltip = (anchor: Element) => {
+	const showTooltip = (anchor: Element | undefined, plyData: PlyData | undefined) => {
 		console.log("showTooltip", anchor);
+		setPly(plyData);
 		setReference(anchor);
 	}
 
@@ -128,6 +130,7 @@ const Moves: Component<MovesProps> = (props) => {
 			</div>
 			<Show when={position && reference()}>
 				<div
+					class="pgnviewer-tooltip"
 					ref={setFloating}
 					style={{
 						position: position.strategy,
@@ -136,6 +139,8 @@ const Moves: Component<MovesProps> = (props) => {
 					}}
 				>
 					Tooltip
+					FEN: {ply()?.fen}
+					LastMove: {toMove(ply()?.move as NormalMove)}
 				</div>
 			</Show>
 		</>);

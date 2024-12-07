@@ -1,6 +1,6 @@
 import { FEN } from "chessground/types";
 import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition } from "chessops/pgn";
-import { Color, makeUci, Position, Move } from "chessops";
+import { Color, makeUci, Position, Move, makeSquare, NormalMove, Square, SquareName } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
 import { makeFen } from "chessops/fen";
@@ -321,7 +321,9 @@ function sanToFan(san: string, turn: Color): string {
     return fan;
 }
 
-
+export function toMove(move: NormalMove) : [SquareName, SquareName] {
+    return move && [makeSquare(move.from), makeSquare(move.to)]
+}
 
 export function makeGame(pgnString: string): GameModel {
     const game = parsePgn(pgnString)[0];

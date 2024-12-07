@@ -39,6 +39,7 @@
 
 body {
     overflow: hidden;
+    background-color: var(--background-color);
 }
 
 * {
@@ -60,7 +61,7 @@ body {
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
     --color: white;
-    --background: black;
+    --background-color: #2a2a2a;
     --accent-color: #007bff;
     --background-modifier-accent: #007bff;
     --background-modifier-active: #484848;

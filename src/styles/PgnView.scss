@@ -85,4 +85,12 @@
             margin-top: 12px;
         }
     }
+    .pgnviewer-tooltip {
+        
+        background-color: var(--background-color);
+        border: 1px solid var(--background-modifier-active);
+        height: 200px;
+        width: 200px;
+        overflow: hidden;
+    }
 }
