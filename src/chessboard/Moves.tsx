@@ -1,10 +1,11 @@
-import { For, Component, Setter } from "solid-js";
+import { For, Component, Setter, Show } from "solid-js";
 import { MoveData, Path, PlyData } from "../models/pgn";
 import { createSignal } from 'solid-js';
 import { useFloating } from 'solid-floating-ui';
 import { Accessor } from "solid-js";
 import { Color } from "chessops/types";
 import { HierarchicalMoveData } from "./PgnViewer";
+import { ReferenceElement } from "@floating-ui/dom";
 
 export type MovesProps = {
 	movesTree: Accessor<HierarchicalMoveData[]>;
@@ -12,7 +13,15 @@ export type MovesProps = {
 	setCurrentPath: Setter<Path | undefined>;
 };
 
-const Ply: Component<{ line: HierarchicalMoveData, color: Color, currentPath: Accessor<Path | undefined> }> = ({ line, color, currentPath }) => {
+type PlyProps = {
+	line: HierarchicalMoveData;
+	color: Color;
+	currentPath: Accessor<Path | undefined>;
+	// setCurrentPath: Setter<Path | undefined>;
+	showTooltip: (anchor: Element | undefined) => void;
+}
+
+const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => {
 
 	const turn = color;
 	const plyData = line[color];
@@ -31,24 +40,25 @@ const Ply: Component<{ line: HierarchicalMoveData, color: Color, currentPath: Ac
 		};
 	}
 
-	return <div classList={moveClass()} data-color={color} data-path={line[color]?.path.path}  >{line[color]?.fan || "..."}</div>;
+	return <div 
+		onMouseEnter={(e) => isValid() && showTooltip(e.currentTarget)}	
+		onMouseLeave={() => showTooltip(undefined)}
+		classList={moveClass()} 
+		data-color={color} 
+		data-path={line[color]?.path.path}  >{line[color]?.fan || "..."}</div>;
 }
 
-const MoveLine: Component<{
-	move: HierarchicalMoveData,
-	currentPath: Accessor<Path | undefined>,
-	setCurrentPath: Setter<Path | undefined>
-}> = ({ move, currentPath, setCurrentPath }) => {
+const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, showTooltip }) => {
 	return <>
 		<tr>
 			<td>
 				<div class="pgnviewer-movenumber">{move.number}.</div>
 			</td>
 			<td>
-				<Ply line={move} color="white" currentPath={currentPath} />
+				<Ply line={move} color="white" currentPath={currentPath} showTooltip={showTooltip} />
 			</td>
 			<td>
-				<Ply line={move} color="black" currentPath={currentPath} />
+				<Ply line={move} color="black" currentPath={currentPath} showTooltip={showTooltip} />
 			</td>
 
 
@@ -62,20 +72,32 @@ const MoveLine: Component<{
 	</>;
 }
 
-const MovesTree: Component<MovesProps> = ({ movesTree, currentPath, setCurrentPath }) => {
+type InternalMoveProps = MovesProps & {
+	showTooltip: (anchor: Element) => void;
+}
+
+type MoveProps = {
+	move: HierarchicalMoveData;
+	currentPath: Accessor<Path | undefined>;
+	setCurrentPath: Setter<Path | undefined>;
+	showTooltip: (anchor: Element) => void;
+};
+
+const MovesTree: Component<InternalMoveProps> = ({ movesTree, currentPath, setCurrentPath, showTooltip }) => {
 	return (
 		<table class="pgnviewer-moves">
 			<For each={movesTree()}>
 				{(line) =>
 					<>
-						<MoveLine move={line} currentPath={currentPath} setCurrentPath={setCurrentPath} />
-
+						<MoveLine move={line} currentPath={currentPath} setCurrentPath={setCurrentPath} showTooltip={showTooltip} />
 					</>}
 			</For>
 		</table>);
 }
 
 const Moves: Component<MovesProps> = (props) => {
+	const [reference, setReference] = createSignal<ReferenceElement | null | undefined>(undefined);
+	const [floating, setFloating] = createSignal<HTMLElement>();
 
 	const onClick = (e: Event) => {
 		const target = e.target as HTMLElement;
@@ -88,13 +110,33 @@ const Moves: Component<MovesProps> = (props) => {
 		props.setCurrentPath(new Path(path));
 	}
 
+	const showTooltip = (anchor: Element) => {
+		console.log("showTooltip", anchor);
+		setReference(anchor);
+	}
 
+	const position = useFloating(reference, floating);
 
-	return <div class="pgnviewer-moves-panel"
-		onClick={onClick}
-	>
-		<MovesTree {...props} />
-	</div>;
+	return (
+		<>
+			<div class="pgnviewer-moves-panel"
+				onClick={onClick}
+			>
+				<MovesTree {...props} showTooltip={showTooltip} />
+			</div>
+			<Show when={position && reference()}>
+				<div
+					ref={setFloating}
+					style={{
+						position: position.strategy,
+						top: `${position.y ?? 0}px`,
+						left: `${position.x ?? 0}px`,
+					}}
+				>
+					Tooltip
+				</div>
+			</Show>
+		</>);
 
 
 };
