@@ -18,7 +18,7 @@ const Ply: Component<{ line: HierarchicalMoveData, color: Color, currentPath: Ac
 	const plyData = line[color];
 	const isCurrent = () => {
 		return currentPath() && plyData?.path.equals(currentPath()!);
-	}	
+	}
 	const isValid = () => {
 		return plyData !== undefined;
 	};
@@ -34,7 +34,7 @@ const Ply: Component<{ line: HierarchicalMoveData, color: Color, currentPath: Ac
 	return <div classList={moveClass()} data-color={color} data-path={line[color]?.path.path}  >{line[color]?.fan || "..."}</div>;
 }
 
-const Move: Component<{
+const MoveLine: Component<{
 	move: HierarchicalMoveData,
 	currentPath: Accessor<Path | undefined>,
 	setCurrentPath: Setter<Path | undefined>
@@ -55,13 +55,25 @@ const Move: Component<{
 		</tr>
 		{move.variations && <For each={move.variations}>
 			{(variation) => <tr><td class="pgnviewer-variation-cell" colSpan={3}>
-				<Moves movesTree={()=>variation} currentPath={currentPath} setCurrentPath={setCurrentPath} />
-			
+				<Moves movesTree={() => variation} currentPath={currentPath} setCurrentPath={setCurrentPath} />
+
 			</td></tr>}
 		</For>}
 	</>;
 }
 
+const MovesTree: Component<MovesProps> = ({ movesTree, currentPath, setCurrentPath }) => {
+	return (
+		<table class="pgnviewer-moves">
+			<For each={movesTree()}>
+				{(line) =>
+					<>
+						<MoveLine move={line} currentPath={currentPath} setCurrentPath={setCurrentPath} />
+
+					</>}
+			</For>
+		</table>);
+}
 
 const Moves: Component<MovesProps> = (props) => {
 
@@ -78,17 +90,11 @@ const Moves: Component<MovesProps> = (props) => {
 
 
 
-	return <table class="pgnviewer-moves"
+	return <div class="pgnviewer-moves-panel"
 		onClick={onClick}
 	>
-		<For each={props.movesTree()}>
-			{(line) =>
-				<>
-					<Move move={line} currentPath={props.currentPath} setCurrentPath={props.setCurrentPath} />
-
-				</>}
-		</For>
-	</table>;
+		<MovesTree {...props} />
+	</div>;
 
 
 };

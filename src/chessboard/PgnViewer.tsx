@@ -224,6 +224,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	// TODO: add a button to show/hide variations
 	// TODO: add an icon to indicate comments (also for starting comments of variations)
 	// TODO: add a hover with the chessboard position for each move
+	// TODO: parse square names in comments and highlight squares
 	return (
 		<>
 			<div class="pgnviewer-container">
