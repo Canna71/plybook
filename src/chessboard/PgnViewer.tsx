@@ -7,7 +7,7 @@ import Moves from "./Moves";
 import { makeSquare, NormalMove } from "chessops";
 import { Key } from "chessground/types";
 import ButtonBar from "./Buttonbar";
-import { HierarchicalMoveData, makeTree } from "../models/tree";
+
 // see: https://github.com/lichess-org/pgn-viewer
 
 
@@ -69,24 +69,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
 
 
-	const movesTree = (): HierarchicalMoveData[] => {
 
-		const moves = game()?.moves;
-		const tree = moves && makeTree(moves);
-		return tree || [];
-	}
-
-	const currentNode = () => {
-		const g = game();
-		if (!g) {
-			return;
-		}
-		const path = currentPath();
-		if (!path) {
-			return;
-		}
-		return g.nodeAt(path);
-	}
 
 	// @ts-ignore
 	const currentData = () => {
@@ -127,6 +110,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	}
 
+	// After loading the pgn string, create the game model
 	createEffect(() => {
 		// const cg = api();
 		const pgnString = pgn();
@@ -199,7 +183,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 					<div class="pgnviewer-moves-wrapper">
 
 						<Moves
-							movesTree={movesTree}
+							game={game}
 							currentPath={currentPath}
 							setCurrentPath={setCurrentPath}
 						/>

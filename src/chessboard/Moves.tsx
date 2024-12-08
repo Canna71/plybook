@@ -1,14 +1,14 @@
 import { For, Component, Setter, Show } from "solid-js";
-import { Path, PlyData } from "../models/pgn";
+import { GameModel, Path, PlyData } from "../models/pgn";
 import { createSignal } from 'solid-js';
 import { Accessor } from "solid-js";
 import { Color } from "chessops/types";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "./Tooltip";
-import { HierarchicalMoveData } from "../models/tree";
+import { HierarchicalMoveData, makeTree } from "../models/tree";
 
 export type MovesProps = {
-	movesTree: Accessor<HierarchicalMoveData[]>;
+	game: Accessor<GameModel | undefined>;
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: Setter<Path | undefined>;
 };
@@ -65,16 +65,18 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 		</tr>
 		{move.variations && <For each={move.variations}>
 			{(variation) => <tr><td class="pgnviewer-variation-cell" colSpan={3}>
-				<Moves movesTree={() => variation} currentPath={currentPath} setCurrentPath={setCurrentPath} />
+				<MovesTree movesTree={() => variation} 
+					currentPath={currentPath} 	
+					setCurrentPath={setCurrentPath} 
+					showTooltip={showTooltip}
+				/>
 
 			</td></tr>}
 		</For>}
 	</>;
 }
 
-type InternalMoveProps = MovesProps & {
-	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
-}
+
 
 type MoveProps = {
 	move: HierarchicalMoveData;
@@ -83,7 +85,14 @@ type MoveProps = {
 	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
 };
 
-const MovesTree: Component<InternalMoveProps> = ({ movesTree, currentPath, setCurrentPath, showTooltip }) => {
+type MovesTreeProps =  {
+	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
+	movesTree: () => HierarchicalMoveData[];
+	currentPath: Accessor<Path | undefined>;
+	setCurrentPath: Setter<Path | undefined>;
+}
+
+const MovesTree: Component<MovesTreeProps> = ({ movesTree, currentPath, setCurrentPath, showTooltip }) => {
 	return (
 		<table class="pgnviewer-moves">
 			<For each={movesTree()}>
@@ -115,6 +124,12 @@ const Moves: Component<MovesProps> = (props) => {
 		setReference(anchor);
 	}
 
+	const movesTree = (): HierarchicalMoveData[] => {
+
+		const moves = props.game()?.moves;
+		const tree = moves && makeTree(moves);
+		return tree || [];
+	}
 	
 
 	return (
@@ -122,7 +137,11 @@ const Moves: Component<MovesProps> = (props) => {
 			<div class="pgnviewer-moves-panel"
 				onClick={onClick}
 			>
-				<MovesTree {...props} showTooltip={showTooltip} />
+				<MovesTree 
+					movesTree={movesTree} 
+					currentPath={props.currentPath}  
+					setCurrentPath={props.setCurrentPath}
+					showTooltip={showTooltip} />
 			</div>
 			<Show when={reference()}>
 				<Tooltip plyData={ply} reference={reference} />
