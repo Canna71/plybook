@@ -327,7 +327,7 @@ export function toMove(move: NormalMove) : [SquareName, SquareName] {
 
 export function makeGame(pgnString: string): GameModel {
     const game = parsePgn(pgnString)[0];
-
+    console.log("parsed game", game);
     const start = startingPosition(game.headers).unwrap();
     const setup = start.toSetup();
     const fen = makeFen(setup);

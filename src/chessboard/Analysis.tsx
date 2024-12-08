@@ -35,7 +35,6 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 		}
 		const ret: [number, PlyData, PlyData][] = groups.map((group, index) => [index + 1, group[0], group[1]]);
 
-		console.log("groups", ret);
 
 		return ret;
 	}

@@ -7,6 +7,7 @@
 [Result "1-0"]
 [ECO "C41"]
 
-1. e4 e5 
+1. e4 {[%csl Ge4] This moves the pawn in e4, which together with e5, d4 and d5 is important.} 
+1... e5 {[%cal Re5d4,Re5f4]}
 2. Nf3 (2. Nc3 b6) d6
 3. Be2 Be7 (3... Qe7 4.a3 a6 5.  Ra2)

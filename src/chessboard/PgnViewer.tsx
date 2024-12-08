@@ -224,7 +224,14 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 			return;
 		}
 		const lm = lastMove() as NormalMove | undefined;
-		const autoShapes = squareHovered() ? [{ orig: squareHovered() as Key, brush: "green" }] : [];
+		let autoShapes = squareHovered() ? [{ orig: squareHovered() as Key, brush: "green" }] : [];
+		if	(data?.shapes) {
+			autoShapes = autoShapes.concat(data.shapes.map(s => {
+				const orig = makeSquare(s.from);
+				const dest = s.to && makeSquare(s.to);
+				return { orig, dest, brush: s.color };
+			}));
+		}
 		
 
 		const lastMoveKey = lm && [makeSquare(lm.from), makeSquare(lm.to)];
@@ -242,7 +249,6 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 			}
 			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
-		// console.log("config", config);
 		setConfig(config);
 	});
 	// TODO: add a button to show/hide variations

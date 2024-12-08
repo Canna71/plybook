@@ -21,7 +21,6 @@ const BoardEditor = () => {
             return;
         }
         const fen = cg.getFen();
-        console.log(fen);
         // saveDataIntoBlock(app, { fen: cg.getFen() }, ctx);
     }
 
@@ -34,13 +33,11 @@ const BoardEditor = () => {
         if (!square) return;
         const piece = selectedPiece();
         if (piece !== null) {
-            console.log(square);
             cg.newPiece(piece, square);
             // addPiece(square, 'K');
         } else if (deleteMode()) {
             cg.state.pieces.delete(square);
         }
-        console.log(cg.getFen());
     }
 
 
