@@ -1,12 +1,13 @@
 import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
 import { Accessor, Component, createEffect, createSignal, JSXElement, on, Show } from "solid-js";
-import { GameModel, makeGame, PlyData, Path, MoveData, isPlyData } from "../models/pgn";
+import { GameModel, makeGame, Path, MoveData, isPlyData } from "../models/pgn";
 import Moves from "./Moves";
 
 import { makeSquare, NormalMove } from "chessops";
 import { Key } from "chessground/types";
 import ButtonBar from "./Buttonbar";
+import { Comments } from "./Comments";
 
 // see: https://github.com/lichess-org/pgn-viewer
 
@@ -19,48 +20,7 @@ export type PgnViewerOptions = {
 }
 
 // regex for square names
-const squareRegex = /([a-h][1-8])/g;
-
-type CommentsProps = {
-	comments: Accessor<string[] | undefined>;
-	squareHovered?: (square: string | undefined) => void;
-}
-
-const  Comments : Component<CommentsProps> = ({comments, squareHovered}) => {
-	
-	const paragraphs = () => (comments() || []).map((line, index) => {
-		const matches = line.match(squareRegex);
-		
-		if (matches) {
-			matches.forEach((match) => {
-				line = line.replace(match, `<span class="square" data-square="${match}">${match}</span>`);
-			});
-		}
-
-		return <p innerHTML={line} />;
-	});
-
-	const onMouseOver = (e: MouseEvent) => {
-		const target = e.target as HTMLElement;
-		if (target.dataset.square) {
-			squareHovered?.(target.dataset.square);
-		} 
-	}
-
-	const onMouseLeave = () => {
-		squareHovered?.(undefined);
-	}
-
-	return <div 
-		onMouseOver={onMouseOver}
-		onMouseLeave={onMouseLeave}
-		class="pgnviewer-comments">{paragraphs()}</div>
-
-}
-
-
-
-
+export const squareRegex = /([a-h][1-8])/g;
 
 const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
@@ -85,21 +45,6 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		return g.dataAt(path);
 	}
 
-	const comments = () => {
-		const g = game();
-		if (!g) {
-			return;
-		}
-		const path = currentPath();
-		if (!path) {
-			return g.initial.comments;
-		}
-		const data = currentData();
-		if (!data) {
-			return;
-		}
-		return data.comments;
-	}
 
 	const lastMove = () => {
 		const data = currentData();
@@ -164,6 +109,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	// TODO: scroll to the current move
 	// TODO: display starting comments in the top section
 	// TODO: check regex for square names that are before hyphens
+	// TODO: display initial comment
 	return (
 		<>
 			<div class="pgnviewer-container">
@@ -173,7 +119,8 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 					</div>
 					<div class="pgnviewer-comments">
-						<Comments comments={comments} 
+						<Comments 
+							currentData={currentData}
 							squareHovered={setSquareHovered}
 						/>
 						
