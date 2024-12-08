@@ -1,12 +1,13 @@
 import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
-import { Accessor, Component, createEffect, createSignal, JSXElement, Show } from "solid-js";
+import { Accessor, Component, createEffect, createSignal, JSXElement, on, Show } from "solid-js";
 import { GameModel, makeGame, PlyData, Path, MoveData, isPlyData } from "../models/pgn";
 import Moves from "./Moves";
 
 import { makeSquare, NormalMove } from "chessops";
 import { IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerTrackNextFilled, IconPlayerTrackPrevFilled } from '@tabler/icons-solidjs';
 import { Node, ChildNode } from "chessops/pgn";
+import { Key } from "chessground/types";
 // see: https://github.com/lichess-org/pgn-viewer
 
 
@@ -22,29 +23,39 @@ const squareRegex = /([a-h][1-8])/g;
 
 type CommentsProps = {
 	comments: Accessor<string[] | undefined>;
+	squareHovered?: (square: string | undefined) => void;
 }
 
-const  Comments : Component<CommentsProps> = ({comments}) => {
-	console.log("comments", comments());
+const  Comments : Component<CommentsProps> = ({comments, squareHovered}) => {
 	
-	const comm = () => (comments() || []).map((line, index) => {
+	const paragraphs = () => (comments() || []).map((line, index) => {
 		const matches = line.match(squareRegex);
 		// TODO: replace the square name with a span with the square name (FIXME: not working)
+		
 		if (matches) {
-			return matches.map((match, index) => {
-				// return <span class="square">{match}</span>;
-				// replace the square name with a span with the square name
-				return line.replace(match, `<span class="square">${match}</span>`);
+			matches.forEach((match) => {
+				line = line.replace(match, `<span class="square" data-square="${match}">${match}</span>`);
 			});
 		}
-		return line;
+
+		return <p innerHTML={line} />;
 	});
 
-	let paragraphs = () => comm().map((line, index) => {	
-		return <p>{line}</p>
-	});
+	const onMouseOver = (e: MouseEvent) => {
+		const target = e.target as HTMLElement;
+		if (target.dataset.square) {
+			squareHovered?.(target.dataset.square);
+		} 
+	}
 
-	return <>{paragraphs()}</>
+	const onMouseLeave = () => {
+		squareHovered?.(undefined);
+	}
+
+	return <div 
+		onMouseOver={onMouseOver}
+		onMouseLeave={onMouseLeave}
+		class="pgnviewer-comments">{paragraphs()}</div>
 
 }
 
@@ -102,15 +113,13 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
 	// const [api, setApi] = createSignal<Api | undefined>(undefined);
 	const [config, setConfig] = createSignal<Config>({});
-
+	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
 
 
 	const movesTree = (): HierarchicalMoveData[] => {
 
 		const moves = game()?.moves;
 		const tree = moves && makeTree(moves);
-		console.log("moves", moves);
-		console.log("tree", tree);
 		return tree || [];
 	}
 
@@ -141,7 +150,6 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	}
 
 	const comments = () => {
-		console.log("comments changed", currentPath());
 		const g = game();
 		if (!g) {
 			return;
@@ -154,7 +162,6 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		if (!data) {
 			return;
 		}
-		console.log("comments", data.comments);
 		return data.comments;
 	}
 
@@ -217,20 +224,31 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 			return;
 		}
 		const lm = lastMove() as NormalMove | undefined;
-
+		const autoShapes = squareHovered() ? [{ orig: squareHovered() as Key, brush: "green" }] : [];
+		
 
 		const lastMoveKey = lm && [makeSquare(lm.from), makeSquare(lm.to)];
 		// var key = cg.
 		const config: Config = {
 			fen: data.fen,
 			lastMove: lastMoveKey,
+			highlight: {
+				lastMove: true,
+				check: true
+			},
+			drawable: {
+				enabled: false,
+				autoShapes
+			}
 			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
+		// console.log("config", config);
 		setConfig(config);
 	});
 	// TODO: add a button to show/hide variations
 	// TODO: add an icon to indicate comments (also for starting comments of variations)
 	// TODO: parse square names in comments and highlight squares
+	// TODO: scroll to the current move
 	return (
 		<>
 			<div class="pgnviewer-container">
@@ -240,7 +258,9 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 					</div>
 					<div class="pgnviewer-comments">
-						<Comments comments={comments} />
+						<Comments comments={comments} 
+							squareHovered={setSquareHovered}
+						/>
 						
 					</div>
 				</div>

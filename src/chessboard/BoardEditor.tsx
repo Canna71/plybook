@@ -26,24 +26,26 @@ const BoardEditor = () => {
     }
 
     const onChessboardClick = (e: MouseEvent) => {
-		const cg = api();
-		if (!cg) {
-			return;
-		}
-		const square = cg.getKeyAtDomPos([e.clientX, e.clientY]);
-		if(!square) return;
-		const piece = selectedPiece();
-		if (piece !== null) {
-			console.log(square);
-			cg.newPiece(piece, square);
-			// addPiece(square, 'K');
-		} else if (deleteMode()) {
-			cg.state.pieces.delete(square);
-		}
-		console.log(cg.getFen());
-	}
+        const cg = api();
+        if (!cg) {
+            return;
+        }
+        const square = cg.getKeyAtDomPos([e.clientX, e.clientY]);
+        if (!square) return;
+        const piece = selectedPiece();
+        if (piece !== null) {
+            console.log(square);
+            cg.newPiece(piece, square);
+            // addPiece(square, 'K');
+        } else if (deleteMode()) {
+            cg.state.pieces.delete(square);
+        }
+        console.log(cg.getFen());
+    }
 
-    const config  =():Config => ({
+
+
+    const config = (): Config => ({
         draggable: {
             enabled: true
         },
@@ -61,6 +63,18 @@ const BoardEditor = () => {
             enabled: true, // Allow pieces to be selectable
 
         },
+        drawable: {
+            enabled: true, // Allow drawings
+            // autoShapes: [{
+            //     orig: 'b2',
+            //     // dest: 'b6',
+            //     brush: 'green',
+            //     // label: { text: 'B' },
+            //     // modifiers: {
+            //     //     lineWidth: 6,
+            //     // },
+            // }]
+        },
         highlight: {
             lastMove: true,
             check: true,
@@ -69,7 +83,7 @@ const BoardEditor = () => {
     });
 
     return (<div class="chess-container">
-        <Chessboard 
+        <Chessboard
             onChessboardClick={onChessboardClick}
             setApi={setApi}
             config={config}
