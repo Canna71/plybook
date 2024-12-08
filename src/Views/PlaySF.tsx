@@ -97,12 +97,12 @@ const PlaySF = () => {
 
 
 
-    const config = {
+    const config = () => ({
         events: {
             move: onMove
         }
 
-    }
+    });
 
 
     return (

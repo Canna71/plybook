@@ -92,12 +92,12 @@ const Play = () => {
 
 
 
-    const config = {
+    const config = () => ({
         events: {
             move: onMove
         }
-
-    }
+    
+    });
 
 
     return (

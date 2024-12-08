@@ -43,7 +43,7 @@ const BoardEditor = () => {
 		console.log(cg.getFen());
 	}
 
-    const config: Config = {
+    const config  =():Config => ({
         draggable: {
             enabled: true
         },
@@ -66,7 +66,7 @@ const BoardEditor = () => {
             check: true,
         },
 
-    };
+    });
 
     return (<div class="chess-container">
         <Chessboard 

@@ -1,18 +1,17 @@
 import { Chessground } from 'chessground';
 import { Config } from 'chessground/config';
-import {  onMount, Setter } from 'solid-js';
+import {  Accessor, createEffect, createSignal, onMount, Setter } from 'solid-js';
 import { Api } from 'chessground/api';
 
 
 interface ChessboardProps {
-	config?: Config;
+	config: Accessor<Config>;
 	setApi?: Setter<Api | undefined>;
 	onChessboardClick?: (e: MouseEvent) => void;
 }
 
 export function Chessboard(props: ChessboardProps) {
-	// create a div under el and set its width and height to 100%
-
+	const [api, setApi] = createSignal<Api | undefined>(undefined);
 	let wrapper!: HTMLDivElement;
 	
 
@@ -20,14 +19,20 @@ export function Chessboard(props: ChessboardProps) {
 		props.onChessboardClick?.(e);
 	}
 
+	createEffect(() => {
+		const ch = api();
+		if (ch) {
+			ch.set(props.config());
+		}
+	});
 	
 	// solid-js onLoad equivalent
 	onMount(async () => {
 		if (!wrapper) {
 			return;
 		}
-		const api = Chessground(wrapper, props.config);
-		
+		const api = Chessground(wrapper, props.config());
+		setApi(api);
 		props.setApi?.(api);
 	});
 

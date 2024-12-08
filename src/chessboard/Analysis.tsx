@@ -19,12 +19,10 @@ export type PgnViewerOptions = {
 const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
 	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
+	const [config, setConfig] = createSignal<Config>({});
 
-	const [api, setApi] = createSignal<Api | undefined>(undefined);
+	// const [api, setApi] = createSignal<Api | undefined>(undefined);
 
-	const config: Config = {
-
-	}
 
 	const mainlineGroups = (): [number, PlyData, PlyData][] => {
 		const mainline = game()?.mainline;
@@ -69,9 +67,9 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 	}
 
 	createEffect(() => {
-		const cg = api();
+		// const cg = api();
 		const pgnString = pgn();
-		if (!cg || !pgnString) {
+		if ( !pgnString) {
 			return;
 		}
 
@@ -79,16 +77,16 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 		setGame(gameModel);
 		setCurrentPath(gameModel.pathAtMainlinePly(0));
 		// setCurrentPath(gameModel
-		cg.set({
+		setConfig({
 			fen: gameModel.initial.fen
 		});
 	});
 
 	const onNext = () => {
-		const cg = api();
-		if (!cg) {
-			return;
-		}
+		// const cg = api();
+		// if (!cg) {
+		// 	return;
+		// }
 		const g = game();
 		if (!g) {
 			return;
@@ -101,7 +99,7 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 	}
 
 	createEffect(() => {
-		const cg = api()!;
+		// const cg = api()!;
 		const node = currentNode();
 		const data = currentData();
 		if (!data) {
@@ -111,7 +109,7 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 			fen: data.fen
 			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
-		cg.set(config);
+		
 	});
 
 	return (
@@ -119,7 +117,7 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 		<div class="pgnviewer-container">
 			<div class="pgnviewer-content">
 				<div class="pgnviewer-chessboard">
-					<Chessboard config={config} setApi={setApi} />
+					<Chessboard config={config} />
 
 				</div>
 				<div>

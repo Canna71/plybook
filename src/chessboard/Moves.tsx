@@ -1,11 +1,11 @@
 import { For, Component, Setter, Show } from "solid-js";
-import { MoveData, Path, PlyData, toMove } from "../models/pgn";
+import { MoveData, Path, PlyData } from "../models/pgn";
 import { createSignal } from 'solid-js';
-import { useFloating } from 'solid-floating-ui';
 import { Accessor } from "solid-js";
-import { Color, NormalMove } from "chessops/types";
+import { Color } from "chessops/types";
 import { HierarchicalMoveData } from "./PgnViewer";
 import { ReferenceElement } from "@floating-ui/dom";
+import { Tooltip } from "./Tooltip";
 
 export type MovesProps = {
 	movesTree: Accessor<HierarchicalMoveData[]>;
@@ -40,11 +40,11 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 		};
 	}
 
-	return <div 
-		onMouseEnter={(e) => isValid() && showTooltip(e.currentTarget, plyData)}	
+	return <div
+		onMouseEnter={(e) => isValid() && showTooltip(e.currentTarget, plyData)}
 		onMouseLeave={() => showTooltip(undefined, undefined)}
-		classList={moveClass()} 
-		data-color={color} 
+		classList={moveClass()}
+		data-color={color}
 		data-path={line[color]?.path.path}  >{line[color]?.fan || "..."}</div>;
 }
 
@@ -97,7 +97,7 @@ const MovesTree: Component<InternalMoveProps> = ({ movesTree, currentPath, setCu
 
 const Moves: Component<MovesProps> = (props) => {
 	const [reference, setReference] = createSignal<ReferenceElement | null | undefined>(undefined);
-	const [floating, setFloating] = createSignal<HTMLElement>();
+	
 	const [ply, setPly] = createSignal<PlyData>();
 
 	const onClick = (e: Event) => {
@@ -107,19 +107,15 @@ const Moves: Component<MovesProps> = (props) => {
 		if (!path) {
 			return;
 		}
-		// console.log("clicked", color, number);
 		props.setCurrentPath(new Path(path));
 	}
 
 	const showTooltip = (anchor: Element | undefined, plyData: PlyData | undefined) => {
-		console.log("showTooltip", anchor);
 		setPly(plyData);
 		setReference(anchor);
 	}
 
-	// See: https://github.com/lxsmnsyc/solid-floating-ui
-	// And: https://floating-ui.com/docs/tutorial
-	const position = useFloating(reference, floating);
+	
 
 	return (
 		<>
@@ -128,20 +124,8 @@ const Moves: Component<MovesProps> = (props) => {
 			>
 				<MovesTree {...props} showTooltip={showTooltip} />
 			</div>
-			<Show when={position && reference()}>
-				<div
-					class="pgnviewer-tooltip"
-					ref={setFloating}
-					style={{
-						position: position.strategy,
-						top: `${position.y ?? 0}px`,
-						left: `${position.x ?? 0}px`,
-					}}
-				>
-					Tooltip
-					FEN: {ply()?.fen}
-					LastMove: {toMove(ply()?.move as NormalMove)}
-				</div>
+			<Show when={reference()}>
+				<Tooltip plyData={ply} reference={reference} />
 			</Show>
 		</>);
 

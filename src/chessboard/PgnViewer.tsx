@@ -76,12 +76,10 @@ function makeTree(root: Node<PlyData>, level: number = 0): HierarchicalMoveData[
 const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
 	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
+	// const [api, setApi] = createSignal<Api | undefined>(undefined);
+	const [config, setConfig] = createSignal<Config>({});
 
-	const [api, setApi] = createSignal<Api | undefined>(undefined);
 
-	const config: Config = {
-
-	}
 
 	const movesTree = (): HierarchicalMoveData[] => {
 
@@ -144,32 +142,20 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	}
 
 	createEffect(() => {
-		const cg = api();
+		// const cg = api();
 		const pgnString = pgn();
-		if (!cg || !pgnString) {
+		if (!pgnString) {
 			return;
 		}
 
 		const gameModel = makeGame(pgnString);
 		setGame(gameModel);
 		setCurrentPath(gameModel.pathAtMainlinePly(0));
-		// setCurrentPath(gameModel
-		// cg.set({
-		// 	fen: gameModel.initial.fen
-		// });
+		
 	});
 
 	const onNext = () => {
-		// const cg = api();
-		// if (!cg) {
-		// 	return;
-		// }
-		// const g = game();
-		// if (!g) {
-		// 	return;
-		// }
-
-
+		
 		const nextNode = currentNode()?.children[0];
 		setCurrentPath(nextNode?.data.path);
 	}
@@ -204,7 +190,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	}
 
 	createEffect(() => {
-		const cg = api()!;
+		// const cg = api()!;
 		const data = currentData();
 		if (!data) {
 			return;
@@ -219,7 +205,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 			lastMove: lastMoveKey,
 			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
-		cg.set(config);
+		setConfig(config);
 	});
 	// TODO: add a button to show/hide variations
 	// TODO: add an icon to indicate comments (also for starting comments of variations)
@@ -230,7 +216,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 			<div class="pgnviewer-container">
 				<div class="pgnviewer-content">
 					<div class="pgnviewer-chessboard">
-						<Chessboard config={config} setApi={setApi} />
+						<Chessboard config={config}  />
 
 					</div>
 					<div class="pgnviewer-comments">
@@ -247,25 +233,14 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 						/>
 
 					</div>
-
-
-					<div class="pgn-viewer-buttonbar">
-						<Show when={game() && currentPath()}>
-							<button onClick={onRewind} >
-								<IconPlayerTrackPrevFilled size="14" />
-							</button>
-							<button onClick={onPrev} >
-								<IconPlayerSkipBackFilled size="14" />
-							</button>
-							<button onClick={onNext} >
-								<IconPlayerSkipForwardFilled size="14" />
-							</button>
-							<button onClick={onFastForward}>
-								<IconPlayerTrackNextFilled size="14" />
-							</button>
-						</Show>
-					</div>
-
+					<ButtonBar
+						game={game}
+						currentPath={currentPath}
+						onRewind={onRewind}
+						onPrev={onPrev}
+						onNext={onNext}
+						onFastForward={onFastForward}
+					/>
 				</div>
 
 			</div>
@@ -279,5 +254,31 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 export default PgnViewer;
 
 
+type ButtonBarProps = {
+	game: Accessor<GameModel | undefined>;
+	currentPath: Accessor<Path | undefined>;
+	onRewind: () => void;
+	onPrev: () => void;
+	onNext: () => void;
+	onFastForward: () => void;
+}
 
+const ButtonBar:Component<ButtonBarProps> = ({game, currentPath, onRewind, onPrev, onNext, onFastForward}) => {
+	return <div class="pgn-viewer-buttonbar">
+		<Show when={game() && currentPath()}>
+			<button onClick={onRewind}>
+				<IconPlayerTrackPrevFilled size="14" />
+			</button>
+			<button onClick={onPrev}>
+				<IconPlayerSkipBackFilled size="14" />
+			</button>
+			<button onClick={onNext}>
+				<IconPlayerSkipForwardFilled size="14" />
+			</button>
+			<button onClick={onFastForward}>
+				<IconPlayerTrackNextFilled size="14" />
+			</button>
+		</Show>
+	</div>;
+}
 
