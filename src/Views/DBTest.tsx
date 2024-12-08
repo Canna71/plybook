@@ -57,7 +57,7 @@ const DBTest = () => {
         console.log(games);
     }
 
-    const uploadPgn = async (e: MouseEvent) => {
+    const uploadPgn = async (_e: MouseEvent) => {
         const pgnText = (pgnTextArea?.value);
         await invoke("upload_pgn", {
             pgn: pgnText

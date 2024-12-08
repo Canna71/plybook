@@ -1,5 +1,5 @@
 import { ReferenceElement } from "@floating-ui/dom";
-import { Chess, NormalMove } from "chessops";
+import { NormalMove } from "chessops";
 import { useFloating } from "solid-floating-ui";
 import { Accessor, Component, createSignal } from "solid-js";
 import { PlyData, toMove } from "../models/pgn";

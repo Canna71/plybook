@@ -2,6 +2,7 @@
 import { Child, Command } from '@tauri-apps/plugin-shell';
 
 // Type definitions for Stockfish events
+// @ts-ignore
 type StockfishEvents = {
     'ready': () => void;
     'bestmove': (move: string, ponder?: string) => void;

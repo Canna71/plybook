@@ -1,7 +1,6 @@
 import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
 import { Accessor, Component, createEffect, createSignal, For } from "solid-js";
-import { Api } from "chessground/api";
 import { GameModel, makeGame, PlyData, Path } from "../models/pgn";
 
 
@@ -100,7 +99,6 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	createEffect(() => {
 		// const cg = api()!;
-		const node = currentNode();
 		const data = currentData();
 		if (!data) {
 			return;
@@ -109,7 +107,7 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 			fen: data.fen
 			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
-		
+		setConfig(config);
 	});
 
 	return (

@@ -1,6 +1,6 @@
 import { FEN } from "chessground/types";
 import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition } from "chessops/pgn";
-import { Color, makeUci, Position, Move, makeSquare, NormalMove, Square, SquareName } from "chessops";
+import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
 import { makeFen } from "chessops/fen";

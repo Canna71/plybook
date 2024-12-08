@@ -1,5 +1,4 @@
 import { createSignal, onMount } from "solid-js";
-import PgnViewer from "../chessboard/PgnViewer";
 import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import Analysis from "../chessboard/Analysis";
 const AnalysisView = () => {

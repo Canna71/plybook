@@ -1,5 +1,5 @@
 import { For, Component, Setter, Show } from "solid-js";
-import { MoveData, Path, PlyData } from "../models/pgn";
+import { Path, PlyData } from "../models/pgn";
 import { createSignal } from 'solid-js';
 import { Accessor } from "solid-js";
 import { Color } from "chessops/types";

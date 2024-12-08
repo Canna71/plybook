@@ -1,13 +1,12 @@
 import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
 import { Accessor, Component, createEffect, createSignal, Show } from "solid-js";
-import { Api } from "chessground/api";
 import { GameModel, makeGame, PlyData, Path, MoveData, isPlyData } from "../models/pgn";
 import Moves from "./Moves";
 
-import { makeSquare, Move, NormalMove } from "chessops";
+import { makeSquare, NormalMove } from "chessops";
 import { IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerTrackNextFilled, IconPlayerTrackPrevFilled } from '@tabler/icons-solidjs';
-import { Node, ChildNode, extend } from "chessops/pgn";
+import { Node, ChildNode } from "chessops/pgn";
 // see: https://github.com/lichess-org/pgn-viewer
 
 
@@ -28,14 +27,8 @@ export interface HierarchicalMoveData extends MoveData {
 // variations will be added as variations of the PlyData and the UI will indent it
 function makeTree(root: Node<PlyData>, level: number = 0): HierarchicalMoveData[] {
 	const list: MoveData[] = [];
-	let currentPly = 0;
 	let currentMove: HierarchicalMoveData = undefined as any;
-	let currentVariation: MoveData[] = [];
-	// let node: Node<PlyData> = root;
-	// if(!(root instanceof ChildNode)) {
-	//     root = root.children[0];
-	// }
-	// let node = root as ChildNode<PlyData>;
+
 	let node = root;
 	while (node.children.length) {
 
@@ -184,11 +177,6 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		setCurrentPath(path);
 	}
 
-	const onPlyClick = (plyData: PlyData) => {
-		console.log("onPlyClick", plyData);
-		setCurrentPath(plyData.path);
-	}
-
 	createEffect(() => {
 		// const cg = api()!;
 		const data = currentData();
@@ -209,7 +197,6 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	});
 	// TODO: add a button to show/hide variations
 	// TODO: add an icon to indicate comments (also for starting comments of variations)
-	// TODO: add a hover with the chessboard position for each move
 	// TODO: parse square names in comments and highlight squares
 	return (
 		<>

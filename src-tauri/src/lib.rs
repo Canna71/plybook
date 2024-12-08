@@ -10,7 +10,7 @@ use pgnparse::parser::*;
 use serde::{Deserialize, Serialize};
 use surrealdb::engine::local::Db;
 use surrealdb::engine::local::RocksDb;
-use surrealdb::RecordId;
+// use surrealdb::RecordId;
 use surrealdb::Surreal;
 use tokio::sync::Mutex;
 
@@ -89,7 +89,7 @@ async fn list_games(db_state: State<'_, DatabaseConnection>) -> Result<Vec<Game>
 #[tauri::command]
 // #[tokio::main]
 async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) -> Result<Game, String> {
-    let db = db_state.0.lock().await;
+    let _db = db_state.0.lock().await;
 
     println!("Received PGN: {}", pgn);
 
