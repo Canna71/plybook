@@ -7,7 +7,7 @@ const PgnView = () => {
 
     onMount(async () => {
         // Load PGN FROM application files using tauri fs plugin
-        const pgnText = await readTextFile('testdata/01.pgn', 
+        const pgnText = await readTextFile('testdata/02.pgn', 
             {
             baseDir: BaseDirectory.Resource
         });

@@ -1,6 +1,6 @@
 import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
-import { Accessor, Component, createEffect, createSignal, Show } from "solid-js";
+import { Accessor, Component, createEffect, createSignal, JSXElement, Show } from "solid-js";
 import { GameModel, makeGame, PlyData, Path, MoveData, isPlyData } from "../models/pgn";
 import Moves from "./Moves";
 
@@ -14,6 +14,37 @@ import { Node, ChildNode } from "chessops/pgn";
 
 export type PgnViewerOptions = {
 	pgn: Accessor<string | undefined>;
+
+}
+
+// regex for square names
+const squareRegex = /([a-h][1-8])/g;
+
+type CommentsProps = {
+	comments: Accessor<string[] | undefined>;
+}
+
+const  Comments : Component<CommentsProps> = ({comments}) => {
+	console.log("comments", comments());
+	
+	const comm = () => (comments() || []).map((line, index) => {
+		const matches = line.match(squareRegex);
+		// TODO: replace the square name with a span with the square name (FIXME: not working)
+		if (matches) {
+			return matches.map((match, index) => {
+				// return <span class="square">{match}</span>;
+				// replace the square name with a span with the square name
+				return line.replace(match, `<span class="square">${match}</span>`);
+			});
+		}
+		return line;
+	});
+
+	let paragraphs = () => comm().map((line, index) => {	
+		return <p>{line}</p>
+	});
+
+	return <>{paragraphs()}</>
 
 }
 
@@ -110,6 +141,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	}
 
 	const comments = () => {
+		console.log("comments changed", currentPath());
 		const g = game();
 		if (!g) {
 			return;
@@ -122,6 +154,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 		if (!data) {
 			return;
 		}
+		console.log("comments", data.comments);
 		return data.comments;
 	}
 
@@ -207,7 +240,8 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 					</div>
 					<div class="pgnviewer-comments">
-						{comments()}
+						<Comments comments={comments} />
+						
 					</div>
 				</div>
 				<div class="pgnviewer-sidebar">
