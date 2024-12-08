@@ -254,6 +254,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	// TODO: add an icon to indicate comments (also for starting comments of variations)
 	// TODO: scroll to the current move
 	// TODO: display starting comments in the top section
+	// TODO: check regex for square names that are before hyphens
 	return (
 		<>
 			<div class="pgnviewer-container">
