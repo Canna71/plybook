@@ -1,8 +1,10 @@
 import { ReferenceElement } from "@floating-ui/dom";
-import { NormalMove } from "chessops";
+import { Chess, NormalMove } from "chessops";
 import { useFloating } from "solid-floating-ui";
 import { Accessor, Component, createSignal } from "solid-js";
 import { PlyData, toMove } from "../models/pgn";
+import { Config } from "chessground/config";
+import { Chessboard } from "./chessboard";
 
 type TooltipProps = {
 	plyData: Accessor<PlyData | undefined>;
@@ -14,6 +16,15 @@ export const Tooltip: Component<TooltipProps> = ({ plyData, reference }) => {
 	// See: https://github.com/lxsmnsyc/solid-floating-ui
 	// And: https://floating-ui.com/docs/tutorial
 	const position = useFloating(reference, floating);
+
+	const config = ():Config => {
+		return {
+			viewOnly: true,
+			fen: plyData()?.fen,
+			lastMove: toMove(plyData()?.move as NormalMove),
+		};
+	}
+
 	return <div
 		class="pgnviewer-tooltip"
 		ref={setFloating}
@@ -23,8 +34,6 @@ export const Tooltip: Component<TooltipProps> = ({ plyData, reference }) => {
 			left: `${position.x ?? 0}px`,
 		}}
 	>
-		Tooltip
-		FEN: {plyData()?.fen}
-		LastMove: {toMove(plyData()?.move as NormalMove)}
+		<Chessboard config={config} />
 	</div>;
 };
