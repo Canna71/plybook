@@ -30,7 +30,6 @@ const  Comments : Component<CommentsProps> = ({comments, squareHovered}) => {
 	
 	const paragraphs = () => (comments() || []).map((line, index) => {
 		const matches = line.match(squareRegex);
-		// TODO: replace the square name with a span with the square name (FIXME: not working)
 		
 		if (matches) {
 			matches.forEach((match) => {
@@ -247,14 +246,14 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 				enabled: false,
 				autoShapes
 			}
-			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
+			// look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
 		setConfig(config);
 	});
 	// TODO: add a button to show/hide variations
 	// TODO: add an icon to indicate comments (also for starting comments of variations)
-	// TODO: parse square names in comments and highlight squares
 	// TODO: scroll to the current move
+	// TODO: display starting comments in the top section
 	return (
 		<>
 			<div class="pgnviewer-container">

@@ -104,7 +104,7 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 		}
 		const config = {
 			fen: data.fen
-			// TODO: look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
+			// look at https://github.com/lichess-org/pgn-viewer/blob/master/src/pgnViewer.ts
 		}
 		setConfig(config);
 	});
