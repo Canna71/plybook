@@ -3,9 +3,9 @@ import { Path, PlyData } from "../models/pgn";
 import { createSignal } from 'solid-js';
 import { Accessor } from "solid-js";
 import { Color } from "chessops/types";
-import { HierarchicalMoveData } from "./PgnViewer";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "./Tooltip";
+import { HierarchicalMoveData } from "../models/tree";
 
 export type MovesProps = {
 	movesTree: Accessor<HierarchicalMoveData[]>;
