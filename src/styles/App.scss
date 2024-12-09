@@ -5,6 +5,10 @@
 @use "./PgnView.scss";
 @use "./DBTest.scss";
 
+cg-board {
+    background-color: #a1bfef;
+}
+
 .chess-container {
     width: 100%;
     height: 100%;

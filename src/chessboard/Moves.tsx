@@ -1,4 +1,4 @@
-import { For, Component, Setter, Show } from "solid-js";
+import { For, Component, Setter, Show, createEffect } from "solid-js";
 import { GameModel, Path, PlyData } from "../models/pgn";
 import { createSignal } from 'solid-js';
 import { Accessor } from "solid-js";
@@ -25,6 +25,8 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 
 	const turn = color;
 	const plyData = line[color];
+	let ref: HTMLDivElement | undefined;
+
 	const isCurrent = () => {
 		return currentPath() && plyData?.path.equals(currentPath()!);
 	}
@@ -40,7 +42,14 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 		};
 	}
 
+	createEffect(() => {
+		if (isCurrent() && ref) {
+			ref.scrollIntoView({block: "nearest"});
+		}
+	});
+
 	return <div
+		ref={ref}
 		onMouseEnter={(e) => isValid() && showTooltip(e.currentTarget, plyData)}
 		onMouseLeave={() => showTooltip(undefined, undefined)}
 		classList={moveClass()}
