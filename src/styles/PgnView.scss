@@ -21,8 +21,11 @@
         grid-area: comments;
         // display: flex;
         // flex-direction: column;
-        overflow-y: auto;
+        // overflow-y: auto;
         // max-height: 100%;
+        p {
+            margin: 0.1em;
+        }
     }
 
     .pgnviewer-content {
@@ -100,7 +103,7 @@
         grid-area: movecomments;
         // display: flex;
         // flex-direction: column;
-        overflow-y: auto;
+        // overflow-y: auto;
         max-height: 100%;
     }
 

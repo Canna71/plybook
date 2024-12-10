@@ -50,10 +50,12 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 			<div class="pgnviewer-container">
 				<div class="pgnviewer-comments">
 					<Comments
-						currentData={currentData}
+						game={game}
+						currentPath={currentPath}
 						squareHovered={setSquareHovered}
-						commentType="starting"
+						commentType="initial"
 					/>
+
 				</div>
 				<div class="pgnviewer-content">
 
@@ -65,7 +67,14 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 				</div>
 				<div class="pgnviewer-movecomments">
 					<Comments
-						currentData={currentData}
+						game={game}
+						currentPath={currentPath}
+						squareHovered={setSquareHovered}
+						commentType="starting"
+					/>
+					<Comments
+						game={game}
+						currentPath={currentPath}
 						squareHovered={setSquareHovered}
 					/>
 

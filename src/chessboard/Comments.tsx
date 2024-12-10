@@ -1,26 +1,30 @@
 import { Accessor, Component } from "solid-js";
-import { Initial, PlyData, isPlyData } from "../models/pgn";
+import { GameModel, Initial, Path, PlyData, isPlyData } from "../models/pgn";
+import { useCurrentData } from "./utils";
 
 // regex for square names
 export const squareRegex = /([a-h][1-8])/g;
 
 type CommentsProps = {
-	// comments: Accessor<string[] | undefined>;
-	currentData: Accessor<Initial | PlyData | undefined>;
+	game: Accessor<GameModel | undefined>;
+	currentPath: Accessor<Path | undefined>;
 	squareHovered?: (square: string | undefined) => void;
-	commentType?: "starting" | "move";
+	commentType?: "initial" | "starting" | "move";
 };
-export const Comments: Component<CommentsProps> = ({ currentData, squareHovered, commentType }) => {
+export const Comments: Component<CommentsProps> = ({ game, currentPath, squareHovered, commentType }) => {
+
+	const currentData = useCurrentData(game, currentPath);
 
 	const comments = () => {
 		const data = currentData();
-		if (!isPlyData(data)) {
-			if (commentType === "starting") {
-				return data?.comments;
-			} else return;
+		console.log("comments", data);
+		if (commentType === "initial") {
+			return game()?.initial.comments;
+		} else if (commentType === "starting") {
+			return isPlyData(data) && data.startingComments;
 		}
 
-		return data?.comments;
+		return isPlyData(data) && data?.comments;
 
 	};
 
