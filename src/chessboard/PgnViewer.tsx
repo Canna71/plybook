@@ -43,8 +43,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	const config = makeConfig(game, currentPath, squareHovered);
 
 	// TODO: add a button to show/hide variations
-	// TODO: display starting comments in the top section
-	// TODO: display initial comment
+	// TODO: style buttons
 	return (
 		<>
 			<div class="pgnviewer-container">

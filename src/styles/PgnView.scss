@@ -93,9 +93,9 @@
         .pgnviewer-buttonbar {
             flex: 0;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 12px;
+            align-items: left;
+            margin-top: 8px;
+            gap: 8px;
         }
     }
 
@@ -115,6 +115,8 @@
         width: 200px;
         overflow: hidden;
     }
+
+
 
     .square {
         font-family: monospace;

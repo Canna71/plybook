@@ -44,7 +44,7 @@ const ButtonBar:Component<ButtonBarProps> = ({game, currentPath, setCurrentPath}
 	}
 
     
-    return <div class="pgn-viewer-buttonbar">
+    return <div class="pgnviewer-buttonbar">
 		<Show when={game() && currentPath()}>
 			<button onClick={onRewind}>
 				<IconPlayerTrackPrevFilled size="14" />
