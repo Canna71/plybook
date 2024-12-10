@@ -1,20 +1,27 @@
 import { Accessor, Component } from "solid-js";
 import { Initial, PlyData, isPlyData } from "../models/pgn";
-import { squareRegex } from "./PgnViewer";
+
+// regex for square names
+export const squareRegex = /([a-h][1-8])/g;
 
 type CommentsProps = {
 	// comments: Accessor<string[] | undefined>;
 	currentData: Accessor<Initial | PlyData | undefined>;
 	squareHovered?: (square: string | undefined) => void;
+	commentType?: "starting" | "move";
 };
-export const Comments: Component<CommentsProps> = ({ currentData, squareHovered }) => {
+export const Comments: Component<CommentsProps> = ({ currentData, squareHovered, commentType }) => {
 
 	const comments = () => {
 		const data = currentData();
 		if (!isPlyData(data)) {
-			return;
+			if (commentType === "starting") {
+				return data?.comments;
+			} else return;
 		}
-		return data.comments;
+
+		return data?.comments;
+
 	};
 
 	const paragraphs = () => (comments() || []).map((line, index) => {

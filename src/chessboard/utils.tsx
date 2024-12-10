@@ -2,13 +2,16 @@ import { NormalMove, makeSquare } from "chessops";
 import { GameModel, Initial, isPlyData, Path, PlyData } from "../models/pgn";
 import { Accessor } from "solid-js";
 import { Key } from "chessground/types";
+import { Config } from "chessground/config";
 
 
 export function lastMove(data: import("/Users/gcannata/Projects/rechess/src/models/pgn").Initial | import("/Users/gcannata/Projects/rechess/src/models/pgn").PlyData) {
 	const lm = isPlyData(data) ? data.move as NormalMove : undefined;
 	const lastMoveKey = lm && [makeSquare(lm.from), makeSquare(lm.to)];
 	return lastMoveKey;
-}export function useCurrentData(game: Accessor<GameModel | undefined>, currentPath: Accessor<Path | undefined>) {
+}
+
+export function useCurrentData(game: Accessor<GameModel | undefined>, currentPath: Accessor<Path | undefined>) {
 	return () => {
 		const g = game();
 		if (!g) {
@@ -19,7 +22,8 @@ export function lastMove(data: import("/Users/gcannata/Projects/rechess/src/mode
 			return g.initial;
 		}
 
-		return g.dataAt(path);
+		const data = g.dataAt(path);
+        return data;
 	};
 }
 export function toShapes(squareHovered: Accessor<string | undefined>, data: Initial | PlyData) {
@@ -32,5 +36,41 @@ export function toShapes(squareHovered: Accessor<string | undefined>, data: Init
 		}));
 	}
 	return autoShapes;
+}
+export function makeConfig(game: Accessor<GameModel | undefined>, currentPath: Accessor<Path | undefined>, squareHovered: Accessor<string | undefined>): () => Config {
+	return () => {
+		const data = useCurrentData(game, currentPath)();
+		if (!data) {
+			return {};
+		}
+
+		const lastMoveKey = lastMove(data);
+
+		let autoShapes = toShapes(squareHovered, data);
+
+		const config: Config = {
+			fen: data.fen,
+			lastMove: lastMoveKey,
+			highlight: {
+				lastMove: true,
+				check: true
+			},
+			drawable: {
+				enabled: false,
+				autoShapes
+			},
+			movable: {
+				free: false,
+			},
+			draggable: {
+				enabled: false,
+			},
+			selectable: {
+				enabled: false,
+			},
+			// look at
+		};
+		return config;
+	};
 }
 
