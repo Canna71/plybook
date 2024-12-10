@@ -6,6 +6,7 @@ import { Color } from "chessops/types";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "./Tooltip";
 import { HierarchicalMoveData, makeTree } from "../models/tree";
+import { IconInfoSquareRoundedFilled } from "@tabler/icons-solidjs";
 
 export type MovesProps = {
 	game: Accessor<GameModel | undefined>;
@@ -33,6 +34,9 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 	const isValid = () => {
 		return plyData !== undefined;
 	};
+	const hasComments = () => {
+		return plyData?.comments?.length;
+	}
 
 	const moveClass = () => {
 		return {
@@ -44,7 +48,7 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 
 	createEffect(() => {
 		if (isCurrent() && ref) {
-			ref.scrollIntoView({block: "nearest"});
+			ref.scrollIntoView({ block: "nearest" });
 		}
 	});
 
@@ -54,14 +58,23 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 		onMouseLeave={() => showTooltip(undefined, undefined)}
 		classList={moveClass()}
 		data-color={color}
-		data-path={line[color]?.path.path}  >{line[color]?.fan || "..."}</div>;
+		data-path={line[color]?.path.path}  >{line[color]?.fan || "..."}
+		<Show when={hasComments()}>
+			<div class="pgnviewer-comment-icon"><IconInfoSquareRoundedFilled size="12" /></div>
+		</Show>
+	</div>;
 }
 
 const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, showTooltip }) => {
 	return <>
 		<tr>
 			<td>
-				<div class="pgnviewer-movenumber">{move.number}.</div>
+				<div class="pgnviewer-movenumber">{move.number}.
+					<Show when={move.white?.startingComments.length}>
+						<div class="pgnviewer-comment-icon"><IconInfoSquareRoundedFilled size="12" /></div>
+					</Show>
+				</div>
+
 			</td>
 			<td>
 				<Ply line={move} color="white" currentPath={currentPath} showTooltip={showTooltip} />
@@ -74,9 +87,9 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 		</tr>
 		{move.variations && <For each={move.variations}>
 			{(variation) => <tr><td class="pgnviewer-variation-cell" colSpan={3}>
-				<MovesTree movesTree={() => variation} 
-					currentPath={currentPath} 	
-					setCurrentPath={setCurrentPath} 
+				<MovesTree movesTree={() => variation}
+					currentPath={currentPath}
+					setCurrentPath={setCurrentPath}
 					showTooltip={showTooltip}
 				/>
 
@@ -94,7 +107,7 @@ type MoveProps = {
 	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
 };
 
-type MovesTreeProps =  {
+type MovesTreeProps = {
 	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
 	movesTree: () => HierarchicalMoveData[];
 	currentPath: Accessor<Path | undefined>;
@@ -115,7 +128,7 @@ const MovesTree: Component<MovesTreeProps> = ({ movesTree, currentPath, setCurre
 
 const Moves: Component<MovesProps> = (props) => {
 	const [reference, setReference] = createSignal<ReferenceElement | null | undefined>(undefined);
-	
+
 	const [ply, setPly] = createSignal<PlyData>();
 
 	const onClick = (e: Event) => {
@@ -139,16 +152,16 @@ const Moves: Component<MovesProps> = (props) => {
 		const tree = moves && makeTree(moves);
 		return tree || [];
 	}
-	
+
 
 	return (
 		<>
 			<div class="pgnviewer-moves-panel"
 				onClick={onClick}
 			>
-				<MovesTree 
-					movesTree={movesTree} 
-					currentPath={props.currentPath}  
+				<MovesTree
+					movesTree={movesTree}
+					currentPath={props.currentPath}
 					setCurrentPath={props.setCurrentPath}
 					showTooltip={showTooltip} />
 			</div>

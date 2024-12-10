@@ -68,7 +68,10 @@
                    
                 }
 
-
+                .pgnviewer-comment-icon {
+                    display: inline-block;
+                    margin: 0.3em 0;
+                }
 
 
                 .pgnviewer-move {
@@ -81,6 +84,8 @@
                     &:not(.current-move):hover {
                         background-color: var(--background-modifier-active);
                     }
+
+
                 }
 
                 .current-move {
