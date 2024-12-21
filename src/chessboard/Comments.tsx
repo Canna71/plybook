@@ -1,5 +1,5 @@
 import { Accessor, Component, For } from "solid-js";
-import { GameModel, Initial, Path, PlyData, isPlyData } from "../models/pgn";
+import { GameModel, Path, isPlyData } from "../models/pgn";
 import { useCurrentData } from "./utils";
 
 // regex for square names

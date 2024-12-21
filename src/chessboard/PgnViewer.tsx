@@ -1,11 +1,10 @@
 import { Chessboard } from "./chessboard";
-import { Accessor, Component, createEffect, createSignal, JSXElement, on, Show } from "solid-js";
-import { GameModel, makeGame, Path, MoveData } from "../models/pgn";
+import { Accessor, Component, createEffect, createSignal } from "solid-js";
+import { GameModel, makeGame, Path } from "../models/pgn";
 import Moves from "./Moves";
 
 import ButtonBar from "./Buttonbar";
-import { Comments } from "./Comments";
-import { makeConfig, useCurrentData } from "./utils";
+import { makeConfig } from "./utils";
 
 // see: https://github.com/lichess-org/pgn-viewer
 
@@ -22,7 +21,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
 	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
-	const currentData = useCurrentData(game, currentPath)
+	// const currentData = useCurrentData(game, currentPath)
 
 
 	// After loading the pgn string, create the game model

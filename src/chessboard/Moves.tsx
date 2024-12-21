@@ -7,7 +7,7 @@ import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "./Tooltip";
 import { HierarchicalMoveData, makeTree } from "../models/tree";
 // import { IconInfoSquareRoundedFilled } from "@tabler/icons-solidjs";
-import { Comments, CommentsView } from "./Comments";
+import { CommentsView } from "./Comments";
 
 export type MovesProps = {
 	game: Accessor<GameModel | undefined>;
@@ -37,9 +37,7 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 	const isValid = () => {
 		return plyData !== undefined;
 	};
-	const hasComments = () => {
-		return plyData?.comments?.length;
-	}
+
 
 	const moveClass = () => {
 		return {
@@ -65,10 +63,10 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 	</div>;
 }
 
-const CommentsRows: Component<{ comments: string[], squareHovered?: 
+const CommentsRows: Component<{ comments: Accessor<string[]>, squareHovered?: 
 	(square: string | undefined) => void
  }> = ({ comments, squareHovered }) => {
-	return <For each={comments}>{comment =>
+	return <For each={comments()}>{comment =>
 		<tr><td colSpan={3}>
 			<CommentsView comments={() => comment} squareHovered={squareHovered} />
 		</td></tr>}
@@ -83,7 +81,7 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 
 
 	return <>
-		<CommentsRows comments={startingComments} squareHovered={squareHovered} />
+		<CommentsRows comments={()=>startingComments} squareHovered={squareHovered} />
 
 		<tr>
 			<td>
@@ -105,7 +103,7 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 			</td>
 		</tr>
 		
-		<CommentsRows comments={afterWhite}  squareHovered={squareHovered} />
+		<CommentsRows comments={()=>afterWhite}  squareHovered={squareHovered} />
 
 		<Show when={afterWhite.length && move.black}>
 			<tr>
@@ -125,7 +123,7 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 		</Show>
 		
 
-		<CommentsRows comments={afterBlack}  squareHovered={squareHovered} />
+		<CommentsRows comments={()=>afterBlack}  squareHovered={squareHovered} />
 
 		{move.variations && <For each={move.variations}>
 			{(variation) => <tr><td class="pgnviewer-variation-cell" colSpan={3}>
@@ -164,7 +162,7 @@ type MovesTreeProps = {
 const MovesTree: Component<MovesTreeProps> = ({ movesTree, currentPath, setCurrentPath, showTooltip, squareHovered, initialComments }) => {
 	return (
 		<table class="pgnviewer-moves">
-			<CommentsRows comments={initialComments?.() || []} squareHovered={squareHovered} />
+			<CommentsRows comments={initialComments} squareHovered={squareHovered} />
 			<For each={movesTree()}>
 				{(line) =>
 					<>
@@ -202,7 +200,12 @@ const Moves: Component<MovesProps> = (props) => {
 		return tree || [];
 	}
 
-	const initialComments = () => props.game()?.initial.comments || [];
+	const initialComments = () => {
+		console.log("game()",props.game());
+		return props.game()?.initial.comments || [];
+	}
+
+
 
 	return (
 		<>

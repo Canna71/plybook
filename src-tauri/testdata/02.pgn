@@ -7,7 +7,7 @@
 [Result "1-0"]
 [ECO "C41"]
 {Inital comment. The first move is e4.}
-1. e4 {[%csl Ge4] This moves the pawn in e4, which together with e5, d4 and d5 is important.} 
-1... e5 {[%cal Re5d4,Re5f4]}
-2. Nf3 ({This is a comment before a variation} 2. Nc3 b6) d6
+1.  {Before white } e4 {[%csl Ge4] This moves the pawn in e4, which together with e5, d4 and d5 is important.} 
+1... e5 {[%cal Re5d4,Re5f4] after black}
+2. {before white} Nf3 ({This is a comment before a variation} 2. Nc3 b6) d6
 3. Be2 Be7 (3... Qe7 {This is a variation} 4.a3 a6 5.  Ra2)

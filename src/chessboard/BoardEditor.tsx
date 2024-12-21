@@ -21,6 +21,7 @@ const BoardEditor = () => {
             return;
         }
         const fen = cg.getFen();
+        console.debug("TODO: save fen", fen);
         // saveDataIntoBlock(app, { fen: cg.getFen() }, ctx);
     }
 
