@@ -1,4 +1,4 @@
-import { Accessor, Component } from "solid-js";
+import { Accessor, Component, For } from "solid-js";
 import { GameModel, Initial, Path, PlyData, isPlyData } from "../models/pgn";
 import { useCurrentData } from "./utils";
 
@@ -29,17 +29,22 @@ export const Comments: Component<CommentsProps> = ({ game, currentPath, squareHo
 
 	};
 
-	return <CommentsView comments={comments} squareHovered={squareHovered} />;
+	return <For each={comments()}>
+		{comment => <CommentsView comments={() => comment} squareHovered={squareHovered} />}
+	</For>;
+
+
 	
 };
 
 export type CommentsViewProps = {
-	comments: Accessor<string[]>;
+	comments: Accessor<string>;
 	squareHovered?: (square: string | undefined) => void;
 };
 
 export const CommentsView:Component<CommentsViewProps> = ({comments, squareHovered}) => {
-	const paragraphs = () => (comments() || []).map((line, index) => {
+	const paragraph = () =>  {
+		let line = comments() || "";
 		const matches = line.match(squareRegex);
 
 		if (matches) {
@@ -49,7 +54,7 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 		}
 
 		return <p innerHTML={line} />;
-	});
+	};
 
 	const onMouseOver = (e: MouseEvent) => {
 		const target = e.target as HTMLElement;
@@ -65,5 +70,5 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 	return <div
 		onMouseOver={onMouseOver}
 		onMouseLeave={onMouseLeave}
-		class="pgnviewer-comments">{paragraphs()}</div>;
+		class="pgnviewer-comments">{paragraph()}</div>;
 }

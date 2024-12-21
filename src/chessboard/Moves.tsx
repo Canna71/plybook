@@ -65,6 +65,16 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 	</div>;
 }
 
+const CommentsRows: Component<{ comments: string[], squareHovered?: 
+	(square: string | undefined) => void
+ }> = ({ comments, squareHovered }) => {
+	return <For each={comments}>{comment =>
+		<tr><td colSpan={3}>
+			<CommentsView comments={() => comment} squareHovered={squareHovered} />
+		</td></tr>}
+	</For>;
+}
+
 const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, showTooltip, squareHovered }) => {
 
 	const startingComments = move.white?.startingComments || [];
@@ -74,11 +84,7 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 	console.log("MoveLine", move.number, startingComments, afterWhite, afterBlack);
 
 	return <>
-		<Show when={startingComments.length}>
-			<tr><td colSpan={3}>
-				<CommentsView comments={() => startingComments} squareHovered={squareHovered} />
-			</td></tr>
-		</Show>
+		<CommentsRows comments={startingComments} squareHovered={squareHovered} />
 
 		<tr>
 			<td>
@@ -99,11 +105,9 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 				</Show>
 			</td>
 		</tr>
-		<Show when={afterWhite.length}>
-			<tr><td colSpan={3}>
-				<CommentsView comments={() => afterWhite} squareHovered={squareHovered} />
-			</td></tr>
-		</Show>
+		
+		<CommentsRows comments={afterWhite}  squareHovered={squareHovered} />
+
 		<Show when={afterWhite.length && move.black}>
 			<tr>
 				<td>
@@ -120,11 +124,10 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 				</td>
 			</tr>
 		</Show>
-		<Show when={afterBlack.length}>
-			<tr><td colSpan={3}>
-				<CommentsView comments={() => afterBlack} squareHovered={squareHovered} />
-			</td></tr>
-		</Show>
+		
+
+		<CommentsRows comments={afterBlack}  squareHovered={squareHovered} />
+
 		{move.variations && <For each={move.variations}>
 			{(variation) => <tr><td class="pgnviewer-variation-cell" colSpan={3}>
 				<MovesTree movesTree={() => variation}
