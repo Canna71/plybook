@@ -85,6 +85,8 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 							game={game}
 							currentPath={currentPath}
 							setCurrentPath={setCurrentPath}
+							squareHovered={setSquareHovered}
+							showComments={()=>true}
 						/>
 
 					</div>

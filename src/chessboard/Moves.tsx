@@ -6,17 +6,20 @@ import { Color } from "chessops/types";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "./Tooltip";
 import { HierarchicalMoveData, makeTree } from "../models/tree";
-import { IconInfoSquareRoundedFilled } from "@tabler/icons-solidjs";
+// import { IconInfoSquareRoundedFilled } from "@tabler/icons-solidjs";
+import { Comments, CommentsView } from "./Comments";
 
 export type MovesProps = {
 	game: Accessor<GameModel | undefined>;
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: Setter<Path | undefined>;
+	showComments: Accessor<boolean>;
+	squareHovered?: (square: string | undefined) => void;
 };
 
 type PlyProps = {
 	line: HierarchicalMoveData;
-	color: Color;
+	color?: Color;
 	currentPath: Accessor<Path | undefined>;
 	// setCurrentPath: Setter<Path | undefined>;
 	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
@@ -25,7 +28,7 @@ type PlyProps = {
 const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => {
 
 	const turn = color;
-	const plyData = line[color];
+	const plyData = color && line[color];
 	let ref: HTMLDivElement | undefined;
 
 	const isCurrent = () => {
@@ -58,21 +61,29 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 		onMouseLeave={() => showTooltip(undefined, undefined)}
 		classList={moveClass()}
 		data-color={color}
-		data-path={line[color]?.path.path}  >{line[color]?.fan || "..."}
-		<Show when={hasComments()}>
-			<div class="pgnviewer-comment-icon"><IconInfoSquareRoundedFilled size="12" /></div>
-		</Show>
+		data-path={color && line[color]?.path.path}  >{color && line[color]?.fan || "..."}
 	</div>;
 }
 
-const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, showTooltip }) => {
+const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, showTooltip, squareHovered }) => {
+
+	const startingComments = move.white?.startingComments || [];
+	const afterWhite = move.white?.comments || [];
+	const afterBlack = move.black?.comments || [];
+
+	console.log("MoveLine", move.number, startingComments, afterWhite, afterBlack);
+
 	return <>
+		<Show when={startingComments.length}>
+			<tr><td colSpan={3}>
+				<CommentsView comments={() => startingComments} squareHovered={squareHovered} />
+			</td></tr>
+		</Show>
+
 		<tr>
 			<td>
 				<div class="pgnviewer-movenumber">{move.number}.
-					<Show when={move.white?.startingComments.length}>
-						<div class="pgnviewer-comment-icon"><IconInfoSquareRoundedFilled size="12" /></div>
-					</Show>
+
 				</div>
 
 			</td>
@@ -80,17 +91,47 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 				<Ply line={move} color="white" currentPath={currentPath} showTooltip={showTooltip} />
 			</td>
 			<td>
-				<Ply line={move} color="black" currentPath={currentPath} showTooltip={showTooltip} />
+				<Show when={!afterWhite.length} fallback={
+					<Ply line={move} currentPath={currentPath} showTooltip={showTooltip} />
+
+				}>
+					<Ply line={move} color="black" currentPath={currentPath} showTooltip={showTooltip} />
+				</Show>
 			</td>
-
-
 		</tr>
+		<Show when={afterWhite.length}>
+			<tr><td colSpan={3}>
+				<CommentsView comments={() => afterWhite} squareHovered={squareHovered} />
+			</td></tr>
+		</Show>
+		<Show when={afterWhite.length && move.black}>
+			<tr>
+				<td>
+					<div class="pgnviewer-movenumber">{move.number}.
+
+					</div>
+
+				</td>
+				<td>
+					<Ply line={move} currentPath={currentPath} showTooltip={showTooltip} />
+				</td>
+				<td>
+					<Ply line={move} color="black" currentPath={currentPath} showTooltip={showTooltip} />
+				</td>
+			</tr>
+		</Show>
+		<Show when={afterBlack.length}>
+			<tr><td colSpan={3}>
+				<CommentsView comments={() => afterBlack} squareHovered={squareHovered} />
+			</td></tr>
+		</Show>
 		{move.variations && <For each={move.variations}>
 			{(variation) => <tr><td class="pgnviewer-variation-cell" colSpan={3}>
 				<MovesTree movesTree={() => variation}
 					currentPath={currentPath}
 					setCurrentPath={setCurrentPath}
 					showTooltip={showTooltip}
+					squareHovered={squareHovered}
 				/>
 
 			</td></tr>}
@@ -105,6 +146,7 @@ type MoveProps = {
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: Setter<Path | undefined>;
 	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
+	squareHovered?: (square: string | undefined) => void;
 };
 
 type MovesTreeProps = {
@@ -112,15 +154,16 @@ type MovesTreeProps = {
 	movesTree: () => HierarchicalMoveData[];
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: Setter<Path | undefined>;
+	squareHovered?: (square: string | undefined) => void;
 }
 
-const MovesTree: Component<MovesTreeProps> = ({ movesTree, currentPath, setCurrentPath, showTooltip }) => {
+const MovesTree: Component<MovesTreeProps> = ({ movesTree, currentPath, setCurrentPath, showTooltip, squareHovered }) => {
 	return (
 		<table class="pgnviewer-moves">
 			<For each={movesTree()}>
 				{(line) =>
 					<>
-						<MoveLine move={line} currentPath={currentPath} setCurrentPath={setCurrentPath} showTooltip={showTooltip} />
+						<MoveLine move={line} currentPath={currentPath} setCurrentPath={setCurrentPath} showTooltip={showTooltip} squareHovered={squareHovered}  />
 					</>}
 			</For>
 		</table>);
@@ -150,6 +193,7 @@ const Moves: Component<MovesProps> = (props) => {
 
 		const moves = props.game()?.moves;
 		const tree = moves && makeTree(moves);
+		console.log(tree);
 		return tree || [];
 	}
 
@@ -163,6 +207,7 @@ const Moves: Component<MovesProps> = (props) => {
 					movesTree={movesTree}
 					currentPath={props.currentPath}
 					setCurrentPath={props.setCurrentPath}
+					squareHovered={props.squareHovered}
 					showTooltip={showTooltip} />
 			</div>
 			<Show when={reference()}>

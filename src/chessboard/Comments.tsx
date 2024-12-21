@@ -11,23 +11,34 @@ type CommentsProps = {
 	squareHovered?: (square: string | undefined) => void;
 	commentType?: "initial" | "starting" | "move";
 };
+
+
 export const Comments: Component<CommentsProps> = ({ game, currentPath, squareHovered, commentType }) => {
 
 	const currentData = useCurrentData(game, currentPath);
 
 	const comments = () => {
 		const data = currentData();
-		console.log("comments", data);
 		if (commentType === "initial") {
-			return game()?.initial.comments;
+			return game()?.initial.comments || [];
 		} else if (commentType === "starting") {
-			return isPlyData(data) && data.startingComments;
+			return isPlyData(data) && data.startingComments || [];
 		}
 
-		return isPlyData(data) && data?.comments;
+		return isPlyData(data) && data?.comments || [];
 
 	};
 
+	return <CommentsView comments={comments} squareHovered={squareHovered} />;
+	
+};
+
+export type CommentsViewProps = {
+	comments: Accessor<string[]>;
+	squareHovered?: (square: string | undefined) => void;
+};
+
+export const CommentsView:Component<CommentsViewProps> = ({comments, squareHovered}) => {
 	const paragraphs = () => (comments() || []).map((line, index) => {
 		const matches = line.match(squareRegex);
 
@@ -55,5 +66,4 @@ export const Comments: Component<CommentsProps> = ({ game, currentPath, squareHo
 		onMouseOver={onMouseOver}
 		onMouseLeave={onMouseLeave}
 		class="pgnviewer-comments">{paragraphs()}</div>;
-
-};
+}
