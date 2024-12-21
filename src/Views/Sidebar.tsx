@@ -4,9 +4,11 @@ const Sidebar = () => {
     return (
         <nav class="navbar">
             <a href="/">Home</a>
-            <a href="/viewer">Viewer</a>
-            <a href="/pgn">Pgn</a>
-            <a href="/editor">Editor</a>
+            <a href="/viewer">Board Viewer</a>
+            <a href="/editor">Board Editor</a>
+            <a href="/pgn">Pgn View</a>
+            <a href="/pgnedit">Pgn Edit</a>
+
             <a href="/playsf">Play</a>
             <a href="/analysis">Analysis</a>
 
