@@ -8,30 +8,56 @@ export type ButtonBarProps = {
 	setCurrentPath: Setter<Path | undefined>;
 }
 
-const ButtonBar:Component<ButtonBarProps> = ({game, currentPath, setCurrentPath}) => {
-	
-    const onNext = () => {
-		
-		
-        const path = currentPath();
-        
-        const nextNode = (path && game()?.nodeAt(path))?.children[0] ;
-		setCurrentPath(nextNode?.data.path);
+const ButtonBar: Component<ButtonBarProps> = ({ game, currentPath, setCurrentPath }) => {
+
+
+	const nextNode = () => {
+		const path = currentPath();
+		const nextNode = (path && game()?.nodeAt(path))?.children[0];
+		return nextNode;
 	}
 
-	const onPrev = () => {
-
-
+	const previousPath = () => {
 		const path = currentPath();
 		if (!path) {
 			return;
 		}
+		return path.previous()
+	}
 
-		setCurrentPath(path.previous());
+	const canMoveNext = () => {
+		return !!nextNode();
+	}
+
+	const canGoBack = () => {
+		const path = currentPath();
+		return path && path.path.length > 1;
+	}
+
+
+	const onNext = () => {
+
+		const next = nextNode();
+		
+		if (next) {
+			setCurrentPath(next?.data.path);
+		}
+	}
+
+	const onPrev = () => {
+		const previous = previousPath();
+		console.log(previous);
+		previous && setCurrentPath(previous);
 	}
 
 	const onRewind = () => {
 		setCurrentPath(game()!.pathAtMainlinePly(0));
+	}
+
+	const canRewind = () => {
+		const path = currentPath();
+
+		return  path && !game()?.pathAtMainlinePly(0).equals(path);
 	}
 
 	const onFastForward = () => {
@@ -43,19 +69,25 @@ const ButtonBar:Component<ButtonBarProps> = ({game, currentPath, setCurrentPath}
 		setCurrentPath(path);
 	}
 
-    
-    return <div class="pgnviewer-buttonbar">
+	const canFastForward = () => {
+		const path = currentPath();
+		const g = game();
+		return path && g && !g.pathAtMainlinePly(g.mainline.length - 1).equals(path);
+	}
+
+
+	return <div class="pgnviewer-buttonbar">
 		<Show when={game() && currentPath()}>
-			<button onClick={onRewind}>
+			<button onClick={onRewind} disabled={!canRewind()}>
 				<IconPlayerTrackPrevFilled size="14" />
 			</button>
-			<button onClick={onPrev}>
+			<button onClick={onPrev} disabled={!canGoBack()}> 
 				<IconPlayerSkipBackFilled size="14" />
 			</button>
-			<button onClick={onNext}>
+			<button onClick={onNext} disabled={!canMoveNext()}>
 				<IconPlayerSkipForwardFilled size="14" />
 			</button>
-			<button onClick={onFastForward}>
+			<button onClick={onFastForward} disabled={!canFastForward()}>
 				<IconPlayerTrackNextFilled size="14" />
 			</button>
 		</Show>

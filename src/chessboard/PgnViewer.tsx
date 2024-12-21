@@ -42,20 +42,12 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	const config = makeConfig(game, currentPath, squareHovered);
 
-	// TODO: add a button to show/hide variations
-	// TODO: style buttons
+	// TODO add a button to show/hide variations
+	// TODO style buttons
 	return (
 		<>
 			<div class="pgnviewer-container">
-				<div class="pgnviewer-comments">
-					<Comments
-						game={game}
-						currentPath={currentPath}
-						squareHovered={setSquareHovered}
-						commentType="initial"
-					/>
-
-				</div>
+				
 				<div class="pgnviewer-content">
 
 					<div class="pgnviewer-chessboard">
@@ -64,20 +56,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 					</div>
 
 				</div>
-				<div class="pgnviewer-movecomments">
-					<Comments
-						game={game}
-						currentPath={currentPath}
-						squareHovered={setSquareHovered}
-						commentType="starting"
-					/>
-					<Comments
-						game={game}
-						currentPath={currentPath}
-						squareHovered={setSquareHovered}
-					/>
-
-				</div>
+				
 				<div class="pgnviewer-sidebar">
 					<div class="pgnviewer-moves-wrapper">
 

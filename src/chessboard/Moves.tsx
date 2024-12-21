@@ -81,7 +81,6 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 	const afterWhite = move.white?.comments || [];
 	const afterBlack = move.black?.comments || [];
 
-	console.log("MoveLine", move.number, startingComments, afterWhite, afterBlack);
 
 	return <>
 		<CommentsRows comments={startingComments} squareHovered={squareHovered} />
@@ -135,6 +134,7 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 					setCurrentPath={setCurrentPath}
 					showTooltip={showTooltip}
 					squareHovered={squareHovered}
+					initialComments={() => []}
 				/>
 
 			</td></tr>}
@@ -158,11 +158,13 @@ type MovesTreeProps = {
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: Setter<Path | undefined>;
 	squareHovered?: (square: string | undefined) => void;
+	initialComments: Accessor<string[]>;
 }
 
-const MovesTree: Component<MovesTreeProps> = ({ movesTree, currentPath, setCurrentPath, showTooltip, squareHovered }) => {
+const MovesTree: Component<MovesTreeProps> = ({ movesTree, currentPath, setCurrentPath, showTooltip, squareHovered, initialComments }) => {
 	return (
 		<table class="pgnviewer-moves">
+			<CommentsRows comments={initialComments?.() || []} squareHovered={squareHovered} />
 			<For each={movesTree()}>
 				{(line) =>
 					<>
@@ -200,6 +202,7 @@ const Moves: Component<MovesProps> = (props) => {
 		return tree || [];
 	}
 
+	const initialComments = () => props.game()?.initial.comments || [];
 
 	return (
 		<>
@@ -211,7 +214,9 @@ const Moves: Component<MovesProps> = (props) => {
 					currentPath={props.currentPath}
 					setCurrentPath={props.setCurrentPath}
 					squareHovered={props.squareHovered}
-					showTooltip={showTooltip} />
+					showTooltip={showTooltip} 
+					initialComments={initialComments}
+					/>
 			</div>
 			<Show when={reference()}>
 				<Tooltip plyData={ply} reference={reference} />
