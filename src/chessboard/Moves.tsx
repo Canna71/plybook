@@ -196,12 +196,10 @@ const Moves: Component<MovesProps> = (props) => {
 
 		const moves = props.game()?.moves;
 		const tree = moves && makeTree(moves);
-		console.log(tree);
 		return tree || [];
 	}
 
 	const initialComments = () => {
-		console.log("game()",props.game());
 		return props.game()?.initial.comments || [];
 	}
 

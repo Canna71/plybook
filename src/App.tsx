@@ -9,7 +9,7 @@ import Editor from "./Views/Editor";
 import DBTest from "./Views/DBTest";
 import PlaySF from "./Views/PlaySF";
 import AnalysisView from "./Views/AnalysisView";
-import PgnEditView from "./Views/PgnEditor";
+import PgnEditView from "./Views/PgnEditorView";
 function App() {
   // const [greetMsg, setGreetMsg] = createSignal("");
   // const [name, setName] = createSignal("");

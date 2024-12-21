@@ -5,6 +5,7 @@ import Moves from "./Moves";
 
 import ButtonBar from "./Buttonbar";
 import { makeConfig } from "./utils";
+import { Key, Piece } from "chessground/types";
 
 
 export type PgnEditorOptions = {
@@ -34,8 +35,33 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 
 	});
 
+    const onMove = (orig: Key, dest: Key, capturedPiece?: Piece)  => {
+        console.log("onMove", orig, dest, capturedPiece);
+        // game()?.game 
+    }
 
-	const config = makeConfig(game, currentPath, squareHovered);
+    const onSelect = (key: Key) => {
+        console.log("onSelect", key);
+    }
+
+	const config = () => {
+        const baseConfig = makeConfig(game, currentPath, squareHovered);
+        return {
+            ...baseConfig,
+            // turnColor: "white",
+
+            viewOnly: false,
+            moveable: {
+                free: false,
+                color: "white"
+            },
+            events: {
+                move: onMove,
+                
+                select: onSelect
+            }
+        }
+    }
 
 	return (
 		<>

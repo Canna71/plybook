@@ -1,5 +1,5 @@
 import { FEN } from "chessground/types";
-import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition } from "chessops/pgn";
+import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game } from "chessops/pgn";
 import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
@@ -136,6 +136,7 @@ export class GameModel {
         readonly moves: AnyNode,
         readonly players: Players,
         readonly metadata: Metadata,
+        readonly game: Game<PgnNodeData>
     ) {
         this.mainline = Array.from(this.moves.mainline());
     }
@@ -353,7 +354,7 @@ export function makeGame(pgnString: string): GameModel {
 
     const players = makePlayers(headers, metadata);
 
-    const gameModel = new GameModel(initial, moves, players, metadata);
+    const gameModel = new GameModel(initial, moves, players, metadata, game);
 
     console.log(gameModel);
 

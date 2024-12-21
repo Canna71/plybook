@@ -39,25 +39,18 @@ export function toShapes(squareHovered: Accessor<string | undefined>, data: Init
 }
 export function makeConfig(game: Accessor<GameModel | undefined>, currentPath: Accessor<Path | undefined>, squareHovered: Accessor<string | undefined>): () => Config {
 	return () => {
-		const data = useCurrentData(game, currentPath)();
-		if (!data) {
-			return {};
-		}
 
-		const lastMoveKey = lastMove(data);
-
-		let autoShapes = toShapes(squareHovered, data);
-
-		const config: Config = {
-			fen: data.fen,
-			lastMove: lastMoveKey,
+		const baseConfig: Config = {
+			fen: "",
+			lastMove: undefined,
+			// viewOnly: true,
 			highlight: {
-				lastMove: true,
-				check: true
+				lastMove: false,
+				check: false
 			},
 			drawable: {
-				enabled: false,
-				autoShapes
+				enabled: true,
+				autoShapes: []
 			},
 			movable: {
 				free: false,
@@ -66,9 +59,27 @@ export function makeConfig(game: Accessor<GameModel | undefined>, currentPath: A
 				enabled: false,
 			},
 			selectable: {
-				enabled: false,
+				enabled: true,
 			},
-			// look at
+		};
+
+		const data = useCurrentData(game, currentPath)();
+		if (!data) {
+			return baseConfig;
+		}
+
+		const lastMoveKey = lastMove(data);
+
+		let autoShapes = toShapes(squareHovered, data);
+
+		const config: Config = {
+			...baseConfig,
+			fen: data.fen,
+			lastMove: lastMoveKey,
+			drawable: {
+				enabled: baseConfig.drawable?.enabled,
+				autoShapes
+			},
 		};
 		return config;
 	};
