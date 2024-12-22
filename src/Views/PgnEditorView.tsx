@@ -11,7 +11,7 @@ const PgnEditView = () => {
     });
 
     return (
-        <PgnEditor pgn={pgn} />
+        <PgnEditor pgn={pgn} setPgn={setPgn} />
     );
 }
 

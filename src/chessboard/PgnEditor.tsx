@@ -9,15 +9,18 @@ import { Key, Piece } from "chessground/types";
 import { INITIAL_FEN, parseFen } from "chessops/fen";
 import { makeSquare, parseSquare } from "chessops";
 import { makeSan } from "chessops/san";
+import { chessgroundDests, scalachessCharPair } from "chessops/compat";
+import { extend, makePgn } from "chessops/pgn";
 
 
 export type PgnEditorOptions = {
 	pgn: Accessor<string | undefined>;
+	setPgn: (pgn: string) => void;
 }
 
 
 
-const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
+const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
 	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
@@ -27,9 +30,9 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 	// After loading the pgn string, create the game model
 	createEffect(() => {
 		// const cg = api();
-		const pgnString = pgn();
+		let pgnString = pgn();
 		if (!pgnString) {
-			return;
+			pgnString = "[]";
 		}
 
 		const gameModel = makeGame(pgnString);
@@ -40,22 +43,42 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 
     const onMove = (orig: Key, dest: Key, capturedPiece?: Piece)  => {
         console.log("onMove", orig, dest, capturedPiece);
+		// const currentPath = game()?.currentPath || Path
+		const path = currentPath() || Path.root;
         const data = useCurrentData(game, currentPath)();
-        const setup = parseFen(data?.fen!).unwrap();
+		const node = game()?.dataAt(path);
+        const fen = data?.fen || INITIAL_FEN;
+
+		const setup = parseFen(fen).unwrap();
         const pos = Chess.fromSetup(setup).unwrap();
         const sq1 = parseSquare(orig);
         const sq2 = parseSquare(dest);
-        const move = makeSan(pos,{
+		const move = {
             from: sq1!,
             to: sq2!,
             promotion: undefined
-        })
-        console.log(move);
-        pos.play({
+        };
+        const san = makeSan(pos,{
             from: sq1!,
             to: sq2!,
             promotion: undefined
         });
+		const moveId = scalachessCharPair(move);
+
+
+		console.log("san", san);
+		console.log("move", move);
+		console.log("node", node);
+		console.log("game", game());
+		// TODO: update game, and update PGN
+		const newPath = path.append(moveId);
+		setCurrentPath(newPath);
+		const newnode = extend(game()?.game.moves.end()!, [{san}]);
+		console.log("newnode", newnode);
+		const pgn = makePgn(game()?.game!);
+		setPgn(pgn);
+		// const parent = game()?.dataAt(currentPath);
+		// parent.
         
 
         // game()?.game 
@@ -72,7 +95,8 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 		const fen = data?.fen || INITIAL_FEN;
 		const setup = parseFen(fen).unwrap();
         const pos = Chess.fromSetup(setup).unwrap();
-		const allDesrs = toDests(pos);
+		// const allDesrs = toDests(pos);
+		const allDests = chessgroundDests(pos);
         return {
             ...baseConfig,
             // turnColor: "white",
@@ -82,7 +106,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
             movable: {
                 free: false,
                 color: pos.turn,
-				dests: allDesrs
+				dests: allDests
             },
             events: {
                 move: onMove,
