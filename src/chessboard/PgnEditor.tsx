@@ -137,7 +137,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 							currentPath={currentPath}
 							setCurrentPath={setCurrentPath}
 							squareHovered={setSquareHovered}
-							showComments={()=>false}
+							
 						/>
 
 					</div>

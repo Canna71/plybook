@@ -1,4 +1,4 @@
-import { For, Component, Setter, Show, createEffect } from "solid-js";
+import { For, Component, Setter, Show, createEffect, createContext, useContext } from "solid-js";
 import { GameModel, Path, PlyData } from "../models/pgn";
 import { createSignal } from 'solid-js';
 import { Accessor } from "solid-js";
@@ -13,23 +13,20 @@ export type MovesProps = {
 	game: Accessor<GameModel | undefined>;
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: Setter<Path | undefined>;
-	showComments: Accessor<boolean>;
 	squareHovered?: (square: string | undefined) => void;
 };
 
 type PlyProps = {
 	line: HierarchicalMoveData;
 	color?: Color;
-	currentPath: Accessor<Path | undefined>;
-	// setCurrentPath: Setter<Path | undefined>;
-	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
 }
 
-const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => {
+const Ply: Component<PlyProps> = ({ line, color }) => {
 
 	const turn = color;
 	const plyData = color && line[color];
 	let ref: HTMLDivElement | undefined;
+	const { currentPath,  showTooltip } = useContext(MovesContext)!;
 
 	const isCurrent = () => {
 		return currentPath() && plyData?.path.equals(currentPath()!);
@@ -63,9 +60,11 @@ const Ply: Component<PlyProps> = ({ line, color, currentPath, showTooltip }) => 
 	</div>;
 }
 
-const CommentsRows: Component<{ comments: Accessor<string[]>, squareHovered?: 
-	(square: string | undefined) => void
- }> = ({ comments, squareHovered }) => {
+const CommentsRows: Component<{
+	comments: Accessor<string[]>
+}> = ({ comments }) => {
+	const { squareHovered } = useContext(MovesContext)!;
+
 	return <For each={comments()}>{comment =>
 		<tr><td colSpan={3}>
 			<CommentsView comments={() => comment} squareHovered={squareHovered} />
@@ -73,7 +72,7 @@ const CommentsRows: Component<{ comments: Accessor<string[]>, squareHovered?:
 	</For>;
 }
 
-const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, showTooltip, squareHovered }) => {
+const MoveLine: Component<MoveProps> = ({ move }) => {
 
 	const startingComments = move.white?.startingComments || [];
 	const afterWhite = move.white?.comments || [];
@@ -81,7 +80,7 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 
 
 	return <>
-		<CommentsRows comments={()=>startingComments} squareHovered={squareHovered} />
+		<CommentsRows comments={() => startingComments}  />
 
 		<tr>
 			<td>
@@ -91,19 +90,19 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 
 			</td>
 			<td>
-				<Ply line={move} color="white" currentPath={currentPath} showTooltip={showTooltip} />
+				<Ply line={move} color="white" />
 			</td>
 			<td>
 				<Show when={!afterWhite.length} fallback={
-					<Ply line={move} currentPath={currentPath} showTooltip={showTooltip} />
+					<Ply line={move} />
 
 				}>
-					<Ply line={move} color="black" currentPath={currentPath} showTooltip={showTooltip} />
+					<Ply line={move} color="black" />
 				</Show>
 			</td>
 		</tr>
-		
-		<CommentsRows comments={()=>afterWhite}  squareHovered={squareHovered} />
+
+		<CommentsRows comments={() => afterWhite}  />
 
 		<Show when={afterWhite.length && move.black}>
 			<tr>
@@ -114,24 +113,22 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 
 				</td>
 				<td>
-					<Ply line={move} currentPath={currentPath} showTooltip={showTooltip} />
+					<Ply line={move} />
 				</td>
 				<td>
-					<Ply line={move} color="black" currentPath={currentPath} showTooltip={showTooltip} />
+					<Ply line={move} color="black" />
 				</td>
 			</tr>
 		</Show>
-		
 
-		<CommentsRows comments={()=>afterBlack}  squareHovered={squareHovered} />
+
+		<CommentsRows comments={() => afterBlack}  />
 
 		{move.variations && <For each={move.variations}>
 			{(variation) => <tr><td class="pgnviewer-variation-cell" colSpan={3}>
 				<MovesTree movesTree={() => variation}
-					currentPath={currentPath}
-					setCurrentPath={setCurrentPath}
-					showTooltip={showTooltip}
-					squareHovered={squareHovered}
+					
+					
 					initialComments={() => []}
 				/>
 
@@ -144,38 +141,45 @@ const MoveLine: Component<MoveProps> = ({ move, currentPath, setCurrentPath, sho
 
 type MoveProps = {
 	move: HierarchicalMoveData;
-	currentPath: Accessor<Path | undefined>;
-	setCurrentPath: Setter<Path | undefined>;
-	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
-	squareHovered?: (square: string | undefined) => void;
 };
 
 type MovesTreeProps = {
-	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
+	// showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
 	movesTree: () => HierarchicalMoveData[];
-	currentPath: Accessor<Path | undefined>;
-	setCurrentPath: Setter<Path | undefined>;
-	squareHovered?: (square: string | undefined) => void;
+	// currentPath: Accessor<Path | undefined>;
+	// setCurrentPath: Setter<Path | undefined>;
+	// squareHovered?: (square: string | undefined) => void;
 	initialComments: Accessor<string[]>;
 }
 
-const MovesTree: Component<MovesTreeProps> = ({ movesTree, currentPath, setCurrentPath, showTooltip, squareHovered, initialComments }) => {
+const MovesTree: Component<MovesTreeProps> = ({ movesTree, initialComments }) => {
 	return (
 		<table class="pgnviewer-moves">
-			<CommentsRows comments={initialComments} squareHovered={squareHovered} />
+			<CommentsRows comments={initialComments}  />
 			<For each={movesTree()}>
 				{(line) =>
 					<>
-						<MoveLine move={line} currentPath={currentPath} setCurrentPath={setCurrentPath} showTooltip={showTooltip} squareHovered={squareHovered}  />
+						<MoveLine move={line}   />
 					</>}
 			</For>
 		</table>);
 }
 
+const MENU_ID = "pgnviewer-menu";
+interface MovesContextType {
+	// game?: () => { initial: { comments: string[] } };
+	currentPath: Accessor<Path | undefined>;
+	setCurrentPath: (path: string[]) => void;
+	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
+	squareHovered?: (square: string | undefined) => void;
+}
+const MovesContext = createContext<MovesContextType>();
+
 const Moves: Component<MovesProps> = (props) => {
 	const [reference, setReference] = createSignal<ReferenceElement | null | undefined>(undefined);
-
 	const [ply, setPly] = createSignal<PlyData>();
+
+
 
 	const onClick = (e: Event) => {
 		const target = e.target as HTMLElement;
@@ -210,14 +214,22 @@ const Moves: Component<MovesProps> = (props) => {
 			<div class="pgnviewer-moves-panel"
 				onClick={onClick}
 			>
-				<MovesTree
-					movesTree={movesTree}
-					currentPath={props.currentPath}
-					setCurrentPath={props.setCurrentPath}
-					squareHovered={props.squareHovered}
-					showTooltip={showTooltip} 
-					initialComments={initialComments}
+				<MovesContext.Provider value={
+					{
+						currentPath: props.currentPath,
+						setCurrentPath: props.setCurrentPath,
+						squareHovered: props.squareHovered,
+						showTooltip,
+						
+					}
+				}>
+					<MovesTree
+						movesTree={movesTree}
+
+		
+						initialComments={initialComments}
 					/>
+				</MovesContext.Provider>
 			</div>
 			<Show when={reference()}>
 				<Tooltip plyData={ply} reference={reference} />

@@ -64,7 +64,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 							currentPath={currentPath}
 							setCurrentPath={setCurrentPath}
 							squareHovered={setSquareHovered}
-							showComments={()=>true}
+							
 						/>
 
 					</div>
