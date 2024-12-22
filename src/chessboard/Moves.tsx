@@ -9,6 +9,7 @@ import { HierarchicalMoveData, makeTree } from "../models/tree";
 // import { IconInfoSquareRoundedFilled } from "@tabler/icons-solidjs";
 import { CommentsView } from "./Comments";
 import { useContextMenu, Menu, Item, Separator, Submenu } from "solid-contextmenu";
+// import "solid-contextmenu/dist/index.css";
 import { DOMElement } from "solid-js/jsx-runtime";
 
 export type MovesProps = {
