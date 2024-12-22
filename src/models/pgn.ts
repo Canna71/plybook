@@ -1,6 +1,6 @@
 import { FEN } from "chessground/types";
 import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game, isChildNode, extend } from "chessops/pgn";
-import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName, Chess } from "chessops";
+import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName, Chess, pgn } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSan, makeSanAndPlay, parseSan } from "chessops/san";
 import { makeFen, parseFen } from "chessops/fen";
@@ -228,7 +228,17 @@ export class GameModel {
         const headers: Headers = new Map(Array.from(this.game.headers, ([key, value]) => [key.toLowerCase(), value]));
         const metadata = makeMetadata(headers);
         this.moves = makeMoves(start, this.game.moves, metadata);
+    }
 
+    changeComments(path: Path, comments: string[]) {
+        const pgnNode = this.findPgnNode(path);
+        if(!pgnNode) return;    
+        if(isChildNode(pgnNode)) {
+            pgnNode.data.comments = comments;
+            this.updateMoves();
+        } else {
+            console.log("initial comments", comments);
+        }
     }
 }
 

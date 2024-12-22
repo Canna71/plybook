@@ -46,7 +46,6 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         console.log("onMove", orig, dest, capturedPiece);
 		// const currentPath = game()?.currentPath || Path
 		const path = currentPath() || Path.root;
-		console.log("path", path);
 
 
         // const pos = getPosition(game, currentPath);
@@ -57,17 +56,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
             to: sq2!,
             promotion: undefined
         };
-        // const san = makeSan(pos,move);
-		// const moveId = scalachessCharPair(move);
-
-
-		// update game, and update PGN
-
-		// const pgnNode = game()?.findPgnNode(path);
-		// extend(pgnNode!, [{san}]);
-		// const pgn = makePgn(game()?.game!);
-		// setPgn(pgn);
-		// const newPath = path.append(moveId);
+        
 		const newPath = game()?.applyMove(path, move);
 
 		setGame(game()?.clone());
@@ -80,13 +69,30 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         // console.log("onSelect", key);
     }
 
+	const currentData = useCurrentData(game, currentPath);
 
+	const comments = () => {
+		const data = currentData();
+		return isPlyData(data) && data?.comments.join("\n") || "";
+	}
+
+	const changedComments = (e: Event) => {
+		const target = e.target as HTMLTextAreaElement;
+		const path = currentPath();
+		if (path) {
+			const comments = [target.value]; //.split("\n");
+			game()?.changeComments(path, comments);
+			setGame(game()?.clone());
+		} else {
+			console.error("No path");
+		}
+	}
 
 	const config = () => {
         
 		const baseConfig = makeConfig(game, currentPath, squareHovered)();
 
-		console.log("baseConfig", baseConfig);	
+		// console.log("baseConfig", baseConfig);	
 
 		const pos = getPosition(game, currentPath);
 		const allDests = chessgroundDests(pos);
@@ -118,7 +124,9 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 						<Chessboard config={config} />
 
 					</div>
-
+					<div class="pgnviewer-comments">
+						<textarea value={comments()} onChange={changedComments} />
+					</div>
 				</div>
 				
 				<div class="pgnviewer-sidebar">
