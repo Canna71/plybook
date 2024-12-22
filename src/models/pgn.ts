@@ -1,9 +1,10 @@
 import { FEN } from "chessground/types";
-import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game } from "chessops/pgn";
+import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game, isChildNode } from "chessops/pgn";
 import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
 import { makeFen } from "chessops/fen";
+import { path } from "@tauri-apps/api";
 
 export interface Comments {
     texts: string[];
@@ -170,6 +171,31 @@ export class GameModel {
                 ?.path || Path.root;
 
     hasPlayerName = () => !!(this.players.white?.name || this.players.black?.name);
+
+    findPgnNode = (path: Path): Node<PgnNodeData> | undefined => {
+        const node = nodeAtPathFrom(this.moves, path);
+        if(!node) return undefined;
+        let n = this.game.moves;
+        if(isChildNode(node)) {
+            for(let pn of this.allPgnNodes(n)) {
+                if(isChildNode(pn)) {
+                    if(pn.data === node.data.pgnNode) {
+                        return pn;
+                    }
+                }
+            }
+        } else {
+            return n;
+        }
+       
+    }
+
+    *allPgnNodes(n: Node<PgnNodeData>): Iterable<Node<PgnNodeData>> {
+        yield n;
+        for(const c of n.children) {
+            yield * this.allPgnNodes(c);
+        }
+    }
 }
 
 const childById = (node: AnyNode, id: Id): MoveNode | undefined =>
@@ -330,7 +356,6 @@ export function toMove(move: NormalMove) : [SquareName, SquareName] {
 
 export function makeGame(pgnString: string): GameModel {
     const game = parsePgn(pgnString)[0];
-    console.log("parsed game", game);
     const start = startingPosition(game.headers).unwrap();
     const setup = start.toSetup();
     const fen = makeFen(setup);
@@ -358,7 +383,7 @@ export function makeGame(pgnString: string): GameModel {
 
     const gameModel = new GameModel(initial, moves, players, metadata, game);
 
-    console.log(gameModel);
+    console.log("gameModel", gameModel);
 
     return gameModel;
 }

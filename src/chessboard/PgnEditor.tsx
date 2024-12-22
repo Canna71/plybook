@@ -1,6 +1,6 @@
 import { Chessboard } from "./chessboard";
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
-import { GameModel, makeGame, Path } from "../models/pgn";
+import { GameModel, isPlyData, makeGame, Path } from "../models/pgn";
 import Moves from "./Moves";
 import { Chess } from 'chessops/chess';
 import ButtonBar from "./Buttonbar";
@@ -10,7 +10,7 @@ import { INITIAL_FEN, parseFen } from "chessops/fen";
 import { makeSquare, parseSquare } from "chessops";
 import { makeSan } from "chessops/san";
 import { chessgroundDests, scalachessCharPair } from "chessops/compat";
-import { extend, makePgn } from "chessops/pgn";
+import { extend, isChildNode, makePgn } from "chessops/pgn";
 
 
 export type PgnEditorOptions = {
@@ -67,14 +67,11 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		const moveId = scalachessCharPair(move);
 
 
-		console.log("san", san);
-		console.log("move", move);
-		console.log("node", node);
-		console.log("game", game());
 		// TODO: update game, and update PGN
-		
-		const newnode = extend(game()?.game.moves.end()!, [{san}]);
-		console.log("newnode", newnode);
+		// const pgnNode = isPlyData(node) ? node.pgnNode : game()?.game.moves!;
+
+		const pgnNode = game()?.findPgnNode(path);
+		const newnode = extend(pgnNode!, [{san}]);
 		const pgn = makePgn(game()?.game!);
 		setPgn(pgn);
 		const newPath = path.append(moveId);
@@ -87,14 +84,13 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     }
 
     const onSelect = (key: Key) => {
-        console.log("onSelect", key);
+        // console.log("onSelect", key);
     }
 
 	const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered);
 
 		const data = useCurrentData(game, currentPath)();
-		console.log("data", data);
 		const fen = data?.fen || INITIAL_FEN;
 		const setup = parseFen(fen).unwrap();
         const pos = Chess.fromSetup(setup).unwrap();
