@@ -1,10 +1,11 @@
 import { FEN } from "chessground/types";
-import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game, isChildNode } from "chessops/pgn";
-import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName } from "chessops";
+import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game, isChildNode, extend } from "chessops/pgn";
+import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName, Chess } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
-import { makeSanAndPlay, parseSan } from "chessops/san";
-import { makeFen } from "chessops/fen";
+import { makeSan, makeSanAndPlay, parseSan } from "chessops/san";
+import { makeFen, parseFen } from "chessops/fen";
 import { path } from "@tauri-apps/api";
+import { getPosition } from "../chessboard/utils";
 
 export interface Comments {
     texts: string[];
@@ -132,15 +133,20 @@ export type MoveNode = ChildNode<PlyData>;
 // immutable
 export class GameModel {
     mainline: PlyData[];
-
+    moves: AnyNode;
     constructor(
         readonly initial: Initial,
-        readonly moves: AnyNode,
+         moves: AnyNode,
         readonly players: Players,
         readonly metadata: Metadata,
         readonly game: Game<PgnNodeData>
     ) {
+        this.moves = moves;
         this.mainline = Array.from(this.moves.mainline());
+    }
+
+    clone() : GameModel {
+        return new GameModel(this.initial, this.moves, this.players, this.metadata, this.game);
     }
 
     nodeAt = (path: Path): AnyNode | undefined => nodeAtPathFrom(this.moves, path);
@@ -174,12 +180,12 @@ export class GameModel {
 
     findPgnNode = (path: Path): Node<PgnNodeData> | undefined => {
         const node = nodeAtPathFrom(this.moves, path);
-        if(!node) return undefined;
+        if (!node) return undefined;
         let n = this.game.moves;
-        if(isChildNode(node)) {
-            for(let pn of this.allPgnNodes(n)) {
-                if(isChildNode(pn)) {
-                    if(pn.data === node.data.pgnNode) {
+        if (isChildNode(node)) {
+            for (let pn of this.allPgnNodes(n)) {
+                if (isChildNode(pn)) {
+                    if (pn.data === node.data.pgnNode) {
                         return pn;
                     }
                 }
@@ -187,14 +193,42 @@ export class GameModel {
         } else {
             return n;
         }
-       
+
     }
 
     *allPgnNodes(n: Node<PgnNodeData>): Iterable<Node<PgnNodeData>> {
         yield n;
-        for(const c of n.children) {
-            yield * this.allPgnNodes(c);
+        for (const c of n.children) {
+            yield* this.allPgnNodes(c);
         }
+    }
+
+    applyMove(path: Path, move: Move): Path {
+        const pos = this.getPosition(path);
+
+        const san = makeSan(pos, move);
+        const moveId = scalachessCharPair(move);
+        const pgnNode = this.findPgnNode(path);
+        extend(pgnNode!, [{san}]);
+        this.updateMoves();
+        const newPath = path.append(moveId);
+        return newPath;
+    }
+
+    private getPosition(path: Path) {
+        const data = this.dataAt(path);
+        const fen = data?.fen;
+        const setup = parseFen(fen!).unwrap();
+        const pos = Chess.fromSetup(setup).unwrap();
+        return pos;
+    }
+
+    private updateMoves() {
+        const start = startingPosition(this.game.headers).unwrap();
+        const headers: Headers = new Map(Array.from(this.game.headers, ([key, value]) => [key.toLowerCase(), value]));
+        const metadata = makeMetadata(headers);
+        this.moves = makeMoves(start, this.game.moves, metadata);
+
     }
 }
 
@@ -350,9 +384,10 @@ function sanToFan(san: string, turn: Color): string {
     return fan;
 }
 
-export function toMove(move: NormalMove) : [SquareName, SquareName] {
+export function toMove(move: NormalMove): [SquareName, SquareName] {
     return move && [makeSquare(move.from), makeSquare(move.to)]
 }
+
 
 export function makeGame(pgnString: string): GameModel {
     const game = parsePgn(pgnString)[0];
@@ -377,7 +412,7 @@ export function makeGame(pgnString: string): GameModel {
         },
     };
     const moves = makeMoves(start, game.moves, metadata);
-    
+
 
     const players = makePlayers(headers, metadata);
 

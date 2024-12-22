@@ -72,6 +72,7 @@ https://codesandbox.io/p/sandbox/chess-with-react-chessground-forked-qwjntr?file
 
 https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
 
+https://github.com/niklasf/chessops/blob/edd0823f31551452f63aa8cb41d91675d548b8f7/src/pgn.ts#L202
 
 # Sidecar
 

@@ -3,6 +3,7 @@ import { GameModel, Initial, isPlyData, Path, PlyData } from "../models/pgn";
 import { Accessor } from "solid-js";
 import { Key } from "chessground/types";
 import { Config } from "chessground/config";
+import { INITIAL_FEN, parseFen } from "chessops/fen";
 
 
 export function lastMove(data: import("/Users/gcannata/Projects/rechess/src/models/pgn").Initial | import("/Users/gcannata/Projects/rechess/src/models/pgn").PlyData) {
@@ -108,3 +109,12 @@ export function toDests(pos: Position): Map<Key, Key[]> {
 export function toColor(pos: Position): Color {
 	return pos.turn === "black" ? "white" : "black";
 }
+
+export function getPosition(game: Accessor<GameModel | undefined>, currentPath: Accessor<Path | undefined>) {
+	const data = useCurrentData(game, currentPath)();
+	const fen = data?.fen || INITIAL_FEN;
+	const setup = parseFen(fen).unwrap();
+	const pos = Chess.fromSetup(setup).unwrap();
+	return pos;
+}
+
