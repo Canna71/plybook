@@ -6,9 +6,8 @@ import { Color } from "chessops/types";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "./Tooltip";
 import { HierarchicalMoveData, makeTree } from "../models/tree";
-// import { IconInfoSquareRoundedFilled } from "@tabler/icons-solidjs";
 import { CommentsView } from "./Comments";
-import { useContextMenu, Menu, Item, Separator, Submenu } from "solid-contextmenu";
+
 // import "solid-contextmenu/dist/index.css";
 import { DOMElement } from "solid-js/jsx-runtime";
 
@@ -32,7 +31,7 @@ const Ply: Component<PlyProps> = ({ line, color }) => {
 	const plyData = color && line[color];
 	let ref: HTMLDivElement | undefined;
 	const { currentPath, showTooltip, editable } = useContext(MovesContext)!;
-	const { show } = useContextMenu({ id: MENU_ID, props: "lala" });
+
 
 	const isCurrent = () => {
 		return currentPath() && plyData?.path.equals(currentPath()!);
@@ -74,8 +73,8 @@ const Ply: Component<PlyProps> = ({ line, color }) => {
 		data-color={color}
 		data-path={color && line[color]?.path.path}
 		onContextMenu={(e) => {
-			console.log("context menu");
-			show(e, { props: 1 });
+			console.log("TODO: context menu");
+			
 		}}
 	>{color && line[color]?.fan || "..."}
 
@@ -259,18 +258,7 @@ const Moves: Component<MovesProps> = (props) => {
 			<Show when={reference()}>
 				<Tooltip plyData={ply} reference={reference} />
 			</Show>
-			<Menu id={MENU_ID} >
-				<Item>⚡ Beautiful</Item>
-				<Item>😊 Easy use</Item>
-				<Separator />
-				<Item>💕 Built with heart</Item>
-				<Submenu label="▶️ submenu">
-					<Item>👋 Hello</Item>
-					<Item>😀 Hello</Item>
-					<Item>🤝 你好</Item>
-				</Submenu>
-				<Item disabled>❌ Disabled</Item>
-			</Menu>
+			
 		</>);
 
 
