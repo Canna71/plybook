@@ -34,7 +34,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		if (!pgnString) {
 			pgnString = "[]";
 		}
-
+		console.log("pgnString", pgnString);
 		const gameModel = makeGame(pgnString);
 		setGame(gameModel);
 		setCurrentPath(gameModel.pathAtMainlinePly(0));
@@ -45,6 +45,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         console.log("onMove", orig, dest, capturedPiece);
 		// const currentPath = game()?.currentPath || Path
 		const path = currentPath() || Path.root;
+		console.log("path", path);
         const data = useCurrentData(game, currentPath)();
 		const node = game()?.dataAt(path);
         const fen = data?.fen || INITIAL_FEN;
@@ -71,12 +72,13 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		console.log("node", node);
 		console.log("game", game());
 		// TODO: update game, and update PGN
-		const newPath = path.append(moveId);
-		setCurrentPath(newPath);
+		
 		const newnode = extend(game()?.game.moves.end()!, [{san}]);
 		console.log("newnode", newnode);
 		const pgn = makePgn(game()?.game!);
 		setPgn(pgn);
+		const newPath = path.append(moveId);
+		setCurrentPath(newPath);
 		// const parent = game()?.dataAt(currentPath);
 		// parent.
         
@@ -92,6 +94,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         const baseConfig = makeConfig(game, currentPath, squareHovered);
 
 		const data = useCurrentData(game, currentPath)();
+		console.log("data", data);
 		const fen = data?.fen || INITIAL_FEN;
 		const setup = parseFen(fen).unwrap();
         const pos = Chess.fromSetup(setup).unwrap();
