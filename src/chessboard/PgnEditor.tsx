@@ -2,10 +2,13 @@ import { Chessboard } from "./chessboard";
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
 import { GameModel, makeGame, Path } from "../models/pgn";
 import Moves from "./Moves";
-
+import { Chess } from 'chessops/chess';
 import ButtonBar from "./Buttonbar";
-import { makeConfig } from "./utils";
+import { makeConfig, toColor, toDests, useCurrentData } from "./utils";
 import { Key, Piece } from "chessground/types";
+import { INITIAL_FEN, parseFen } from "chessops/fen";
+import { makeSquare, parseSquare } from "chessops";
+import { makeSan } from "chessops/san";
 
 
 export type PgnEditorOptions = {
@@ -37,6 +40,24 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 
     const onMove = (orig: Key, dest: Key, capturedPiece?: Piece)  => {
         console.log("onMove", orig, dest, capturedPiece);
+        const data = useCurrentData(game, currentPath)();
+        const setup = parseFen(data?.fen!).unwrap();
+        const pos = Chess.fromSetup(setup).unwrap();
+        const sq1 = parseSquare(orig);
+        const sq2 = parseSquare(dest);
+        const move = makeSan(pos,{
+            from: sq1!,
+            to: sq2!,
+            promotion: undefined
+        })
+        console.log(move);
+        pos.play({
+            from: sq1!,
+            to: sq2!,
+            promotion: undefined
+        });
+        
+
         // game()?.game 
     }
 
@@ -46,14 +67,22 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 
 	const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered);
+
+		const data = useCurrentData(game, currentPath)();
+		const fen = data?.fen || INITIAL_FEN;
+		const setup = parseFen(fen).unwrap();
+        const pos = Chess.fromSetup(setup).unwrap();
+		const allDesrs = toDests(pos);
         return {
             ...baseConfig,
             // turnColor: "white",
 
             viewOnly: false,
-            moveable: {
+			turnColor: pos.turn,
+            movable: {
                 free: false,
-                color: "white"
+                color: pos.turn,
+				dests: allDesrs
             },
             events: {
                 move: onMove,

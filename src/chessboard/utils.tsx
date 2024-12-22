@@ -1,4 +1,4 @@
-import { NormalMove, makeSquare } from "chessops";
+import { Chess, Color, NormalMove, Position, Square, SquareSet, makeSquare } from "chessops";
 import { GameModel, Initial, isPlyData, Path, PlyData } from "../models/pgn";
 import { Accessor } from "solid-js";
 import { Key } from "chessground/types";
@@ -23,7 +23,7 @@ export function useCurrentData(game: Accessor<GameModel | undefined>, currentPat
 		}
 
 		const data = g.dataAt(path);
-        return data;
+		return data;
 	};
 }
 export function toShapes(squareHovered: Accessor<string | undefined>, data: Initial | PlyData) {
@@ -85,3 +85,26 @@ export function makeConfig(game: Accessor<GameModel | undefined>, currentPath: A
 	};
 }
 
+function* toSquares(squares: SquareSet) {
+	for (let square of squares) {
+		yield makeSquare(square) as Key;
+	}
+}
+
+export function toDests(pos: Position): Map<Key, Key[]> {
+	const dests = new Map();
+	const allDests = pos.allDests();
+
+
+
+	for (const [from, tos] of allDests) {
+		const key = makeSquare(from) as Key;
+		const keys = toSquares(tos);
+		dests.set(key, Array.from(keys));
+	}
+	return dests;
+}
+
+export function toColor(pos: Position): Color {
+	return pos.turn === "black" ? "white" : "black";
+}
