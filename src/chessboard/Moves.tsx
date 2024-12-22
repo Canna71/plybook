@@ -8,13 +8,17 @@ import { Tooltip } from "./Tooltip";
 import { HierarchicalMoveData, makeTree } from "../models/tree";
 // import { IconInfoSquareRoundedFilled } from "@tabler/icons-solidjs";
 import { CommentsView } from "./Comments";
+import { useContextMenu, Menu, Item, Separator, Submenu } from "solid-contextmenu";
+import { DOMElement } from "solid-js/jsx-runtime";
 
 export type MovesProps = {
 	game: Accessor<GameModel | undefined>;
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: Setter<Path | undefined>;
 	squareHovered?: (square: string | undefined) => void;
+	editable: Accessor<boolean>;
 };
+
 
 type PlyProps = {
 	line: HierarchicalMoveData;
@@ -26,7 +30,8 @@ const Ply: Component<PlyProps> = ({ line, color }) => {
 	const turn = color;
 	const plyData = color && line[color];
 	let ref: HTMLDivElement | undefined;
-	const { currentPath,  showTooltip } = useContext(MovesContext)!;
+	const { currentPath, showTooltip, editable } = useContext(MovesContext)!;
+	const { show } = useContextMenu({ id: MENU_ID, props: "lala" });
 
 	const isCurrent = () => {
 		return currentPath() && plyData?.path.equals(currentPath()!);
@@ -35,6 +40,16 @@ const Ply: Component<PlyProps> = ({ line, color }) => {
 		return plyData !== undefined;
 	};
 
+	const innerShowTooltip = (e: MouseEvent & {
+		currentTarget: HTMLDivElement;
+		target: DOMElement;
+	} | undefined) => {
+		if (e) {
+			isValid() && editable() && showTooltip(e.currentTarget, plyData);
+		} else {
+			showTooltip(undefined, undefined);
+		}
+	}
 
 	const moveClass = () => {
 		return {
@@ -50,14 +65,22 @@ const Ply: Component<PlyProps> = ({ line, color }) => {
 		}
 	});
 
-	return <div
+	return <><div
 		ref={ref}
-		onMouseEnter={(e) => isValid() && showTooltip(e.currentTarget, plyData)}
-		onMouseLeave={() => showTooltip(undefined, undefined)}
+		onMouseEnter={innerShowTooltip}
+		onMouseLeave={() => innerShowTooltip(undefined)}
 		classList={moveClass()}
 		data-color={color}
-		data-path={color && line[color]?.path.path}  >{color && line[color]?.fan || "..."}
-	</div>;
+		data-path={color && line[color]?.path.path}
+		onContextMenu={(e) => {
+			console.log("context menu");
+			show(e, { props: 1 });
+		}}
+	>{color && line[color]?.fan || "..."}
+
+	</div>
+
+	</>;
 }
 
 const CommentsRows: Component<{
@@ -80,7 +103,7 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
 
 
 	return <>
-		<CommentsRows comments={() => startingComments}  />
+		<CommentsRows comments={() => startingComments} />
 
 		<tr>
 			<td>
@@ -102,7 +125,7 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
 			</td>
 		</tr>
 
-		<CommentsRows comments={() => afterWhite}  />
+		<CommentsRows comments={() => afterWhite} />
 
 		<Show when={afterWhite.length && move.black}>
 			<tr>
@@ -122,13 +145,13 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
 		</Show>
 
 
-		<CommentsRows comments={() => afterBlack}  />
+		<CommentsRows comments={() => afterBlack} />
 
 		{move.variations && <For each={move.variations}>
 			{(variation) => <tr><td class="pgnviewer-variation-cell" colSpan={3}>
 				<MovesTree movesTree={() => variation}
-					
-					
+
+
 					initialComments={() => []}
 				/>
 
@@ -155,11 +178,11 @@ type MovesTreeProps = {
 const MovesTree: Component<MovesTreeProps> = ({ movesTree, initialComments }) => {
 	return (
 		<table class="pgnviewer-moves">
-			<CommentsRows comments={initialComments}  />
+			<CommentsRows comments={initialComments} />
 			<For each={movesTree()}>
 				{(line) =>
 					<>
-						<MoveLine move={line}   />
+						<MoveLine move={line} />
 					</>}
 			</For>
 		</table>);
@@ -172,6 +195,7 @@ interface MovesContextType {
 	setCurrentPath: (path: string[]) => void;
 	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
 	squareHovered?: (square: string | undefined) => void;
+	editable: Accessor<boolean>;
 }
 const MovesContext = createContext<MovesContextType>();
 
@@ -219,14 +243,14 @@ const Moves: Component<MovesProps> = (props) => {
 						currentPath: props.currentPath,
 						setCurrentPath: props.setCurrentPath,
 						squareHovered: props.squareHovered,
+						editable: props.editable,
 						showTooltip,
-						
 					}
 				}>
 					<MovesTree
 						movesTree={movesTree}
 
-		
+
 						initialComments={initialComments}
 					/>
 				</MovesContext.Provider>
@@ -234,6 +258,18 @@ const Moves: Component<MovesProps> = (props) => {
 			<Show when={reference()}>
 				<Tooltip plyData={ply} reference={reference} />
 			</Show>
+			<Menu id={MENU_ID} >
+				<Item>⚡ Beautiful</Item>
+				<Item>😊 Easy use</Item>
+				<Separator />
+				<Item>💕 Built with heart</Item>
+				<Submenu label="▶️ submenu">
+					<Item>👋 Hello</Item>
+					<Item>😀 Hello</Item>
+					<Item>🤝 你好</Item>
+				</Submenu>
+				<Item disabled>❌ Disabled</Item>
+			</Menu>
 		</>);
 
 
