@@ -1,5 +1,5 @@
 import { FEN } from "chessground/types";
-import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game, isChildNode, extend } from "chessops/pgn";
+import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game, isChildNode, extend, makePgn } from "chessops/pgn";
 import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName, Chess, pgn } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSan, makeSanAndPlay, parseSan } from "chessops/san";
@@ -239,6 +239,10 @@ export class GameModel {
         } else {
             console.log("initial comments", comments);
         }
+    }
+
+    pgn() {
+        return makePgn(this.game);
     }
 }
 

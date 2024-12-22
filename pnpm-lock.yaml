@@ -41,6 +41,9 @@ importers:
       es-toolkit:
         specifier: ^1.27.0
         version: 1.27.0
+      solid-contextmenu:
+        specifier: ^0.0.2
+        version: 0.0.2(solid-js@1.9.2)(solid-transition-group@0.0.10(solid-js@1.9.2))
       solid-floating-ui:
         specifier: ^0.3.1
         version: 0.3.1(@floating-ui/dom@1.6.12)(solid-js@1.9.2)
@@ -649,6 +652,10 @@ packages:
     resolution: {integrity: sha512-n8enUVCED/KVRQlab1hr3MVpcVMvxtZjmEa956u+4YijlmQED223XMSYj2tLuKvr4jcCTzNNMpQDUer72MMmzA==}
     engines: {node: '>= 14.16.0'}
 
+  clsx@1.2.1:
+    resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
+    engines: {node: '>=6'}
+
   color-convert@1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
 
@@ -788,6 +795,9 @@ packages:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
 
+  mitt@3.0.1:
+    resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
+
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
@@ -851,6 +861,12 @@ packages:
     resolution: {integrity: sha512-rqEO6FZk8mv7Hyv4UCj3FD3b6Waqft605TLfsCe/BiaylRpyyMC0b+uA5TJKawX3KzMrdi3wsLbCaLplrQmBvQ==}
     engines: {node: '>=10'}
 
+  solid-contextmenu@0.0.2:
+    resolution: {integrity: sha512-TmOhIvVpZmQdoiydSP07d9rT0xu/wvRSH6TJqbGPd+2XZz0wOualbm5CvLiHbOGnOU5tBrbe4q0cU/EMvG7u+w==}
+    peerDependencies:
+      solid-js: ^1.4.8
+      solid-transition-group: ^0.0.10
+
   solid-floating-ui@0.3.1:
     resolution: {integrity: sha512-o/QmGsWPS2Z3KidAxP0nDvN7alI7Kqy0kU+wd85Fz+au5SYcnYm7I6Fk3M60Za35azsPX0U+5fEtqfOuk6Ao0Q==}
     engines: {node: '>=10'}
@@ -865,6 +881,11 @@ packages:
     resolution: {integrity: sha512-F3aPsX6hVw9ttm5LYlth8Q15x6MlI/J3Dn+o3EQyRTtTxidepSTwAYdozt01/YA+7ObcciagGEyXIopGZzQtbA==}
     peerDependencies:
       solid-js: ^1.3
+
+  solid-transition-group@0.0.10:
+    resolution: {integrity: sha512-b3O9z6BUP60CG1WnTdqFuvHms0reDNYwQF+eAEEaSaoDEmiOu9+Lu7zQgWGySJjaAdSAClhmFCmx/eAjQgfIoA==}
+    peerDependencies:
+      solid-js: ^1.0.0
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -1447,6 +1468,8 @@ snapshots:
     dependencies:
       readdirp: 4.0.2
 
+  clsx@1.2.1: {}
+
   color-convert@1.9.3:
     dependencies:
       color-name: 1.1.3
@@ -1564,6 +1587,8 @@ snapshots:
       braces: 3.0.3
       picomatch: 2.3.1
 
+  mitt@3.0.1: {}
+
   ms@2.1.3: {}
 
   nanoid@3.3.7: {}
@@ -1633,6 +1658,13 @@ snapshots:
 
   seroval@1.1.1: {}
 
+  solid-contextmenu@0.0.2(solid-js@1.9.2)(solid-transition-group@0.0.10(solid-js@1.9.2)):
+    dependencies:
+      clsx: 1.2.1
+      mitt: 3.0.1
+      solid-js: 1.9.2
+      solid-transition-group: 0.0.10(solid-js@1.9.2)
+
   solid-floating-ui@0.3.1(@floating-ui/dom@1.6.12)(solid-js@1.9.2):
     dependencies:
       '@floating-ui/dom': 1.6.12
@@ -1652,6 +1684,10 @@ snapshots:
       solid-js: 1.9.2
     transitivePeerDependencies:
       - supports-color
+
+  solid-transition-group@0.0.10(solid-js@1.9.2):
+    dependencies:
+      solid-js: 1.9.2
 
   source-map-js@1.2.1: {}
 
