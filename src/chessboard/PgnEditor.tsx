@@ -11,6 +11,7 @@ import { makeSquare, parseSquare } from "chessops";
 import { makeSan } from "chessops/san";
 import { chessgroundDests, scalachessCharPair } from "chessops/compat";
 import { extend, isChildNode, makePgn } from "chessops/pgn";
+import { create } from "@tauri-apps/plugin-fs";
 
 
 export type PgnEditorOptions = {
@@ -87,8 +88,17 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         // console.log("onSelect", key);
     }
 
+
+
 	const config = () => {
-        const baseConfig = makeConfig(game, currentPath, squareHovered);
+        
+		const path = currentPath() || Path.root;
+		
+		
+		const baseConfig = makeConfig(game, currentPath, squareHovered)();
+
+		console.log("baseConfig", baseConfig);
+
 
 		const data = useCurrentData(game, currentPath)();
 		const fen = data?.fen || INITIAL_FEN;
@@ -98,7 +108,6 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		const allDests = chessgroundDests(pos);
         return {
             ...baseConfig,
-            // turnColor: "white",
 
             viewOnly: false,
 			turnColor: pos.turn,
