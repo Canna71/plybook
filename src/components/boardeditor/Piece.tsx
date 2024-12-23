@@ -10,7 +10,14 @@ export const ROLES: Role[] = ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king
 // with the appropriate class name
 
 export const Piece = (props: { role: Role, color: 'white' | 'black' }) => {
-	return <piece class={`${props.color} ${props.role}`} ></piece>
+	return <piece draggable={true} class={`${props.color} ${props.role}`}
+		onDragStart={(e) => {
+			// e.dataTransfer!.effectAllowed = 'none';
+			// e.dataTransfer!.dropEffect = 'none';
+			// e.dataTransfer!.setData('text/plain', 'piece');
+			console.log("onDragStart", e);
+		}}
+	></piece>
 }
 
 // export a toolbar control that lists all the pieces in ROLES and allows the user to select
@@ -37,8 +44,10 @@ export const PiecesToolbar = (props: ToolbarProps) => {
 	// 		props.setSelectedPiece(null);
 	// };
 
-	return <div class="cg-wrap pieces-toolbar">
-		{ROLES.map(role => 
+	return <div
+	
+		class="cg-wrap pieces-toolbar">
+		{ROLES.map(role =>
 			<Piece role={role} color={props.color} />
 		)}
 	</div>

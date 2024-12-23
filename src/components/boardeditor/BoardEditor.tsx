@@ -3,7 +3,9 @@ import { Config } from "chessground/config";
 import { createSignal } from "solid-js";
 import { Api } from "chessground/api";
 import { PiecesToolbar } from "./Piece";
-import { Piece } from "chessground/types";
+import { Key, Piece, Role } from "chessground/types";
+
+// see: https://lichess.org/editor/1nbqkbn1/p3pppp/1bp2n2/3r3r/8/8/PPPPPPPP/RNBQKBNR_w_KQha_-_0_1?color=white
 
 const BoardEditor = () => {
     const [selectedPiece, setSelectedPiece] = createSignal<Piece | null>(null);
@@ -48,7 +50,8 @@ const BoardEditor = () => {
         
         return {
         draggable: {
-            enabled: true
+            enabled: true,
+            deleteOnDropOff: true
         },
         movable: {
             free: true,  // Allow pieces to be placed freely
@@ -57,7 +60,8 @@ const BoardEditor = () => {
                 after: (orig, dest, metadata) => {
                     console.log(orig, dest, metadata);
                     console.log(api()?.getFen());
-                }
+                },
+
             }
         },
         selectable: {
@@ -65,11 +69,28 @@ const BoardEditor = () => {
         },
         drawable: {
             enabled: false
-        }
+        },
+        predroppable: {
+                enabled: true,
+                events: {
+                    set: (role: Role, key: Key) => {
+                        console.log("dropped", role, key);
+                        // props.onPieceSelected(role);
+                    },
+                    unset: () => {
+                        console.log("unset");
+                    }
+                }
+            }
 
     }};
 
-    return (<div class="chess-container">
+    return (<div class="chess-container"
+        // onDragOver={(e) => {
+        //     e.preventDefault();
+        //     console.log("dragover", e);
+        // }}
+        >
         <PiecesToolbar
             color='black'
         />
