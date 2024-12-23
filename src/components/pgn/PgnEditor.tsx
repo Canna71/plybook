@@ -1,10 +1,10 @@
-import { Chessboard } from "./chessboard";
+import { Chessboard } from "../common/chessboard";
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
-import { makeGame, Path } from "../models/pgn";
-import { GameModel } from "../models/GameModel";
+import { makeGame, Path } from "../../models/pgn";
+import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
-import { getPosition, makeConfig } from "./common/utils";
+import { getPosition, makeConfig } from "../common/utils";
 import { Key, Piece } from "chessground/types";
 import { parseSquare } from "chessops";
 import { chessgroundDests } from "chessops/compat";

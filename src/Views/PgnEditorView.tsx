@@ -1,7 +1,7 @@
 import { createSignal, onMount } from "solid-js";
 
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
-import PgnEditor from "../components/PgnEditor";
+import PgnEditor from "../components/pgn/PgnEditor";
 import { BaseDirectory, readTextFile } from "@tauri-apps/plugin-fs";
 const PgnEditView = () => {
 

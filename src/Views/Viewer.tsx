@@ -1,4 +1,4 @@
-import { Chessboard } from "../components/chessboard";
+import { Chessboard } from "../components/common/chessboard";
 
 const Viewer = () => {
 

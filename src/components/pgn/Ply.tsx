@@ -1,9 +1,9 @@
 import { Color } from "chessops";
 import { Component, useContext, createEffect, Show, ValidComponent } from "solid-js";
 import { DOMElement } from "solid-js/types/jsx.js";
-import { HierarchicalMoveData } from "../models/tree";
+import { HierarchicalMoveData } from "../../models/tree";
 import { MovesContext } from "./Moves";
-import { useContextMenu } from "./common/contextmenu";
+import { useContextMenu } from "../common/contextmenu";
 import { Dynamic } from "solid-js/web";
 import { range } from "es-toolkit";
 

@@ -1,7 +1,7 @@
 import { IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerTrackNextFilled, IconPlayerTrackPrevFilled } from '@tabler/icons-solidjs';
 import { Accessor, Component, Setter, Show } from "solid-js";
-import { Path } from "../models/pgn";
-import { GameModel } from "../models/GameModel";
+import { Path } from "../../models/pgn";
+import { GameModel } from "../../models/GameModel";
 
 export type ButtonBarProps = {
 	game: Accessor<GameModel | undefined>;

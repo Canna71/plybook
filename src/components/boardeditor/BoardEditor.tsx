@@ -1,4 +1,4 @@
-import { Chessboard } from "./chessboard";
+import { Chessboard } from "../common/chessboard";
 import { Config } from "chessground/config";
 import { createSignal } from "solid-js";
 import { Api } from "chessground/api";
@@ -43,7 +43,10 @@ const BoardEditor = () => {
 
 
 
-    const config = (): Config => ({
+    const config = (): Config => {
+
+        
+        return {
         draggable: {
             enabled: true
         },
@@ -59,45 +62,23 @@ const BoardEditor = () => {
         },
         selectable: {
             enabled: true, // Allow pieces to be selectable
-
         },
         drawable: {
-            enabled: true, // Allow drawings
-            // autoShapes: [{
-            //     orig: 'b2',
-            //     // dest: 'b6',
-            //     brush: 'green',
-            //     // label: { text: 'B' },
-            //     // modifiers: {
-            //     //     lineWidth: 6,
-            //     // },
-            // }]
-        },
-        highlight: {
-            lastMove: true,
-            check: true,
-        },
+            enabled: false
+        }
 
-    });
+    }};
 
     return (<div class="chess-container">
-        <Chessboard
-            onChessboardClick={onChessboardClick}
-            setApi={setApi}
-            config={config}
-        />
-        <div>
-            <button onClick={onSave} >Save</button>
-            <button onClick={onDeleteModeClicked} classList={{
-                selected: deleteMode()
-            }} >X</button>
-
-
-        </div>
         <Toolbar
             selectedPiece={selectedPiece}
             setSelectedPiece={setSelectedPiece}
             color='white'
+        />
+        <Chessboard
+            onChessboardClick={onChessboardClick}
+            setApi={setApi}
+            config={config}
         />
         <Toolbar
             selectedPiece={selectedPiece}

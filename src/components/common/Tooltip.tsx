@@ -2,7 +2,7 @@ import { ReferenceElement } from "@floating-ui/dom";
 import { NormalMove } from "chessops";
 import { useFloating } from "solid-floating-ui";
 import { Accessor, Component, createSignal } from "solid-js";
-import { PlyData, toMove } from "../models/pgn";
+import { PlyData, toMove } from "../../models/pgn";
 import { Config } from "chessground/config";
 import { Chessboard } from "./chessboard";
 

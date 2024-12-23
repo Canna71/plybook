@@ -1,11 +1,12 @@
-import { Chessboard } from "./chessboard";
+import { Chessboard } from "../common/chessboard";
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
-import { makeGame, Path } from "../models/pgn";
-import { GameModel } from "../models/GameModel";
-import Moves from "./Moves";
+import { makeGame, Path } from "../../models/pgn";
+import { GameModel } from "../../models/GameModel";
+import Moves from "../pgn/Moves";
 
+
+import { makeConfig } from "../common/utils";
 import ButtonBar from "./Buttonbar";
-import { makeConfig } from "./common/utils";
 
 // see: https://github.com/lichess-org/pgn-viewer
 

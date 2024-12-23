@@ -1,11 +1,11 @@
 import { For, Component, Setter, Show, createContext, useContext } from "solid-js";
-import { Path, PlyData } from "../models/pgn";
-import { GameModel } from "../models/GameModel";
+import { Path, PlyData } from "../../models/pgn";
+import { GameModel } from "../../models/GameModel";
 import { createSignal } from 'solid-js';
 import { Accessor } from "solid-js";
 import { ReferenceElement } from "@floating-ui/dom";
-import { Tooltip } from "./Tooltip";
-import { HierarchicalMoveData, makeTree } from "../models/tree";
+import { Tooltip } from "../common/Tooltip";
+import { HierarchicalMoveData, makeTree } from "../../models/tree";
 import { CommentsView } from "./Comments";
 
 // import "solid-contextmenu/dist/index.css";

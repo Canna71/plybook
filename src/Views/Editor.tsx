@@ -1,5 +1,5 @@
 
-import BoardEditor from "../components/BoardEditor";
+import BoardEditor from "../components/boardeditor/BoardEditor";
 
 const Editor = () => {
 

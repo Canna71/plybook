@@ -1,4 +1,4 @@
-import { Chessboard } from "./chessboard";
+import { Chessboard } from "./common/chessboard";
 import { Config } from "chessground/config";
 import { Accessor, Component, createEffect, createSignal, For } from "solid-js";
 import { makeGame, PlyData, Path } from "../models/pgn";

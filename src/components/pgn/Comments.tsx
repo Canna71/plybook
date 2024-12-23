@@ -1,9 +1,10 @@
 import { Accessor, Component, createEffect, For, useContext } from "solid-js";
-import { Path, isPlyData } from "../models/pgn";
-import { GameModel } from "../models/GameModel";
-import { useCurrentData } from "./common/utils";
-import { MovesContext } from "./Moves";
-import { useContextMenu } from "./common/contextmenu";
+
+import { GameModel } from "../../models/GameModel";
+import { useCurrentData } from "../common/utils";
+import { MovesContext } from "../pgn/Moves";
+import { useContextMenu } from "../common/contextmenu";
+import { isPlyData, Path } from "../../models/pgn";
 
 // regex for square names
 export const squareRegex = /([a-h][1-8])/g;
