@@ -118,9 +118,6 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 					<Chessboard config={config} />
 
 				</div>
-				<div>
-					TODO: in analysis we don't need the comments
-				</div>
 			</div>
 			<div class="pgnviewer-sidebar">
 				<div class="pgnviewer-mainline-wrapper">

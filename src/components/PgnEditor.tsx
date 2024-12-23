@@ -9,6 +9,7 @@ import { Key, Piece } from "chessground/types";
 import { parseSquare } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 
+// TODO edit metadata
 
 export type PgnEditorOptions = {
 	pgn: Accessor<string | undefined>;

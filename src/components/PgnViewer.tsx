@@ -42,8 +42,9 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 	const config = makeConfig(game, currentPath, squareHovered);
 
-	// TODO add a button to show/hide variations
 	// TODO style buttons
+	// TODO display player names
+	
 	return (
 		<>
 			<div class="pgnviewer-container">
