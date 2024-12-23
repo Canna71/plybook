@@ -24,7 +24,8 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 	}
 
 	const onDelete = () => {
-		
+		const ng = game()?.deleteFrom(plyData?.path!);
+		setGame(ng);
 	}
 
 	// context menu functions

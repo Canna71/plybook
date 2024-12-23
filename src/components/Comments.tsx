@@ -3,7 +3,7 @@ import { Path, isPlyData } from "../models/pgn";
 import { GameModel } from "../models/GameModel";
 import { useCurrentData } from "./common/utils";
 import { MovesContext } from "./Moves";
-import { start } from "chessground/drag";
+import { useContextMenu } from "./common/contextmenu";
 
 // regex for square names
 export const squareRegex = /([a-h][1-8])/g;
@@ -21,6 +21,7 @@ export const Comments2: Component<CommentsProps> = ({ game, currentPath, squareH
 	const currentData = useCurrentData(game, currentPath);
 
 	const path = currentPath() || Path.root;
+
 	
 
 	const comments = () => {
@@ -99,6 +100,16 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 		}
 	});
 
+	const onDelete = () => {
+		const ng = game()?.deleteComment(path, index, starting);
+		setGame(ng);
+	}
+	
+	const onContextMenu = useContextMenu({
+		items: [
+			{ id: "moves_delete", text: "Delete", action: onDelete },
+		],
+	});
 
 	return <div
 		ref={ref}
@@ -109,5 +120,6 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 		onBlur={onBlur}
 		class="pgnviewer-comments"
 		innerHTML={paragraph()}
+		onContextMenu={onContextMenu}
 		></div>;
 }

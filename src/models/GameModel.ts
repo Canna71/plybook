@@ -138,11 +138,39 @@ export class GameModel {
         if (isChildNode(pgnNode)) {
             const comments = pgnNode.data.comments || [];
             comments.splice(0, 0, comment);
-            pgnNode.data.comments = comments;
+            // pgnNode.data.comments = comments;
         } else {
             const comments =  this.game.comments || [];
             comments.splice(0, 0, comment);
-            this.game.comments = comments;
+            // this.game.comments = comments;
+        }
+        return this.getNewGameModel();
+    }
+
+    deleteComment(path: Path, index: number, starting:boolean = false){
+        const pgnNode = this.findPgnNode(path);
+        if (!pgnNode) return this;
+        if (isChildNode(pgnNode)) {
+            const comments = (starting ? pgnNode.data.startingComments : pgnNode.data.comments) || [];
+            comments.splice(index, 1);
+            // pgnNode.data.comments = comments;
+        } else {
+            const comments =  this.game.comments || [];
+            comments.splice(index, 1);
+            // this.game.comments = comments;
+        }
+        return this.getNewGameModel();
+    }
+
+    deleteFrom(path: Path) {
+        const pgnNode = this.findPgnNode(path);
+        if (!pgnNode) return this;
+        if (isChildNode(pgnNode)) {
+            const parent = this.findPgnNode(path.previous());
+            if (!parent) return this;
+            parent.children = parent.children.filter(c => c !== pgnNode);
+        } else {
+            return this;
         }
         return this.getNewGameModel();
     }

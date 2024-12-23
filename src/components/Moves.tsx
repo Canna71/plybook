@@ -10,7 +10,6 @@ import { CommentsView } from "./Comments";
 
 // import "solid-contextmenu/dist/index.css";
 import { Ply } from "./Ply";
-import { start } from "chessground/drag";
 
 export type MovesProps = {
 	game: Accessor<GameModel | undefined>;
