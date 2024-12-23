@@ -5,6 +5,7 @@ import { HierarchicalMoveData } from "../models/tree";
 import { MovesContext } from "./Moves";
 import { useContextMenu } from "./common/contextmenu";
 import { Dynamic } from "solid-js/web";
+import { range } from "es-toolkit";
 
 const GoodMove = () => {
 	return <svg xmlns="http://www.w3.org/2000/svg" class="" width="18" height="18" viewBox="0 0 18 19">
@@ -128,84 +129,84 @@ function getChessAnnotationSymbol(nag: number) {
         5: "⁉",         // speculative move
         6: "⁈",         // questionable move
         7: "□",         // forced move
-        8: "",          // singular move (no alts)
-        9: "Worst move", // worst move
+        // 8: "",          // singular move (no alts)
+        // 9: "Worst move", // worst move
         10: "=",        // drawish pos or even
-        11: "",         // eq chances, quiet pos
-        12: "",         // eq chances, active pos
+        // 11: "",         // eq chances, quiet pos
+        // 12: "",         // eq chances, active pos
         13: "∞",        // unclear pos
         14: "⊕",        // W slight adv
         15: "⊖",        // B slight adv
         16: "±",        // W mod adv
         17: "∓",        // B mod adv
-        18: "+−",       // W decisive adv
-        19: "−+",       // B decisive adv
-        20: "Crushing adv", // W crushing adv
-        21: "Crushing adv", // B crushing adv
+        18: "+-",       // W decisive adv
+        19: "-+",       // B decisive adv
+        // 20: "Crushing adv", // W crushing adv
+        // 21: "Crushing adv", // B crushing adv
         22: "⨀",       // W is in zugzwang
         23: "⨀",       // B is in zugzwang
-        24: "",        // W slight space adv
-        25: "",        // B slight space adv
-        26: "",        // W mod space adv
-        27: "",        // B mod space adv
-        28: "",        // W decisive space adv
-        29: "",        // B decisive space adv
-        30: "",        // W slight time/dev adv
-        31: "",        // B slight time/dev adv
+        // 24: "",        // W slight space adv
+        // 25: "",        // B slight space adv
+        // 26: "",        // W mod space adv
+        // 27: "",        // B mod space adv
+        // 28: "",        // W decisive space adv
+        // 29: "",        // B decisive space adv
+        // 30: "",        // W slight time/dev adv
+        // 31: "",        // B slight time/dev adv
         32: "⟳",       // W mod time/dev adv
         33: "⟳",       // B mod time/dev adv
-        34: "",        // W decisive time/dev adv
-        35: "",        // B decisive time/dev adv
+        // 34: "",        // W decisive time/dev adv
+        // 35: "",        // B decisive time/dev adv
         36: "→",       // W has the initiative
         37: "→",       // B has the initiative
-        38: "",        // W lasting initiative
-        39: "",        // B lasting initiative
+        // 38: "",        // W lasting initiative
+        // 39: "",        // B lasting initiative
         40: "↑",       // W has the attack
         41: "↑",       // B has the attack
-        42: "Compensation", // compensation
-        48: "Center",  // center
-        54: "K-side",  // K-side
-        60: "Q-side",  // Q-side
-        66: "1st rank", // 1st rank
-        70: "King prot/placement", // king prot/placement
-        78: "Pawn structure", // pawn structure
-        86: "Piece placement", // piece placement (N->Q)
-        102: "Piece coord", // piece coord
-        106: "Opening play", // opening play
-        114: "Middlegame play", // middlegame play
-        122: "Endgame play", // endgame play
-        130: "Counterplay", // counterplay
-        136: "Time pressure", // time pressure
+        // 42: "Compensation", // compensation
+        // 48: "Center",  // center
+        // 54: "K-side",  // K-side
+        // 60: "Q-side",  // Q-side
+        // 66: "1st rank", // 1st rank
+        // 70: "King prot/placement", // king prot/placement
+        // 78: "Pawn structure", // pawn structure
+        // 86: "Piece placement", // piece placement (N->Q)
+        // 102: "Piece coord", // piece coord
+        // 106: "Opening play", // opening play
+        // 114: "Middlegame play", // middlegame play
+        // 122: "Endgame play", // endgame play
+        // 130: "Counterplay", // counterplay
+        // 136: "Time pressure", // time pressure
         140: "∆",       // With the idea...
-        141: "Aimed against...",
+        // 141: "Aimed against...",
         142: "⌓",      // Better is...
-        143: "Worse is...",
-        144: "Equivalent is...",
-        145: "RR",      // Editorial comment
-        146: "N",       // Novelty
-        220: "Diagram", // Diagram
-        221: "Diagram (from B)", // Diagram (from B)
-        238: "Space Adv", // Space Adv
+        // 143: "Worse is...",
+        // 144: "Equivalent is...",
+        // 145: "RR",      // Editorial comment
+        // 146: "N",       // Novelty
+        // 220: "Diagram", // Diagram
+        // 221: "Diagram (from B)", // Diagram (from B)
+        // 238: "Space Adv", // Space Adv
         239: "⇔",      // File (a-h)
         240: "⇗",      // Diagonal
-        241: "Centre",  // Centre
+        // 241: "Centre",  // Centre
         242: "⟫",      // King-side
         243: "⟪",      // Queen-side
         244: "✕",      // Weak point
         245: "⊥",      // Ending
-        246: "Bishop pair", // Bishop pair
-        247: "Opposite Bishops", // Opposite Bishops
-        248: "Same Bishops", // Same Bishops
-        249: "Connected pawns", // Connected pawns
-        250: "Isolated pawns", // Isolated pawns
-        251: "Doubled pawns", // Doubled pawns
-        252: "Passed pawn", // Passed pawn
-        253: "Pawn majority", // Pawn majority
-        254: "With",    // With
-        255: "Without"  // Without
+        // 246: "Bishop pair", // Bishop pair
+        // 247: "Opposite Bishops", // Opposite Bishops
+        // 248: "Same Bishops", // Same Bishops
+        // 249: "Connected pawns", // Connected pawns
+        // 250: "Isolated pawns", // Isolated pawns
+        // 251: "Doubled pawns", // Doubled pawns
+        // 252: "Passed pawn", // Passed pawn
+        // 253: "Pawn majority", // Pawn majority
+        // 254: "With",    // With
+        // 255: "Without"  // Without
     };
 
-    return symbols[nag] || "Invalid number";
+    return symbols[nag];
 }
 
 // Function to return the chess annotation description
@@ -323,6 +324,20 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 			{ id: "moves_comment_before", text: "Add Comment Before", action: () => onAddComment(true) },
 			{ id: "moves_comment_after" , text: "Add Comment After", action: () => onAddComment(false) },
 			{ id: "moves_delete", text: "Delete", action: onDelete },
+			{ item: "Separator" },
+			{ id: "moves_annotate", text: "Annotate", items: 
+				range(1,255).filter(n => !!getChessAnnotationSymbol(n)).map(n => {
+					return { id: `moves_annotate_${n}`, text: `${getChessAnnotationSymbol(n)} ${getChessDescription(n)}`, action: () => {
+						// const ng = game()?.annotate(plyData?.path!, n);
+						// setGame(ng);
+					}}
+				})
+				// [
+				// 	id: "moves_annotate_good", text: "Good Move", action: () => onAnnotate(1),
+				// ]
+
+			},
+
 		],
 	});
 
