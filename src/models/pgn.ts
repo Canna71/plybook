@@ -322,3 +322,12 @@ export function makeGameInternal(game: Game<PgnNodeData>): GameModel {
 
     return gameModel;
 }
+
+/*
+else if (token === '!') this.handleNag(1);
+else if (token === '?') this.handleNag(2);
+else if (token === '!!') this.handleNag(3);
+else if (token === '??') this.handleNag(4);
+else if (token === '!?') this.handleNag(5);
+else if (token === '?!') this.handleNag(6);
+*/

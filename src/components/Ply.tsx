@@ -58,11 +58,15 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 	};
 
 	const moveClass = () => {
-		return {
+		const cl = {
 			"pgnviewer-move": isValid(),
 			[turn + `-move`]: true,
 			"current-move": isCurrent()
 		};
+		for(let nag of plyData?.nags || []) {
+			cl[`nag-${nag}`] = true;
+		}
+		return cl;
 	};
 
 	createEffect(() => {

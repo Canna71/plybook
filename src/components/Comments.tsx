@@ -107,7 +107,7 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 	
 	const onContextMenu = useContextMenu({
 		items: [
-			{ id: "moves_delete", text: "Delete", action: onDelete },
+			{ id: "moves_comment_delete", text: "Delete Comment", action: onDelete },
 		],
 	});
 

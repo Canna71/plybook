@@ -80,6 +80,25 @@
                     &:not(.current-move):hover {
                         background-color: var(--background-modifier-active);
                     }
+
+                    &.nag-1 {
+                        color: #5c8bb0; /* Good move ! */
+                    }
+                    &.nag-2 {
+                        color: #e6912c; /* Poor move ? */
+                    }
+                    &.nag-3 {
+                        color: #1baca6; /* Very good move !! */
+                    }
+                    &.nag-4 {
+                        color: #b33430; /* Very poor move ?? */
+                    }
+                    &.nag-5 {
+                        color: #7979a1; /* Interesting move !? */
+                    }
+                    &.nag-6 {
+                        color: #f0c15c; /* Dubious move ?! */
+                    }
                 }
 
                 .current-move {
