@@ -147,8 +147,8 @@ function getChessAnnotationSymbol(nag: number) {
         23: "⨀",       // B is in zugzwang
         // 24: "",        // W slight space adv
         // 25: "",        // B slight space adv
-        // 26: "",        // W mod space adv
-        // 27: "",        // B mod space adv
+        26: "○",        // W mod space adv
+        27: "○",        // B mod space adv
         // 28: "",        // W decisive space adv
         // 29: "",        // B decisive space adv
         // 30: "",        // W slight time/dev adv
@@ -157,14 +157,16 @@ function getChessAnnotationSymbol(nag: number) {
         33: "⟳",       // B mod time/dev adv
         // 34: "",        // W decisive time/dev adv
         // 35: "",        // B decisive time/dev adv
-        36: "→",       // W has the initiative
-        37: "→",       // B has the initiative
+        36: "↑",       // W has the initiative
+        37: "↑",       // B has the initiative
         // 38: "",        // W lasting initiative
         // 39: "",        // B lasting initiative
-        40: "↑",       // W has the attack
-        41: "↑",       // B has the attack
+        40: "→",       // W has the attack
+        41: "→",       // B has the attack
         // 42: "Compensation", // compensation
         // 48: "Center",  // center
+		44: "⯹", 	 // White has sufficient compensation for material deficit
+		45: "⯹", 	 // Black has sufficient compensation for material deficit
         // 54: "K-side",  // K-side
         // 60: "Q-side",  // Q-side
         // 66: "1st rank", // 1st rank
@@ -176,34 +178,12 @@ function getChessAnnotationSymbol(nag: number) {
         // 114: "Middlegame play", // middlegame play
         // 122: "Endgame play", // endgame play
         // 130: "Counterplay", // counterplay
+		132: "⇆", 	 // White has moderate counterplay
+		133: "⇆", 	 // Black has moderate counterplay
         // 136: "Time pressure", // time pressure
-        140: "∆",       // With the idea...
-        // 141: "Aimed against...",
-        142: "⌓",      // Better is...
-        // 143: "Worse is...",
-        // 144: "Equivalent is...",
-        // 145: "RR",      // Editorial comment
-        // 146: "N",       // Novelty
-        // 220: "Diagram", // Diagram
-        // 221: "Diagram (from B)", // Diagram (from B)
-        // 238: "Space Adv", // Space Adv
-        239: "⇔",      // File (a-h)
-        240: "⇗",      // Diagonal
-        // 241: "Centre",  // Centre
-        242: "⟫",      // King-side
-        243: "⟪",      // Queen-side
-        244: "✕",      // Weak point
-        245: "⊥",      // Ending
-        // 246: "Bishop pair", // Bishop pair
-        // 247: "Opposite Bishops", // Opposite Bishops
-        // 248: "Same Bishops", // Same Bishops
-        // 249: "Connected pawns", // Connected pawns
-        // 250: "Isolated pawns", // Isolated pawns
-        // 251: "Doubled pawns", // Doubled pawns
-        // 252: "Passed pawn", // Passed pawn
-        // 253: "Pawn majority", // Pawn majority
-        // 254: "With",    // With
-        // 255: "Without"  // Without
+		138: "⨁", 	 // White has severe time control pressure / zeitnot
+		139: "⨁",	 // Black has severe time control pressure / zeitnot
+        
     };
 
     return symbols[nag];
@@ -254,6 +234,8 @@ function getChessDescription(nag: number) {
         40: "White has the attack",
         41: "Black has the attack",
         42: "Compensation",
+		44: "White has sufficient compensation for material deficit",
+		45: "Black has sufficient compensation for material deficit",
         48: "Center",
         54: "King-side",
         60: "Queen-side",
@@ -266,7 +248,11 @@ function getChessDescription(nag: number) {
         114: "Middlegame play",
         122: "Endgame play",
         130: "Counterplay",
+		132: "White has moderate counterplay",
+		133: "Black has moderate counterplay",
         136: "Time pressure",
+		138: "White has severe time control pressure / zeitnot",
+		139: "Black has severe time control pressure / zeitnot",
         140: "With the idea...",
         141: "Aimed against...",
         142: "Better is...",
