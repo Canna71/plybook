@@ -1,6 +1,6 @@
 import { createSignal, onMount } from "solid-js";
 import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
-import Analysis from "../chessboard/Analysis";
+import Analysis from "../components/Analysis";
 const AnalysisView = () => {
 
     const [pgn, setPgn] = createSignal<string | undefined>(undefined);

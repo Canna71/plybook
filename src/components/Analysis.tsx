@@ -1,7 +1,8 @@
 import { Chessboard } from "./chessboard";
 import { Config } from "chessground/config";
 import { Accessor, Component, createEffect, createSignal, For } from "solid-js";
-import { GameModel, makeGame, PlyData, Path } from "../models/pgn";
+import { makeGame, PlyData, Path } from "../models/pgn";
+import { GameModel } from "../models/GameModel";
 
 
 // see: https://github.com/lichess-org/pgn-viewer

@@ -1,5 +1,6 @@
 import { For, Component, Setter, Show, createContext, useContext } from "solid-js";
-import { GameModel, Path, PlyData } from "../models/pgn";
+import { Path, PlyData } from "../models/pgn";
+import { GameModel } from "../models/GameModel";
 import { createSignal } from 'solid-js';
 import { Accessor } from "solid-js";
 import { ReferenceElement } from "@floating-ui/dom";

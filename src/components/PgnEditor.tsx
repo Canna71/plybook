@@ -1,10 +1,11 @@
 import { Chessboard } from "./chessboard";
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
-import { GameModel, isPlyData, makeGame, Path } from "../models/pgn";
+import { isPlyData, makeGame, Path } from "../models/pgn";
+import { GameModel } from "../models/GameModel";
 import Moves from "./Moves";
 import { Chess } from 'chessops/chess';
 import ButtonBar from "./Buttonbar";
-import { getPosition, makeConfig, toColor, toDests, useCurrentData } from "./utils";
+import { getPosition, makeConfig, toColor, toDests, useCurrentData } from "./common/utils";
 import { Key, Piece } from "chessground/types";
 import { INITIAL_FEN, parseFen } from "chessops/fen";
 import { makeSquare, parseSquare } from "chessops";
@@ -44,7 +45,10 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
     const onMove = (orig: Key, dest: Key, capturedPiece?: Piece)  => {
         console.log("onMove", orig, dest, capturedPiece);
-		// const currentPath = game()?.currentPath || Path
+		const g = game();
+		if (!g) {
+			return;
+		};
 		const path = currentPath() || Path.root;
 
 
@@ -57,9 +61,9 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
             promotion: undefined
         };
         
-		const newPath = game()?.applyMove(path, move);
+		const [newGameModel, newPath] = g.applyMove(path, move);
 
-		setGame(game()?.clone());
+		setGame(newGameModel);
 
 		setCurrentPath(newPath);
 		
@@ -81,8 +85,8 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		const path = currentPath();
 		if (path) {
 			const comments = [target.value]; //.split("\n");
-			game()?.changeComments(path, comments);
-			setGame(game()?.clone());
+			const g = game()?.changeComments(path, comments);
+			setGame(g);
 		} else {
 			console.error("No path");
 		}
@@ -98,7 +102,9 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		const allDests = chessgroundDests(pos);
         return {
             ...baseConfig,
-
+			draggable: {
+				enabled: true,
+			},
             viewOnly: false,
 			turnColor: pos.turn,
             movable: {

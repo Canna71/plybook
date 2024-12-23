@@ -3,6 +3,8 @@ import { Component, useContext, createEffect } from "solid-js";
 import { DOMElement } from "solid-js/types/jsx.js";
 import { HierarchicalMoveData } from "../models/tree";
 import { MovesContext } from "./Moves";
+import { useContextMenu } from "./common/contextmenu";
+
 
 type PlyProps = {
 	line: HierarchicalMoveData;
@@ -15,6 +17,24 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 	const plyData = color && line[color];
 	let ref: HTMLDivElement | undefined;
 	const { currentPath, showTooltip, editable } = useContext(MovesContext)!;
+
+	const onAddComment = (before: boolean) => {
+
+	}
+
+	const onDelete = () => {
+		
+	}
+
+	// context menu functions
+
+	const onContextMenu = useContextMenu({
+		items: [
+			{ id: "moves_comment_before", text: "Add Comment Before", action: () => onAddComment(true) },
+			{ id: "moves_comment_after" , text: "Add Comment After", action: () => onAddComment(false) },
+			{ id: "moves_delete", text: "Delete", action: onDelete },
+		],
+	});
 
 
 	const isCurrent = () => {
@@ -57,8 +77,7 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 		data-color={color}
 		data-path={color && line[color]?.path.path}
 		onContextMenu={(e) => {
-			console.log("TODO: context menu");
-
+			onContextMenu(e);
 		}}
 	>{color && line[color]?.fan || "..."}
 

@@ -1,6 +1,7 @@
 import { Accessor, Component, For } from "solid-js";
-import { GameModel, Path, isPlyData } from "../models/pgn";
-import { useCurrentData } from "./utils";
+import { Path, isPlyData } from "../models/pgn";
+import { GameModel } from "../models/GameModel";
+import { useCurrentData } from "./common/utils";
 
 // regex for square names
 export const squareRegex = /([a-h][1-8])/g;

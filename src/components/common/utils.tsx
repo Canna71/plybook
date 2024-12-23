@@ -1,5 +1,6 @@
 import { Chess, Color, NormalMove, Position, Square, SquareSet, makeSquare } from "chessops";
-import { GameModel, Initial, isPlyData, Path, PlyData } from "../models/pgn";
+import { Initial, isPlyData, Path, PlyData } from "../../models/pgn";
+import { GameModel } from "../../models/GameModel";
 import { Accessor } from "solid-js";
 import { Key } from "chessground/types";
 import { Config } from "chessground/config";
