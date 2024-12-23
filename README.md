@@ -2,9 +2,7 @@
 
 A tool for practicing and studying chess.
 
-## To Do List
 
-- [ ] Use an engine configurable by user
 
 ## Features in the roadmap:
 
