@@ -80,17 +80,17 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		return isPlyData(data) && data?.comments.join("\n") || "";
 	}
 
-	const changedComments = (e: Event) => {
-		const target = e.target as HTMLTextAreaElement;
-		const path = currentPath();
-		if (path) {
-			const comments = [target.value]; //.split("\n");
-			const g = game()?.changeComments(path, comments);
-			setGame(g);
-		} else {
-			console.error("No path");
-		}
-	}
+	// const changedComments = (e: Event) => {
+	// 	const target = e.target as HTMLTextAreaElement;
+	// 	const path = currentPath();
+	// 	if (path) {
+	// 		const comments = [target.value]; //.split("\n");
+	// 		const g = game()?.updateComment(path, comments);
+	// 		setGame(g);
+	// 	} else {
+	// 		console.error("No path");
+	// 	}
+	// }
 
 	const config = () => {
         
@@ -130,9 +130,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 						<Chessboard config={config} />
 
 					</div>
-					<div class="pgnviewer-comments">
-						<textarea value={comments()} onChange={changedComments} />
-					</div>
+
 				</div>
 				
 				<div class="pgnviewer-sidebar">

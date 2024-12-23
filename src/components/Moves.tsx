@@ -22,13 +22,17 @@ export type MovesProps = {
 
 
 const CommentsRows: Component<{
+	path: Path;
 	comments: Accessor<string[]>
-}> = ({ comments }) => {
+}> = ({ comments, path }) => {
 	const { squareHovered } = useContext(MovesContext)!;
 
-	return <For each={comments()}>{comment =>
+	return <For each={comments()}>{(comment,index) =>
 		<tr><td colSpan={3}>
-			<CommentsView comments={() => comment} squareHovered={squareHovered} />
+			<CommentsView comments={() => comment} squareHovered={squareHovered} 
+				path={path}
+				index={index()}
+				/>
 		</td></tr>}
 	</For>;
 }
@@ -39,9 +43,12 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
 	const afterWhite = move.white?.comments || [];
 	const afterBlack = move.black?.comments || [];
 
+	const ppath = move.white?.path.previous() || Path.root;
+	const wpath = move.white?.path || ppath;
+	const bpath = move.black?.path || wpath;
 
 	return <>
-		<CommentsRows comments={() => startingComments} />
+		<CommentsRows comments={() => startingComments} path={wpath} />
 
 		<tr>
 			<td>
@@ -63,7 +70,7 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
 			</td>
 		</tr>
 
-		<CommentsRows comments={() => afterWhite} />
+		<CommentsRows comments={() => afterWhite} path={wpath} />
 
 		<Show when={afterWhite.length && move.black}>
 			<tr>
@@ -83,7 +90,7 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
 		</Show>
 
 
-		<CommentsRows comments={() => afterBlack} />
+		<CommentsRows comments={() => afterBlack} path={bpath} />
 
 		{move.variations && <For each={move.variations}>
 			{(variation) => <tr><td class="pgnviewer-variation-cell" colSpan={3}>
@@ -116,7 +123,7 @@ type MovesTreeProps = {
 const MovesTree: Component<MovesTreeProps> = ({ movesTree, initialComments }) => {
 	return (
 		<table class="pgnviewer-moves">
-			<CommentsRows comments={initialComments} />
+			<CommentsRows comments={initialComments} path={Path.root} />
 			<For each={movesTree()}>
 				{(line) =>
 					<>

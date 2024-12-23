@@ -213,7 +213,6 @@ function makePlayers(headers: Headers, metadata: Metadata): Players {
 
 function parseComments(strings: string[]): Comments {
     const comments = strings.map(parseComment);
-    console.log("comments", strings, comments);
     const reduceTimes = (times: Array<number | undefined>) =>
         times.reduce<number | undefined>((last, time) => (typeof time == undefined ? last : time), undefined);
     return {

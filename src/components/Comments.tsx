@@ -1,8 +1,9 @@
-import { Accessor, Component, For, useContext } from "solid-js";
+import { Accessor, Component, createEffect, For, useContext } from "solid-js";
 import { Path, isPlyData } from "../models/pgn";
 import { GameModel } from "../models/GameModel";
 import { useCurrentData } from "./common/utils";
 import { MovesContext } from "./Moves";
+import { set } from "es-toolkit/compat";
 
 // regex for square names
 export const squareRegex = /([a-h][1-8])/g;
@@ -15,9 +16,12 @@ type CommentsProps = {
 };
 
 
-export const Comments: Component<CommentsProps> = ({ game, currentPath, squareHovered, commentType }) => {
+export const Comments2: Component<CommentsProps> = ({ game, currentPath, squareHovered, commentType }) => {
 
 	const currentData = useCurrentData(game, currentPath);
+
+	const path = currentPath() || Path.root;
+	
 
 	const comments = () => {
 		const data = currentData();
@@ -32,7 +36,7 @@ export const Comments: Component<CommentsProps> = ({ game, currentPath, squareHo
 	};
 
 	return <For each={comments()}>
-		{comment => <CommentsView comments={() => comment} squareHovered={squareHovered} />}
+		{(comment, index) => <CommentsView comments={() => comment} squareHovered={squareHovered} path={path} index={index()} />}
 	</For>;
 
 
@@ -42,13 +46,16 @@ export const Comments: Component<CommentsProps> = ({ game, currentPath, squareHo
 export type CommentsViewProps = {
 	comments: Accessor<string>;
 	squareHovered?: (square: string | undefined) => void;
+	path: Path;
+	index: number;
 };
 
-export const CommentsView:Component<CommentsViewProps> = ({comments, squareHovered}) => {
+export const CommentsView:Component<CommentsViewProps> = ({comments, squareHovered, path, index}) => {
 	
 	// take editable from context
 
-	const { editable } = useContext(MovesContext)!;
+	const { editable, game, setGame } = useContext(MovesContext)!;
+	let ref: HTMLDivElement | undefined;
 	
 	const paragraph = () =>  {
 		let line = comments() || "";
@@ -74,10 +81,30 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 		squareHovered?.(undefined);
 	};
 
+	const onBlur = (e: Event) => {
+		const target = e.target as HTMLElement;
+		const text = target.textContent || "";
+		console.log("onChange", text);
+		const ng = game()?.updateComment(path, index, text);
+		setGame(ng);
+	}
+
+	// focuses the element if it's empty and editable
+	createEffect(() => {
+		if (editable() && !comments()) {
+			ref?.focus();
+		}
+	});
+
+
 	return <div
+		ref={ref}
 		data-placeholder="Add a comment"
 		contentEditable={editable()}
 		onMouseOver={onMouseOver}
 		onMouseLeave={onMouseLeave}
-		class="pgnviewer-comments">{paragraph()}</div>;
+		onBlur={onBlur}
+		class="pgnviewer-comments"
+		innerHTML={paragraph()}
+		></div>;
 }

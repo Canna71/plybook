@@ -107,23 +107,28 @@ export class GameModel {
         return pos;
     }
 
-    private updateMoves(): Node<PlyData> {
-        const start = startingPosition(this.game.headers).unwrap();
-        const headers: Headers = new Map(Array.from(this.game.headers, ([key, value]) => [key.toLowerCase(), value]));
-        const metadata = makeMetadata(headers);
-        return makeMoves(start, this.game.moves, metadata);
-    }
+    // private updateMoves(): Node<PlyData> {
+    //     const start = startingPosition(this.game.headers).unwrap();
+    //     const headers: Headers = new Map(Array.from(this.game.headers, ([key, value]) => [key.toLowerCase(), value]));
+    //     const metadata = makeMetadata(headers);
+    //     return makeMoves(start, this.game.moves, metadata);
+    // }
 
-    changeComments(path: Path, comments: string[]) : GameModel {
+    updateComment(path: Path, index: number, comment: string) : GameModel {
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
         if (isChildNode(pgnNode)) {
+            const comments = pgnNode.data.comments || [];
+            comments[index] = comment;
             pgnNode.data.comments = comments;
-            return this.getNewGameModel();
+            
         } else {
-            console.log("initial comments", comments);
-            return this;
+            const comments =  this.game.comments || [];
+            comments[index] = comment;
+            this.game.comments = comments;
         }
+        return this.getNewGameModel();
+
     }
 
     insertComment(path: Path, comment: string, before:boolean = false){
@@ -135,13 +140,12 @@ export class GameModel {
             const comments = pgnNode.data.comments || [];
             comments.splice(0, 0, comment);
             pgnNode.data.comments = comments;
-            return this.getNewGameModel();
         } else {
             const comments =  this.game.comments || [];
             comments.splice(0, 0, comment);
             this.game.comments = comments;
-            return this.getNewGameModel();
         }
+        return this.getNewGameModel();
     }
 
     pgn() {
