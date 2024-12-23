@@ -113,16 +113,16 @@ export class GameModel {
     //     return makeMoves(start, this.game.moves, metadata);
     // }
 
-    updateComment(path: Path, index: number, comment: string, starting:boolean = false) : GameModel {
+    updateComment(path: Path, index: number, comment: string, starting: boolean = false): GameModel {
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
         if (isChildNode(pgnNode)) {
             const comments = (starting ? pgnNode.data.startingComments : pgnNode.data.comments) || [];
             comments[index] = comment;
             // pgnNode.data.comments = comments;
-            
+
         } else {
-            const comments =  this.game.comments || [];
+            const comments = this.game.comments || [];
             comments[index] = comment;
             // this.game.comments = comments;
         }
@@ -130,24 +130,24 @@ export class GameModel {
 
     }
 
-    insertComment(path: Path, comment: string, before:boolean = false){
-        if(before) path = path.previous();
+    insertComment(path: Path, comment: string, before: boolean = false) {
+        if (before) path = path.previous();
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
-        
+
         if (isChildNode(pgnNode)) {
             const comments = pgnNode.data.comments || [];
             comments.splice(0, 0, comment);
             // pgnNode.data.comments = comments;
         } else {
-            const comments =  this.game.comments || [];
+            const comments = this.game.comments || [];
             comments.splice(0, 0, comment);
             // this.game.comments = comments;
         }
         return this.getNewGameModel();
     }
 
-    deleteComment(path: Path, index: number, starting:boolean = false){
+    deleteComment(path: Path, index: number, starting: boolean = false) {
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
         if (isChildNode(pgnNode)) {
@@ -155,7 +155,7 @@ export class GameModel {
             comments.splice(index, 1);
             // pgnNode.data.comments = comments;
         } else {
-            const comments =  this.game.comments || [];
+            const comments = this.game.comments || [];
             comments.splice(index, 1);
             // this.game.comments = comments;
         }
@@ -171,6 +171,25 @@ export class GameModel {
             parent.children = parent.children.filter(c => c !== pgnNode);
         } else {
             return this;
+        }
+        return this.getNewGameModel();
+    }
+
+    public annotate(path: Path, nag: number): GameModel {
+
+        const pgnNode = this.findPgnNode(path);
+        if (!pgnNode) return this;
+        if (isChildNode(pgnNode)) {
+            pgnNode.data.nags = pgnNode.data.nags || [];
+            if (nag > 0) {
+                if (!pgnNode.data.nags.includes(nag)) {
+                    pgnNode.data.nags.push(nag);
+                } else {
+                    pgnNode.data.nags = pgnNode.data.nags.filter(n => n !== nag);
+                }
+            } else {
+                pgnNode.data.nags = [];
+            }
         }
         return this.getNewGameModel();
     }

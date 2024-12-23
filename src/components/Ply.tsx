@@ -317,6 +317,16 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 		setGame(ng);
 	}
 
+	const onAnnotate = (nag: number) => {
+		console.log("Annotating", nag);
+		const ng = game()?.annotate(plyData?.path!, nag);
+		setGame(ng);
+	}
+
+	const onClearAnnotation = () => {
+		const ng = game()?.annotate(plyData?.path!, -1);
+		setGame(ng);
+	}
 	// context menu functions
 
 	const onContextMenuInternal = useContextMenu({
@@ -327,16 +337,11 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 			{ item: "Separator" },
 			{ id: "moves_annotate", text: "Annotate", items: 
 				range(1,255).filter(n => !!getChessAnnotationSymbol(n)).map(n => {
-					return { id: `moves_annotate_${n}`, text: `${getChessAnnotationSymbol(n)} ${getChessDescription(n)}`, action: () => {
-						// const ng = game()?.annotate(plyData?.path!, n);
-						// setGame(ng);
-					}}
+					return { id: `moves_annotate_${n}`, text: `${getChessAnnotationSymbol(n)} ${getChessDescription(n)}`, action: () => onAnnotate(n) }
 				})
-				// [
-				// 	id: "moves_annotate_good", text: "Good Move", action: () => onAnnotate(1),
-				// ]
-
+			
 			},
+			{ id: "moves_clear_annotation", text: "Clear Annotations", action: onClearAnnotation }
 
 		],
 	});
