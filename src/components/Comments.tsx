@@ -1,7 +1,8 @@
-import { Accessor, Component, For } from "solid-js";
+import { Accessor, Component, For, useContext } from "solid-js";
 import { Path, isPlyData } from "../models/pgn";
 import { GameModel } from "../models/GameModel";
 import { useCurrentData } from "./common/utils";
+import { MovesContext } from "./Moves";
 
 // regex for square names
 export const squareRegex = /([a-h][1-8])/g;
@@ -44,6 +45,11 @@ export type CommentsViewProps = {
 };
 
 export const CommentsView:Component<CommentsViewProps> = ({comments, squareHovered}) => {
+	
+	// take editable from context
+
+	const { editable } = useContext(MovesContext)!;
+	
 	const paragraph = () =>  {
 		let line = comments() || "";
 		const matches = line.match(squareRegex);
@@ -54,7 +60,7 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 			});
 		}
 
-		return <p innerHTML={line} />;
+		return line;
 	};
 
 	const onMouseOver = (e: MouseEvent) => {
@@ -69,6 +75,8 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 	};
 
 	return <div
+		data-placeholder="Add a comment"
+		contentEditable={editable()}
 		onMouseOver={onMouseOver}
 		onMouseLeave={onMouseLeave}
 		class="pgnviewer-comments">{paragraph()}</div>;

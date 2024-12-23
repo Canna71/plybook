@@ -19,7 +19,7 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 	const { currentPath, showTooltip, editable, game, setGame } = useContext(MovesContext)!;
 
 	const onAddComment = (before: boolean) => {
-		const ng = game()?.insertComment(plyData?.path!, "TODO: actual comment " + plyData?.path.path, before);
+		const ng = game()?.insertComment(plyData?.path!, "", before);
 		setGame(ng);
 	}
 

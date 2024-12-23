@@ -7,15 +7,14 @@
     padding: 20px;
     overflow: hidden;
     display: grid;
-    
 
-    grid-template-areas: 
-    "comments comments"
-    "board sidebar"
-    "movecomments sidebar";
-    grid-template-columns: minmax(200px, calc(100vh )) minmax(50%, 1fr);
+    grid-template-areas:
+        "comments comments"
+        "board sidebar"
+        "movecomments sidebar";
+    grid-template-columns: minmax(200px, calc(100vh)) minmax(50%, 1fr);
     // grid-template-columns: 1fr 0;
-    grid-template-rows: minmax(0, 1fr, 0); 
+    grid-template-rows: minmax(0, 1fr, 0);
 
     .pgnviewer-comments {
         grid-area: comments;
@@ -53,7 +52,6 @@
             user-select: none;
 
             table.pgnviewer-moves {
-
                 td.pgnviewer-variation-cell {
                     padding-left: 6px;
                     font-size: 90%;
@@ -65,14 +63,12 @@
                     table.pgnviewer-moves {
                         border-left: 1px solid var(--background-modifier-active);
                     }
-                   
                 }
 
                 .pgnviewer-comment-icon {
                     display: inline-block;
                     margin: 0.3em 0;
                 }
-
 
                 .pgnviewer-move {
                     cursor: pointer;
@@ -84,14 +80,23 @@
                     &:not(.current-move):hover {
                         background-color: var(--background-modifier-active);
                     }
-
-
                 }
 
                 .current-move {
                     background-color: var(--background-modifier-accent);
                 }
 
+                .pgnviewer-comments {
+                    min-height: 1em;
+
+                    &:empty::before {
+                        content: attr(
+                            data-placeholder
+                        ); /* Use the value of the attribute as content */
+                        color: gray; /* Optional styling */
+                        font-style: italic; /* Optional styling */
+                    }
+                }
             }
         }
 
@@ -120,8 +125,6 @@
         width: 200px;
         overflow: hidden;
     }
-
-
 
     .square {
         font-family: monospace;

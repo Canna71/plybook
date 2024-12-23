@@ -213,10 +213,11 @@ function makePlayers(headers: Headers, metadata: Metadata): Players {
 
 function parseComments(strings: string[]): Comments {
     const comments = strings.map(parseComment);
+    console.log("comments", strings, comments);
     const reduceTimes = (times: Array<number | undefined>) =>
         times.reduce<number | undefined>((last, time) => (typeof time == undefined ? last : time), undefined);
     return {
-        texts: comments.map(c => c.text).filter(t => !!t),
+        texts: comments.map(c => c.text), //.filter(t => !!t), HACK: we keep empty comments for now
         shapes: comments.flatMap(c => c.shapes),
         clock: reduceTimes(comments.map(c => c.clock)),
         emt: reduceTimes(comments.map(c => c.emt)),
