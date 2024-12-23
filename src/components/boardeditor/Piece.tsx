@@ -1,6 +1,7 @@
 import { Role } from 'chessground/types';
-import { Accessor, Setter } from 'solid-js';
+import { Accessor, createSignal, Setter } from 'solid-js';
 import type * as cg from 'chessground/types';
+import { createDraggable } from '@neodrag/solid';
 
 // const roles is all values of Role type, using typescript
 
@@ -10,13 +11,23 @@ export const ROLES: Role[] = ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king
 // with the appropriate class name
 
 export const Piece = (props: { role: Role, color: 'white' | 'black' }) => {
-	return <piece draggable={true} class={`${props.color} ${props.role}`}
-		onDragStart={(e) => {
-			// e.dataTransfer!.effectAllowed = 'none';
-			// e.dataTransfer!.dropEffect = 'none';
-			// e.dataTransfer!.setData('text/plain', 'piece');
-			console.log("onDragStart", e);
+	const { draggable } = createDraggable();
+	const [position, setPosition] = createSignal({ x: 0, y: 0 });
+	
+	return <piece 
+		use:draggable={{
+			bounds: '.board-editor-container',
+			onDragEnd: (data) => {
+				console.log('Dropped at:', data.offsetX, data.offsetY);
+				// Implement your drop logic here
+				setPosition({ x: 0, y: 0 })
+			},
+			defaultPosition: {x: 0, y: 0},
+			position: position(),
+			
 		}}
+		class={`${props.color} ${props.role}`}
+		
 	></piece>
 }
 

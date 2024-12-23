@@ -85,7 +85,7 @@ const BoardEditor = () => {
 
     }};
 
-    return (<div class="chess-container"
+    return (<div class="board-editor-container"
         // onDragOver={(e) => {
         //     e.preventDefault();
         //     console.log("dragover", e);

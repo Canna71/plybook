@@ -5,6 +5,10 @@ declare module "solid-js" {
 		interface IntrinsicElements {
 			"piece": JSX.HTMLAttributes<HTMLDivElement>;
 		}
+
+		interface piece {
+			draggable: DragOptions;
+		  }
 	}
 }
 

@@ -13,6 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "@floating-ui/dom": "^1.6.12",
+    "@neodrag/solid": "^2.2.0",
     "@solidjs/router": "^0.14.10",
     "@tabler/icons-solidjs": "^3.23.0",
     "@tauri-apps/api": "^2",

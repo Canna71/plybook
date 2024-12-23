@@ -11,6 +11,9 @@ importers:
       '@floating-ui/dom':
         specifier: ^1.6.12
         version: 1.6.12
+      '@neodrag/solid':
+        specifier: ^2.2.0
+        version: 2.2.0(solid-js@1.9.2)
       '@solidjs/router':
         specifier: ^0.14.10
         version: 0.14.10(solid-js@1.9.2)
@@ -332,6 +335,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@neodrag/solid@2.2.0':
+    resolution: {integrity: sha512-IbPhDxGGLCCtAoUhdmrIdydNkXzvzgPsXQVlmUZXmlJPn0ZzSErmVkfG/UxupQ3hFCQWJfASxLp7h48lThDNig==}
+    peerDependencies:
+      solid-js: ^1.0.0
 
   '@parcel/watcher-android-arm64@2.4.1':
     resolution: {integrity: sha512-LOi/WTbbh3aTn2RYddrO8pnapixAziFl6SMxHM69r3tvdSm94JtCenaKgk1GRg5FJ5wpMCpHeW+7yqPlvZv7kg==}
@@ -1208,6 +1216,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  '@neodrag/solid@2.2.0(solid-js@1.9.2)':
+    dependencies:
+      solid-js: 1.9.2
 
   '@parcel/watcher-android-arm64@2.4.1':
     optional: true
