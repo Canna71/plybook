@@ -79,3 +79,49 @@ https://github.com/niklasf/chessops/blob/edd0823f31551452f63aa8cb41d91675d548b8f
 https://medium.com/@samuelint/tauri-how-to-start-stop-a-sidecar-and-pipe-sidecar-stdout-stderr-to-app-logs-from-rust-8f81a92111ad
 
 https://github.com/tauri-apps/tauri/discussions/3273
+
+# Context Menu
+```js
+import { listen } from "@tauri-apps/api/event";
+import { Menu } from "@tauri-apps/api/menu";
+import React, { useEffect } from "react";
+
+const RightClickMenu: React.FC = () => {
+  const menuPromise = Menu.new({
+    items: [
+      { id: "ctx_option1", text: "Option 1" },
+      { id: "ctx_option2", text: "Option 2" },
+    ],
+  });
+
+  async function clickHandler(event: React.MouseEvent) {
+    event.preventDefault();
+    const menu = await menuPromise;
+    menu.popup();
+  }
+
+  useEffect(() => {
+    const unlistenPromise = listen<string>("menu-event", (event) => {
+      if (!event.payload.startsWith("ctx")) return;
+      switch (event.payload) {
+        default:
+          console.log("Unimplemented application menu id:", event.payload);
+      }
+    });
+
+    return () => {
+      unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, []);
+
+  return (
+    <div
+      onContextMenu={clickHandler}
+      style={{ padding: "20px", border: "1px solid #ccc" }}
+    >
+      Right-click anywhere in this area to see the context menu.
+    </div>
+  );
+};
+export default RightClickMenu;
+```

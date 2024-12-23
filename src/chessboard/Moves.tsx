@@ -1,15 +1,14 @@
-import { For, Component, Setter, Show, createEffect, createContext, useContext } from "solid-js";
+import { For, Component, Setter, Show, createContext, useContext } from "solid-js";
 import { GameModel, Path, PlyData } from "../models/pgn";
 import { createSignal } from 'solid-js';
 import { Accessor } from "solid-js";
-import { Color } from "chessops/types";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "./Tooltip";
 import { HierarchicalMoveData, makeTree } from "../models/tree";
 import { CommentsView } from "./Comments";
 
 // import "solid-contextmenu/dist/index.css";
-import { DOMElement } from "solid-js/jsx-runtime";
+import { Ply } from "./Ply";
 
 export type MovesProps = {
 	game: Accessor<GameModel | undefined>;
@@ -19,69 +18,6 @@ export type MovesProps = {
 	editable: Accessor<boolean>;
 };
 
-
-type PlyProps = {
-	line: HierarchicalMoveData;
-	color?: Color;
-}
-
-const Ply: Component<PlyProps> = ({ line, color }) => {
-
-	const turn = color;
-	const plyData = color && line[color];
-	let ref: HTMLDivElement | undefined;
-	const { currentPath, showTooltip, editable } = useContext(MovesContext)!;
-
-
-	const isCurrent = () => {
-		return currentPath() && plyData?.path.equals(currentPath()!);
-	}
-	const isValid = () => {
-		return plyData !== undefined;
-	};
-
-	const innerShowTooltip = (e: MouseEvent & {
-		currentTarget: HTMLDivElement;
-		target: DOMElement;
-	} | undefined) => {
-		if (e) {
-			isValid() && editable() && showTooltip(e.currentTarget, plyData);
-		} else {
-			showTooltip(undefined, undefined);
-		}
-	}
-
-	const moveClass = () => {
-		return {
-			"pgnviewer-move": isValid(),
-			[turn + `-move`]: true,
-			"current-move": isCurrent()
-		};
-	}
-
-	createEffect(() => {
-		if (isCurrent() && ref) {
-			ref.scrollIntoView({ block: "nearest" });
-		}
-	});
-
-	return <><div
-		ref={ref}
-		onMouseEnter={innerShowTooltip}
-		onMouseLeave={() => innerShowTooltip(undefined)}
-		classList={moveClass()}
-		data-color={color}
-		data-path={color && line[color]?.path.path}
-		onContextMenu={(e) => {
-			console.log("TODO: context menu");
-			
-		}}
-	>{color && line[color]?.fan || "..."}
-
-	</div>
-
-	</>;
-}
 
 const CommentsRows: Component<{
 	comments: Accessor<string[]>
@@ -197,7 +133,7 @@ interface MovesContextType {
 	squareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
 }
-const MovesContext = createContext<MovesContextType>();
+export const MovesContext = createContext<MovesContextType>();
 
 const Moves: Component<MovesProps> = (props) => {
 	const [reference, setReference] = createSignal<ReferenceElement | null | undefined>(undefined);
