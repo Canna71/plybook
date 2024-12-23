@@ -13,6 +13,7 @@ import { Ply } from "./Ply";
 
 export type MovesProps = {
 	game: Accessor<GameModel | undefined>;
+	setGame: Setter<GameModel | undefined>;
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: Setter<Path | undefined>;
 	squareHovered?: (square: string | undefined) => void;
@@ -128,6 +129,8 @@ const MovesTree: Component<MovesTreeProps> = ({ movesTree, initialComments }) =>
 const MENU_ID = "pgnviewer-menu";
 interface MovesContextType {
 	// game?: () => { initial: { comments: string[] } };
+	game: Accessor<GameModel | undefined>;
+	setGame: Setter<GameModel | undefined>;
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: (path: string[]) => void;
 	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
@@ -177,6 +180,8 @@ const Moves: Component<MovesProps> = (props) => {
 			>
 				<MovesContext.Provider value={
 					{
+						game: props.game,
+						setGame: props.setGame,
 						currentPath: props.currentPath,
 						setCurrentPath: props.setCurrentPath,
 						squareHovered: props.squareHovered,

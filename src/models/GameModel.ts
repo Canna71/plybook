@@ -3,7 +3,7 @@ import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
 import { Game, PgnNodeData, Node, isChildNode, extend, startingPosition, makePgn } from "chessops/pgn";
 import { makeSan } from "chessops/san";
-import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, Headers, makeMetadata, makeMoves } from "./pgn";
+import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, Headers, makeMetadata, makeMoves, makeGameInternal } from "./pgn";
 import { get } from "es-toolkit/compat";
 
 // immutable ?
@@ -92,7 +92,11 @@ export class GameModel {
     }
 
     private getNewGameModel(): GameModel {
-        return new GameModel(this.initial, this.updateMoves(), this.players, this.metadata, this.game);
+
+        // const moves = this.updateMoves();
+        console.log("this.game.pgn", this.pgn());
+        // return new GameModel(this.initial, moves, this.players, this.metadata, this.game);
+        return makeGameInternal(this.game);
     }
 
     private getPosition(path: Path) {
@@ -122,7 +126,27 @@ export class GameModel {
         }
     }
 
+    insertComment(path: Path, comment: string, before:boolean = false){
+        if(before) path = path.previous();
+        const pgnNode = this.findPgnNode(path);
+        if (!pgnNode) return this;
+        
+        if (isChildNode(pgnNode)) {
+            const comments = pgnNode.data.comments || [];
+            comments.splice(0, 0, comment);
+            pgnNode.data.comments = comments;
+            return this.getNewGameModel();
+        } else {
+            const comments =  this.game.comments || [];
+            comments.splice(0, 0, comment);
+            this.game.comments = comments;
+            return this.getNewGameModel();
+        }
+    }
+
     pgn() {
         return makePgn(this.game);
     }
 }
+
+

@@ -1,5 +1,5 @@
 import { FEN } from "chessground/types";
-import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition } from "chessops/pgn";
+import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game } from "chessops/pgn";
 import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
@@ -285,9 +285,12 @@ export function toMove(move: NormalMove): [SquareName, SquareName] {
     return move && [makeSquare(move.from), makeSquare(move.to)]
 }
 
-
 export function makeGame(pgnString: string): GameModel {
     const game = parsePgn(pgnString)[0];
+    return makeGameInternal(game);
+}
+
+export function makeGameInternal(game: Game<PgnNodeData>): GameModel {
     const start = startingPosition(game.headers).unwrap();
     const setup = start.toSetup();
     const fen = makeFen(setup);

@@ -61,6 +61,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 					<div class="pgnviewer-moves-wrapper">
 
 						<Moves
+							setGame={setGame}
 							game={game}
 							currentPath={currentPath}
 							setCurrentPath={setCurrentPath}

@@ -16,10 +16,11 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 	const turn = color;
 	const plyData = color && line[color];
 	let ref: HTMLDivElement | undefined;
-	const { currentPath, showTooltip, editable } = useContext(MovesContext)!;
+	const { currentPath, showTooltip, editable, game, setGame } = useContext(MovesContext)!;
 
 	const onAddComment = (before: boolean) => {
-
+		const ng = game()?.insertComment(plyData?.path!, "TODO: actual comment " + plyData?.path.path, before);
+		setGame(ng);
 	}
 
 	const onDelete = () => {

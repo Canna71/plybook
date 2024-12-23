@@ -139,6 +139,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 					<div class="pgnviewer-moves-wrapper">
 
 						<Moves
+							setGame={setGame}
 							game={game}
 							currentPath={currentPath}
 							setCurrentPath={setCurrentPath}
