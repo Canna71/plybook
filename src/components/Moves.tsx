@@ -10,6 +10,7 @@ import { CommentsView } from "./Comments";
 
 // import "solid-contextmenu/dist/index.css";
 import { Ply } from "./Ply";
+import { start } from "chessground/drag";
 
 export type MovesProps = {
 	game: Accessor<GameModel | undefined>;
@@ -23,8 +24,9 @@ export type MovesProps = {
 
 const CommentsRows: Component<{
 	path: Path;
+	starting?: boolean;
 	comments: Accessor<string[]>
-}> = ({ comments, path }) => {
+}> = ({ comments, path, starting }) => {
 	const { squareHovered } = useContext(MovesContext)!;
 
 	return <For each={comments()}>{(comment,index) =>
@@ -32,6 +34,7 @@ const CommentsRows: Component<{
 			<CommentsView comments={() => comment} squareHovered={squareHovered} 
 				path={path}
 				index={index()}
+				starting={starting}
 				/>
 		</td></tr>}
 	</For>;
@@ -48,7 +51,7 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
 	const bpath = move.black?.path || wpath;
 
 	return <>
-		<CommentsRows comments={() => startingComments} path={wpath} />
+		<CommentsRows comments={() => startingComments} path={wpath} starting={true} />
 
 		<tr>
 			<td>

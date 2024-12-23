@@ -3,6 +3,7 @@ import { Path, isPlyData } from "../models/pgn";
 import { GameModel } from "../models/GameModel";
 import { useCurrentData } from "./common/utils";
 import { MovesContext } from "./Moves";
+import { start } from "chessground/drag";
 
 // regex for square names
 export const squareRegex = /([a-h][1-8])/g;
@@ -47,9 +48,12 @@ export type CommentsViewProps = {
 	squareHovered?: (square: string | undefined) => void;
 	path: Path;
 	index: number;
+	starting?: boolean;
 };
 
-export const CommentsView:Component<CommentsViewProps> = ({comments, squareHovered, path, index}) => {
+export const CommentsView:Component<CommentsViewProps> = ({comments, squareHovered, path, index, starting
+
+}) => {
 	
 	// take editable from context
 
@@ -84,7 +88,7 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 		const target = e.target as HTMLElement;
 		const text = target.textContent || "";
 		console.log("onChange", text);
-		const ng = game()?.updateComment(path, index, text);
+		const ng = game()?.updateComment(path, index, text, starting);
 		setGame(ng);
 	}
 

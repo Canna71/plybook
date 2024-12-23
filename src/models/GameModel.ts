@@ -113,18 +113,18 @@ export class GameModel {
     //     return makeMoves(start, this.game.moves, metadata);
     // }
 
-    updateComment(path: Path, index: number, comment: string) : GameModel {
+    updateComment(path: Path, index: number, comment: string, starting:boolean = false) : GameModel {
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
         if (isChildNode(pgnNode)) {
-            const comments = pgnNode.data.comments || [];
+            const comments = (starting ? pgnNode.data.startingComments : pgnNode.data.comments) || [];
             comments[index] = comment;
-            pgnNode.data.comments = comments;
+            // pgnNode.data.comments = comments;
             
         } else {
             const comments =  this.game.comments || [];
             comments[index] = comment;
-            this.game.comments = comments;
+            // this.game.comments = comments;
         }
         return this.getNewGameModel();
 
