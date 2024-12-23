@@ -1,18 +1,13 @@
 import { Chessboard } from "./chessboard";
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
-import { isPlyData, makeGame, Path } from "../models/pgn";
+import { makeGame, Path } from "../models/pgn";
 import { GameModel } from "../models/GameModel";
 import Moves from "./Moves";
-import { Chess } from 'chessops/chess';
 import ButtonBar from "./Buttonbar";
-import { getPosition, makeConfig, toColor, toDests, useCurrentData } from "./common/utils";
+import { getPosition, makeConfig } from "./common/utils";
 import { Key, Piece } from "chessground/types";
-import { INITIAL_FEN, parseFen } from "chessops/fen";
-import { makeSquare, parseSquare } from "chessops";
-import { makeSan } from "chessops/san";
-import { chessgroundDests, scalachessCharPair } from "chessops/compat";
-import { extend, isChildNode, makePgn } from "chessops/pgn";
-import { create } from "@tauri-apps/plugin-fs";
+import { parseSquare } from "chessops";
+import { chessgroundDests } from "chessops/compat";
 
 
 export type PgnEditorOptions = {
@@ -69,16 +64,16 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		
     }
 
-    const onSelect = (key: Key) => {
+    const onSelect = (_key: Key) => {
         // console.log("onSelect", key);
     }
 
-	const currentData = useCurrentData(game, currentPath);
+	// const currentData = useCurrentData(game, currentPath);
 
-	const comments = () => {
-		const data = currentData();
-		return isPlyData(data) && data?.comments.join("\n") || "";
-	}
+	// const comments = () => {
+	// 	const data = currentData();
+	// 	return isPlyData(data) && data?.comments.join("\n") || "";
+	// }
 
 	// const changedComments = (e: Event) => {
 	// 	const target = e.target as HTMLTextAreaElement;

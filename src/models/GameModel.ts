@@ -1,10 +1,9 @@
 import { Move, Chess } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
-import { Game, PgnNodeData, Node, isChildNode, extend, startingPosition, makePgn } from "chessops/pgn";
+import { Game, PgnNodeData, Node, isChildNode, extend, makePgn } from "chessops/pgn";
 import { makeSan } from "chessops/san";
-import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, Headers, makeMetadata, makeMoves, makeGameInternal } from "./pgn";
-import { get } from "es-toolkit/compat";
+import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal } from "./pgn";
 
 // immutable ?
 
@@ -22,9 +21,9 @@ export class GameModel {
         this.mainline = Array.from(this.moves.mainline());
     }
 
-    private clone(): GameModel {
-        return new GameModel(this.initial, this.moves, this.players, this.metadata, this.game);
-    }
+    // private clone(): GameModel {
+    //     return new GameModel(this.initial, this.moves, this.players, this.metadata, this.game);
+    // }
 
     nodeAt = (path: Path): AnyNode | undefined => nodeAtPathFrom(this.moves, path);
 

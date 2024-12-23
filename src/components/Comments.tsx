@@ -3,7 +3,6 @@ import { Path, isPlyData } from "../models/pgn";
 import { GameModel } from "../models/GameModel";
 import { useCurrentData } from "./common/utils";
 import { MovesContext } from "./Moves";
-import { set } from "es-toolkit/compat";
 
 // regex for square names
 export const squareRegex = /([a-h][1-8])/g;

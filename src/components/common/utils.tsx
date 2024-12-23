@@ -1,4 +1,4 @@
-import { Chess, Color, NormalMove, Position, Square, SquareSet, makeSquare } from "chessops";
+import { Chess, Color, NormalMove, Position, SquareSet, makeSquare } from "chessops";
 import { Initial, isPlyData, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import { Accessor } from "solid-js";

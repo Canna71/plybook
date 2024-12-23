@@ -133,7 +133,6 @@ const MovesTree: Component<MovesTreeProps> = ({ movesTree, initialComments }) =>
 		</table>);
 }
 
-const MENU_ID = "pgnviewer-menu";
 interface MovesContextType {
 	// game?: () => { initial: { comments: string[] } };
 	game: Accessor<GameModel | undefined>;
