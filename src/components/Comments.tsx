@@ -105,11 +105,17 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 		setGame(ng);
 	}
 	
-	const onContextMenu = useContextMenu({
+	const onContextMenuInternal = useContextMenu({
 		items: [
 			{ id: "moves_comment_delete", text: "Delete Comment", action: onDelete },
 		],
 	});
+
+	const onContextMenu = (e: MouseEvent) => {
+		if(editable()) {
+			onContextMenuInternal(e);
+		}
+	}
 
 	return <div
 		ref={ref}

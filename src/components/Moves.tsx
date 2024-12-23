@@ -155,8 +155,15 @@ const Moves: Component<MovesProps> = (props) => {
 
 	const onClick = (e: Event) => {
 		const target = e.target as HTMLElement;
-		const path: string | undefined = target.dataset.path;
 
+		// find the closest anchestor with data-path attribute
+		const pathElement = target.closest('[data-path]') as HTMLElement;
+		if (!pathElement) return;
+
+
+
+		const path: string | undefined = pathElement.dataset.path;
+		console.log("onClick", target, path );
 		if (!path) {
 			return;
 		}

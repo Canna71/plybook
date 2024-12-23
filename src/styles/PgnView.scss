@@ -99,6 +99,23 @@
                     &.nag-6 {
                         color: #f0c15c; /* Dubious move ?! */
                     }
+
+                    .pgnviewer-annotation {
+                        float: left;
+                        position: relative;
+                        top: 4px;
+                        width: 20px;
+                    }
+
+
+                }
+
+                .pgnviewer-movecontent {
+                    display: inline-block;
+                    height: 24px;
+                    line-height: 24px;
+                    padding: 0 4px;
+                    font-weight: 800;
                 }
 
                 .current-move {
