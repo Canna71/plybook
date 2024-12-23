@@ -1,0 +1,17 @@
+.pieces-toolbar {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    // make the height of the toolbar one eigth of the width of the board
+    aspect-ratio: 8 / 1; /* Width to height ratio */
+    background-color: #f0f0f06e;
+
+    piece {
+        cursor: pointer;
+        pointer-events: auto;
+        aspect-ratio: 1 / 1; /* Width to height ratio */
+        height: 100%;
+        position: relative;
+        display: inline-block;
+    }
+}

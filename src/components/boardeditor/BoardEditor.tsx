@@ -2,7 +2,7 @@ import { Chessboard } from "../common/chessboard";
 import { Config } from "chessground/config";
 import { createSignal } from "solid-js";
 import { Api } from "chessground/api";
-import { Toolbar } from "./Piece";
+import { PiecesToolbar } from "./Piece";
 import { Piece } from "chessground/types";
 
 const BoardEditor = () => {
@@ -70,20 +70,16 @@ const BoardEditor = () => {
     }};
 
     return (<div class="chess-container">
-        <Toolbar
-            selectedPiece={selectedPiece}
-            setSelectedPiece={setSelectedPiece}
-            color='white'
+        <PiecesToolbar
+            color='black'
         />
         <Chessboard
             onChessboardClick={onChessboardClick}
             setApi={setApi}
             config={config}
         />
-        <Toolbar
-            selectedPiece={selectedPiece}
-            setSelectedPiece={setSelectedPiece}
-            color='black'
+        <PiecesToolbar
+            color='white'
         />
     </div>);
 }

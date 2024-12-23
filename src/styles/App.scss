@@ -4,6 +4,7 @@
 @use "./Layout.scss";
 @use "./PgnView.scss";
 @use "./DBTest.scss";
+@use "./BoardEdit.scss";
 
 cg-board {
     background-color: #a1bfef;
@@ -29,16 +30,7 @@ cg-board {
         }
     }
 
-    .pieces-toolbar {
-        piece {
-            cursor: pointer;
-            pointer-events: auto;
-            width: 24px;
-            height: 24px;
-            position: relative;
-            display: inline-block;
-        }
-    }
+    
 }
 
 body {

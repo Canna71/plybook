@@ -18,32 +18,28 @@ export const Piece = (props: { role: Role, color: 'white' | 'black' }) => {
 // Define the ToolbarProps type
 export type ToolbarProps = {
 	// onPieceSelected: (role: Role) => void;
-	selectedPiece: Accessor<cg.Piece | null>;
-	setSelectedPiece: Setter<cg.Piece | null>;
+	// selectedPiece: Accessor<cg.Piece | null>;
+	// setSelectedPiece: Setter<cg.Piece | null>;
 	color: 'white' | 'black';
 };
 
-export const Toolbar = (props: ToolbarProps) => {
+export const PiecesToolbar = (props: ToolbarProps) => {
 
 
-	const handlePieceClick = (role: Role) => {
-		const piece: cg.Piece = {
-			role,
-			color: props.color
-		};
-		if (role !== props.selectedPiece()?.role || props.selectedPiece()?.color !== props.color)
-			props.setSelectedPiece(piece);
-		else
-			props.setSelectedPiece(null);
-	};
+	// const handlePieceClick = (role: Role) => {
+	// 	const piece: cg.Piece = {
+	// 		role,
+	// 		color: props.color
+	// 	};
+	// 	if (role !== props.selectedPiece()?.role || props.selectedPiece()?.color !== props.color)
+	// 		props.setSelectedPiece(piece);
+	// 	else
+	// 		props.setSelectedPiece(null);
+	// };
 
 	return <div class="cg-wrap pieces-toolbar">
-		{ROLES.map(role => <button
-			classList={{ selected: props.selectedPiece()?.role === role && props.selectedPiece()?.color === props.color }}
-			onClick={() => handlePieceClick(role)}>
-			<Piece role={role} color={props.color
-
-			} />
-		</button>)}
+		{ROLES.map(role => 
+			<Piece role={role} color={props.color} />
+		)}
 	</div>
 }
