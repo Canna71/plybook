@@ -68,8 +68,10 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     }
 
     const onDrop = (role: Role, color: 'white' | 'black', rect: DOMRect) => {
+        console.log("onDrop", role, color, rect);
         // setSelectedPiece({ role, color });
         const key = api()?.getKeyAtDomPos([rect.x + rect.width / 2, rect.y + rect.height / 2]);
+        console.log("onDrop", key);
         if (key) {
             api()?.newPiece({ role, color }, key);
         }
@@ -116,6 +118,14 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         const turn = whitesTurn() ? 'white' : 'black';
         props.setFen(fen());
     });
+
+    const onClear = () => {
+        setBaseFen('8/8/8/8/8/8/8/8');
+    }
+
+    const onStartingPosition = () => {
+        setBaseFen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR');
+    }
 
     const config = (): Config => {
 
@@ -169,7 +179,10 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
             <ToggleSwitch isToggled={whiteQueenside} setIsToggled={setWhiteQueenside} labels={["White O-O-O", "White O-O-O"]} />
             <ToggleSwitch isToggled={blackKingside} setIsToggled={setBlackKingside} labels={["Black O-O", "Black O-O"]} />
             <ToggleSwitch isToggled={blackQueenside} setIsToggled={setBlackQueenside} labels={["Black O-O-O", "Black O-O-O"]} />
-
+        </div>
+        <div class="form-line">
+            <button onClick={onClear}>Clear</button>
+            <button onClick={onStartingPosition}>Starting Position</button>
 
         </div>
         <PiecesToolbar
@@ -184,6 +197,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         />
         <PiecesToolbar
             color='white'
+            onDrop={onDrop}
         />
         <div class="board-editor-toolbar">
 

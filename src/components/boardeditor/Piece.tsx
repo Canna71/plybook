@@ -24,12 +24,10 @@ export const Piece:Component<PieceProps> = (props) => {
 		use:draggable={{
 			bounds: '.board-editor-container',
 			onDragEnd: (data) => {
-				console.log('Dropped at:', data);
 				// Implement your drop logic here
 				const el = data.rootNode;
 				// get el absolute position
 				const rect = el.getBoundingClientRect();
-				console.log(rect);
 				setPosition({ x: 0, y: 0 });
 				props.onDrop?.(props.role, props.color, rect);
 			},
