@@ -89,7 +89,6 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, squareHover
 	const onBlur = (e: Event) => {
 		const target = e.target as HTMLElement;
 		const text = target.textContent || "";
-		console.log("onChange", text);
 		const ng = game()?.updateComment(path, index, text, starting);
 		setGame(ng);
 	}

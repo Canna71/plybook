@@ -1,7 +1,7 @@
 import { Move, Chess, parseSquare } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
-import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, makeComment, CommentShape } from "chessops/pgn";
+import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, makeComment, CommentShape, parseComment } from "chessops/pgn";
 import { makeSan } from "chessops/san";
 import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal } from "./pgn";
 import { DrawShape } from "chessground/draw";
@@ -114,20 +114,25 @@ export class GameModel {
     //     return makeMoves(start, this.game.moves, metadata);
     // }
 
+    private changeCommentText(comment: string, text: string): string {
+        const c = parseComment(comment);
+        c.text = text;
+        return makeComment(c);
+    }
+
     updateComment(path: Path, index: number, comment: string, starting: boolean = false): GameModel {
         console.log("updateComment", path, index, comment, starting);
         const pgnNode = this.findPgnNode(path);
         // TODO: also merge shapes
         if (!pgnNode) return this;
+        console.log(pgnNode);
         if (isChildNode(pgnNode)) {
-            const comments = (starting ? pgnNode.data.startingComments : pgnNode.data.comments) || [];
-            comments[index] = comment;
-            // pgnNode.data.comments = comments;
+            const comments = (starting ? pgnNode.data.startingComments : pgnNode.data.comments) || []
+            comments[index] = this.changeCommentText(comments[index], comment);
 
         } else {
             const comments = this.game.comments || [];
-            comments[index] = comment;
-            // this.game.comments = comments;
+            comments[index] = this.changeCommentText(comments[index], comment);
         }
         return this.getNewGameModel();
 
