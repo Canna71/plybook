@@ -160,14 +160,15 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     //     console.log("dragover", e);
     // }}
     >
-        <div>
+        <div class="form-line">
             <ToggleSwitch isToggled={whitesTurn} setIsToggled={setWhitesTurn} labels={["Black's turn", "White's turn"]} />
             <ToggleSwitch isToggled={flip} setIsToggled={setFlip} labels={["A1⇄H8", "H8⇄A1"]} />
-
-            <ToggleSwitch isToggled={whiteKingside} setIsToggled={setWhiteKingside} labels={["White kingside", "White kingside"]} />
-            <ToggleSwitch isToggled={whiteQueenside} setIsToggled={setWhiteQueenside} labels={["White queenside", "White queenside"]} />
-            <ToggleSwitch isToggled={blackKingside} setIsToggled={setBlackKingside} labels={["Black kingside", "Black kingside"]} />
-            <ToggleSwitch isToggled={blackQueenside} setIsToggled={setBlackQueenside} labels={["Black queenside", "Black queenside"]} />
+        </div>
+        <div  class="form-line">
+            <ToggleSwitch isToggled={whiteKingside} setIsToggled={setWhiteKingside} labels={["White O-O", "White O-O"]} />
+            <ToggleSwitch isToggled={whiteQueenside} setIsToggled={setWhiteQueenside} labels={["White O-O-O", "White O-O-O"]} />
+            <ToggleSwitch isToggled={blackKingside} setIsToggled={setBlackKingside} labels={["Black O-O", "Black O-O"]} />
+            <ToggleSwitch isToggled={blackQueenside} setIsToggled={setBlackQueenside} labels={["Black O-O-O", "Black O-O-O"]} />
 
 
         </div>
