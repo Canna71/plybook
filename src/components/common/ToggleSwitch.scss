@@ -1,40 +1,42 @@
 .toggle-container {
-    display: flex;
-    align-items: center;
-    gap: 10px; // Space between the toggle and the label
-  }
-  
-  .toggle-switch {
-    width: 50px;
-    height: 25px;
-    background-color: #ccc;
-    border-radius: 25px;
-    padding: 2px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  
-    &.toggled {
-      background-color: #4caf50;
-    }
-  
+  display: flex;
+  align-items: center;
+  gap: 10px; // Space between the toggle and the label
+  --toggle-size: 21px; // Custom property for the toggle size
+  --toggle-padding: 2px; // Custom property for the padding around the toggle
+  --toggle-background-color: #ccc; // Custom property for the background color of the toggle
+
+}
+
+.toggle-switch {
+  width: calc(var(--toggle-size) * 2); // Width of the toggle
+  height: var(--toggle-size);
+  background-color: #ccc;
+  border-radius: var(--toggle-size);
+  padding: var(--toggle-padding);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &.toggled {
+    background-color: var(--accent-color,  #4caf50);
+
     .toggle-circle {
-      width: 21px;
-      height: 21px;
-      background-color: white;
-      border-radius: 50%;
-      transition: transform 0.3s ease;
-      transform: translateX(0);
-  
-      .toggled & {
-        transform: translateX(25px);
-      }
+      transform: translateX(25px); // Move the circle to the right
     }
   }
-  
-  .toggle-label {
-    font-size: 16px;
-    color: #333;
+
+  .toggle-circle {
+    width: calc(var(--toggle-size) - var(--toggle-padding) * 2); // Width of the circle
+    height: calc(var(--toggle-size) - var(--toggle-padding) * 2); // Height of the circle
+    background-color: var(--toggle-background-color);
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    transform: translateX(0); // Default position
   }
-  
+}
+
+.toggle-label {
+
+}

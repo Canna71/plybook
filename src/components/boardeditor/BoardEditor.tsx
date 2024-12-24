@@ -116,7 +116,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     // }}
     >
         <div>
-            <ToggleSwitch isToggled={whitesTurn} setIsToggled={setWhitesTurn} />
+            <ToggleSwitch isToggled={whitesTurn} setIsToggled={setWhitesTurn} labels={["Black's turn", "White's turn"]} />
         </div>
         <PiecesToolbar
             color='black'

@@ -1,12 +1,13 @@
-import { Accessor, Component, createSignal, Setter } from "solid-js";
+import { Accessor, Component, createSignal, Setter, Show } from "solid-js";
 import "./ToggleSwitch.scss"; // Import the custom SASS file
 
 export type ToggleSwitchProps = {
   isToggled: Accessor<boolean>;
   setIsToggled: Setter<boolean>;
+  labels?: [string, string];
 };
 
-const ToggleSwitch : Component<ToggleSwitchProps> = ({isToggled, setIsToggled}) => {
+const ToggleSwitch: Component<ToggleSwitchProps> = ({ isToggled, setIsToggled, labels }) => {
 
 
   const toggle = () => setIsToggled(!isToggled());
@@ -19,7 +20,9 @@ const ToggleSwitch : Component<ToggleSwitchProps> = ({isToggled, setIsToggled}) 
       >
         <div class="toggle-circle"></div>
       </div>
-      <span class="toggle-label">{isToggled() ? "ON" : "OFF"}</span>
+      <Show when={labels}>
+        <span class="toggle-label">{isToggled() ? labels![1] : labels![0]}</span>
+      </Show>
     </div>
   );
 }
