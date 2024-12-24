@@ -31,7 +31,6 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		if (!pgnString) {
 			pgnString = "[]";
 		}
-		console.log("pgnString", pgnString);
 		const gameModel = makeGame(pgnString);
 		setGame(gameModel);
 		setCurrentPath(gameModel.pathAtMainlinePly(0));
@@ -39,7 +38,6 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	});
 
     const onMove = (orig: Key, dest: Key, capturedPiece?: Piece)  => {
-        console.log("onMove", orig, dest, capturedPiece);
 		const g = game();
 		if (!g) {
 			return;
@@ -65,33 +63,17 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     }
 
     const onSelect = (_key: Key) => {
-        // console.log("onSelect", key);
     }
 
-	// const currentData = useCurrentData(game, currentPath);
-
-	// const comments = () => {
-	// 	const data = currentData();
-	// 	return isPlyData(data) && data?.comments.join("\n") || "";
-	// }
-
-	// const changedComments = (e: Event) => {
-	// 	const target = e.target as HTMLTextAreaElement;
-	// 	const path = currentPath();
-	// 	if (path) {
-	// 		const comments = [target.value]; //.split("\n");
-	// 		const g = game()?.updateComment(path, comments);
-	// 		setGame(g);
-	// 	} else {
-	// 		console.error("No path");
-	// 	}
-	// }
+	const onDrawChange = (shapes: any) => {
+		const ng = game()?.updateShapes(currentPath()!, shapes);
+		setGame(ng);
+	}
 
 	const config = () => {
         
 		const baseConfig = makeConfig(game, currentPath, squareHovered)();
 
-		// console.log("baseConfig", baseConfig);	
 
 		const pos = getPosition(game, currentPath);
 		const allDests = chessgroundDests(pos);
@@ -111,7 +93,11 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
                 move: onMove,
                 
                 select: onSelect
-            }
+            },
+			drawable: {
+				...baseConfig.drawable,
+				onChange: onDrawChange
+			}
         }
     }
 

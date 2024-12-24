@@ -1,9 +1,10 @@
-import { Move, Chess } from "chessops";
+import { Move, Chess, parseSquare } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
-import { Game, PgnNodeData, Node, isChildNode, extend, makePgn } from "chessops/pgn";
+import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, makeComment, CommentShape } from "chessops/pgn";
 import { makeSan } from "chessops/san";
 import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal } from "./pgn";
+import { DrawShape } from "chessground/draw";
 
 // immutable ?
 
@@ -115,6 +116,7 @@ export class GameModel {
 
     updateComment(path: Path, index: number, comment: string, starting: boolean = false): GameModel {
         const pgnNode = this.findPgnNode(path);
+        // TODO: also merge shapes
         if (!pgnNode) return this;
         if (isChildNode(pgnNode)) {
             const comments = (starting ? pgnNode.data.startingComments : pgnNode.data.comments) || [];
@@ -192,6 +194,27 @@ export class GameModel {
             }
         }
         return this.getNewGameModel();
+    }
+
+    public updateShapes(path: Path, shapes: DrawShape[]){
+        const pgnNode = this.findPgnNode(path);
+        const node = nodeAtPathFrom(this.moves, path);
+        if (!pgnNode || !node) return this;
+        console.log(node, pgnNode);
+        if(isChildNode(node) && isChildNode(pgnNode)){
+            const cShapes = shapes.map(s => {
+                const from = parseSquare(s.orig)!;
+                const to = s.dest && parseSquare(s.dest)!;
+                const color = s.brush! as CommentShapeColor;
+                return { from, to, color } as CommentShape;
+            });   
+            const text = (node.data.comments || [])[0] || "";
+            const comment = makeComment({text, shapes:cShapes});
+            console.log(comment);
+            // HACK: this is a hack to update the comment shapes
+            pgnNode.data.comments = [comment];
+            return this.getNewGameModel();
+        }
     }
 
     pgn() {

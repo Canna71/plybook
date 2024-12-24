@@ -1,8 +1,8 @@
 ## To Do List
-- [ ] Complete Board Editor
 - [ ] Enable drawing on board in PGN editor
-- [ ] Allow edit starting position
-- [ ] display player names
+- [ ] Board Edit: clear and starting position
+- [ ] PGN Edit: Allow edit starting position
+- [ ] PGN Edit:display and edit player names
 - [ ] Use an engine configurable by user
-- [ ]style buttons
+- [ ] style buttons
 - [ ] Edit metadata
