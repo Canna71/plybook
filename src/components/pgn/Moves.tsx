@@ -163,7 +163,6 @@ const Moves: Component<MovesProps> = (props) => {
 
 
 		const path: string | undefined = pathElement.dataset.path;
-		console.log("onClick", target, path );
 		if (!path) {
 			return;
 		}

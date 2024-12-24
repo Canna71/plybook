@@ -72,7 +72,7 @@ export function makeConfig(game: Accessor<GameModel | undefined>, currentPath: A
 
 		const lastMoveKey = lastMove(data);
 
-		let autoShapes = toShapes(squareHovered, data);
+		let shapes = toShapes(squareHovered, data);
 
 		const config: Config = {
 			...baseConfig,
@@ -80,7 +80,7 @@ export function makeConfig(game: Accessor<GameModel | undefined>, currentPath: A
 			lastMove: lastMoveKey,
 			drawable: {
 				enabled: baseConfig.drawable?.enabled,
-				autoShapes
+				shapes
 			},
 		};
 		return config;
