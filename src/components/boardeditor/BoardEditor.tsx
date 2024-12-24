@@ -3,13 +3,14 @@ import { Config } from "chessground/config";
 import { Accessor, Component, createEffect, createSignal, onMount, Setter } from "solid-js";
 import { Api } from "chessground/api";
 import { PiecesToolbar } from "./Piece";
-import { Key, Piece, Role } from "chessground/types";
+import { Piece, Role } from "chessground/types";
 import ToggleSwitch from "../common/ToggleSwitch";
 import { makeFen, parseFen } from "chessops/fen";
-import { set } from "es-toolkit/compat";
-import { kingCastlesTo, SquareSet } from "chessops";
+import { SquareSet } from "chessops";
 import { squareFromCoords } from "chessops/util";
-
+import Select from "../common/Select";
+import { makeSan } from "chessops/san";
+import { getEnPassantSquares } from "../common/utils";
 // see: https://lichess.org/editor/1nbqkbn1/p3pppp/1bp2n2/3r3r/8/8/PPPPPPPP/RNBQKBNR_w_KQha_-_0_1?color=white
 
 export type BoardEditorProps = {
@@ -28,7 +29,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     const [whiteQueenside, setWhiteQueenside] = createSignal(true);
     const [blackKingside, setBlackKingside] = createSignal(true);
     const [blackQueenside, setBlackQueenside] = createSignal(true);
-
+    const [enPassant, setEnPassant] = createSignal<string>("");
 
     createEffect(() => {
         // loadDataFromBlock(app, ctx);
@@ -47,8 +48,6 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
             return;
         }
         const fen = cg.getFen();
-        console.debug("TODO: save fen", fen);
-        // saveDataIntoBlock(app, { fen: cg.getFen() }, ctx);
     }
 
     const onChessboardClick = (e: MouseEvent) => {
@@ -68,10 +67,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     }
 
     const onDrop = (role: Role, color: 'white' | 'black', rect: DOMRect) => {
-        console.log("onDrop", role, color, rect);
-        // setSelectedPiece({ role, color });
         const key = api()?.getKeyAtDomPos([rect.x + rect.width / 2, rect.y + rect.height / 2]);
-        console.log("onDrop", key);
         if (key) {
             api()?.newPiece({ role, color }, key);
         }
@@ -80,12 +76,10 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     const onChange = () => {
         let fen = api()?.getFen();
         setBaseFen(fen);
-        console.log("onChange", fen);
     }
 
     const fen = () => {
         let fen = baseFen();
-        console.log("fen", fen);
         if (fen) {
             const parsed = parseFen(fen);
             if (parsed.isOk) {
@@ -93,22 +87,24 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
                 setup.turn = whitesTurn() ? 'white' : 'black';
                 let castlingRights = SquareSet.empty();
                 if (whiteKingside()) {
-                    castlingRights = castlingRights.with(squareFromCoords(7 , 0)!)
+                    castlingRights = castlingRights.with(squareFromCoords(7, 0)!)
                 }
                 if (whiteQueenside()) {
-                    castlingRights = castlingRights.with(squareFromCoords(0 , 0)!)
+                    castlingRights = castlingRights.with(squareFromCoords(0, 0)!)
                 }
                 if (blackKingside()) {
-                    castlingRights = castlingRights.with(squareFromCoords(7 , 7)!)
+                    castlingRights = castlingRights.with(squareFromCoords(7, 7)!)
                 }
                 if (blackQueenside()) {
-                    castlingRights = castlingRights.with(squareFromCoords(0 , 7)!)
+                    castlingRights = castlingRights.with(squareFromCoords(0, 7)!)
                 }
 
+                if(enPassant() !== "") {
+                    setup.epSquare = squareFromCoords(enPassant().charCodeAt(0) - 'a'.charCodeAt(0), enPassant().charCodeAt(1) - '1'.charCodeAt(0));
+                }
 
                 setup.castlingRights = castlingRights;
                 fen = makeFen(setup, { epd: true });
-                console.log("fen", fen);
             }
         }
         return fen;
@@ -127,6 +123,24 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         setBaseFen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR');
     }
 
+    const availableEnPassant = () => {
+
+        const fen = baseFen();
+        if (!fen) {
+            return [];
+        }
+        
+        const parsed = parseFen(fen);
+        let squares: string[] = [];
+        if (parsed.isOk) {
+            squares = getEnPassantSquares(parsed.value, whitesTurn());
+        }
+        //  squares = ["a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3"];
+        const options = [{ key: "", value: "None" }].concat(squares.map(square => ({ key: square, value: square })));
+        console.log("options", options);
+        return options;
+    }
+
     const config = (): Config => {
 
 
@@ -143,8 +157,6 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
                 color: 'both', // Both sides can move pieces
                 events: {
                     after: (orig, dest, metadata) => {
-                        // console.log(orig, dest, metadata);
-                        // console.log(api()?.getFen());
                     },
 
                 }
@@ -160,30 +172,26 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
             }
 
         };
-        // console.log("config", config);
         return config;
     };
 
     return (<div class="board-editor-container"
-    // onDragOver={(e) => {
-    //     e.preventDefault();
-    //     console.log("dragover", e);
-    // }}
+    
     >
         <div class="form-line">
             <ToggleSwitch isToggled={whitesTurn} setIsToggled={setWhitesTurn} labels={["Black's turn", "White's turn"]} />
             <ToggleSwitch isToggled={flip} setIsToggled={setFlip} labels={["A1⇄H8", "H8⇄A1"]} />
         </div>
-        <div  class="form-line">
+        <div class="form-line">
             <ToggleSwitch isToggled={whiteKingside} setIsToggled={setWhiteKingside} labels={["White O-O", "White O-O"]} />
             <ToggleSwitch isToggled={whiteQueenside} setIsToggled={setWhiteQueenside} labels={["White O-O-O", "White O-O-O"]} />
             <ToggleSwitch isToggled={blackKingside} setIsToggled={setBlackKingside} labels={["Black O-O", "Black O-O"]} />
             <ToggleSwitch isToggled={blackQueenside} setIsToggled={setBlackQueenside} labels={["Black O-O-O", "Black O-O-O"]} />
         </div>
         <div class="form-line">
+            En passant: <Select options={availableEnPassant} selectedValue={enPassant} setSelectedValue={setEnPassant}  />
             <button onClick={onClear}>Clear</button>
             <button onClick={onStartingPosition}>Starting Position</button>
-
         </div>
         <PiecesToolbar
             color='black'
@@ -208,3 +216,5 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
 }
 
 export default BoardEditor;
+
+

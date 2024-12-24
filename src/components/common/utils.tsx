@@ -1,10 +1,12 @@
-import { Chess, Color, NormalMove, Position, SquareSet, makeSquare } from "chessops";
+import { Chess, Color, NormalMove, Position, Setup, Square, SquareSet, makeSquare, squareFile, squareRank } from "chessops";
 import { Initial, isPlyData, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import { Accessor } from "solid-js";
 import { Key } from "chessground/types";
 import { Config } from "chessground/config";
 import { INITIAL_FEN, parseFen } from "chessops/fen";
+import { squareFromCoords } from "chessops/util";
+
 
 
 export function lastMove(data: import("/Users/gcannata/Projects/rechess/src/models/pgn").Initial | import("/Users/gcannata/Projects/rechess/src/models/pgn").PlyData) {
@@ -117,5 +119,23 @@ export function getPosition(game: Accessor<GameModel | undefined>, currentPath: 
 	const setup = parseFen(fen).unwrap();
 	const pos = Chess.fromSetup(setup).unwrap();
 	return pos;
+}
+export function getEnPassantSquares(setup: Setup, whitesTurn: boolean) {
+    const pawns = setup.board.pawn;
+    // returns squares where a pawn can eat en passant
+    const squares = Array.from(pawns).map((pawn: Square) => {
+        // const square = pawn.key;
+        const [x, y] = [squareFile(pawn), squareRank(pawn)];
+        if (whitesTurn) {
+            if (y === 4) {
+                return makeSquare(squareFromCoords(x, y + 1)!);
+            }
+        } else {
+            if (y === 3) {
+                return makeSquare(squareFromCoords(x, y - 1)!);
+            }
+        }
+    }).filter(square => square !== undefined) as string[];
+    return squares;
 }
 

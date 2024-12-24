@@ -1,0 +1,19 @@
+.selectContainer {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.selectElement {
+    // width: 100%;
+    padding: 0.5rem;
+    // border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    // background-color: white;
+    cursor: pointer;
+    text-align: left;
+}
+
+.selectOption {
+    padding: 0.5rem;
+}

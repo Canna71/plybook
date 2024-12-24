@@ -8,7 +8,13 @@ declare module "solid-js" {
 
 		interface piece {
 			draggable: DragOptions;
-		  }
+		}
 	}
 }
+declare module '*.scss' {
 
+	const content: { [className: string]: string };
+
+	export default content;
+
+}
