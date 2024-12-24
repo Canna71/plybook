@@ -4,6 +4,7 @@ import { Accessor, Component, createEffect, createSignal, onMount, Setter } from
 import { Api } from "chessground/api";
 import { PiecesToolbar } from "./Piece";
 import { Key, Piece, Role } from "chessground/types";
+import ToggleSwitch from "../common/ToggleSwitch";
 
 // see: https://lichess.org/editor/1nbqkbn1/p3pppp/1bp2n2/3r3r/8/8/PPPPPPPP/RNBQKBNR_w_KQha_-_0_1?color=white
 
@@ -114,6 +115,9 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     //     console.log("dragover", e);
     // }}
     >
+        <div>
+            <ToggleSwitch isToggled={whitesTurn} setIsToggled={setWhitesTurn} />
+        </div>
         <PiecesToolbar
             color='black'
             onDrop={onDrop}
