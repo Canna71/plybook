@@ -4,14 +4,14 @@
   gap: 10px; // Space between the toggle and the label
   --toggle-size: 21px; // Custom property for the toggle size
   --toggle-padding: 2px; // Custom property for the padding around the toggle
-  --toggle-background-color: #ccc; // Custom property for the background color of the toggle
-
+  --toggle-switch-background-color: #fff; // Custom property for the background color of the toggle
+  --toggle-background-color: #a0a0a0; // Custom property for the background color of the switch
 }
 
 .toggle-switch {
   width: calc(var(--toggle-size) * 2); // Width of the toggle
   height: var(--toggle-size);
-  background-color: #ccc;
+  background-color: var(--toggle-background-color);
   border-radius: var(--toggle-size);
   padding: var(--toggle-padding);
   display: flex;
@@ -30,7 +30,7 @@
   .toggle-circle {
     width: calc(var(--toggle-size) - var(--toggle-padding) * 2); // Width of the circle
     height: calc(var(--toggle-size) - var(--toggle-padding) * 2); // Height of the circle
-    background-color: var(--toggle-background-color);
+    background-color: var(--toggle-switch-background-color);
     border-radius: 50%;
     transition: transform 0.3s ease;
     transform: translateX(0); // Default position
