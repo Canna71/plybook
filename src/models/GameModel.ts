@@ -1,4 +1,4 @@
-import { Move, Chess, parseSquare } from "chessops";
+import { Move, Chess, parseSquare, makeSquare } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
 import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, makeComment, CommentShape, parseComment } from "chessops/pgn";
@@ -123,7 +123,6 @@ export class GameModel {
     updateComment(path: Path, index: number, comment: string, starting: boolean = false): GameModel {
         console.log("updateComment", path, index, comment, starting);
         const pgnNode = this.findPgnNode(path);
-        // TODO: also merge shapes
         if (!pgnNode) return this;
         console.log(pgnNode);
         if (isChildNode(pgnNode)) {
@@ -159,17 +158,32 @@ export class GameModel {
     deleteComment(path: Path, index: number, starting: boolean = false) {
         console.log("deleteComment", path, index, starting);
         const pgnNode = this.findPgnNode(path);
-        if (!pgnNode) return this;
+        const node = nodeAtPathFrom(this.moves, path);
+
+        if (!pgnNode || !node) return this;
+        const shapes = isChildNode(node) ? node.data.shapes : this.initial.shapes;
         if (isChildNode(pgnNode)) {
-            const comments = (starting ? pgnNode.data.startingComments : pgnNode.data.comments) || [];
-            comments.splice(index, 1);
-            // pgnNode.data.comments = comments;
+            let comments = pgnNode.data[starting ? "startingComments" : "comments"] || [];
+            comments = this.removeCommentAtIndex(comments, index, shapes);
+            pgnNode.data[starting ? "startingComments" : "comments"] = comments;
         } else {
-            const comments = this.game.comments || [];
-            comments.splice(index, 1);
-            // this.game.comments = comments;
+            let comments = this.game.comments || [];
+            comments = this.removeCommentAtIndex(comments, index, shapes);
+            this.game.comments = comments;
         }
         return this.getNewGameModel();
+    }
+
+    private removeCommentAtIndex(comments: string[], index: number, shapes: CommentShape[]) {
+        comments = this.mergeShapes(comments, []);
+        comments.splice(index, 1);
+        comments = this.mergeShapes(comments, shapes.map(s => {
+            const orig = makeSquare(s.from);
+            const dest = makeSquare(s.to);
+            const brush = s.color;
+            return { orig, dest, brush } as DrawShape;
+        }));
+        return comments;
     }
 
     deleteFrom(path: Path) {
@@ -205,26 +219,33 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
-    public updateShapes(path: Path, shapes: DrawShape[]){
+    private  mergeShapes(oldComments: string[] | undefined, shapes: DrawShape[]):string[] {
+        const cShapes = shapes.map(s => {
+            const from = parseSquare(s.orig)!;
+            const to = s.dest && parseSquare(s.dest)!;
+            const color = s.brush! as CommentShapeColor;
+            return { from, to, color } as CommentShape;
+        });
+        const comments = (oldComments || [""]).map(parseComment);
+        const tc = comments.map((c, i) => {
+            c.shapes = i === 0 ? cShapes : [];
+            return makeComment(c);
+        });
+        return tc;
+    }
+
+    public updateShapes(path: Path, shapes: DrawShape[]) {
         console.log("updateShapes", shapes);
         const pgnNode = this.findPgnNode(path);
         const node = nodeAtPathFrom(this.moves, path);
         if (!pgnNode || !node) return this;
         console.log(node, pgnNode);
-        if(isChildNode(node) && isChildNode(pgnNode)){
-            const cShapes = shapes.map(s => {
-                const from = parseSquare(s.orig)!;
-                const to = s.dest && parseSquare(s.dest)!;
-                const color = s.brush! as CommentShapeColor;
-                return { from, to, color } as CommentShape;
-            });   
-            const text = (node.data.comments || [])[0] || "";
-            const comment = makeComment({text, shapes:cShapes});
-            console.log(comment);
-            // HACK: this is a hack to update the comment shapes
-            pgnNode.data.comments = [comment];
-            return this.getNewGameModel();
+        if (isChildNode(node) && isChildNode(pgnNode)) {
+            pgnNode.data.comments = this.mergeShapes(pgnNode.data.comments, shapes);
+        } else {
+            this.game.comments = this.mergeShapes(this.game.comments, shapes);
         }
+        return this.getNewGameModel();
     }
 
     pgn() {

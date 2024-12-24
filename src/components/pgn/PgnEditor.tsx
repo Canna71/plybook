@@ -96,6 +96,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
             },
 			drawable: {
 				...baseConfig.drawable,
+				eraseOnClick: false,
 				onChange: onDrawChange
 			}
         }
