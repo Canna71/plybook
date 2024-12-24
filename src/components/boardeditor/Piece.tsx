@@ -1,5 +1,5 @@
-import { Role } from 'chessground/types';
-import { Accessor, createSignal, Setter } from 'solid-js';
+import { Color, Role } from 'chessground/types';
+import { Accessor, Component, createSignal, Setter } from 'solid-js';
 import type * as cg from 'chessground/types';
 import { createDraggable } from '@neodrag/solid';
 
@@ -10,7 +10,13 @@ export const ROLES: Role[] = ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king
 // export a Piece solid-js component that takes a role and color prop and renders a piece
 // with the appropriate class name
 
-export const Piece = (props: { role: Role, color: 'white' | 'black' }) => {
+export type PieceProps = {
+	role: Role;
+	color: Color;
+	onDrop?: (role: Role, color: Color, domPosition: DOMRect) => void;
+};
+
+export const Piece:Component<PieceProps> = (props) => {
 	const { draggable } = createDraggable();
 	const [position, setPosition] = createSignal({ x: 0, y: 0 });
 	
@@ -18,16 +24,22 @@ export const Piece = (props: { role: Role, color: 'white' | 'black' }) => {
 		use:draggable={{
 			bounds: '.board-editor-container',
 			onDragEnd: (data) => {
-				console.log('Dropped at:', data.offsetX, data.offsetY);
+				console.log('Dropped at:', data);
 				// Implement your drop logic here
-				setPosition({ x: 0, y: 0 })
+				const el = data.rootNode;
+				// get el absolute position
+				const rect = el.getBoundingClientRect();
+				console.log(rect);
+				setPosition({ x: 0, y: 0 });
+				props.onDrop?.(props.role, props.color, rect);
 			},
 			defaultPosition: {x: 0, y: 0},
 			position: position(),
 			
 		}}
 		class={`${props.color} ${props.role}`}
-		
+		data-role={props.role}
+		data-color={props.color}
 	></piece>
 }
 
@@ -39,6 +51,7 @@ export type ToolbarProps = {
 	// selectedPiece: Accessor<cg.Piece | null>;
 	// setSelectedPiece: Setter<cg.Piece | null>;
 	color: 'white' | 'black';
+	onDrop?: (role: Role, color: Color, domPosition: DOMRect) => void;
 };
 
 export const PiecesToolbar = (props: ToolbarProps) => {
@@ -59,7 +72,7 @@ export const PiecesToolbar = (props: ToolbarProps) => {
 	
 		class="cg-wrap pieces-toolbar">
 		{ROLES.map(role =>
-			<Piece role={role} color={props.color} />
+			<Piece role={role} color={props.color} onDrop={props.onDrop} />
 		)}
 	</div>
 }

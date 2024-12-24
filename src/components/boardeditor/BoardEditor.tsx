@@ -43,7 +43,13 @@ const BoardEditor = () => {
         }
     }
 
-
+    const onDrop = (role: Role, color: 'white' | 'black', rect: DOMRect) => {
+        // setSelectedPiece({ role, color });
+        const key = api()?.getKeyAtDomPos([rect.x+rect.width/2, rect.y + rect.height/2]);
+        if (key) {
+            api()?.newPiece({ role, color }, key);
+        }
+    }
 
     const config = (): Config => {
 
@@ -69,19 +75,7 @@ const BoardEditor = () => {
         },
         drawable: {
             enabled: false
-        },
-        predroppable: {
-                enabled: true,
-                events: {
-                    set: (role: Role, key: Key) => {
-                        console.log("dropped", role, key);
-                        // props.onPieceSelected(role);
-                    },
-                    unset: () => {
-                        console.log("unset");
-                    }
-                }
-            }
+        }
 
     }};
 
@@ -93,11 +87,13 @@ const BoardEditor = () => {
         >
         <PiecesToolbar
             color='black'
+            onDrop={onDrop}
         />
         <Chessboard
             onChessboardClick={onChessboardClick}
             setApi={setApi}
             config={config}
+            
         />
         <PiecesToolbar
             color='white'

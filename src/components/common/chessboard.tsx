@@ -38,7 +38,9 @@ export function Chessboard(props: ChessboardProps) {
 
 
 	return (<div class="chess-container">
-		<div ref={wrapper} class="chessboard" onclick={onChessboardClick} >
+		<div ref={wrapper} class="chessboard" onclick={onChessboardClick} 
+		
+		>
 
 		</div>
 	</div>);
