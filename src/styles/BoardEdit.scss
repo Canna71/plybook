@@ -15,3 +15,18 @@
         display: inline-block;
     }
 }
+
+.board-editor-container {
+    .board-editor-toolbar {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+
+        .board-editor-textbox {
+            width: 100%;
+            
+        }
+    }
+
+}

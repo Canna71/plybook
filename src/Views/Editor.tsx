@@ -1,12 +1,15 @@
 
+import { createSignal } from "solid-js";
 import BoardEditor from "../components/boardeditor/BoardEditor";
 
 const Editor = () => {
 
+    const [fen, setFen] = createSignal<string | undefined>(undefined);
+
     return (
         <div>
-            <div style="max-width: 60%">
-                <BoardEditor  />
+            <div>
+                <BoardEditor fen={fen} setFen={setFen}  />
                 
             </div>
         </div>

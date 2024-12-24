@@ -36,6 +36,8 @@ cg-board {
 body {
     overflow: hidden;
     background-color: var(--background-color);
+    color: var(--color);
+
 }
 
 * {
@@ -105,29 +107,25 @@ button:active {
 
 }
 
-input,
+
 button {
     outline: none;
 }
 
-#greet-input {
-    margin-right: 5px;
-}
+
 
 @media (prefers-color-scheme: dark) {
     :root {
-        color: #f6f6f6;
-        background-color: #2f2f2f;
+        color: var(--color);
+        background-color: var(--background-color);
     }
 
-    a:hover {
-        color: #24c8db;
-    }
-
+  
     input,
     button {
-        color: #ffffff;
-        background-color: #0f0f0f98;
+        color: var(--color);
+        background-color: var(--background-color);
+        font-size: initial;
     }
     button:active {
         background-color: #0f0f0f69;
