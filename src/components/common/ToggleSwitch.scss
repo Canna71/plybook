@@ -20,7 +20,7 @@
   transition: background-color 0.3s ease;
 
   &.toggled {
-    background-color: var(--accent-color,  #4caf50);
+    background-color: var(--bulma-primary);
 
     .toggle-circle {
       transform: translateX(25px); // Move the circle to the right

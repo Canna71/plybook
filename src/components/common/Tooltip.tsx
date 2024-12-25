@@ -26,7 +26,7 @@ export const Tooltip: Component<TooltipProps> = ({ plyData, reference }) => {
 	}
 
 	return <div
-		class="pgnviewer-tooltip"
+		class="pgnviewer-tooltip box"
 		ref={setFloating}
 		style={{
 			position: position.strategy,
