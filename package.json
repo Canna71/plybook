@@ -25,6 +25,7 @@
     "chessground": "^9.1.1",
     "chessops": "^0.14.1",
     "es-toolkit": "^1.27.0",
+    "solid-collapse": "^1.1.0",
     "solid-contextmenu": "^0.0.2",
     "solid-floating-ui": "^0.3.1",
     "solid-js": "^1.7.8",

@@ -47,6 +47,9 @@ importers:
       es-toolkit:
         specifier: ^1.27.0
         version: 1.27.0
+      solid-collapse:
+        specifier: ^1.1.0
+        version: 1.1.0(solid-js@1.9.2)
       solid-contextmenu:
         specifier: ^0.0.2
         version: 0.0.2(solid-js@1.9.2)(solid-transition-group@0.0.10(solid-js@1.9.2))
@@ -875,6 +878,11 @@ packages:
     resolution: {integrity: sha512-rqEO6FZk8mv7Hyv4UCj3FD3b6Waqft605TLfsCe/BiaylRpyyMC0b+uA5TJKawX3KzMrdi3wsLbCaLplrQmBvQ==}
     engines: {node: '>=10'}
 
+  solid-collapse@1.1.0:
+    resolution: {integrity: sha512-QAnJnpJ2gCfQaq6jpXUD76talS80upxcSCM9DTeymob+WlBgVFK6nPxsDqjd1dgSiVmXtkO05EO+hTjoOEXfXw==}
+    peerDependencies:
+      solid-js: '>=1.2.0'
+
   solid-contextmenu@0.0.2:
     resolution: {integrity: sha512-TmOhIvVpZmQdoiydSP07d9rT0xu/wvRSH6TJqbGPd+2XZz0wOualbm5CvLiHbOGnOU5tBrbe4q0cU/EMvG7u+w==}
     peerDependencies:
@@ -1677,6 +1685,10 @@ snapshots:
       seroval: 1.1.1
 
   seroval@1.1.1: {}
+
+  solid-collapse@1.1.0(solid-js@1.9.2):
+    dependencies:
+      solid-js: 1.9.2
 
   solid-contextmenu@0.0.2(solid-js@1.9.2)(solid-transition-group@0.0.10(solid-js@1.9.2)):
     dependencies:

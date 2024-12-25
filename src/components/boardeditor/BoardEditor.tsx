@@ -16,7 +16,9 @@ import { getEnPassantSquares } from "../common/utils";
 
 import './BoardEditor.scss';
 import Button from "../common/Button";
-import { IconRestore } from "@tabler/icons-solidjs";
+import { IconChevronRight, IconRestore } from "@tabler/icons-solidjs";
+import { Collapse } from "solid-collapse";
+import Collapsible from "../common/Collapsible";
 
 export type BoardEditorProps = {
     fen: Accessor<string | undefined>;
@@ -183,49 +185,42 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     return (<div class="board-editor-container"
 
     >
-        <div class="grid">
-            <div class="cell">
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+            <div class="">
                 <ToggleSwitch isToggled={whitesTurn} setIsToggled={setWhitesTurn} labels={["Black's turn", "White's turn"]} />
             </div>
-            <div class="cell">
+            <div class="">
                 <ToggleSwitch isToggled={flip} setIsToggled={setFlip} labels={["A1⇄H8", "H8⇄A1"]} />
             </div>
-        </div>
-        <label class="label">Castling rights:</label>
-        <div class="fixed-grid">
-            <div class="grid">
-                {/* <div class="column"> */}
-                <ToggleSwitch isToggled={blackQueenside} setIsToggled={setBlackQueenside} labels={["Black O-O-O", "Black O-O-O"]} />
-                {/* </div> */}
-                {/* <div class="column"> */}
-                <ToggleSwitch isToggled={blackKingside} setIsToggled={setBlackKingside} labels={["Black O-O", "Black O-O"]} />
-                {/* </div> */}
-                {/* <div class="column"> */}
-                <ToggleSwitch isToggled={whiteQueenside} setIsToggled={setWhiteQueenside} labels={["White O-O-O", "White O-O-O"]} />
-                {/* </div> */}
-                {/* <div class="column"> */}
-                <ToggleSwitch isToggled={whiteKingside} setIsToggled={setWhiteKingside} labels={["White O-O", "White O-O"]} />
-                {/* </div> */}
-            </div>
-
-        </div>
-        <div class="field">
-            <label class="label">En passant:</label>
-            <div class="control">
-                <Select options={availableEnPassant} selectedValue={enPassant} setSelectedValue={setEnPassant} />
-            </div>
-        </div>
-
-        <div class="field is-grouped mb-4">
-            <div class="control">
+            <div class="">
                 <Button onClick={onClear}>
                     <IconRestore />
                     Clear</Button>
             </div>
-            <div class="control">
+            <div class="">
                 <Button onClick={onStartingPosition}>Starting Position</Button>
             </div>
         </div>
+
+        <Collapsible title="Advanced settings" class="mt-4">  
+            <label class="label">Castling rights:</label>
+            <div class="fixed-grid mb-4">
+                <div class="grid">
+                    <ToggleSwitch isToggled={blackQueenside} setIsToggled={setBlackQueenside} labels={["Black O-O-O", "Black O-O-O"]} />
+                    <ToggleSwitch isToggled={blackKingside} setIsToggled={setBlackKingside} labels={["Black O-O", "Black O-O"]} />
+                    <ToggleSwitch isToggled={whiteQueenside} setIsToggled={setWhiteQueenside} labels={["White O-O-O", "White O-O-O"]} />
+                    <ToggleSwitch isToggled={whiteKingside} setIsToggled={setWhiteKingside} labels={["White O-O", "White O-O"]} />
+                </div>
+
+            </div>
+            <div class="field">
+                <div class="is-flex is-flex-direction-row is-align-items-baseline">
+                    <label class="label">En passant:</label>
+                    <Select options={availableEnPassant} selectedValue={enPassant} setSelectedValue={setEnPassant} />
+                </div>
+            </div>
+        </Collapsible>
+
         <PiecesToolbar
             color='black'
             onDrop={onDrop}
