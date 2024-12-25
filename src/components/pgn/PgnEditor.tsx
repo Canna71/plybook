@@ -8,7 +8,7 @@ import { getPosition, makeConfig } from "../common/utils";
 import { Key, Piece } from "chessground/types";
 import { parseSquare } from "chessops";
 import { chessgroundDests } from "chessops/compat";
-import "./PgnView.scss";
+import "./PgnViewer.scss";
 
 export type PgnEditorOptions = {
 	pgn: Accessor<string | undefined>;
@@ -35,7 +35,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 
 	});
 
-    const onMove = (orig: Key, dest: Key, _capturedPiece?: Piece)  => {
+	const onMove = (orig: Key, dest: Key, _capturedPiece?: Piece) => {
 		const g = game();
 		if (!g) {
 			return;
@@ -43,25 +43,25 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 		const path = currentPath() || Path.root;
 
 
-        // const pos = getPosition(game, currentPath);
-        const sq1 = parseSquare(orig);
-        const sq2 = parseSquare(dest);
+		// const pos = getPosition(game, currentPath);
+		const sq1 = parseSquare(orig);
+		const sq2 = parseSquare(dest);
 		const move = {
-            from: sq1!,
-            to: sq2!,
-            promotion: undefined
-        };
-        
+			from: sq1!,
+			to: sq2!,
+			promotion: undefined
+		};
+
 		const [newGameModel, newPath] = g.applyMove(path, move);
 
 		setGame(newGameModel);
 
 		setCurrentPath(newPath);
-		
-    }
 
-    const onSelect = (_key: Key) => {
-    }
+	}
+
+	const onSelect = (_key: Key) => {
+	}
 
 	const onDrawChange = (shapes: any) => {
 		const ng = game()?.updateShapes(currentPath()!, shapes);
@@ -69,62 +69,56 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 	}
 
 	const config = () => {
-        
+
 		const baseConfig = makeConfig(game, currentPath, squareHovered)();
 
 
 		const pos = getPosition(game, currentPath);
 		const allDests = chessgroundDests(pos);
-        return {
-            ...baseConfig,
+		return {
+			...baseConfig,
 			draggable: {
 				enabled: true,
 			},
-            viewOnly: false,
+			viewOnly: false,
 			turnColor: pos.turn,
-            movable: {
-                free: false,
-                color: pos.turn,
+			movable: {
+				free: false,
+				color: pos.turn,
 				dests: allDests
-            },
-            events: {
-                move: onMove,
-                
-                select: onSelect
-            },
+			},
+			events: {
+				move: onMove,
+
+				select: onSelect
+			},
 			drawable: {
 				...baseConfig.drawable,
 				eraseOnClick: false,
 				onChange: onDrawChange
 			}
-        }
-    }
+		}
+	}
 
 	return (
 		<>
 			<div class="pgnviewer-container">
-				
 				<div class="pgnviewer-content">
-
 					<div class="pgnviewer-chessboard">
 						<Chessboard config={config} />
-
 					</div>
-
 				</div>
-				
+
 				<div class="pgnviewer-sidebar">
 					<div class="pgnviewer-moves-wrapper">
-
 						<Moves
 							setGame={setGame}
 							game={game}
 							currentPath={currentPath}
 							setCurrentPath={setCurrentPath}
 							squareHovered={setSquareHovered}
-							editable={()=>true}
+							editable={() => true}
 						/>
-
 					</div>
 					<ButtonBar
 						game={game}
@@ -132,7 +126,6 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 						setCurrentPath={setCurrentPath}
 					/>
 				</div>
-
 			</div>
 			<div class="pfn-viewer-bottom">
 
