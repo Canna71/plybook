@@ -26,7 +26,7 @@ const CommentsRows: Component<{
 	starting?: boolean;
 	comments: Accessor<string[]>
 }> = ({ comments, path, starting }) => {
-	const { squareHovered } = useContext(GameContext)!;
+	// const { squareHovered } = useContext(GameContext)!;
 
 	return <For each={comments()}>{(comment,index) =>
 		<tr><td colSpan={3}>

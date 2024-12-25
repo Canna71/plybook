@@ -1,5 +1,5 @@
 import { Chessboard } from "../common/chessboard";
-import { Accessor, Component, createContext, createEffect, createSignal, Match, Show, Switch } from "solid-js";
+import { Accessor, Component, createEffect, createSignal, Match, Show, Switch, useContext } from "solid-js";
 import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
@@ -16,6 +16,9 @@ import { IconUser, IconUserFilled } from "@tabler/icons-solidjs";
 import { GameContext, GameContextType } from "./GameContext";
 
 const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) => void, color: Color }> = ({ name, setName, color }) => {
+	
+	const { editable } = useContext(GameContext)!;
+	
 	return (
 		<div class="is-flex is-flex-direction-row is-align-items-center pgnviewer-player-name is-fullwidth m-2">
 			<Show when={color === "white"}>
@@ -28,7 +31,7 @@ const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) =>
 
 
 			<div class="is-size-5 p-1 is-flex-grow-1"
-				contentEditable={true}
+				contentEditable={editable()}
 				onChange={(e) => setName(e.currentTarget.textContent || "")}
 			>{name()}</div>
 		</div>
@@ -182,7 +185,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 					setGame: setGame,
 					currentPath: currentPath,
 					setCurrentPath: setCurrentPath,
-					squareHovered: squareHovered,
+					setSquareHovered: setSquareHovered,
 					editable: ()=>true,
 				}
 			}>

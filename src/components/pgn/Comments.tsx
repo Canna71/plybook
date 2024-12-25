@@ -59,7 +59,7 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, path, index
 	
 	// take editable from context
 
-	const { editable, game, setGame, squareHovered } = useContext(GameContext)!;
+	const { editable, game, setGame, setSquareHovered } = useContext(GameContext)!;
 	let ref: HTMLDivElement | undefined;
 	
 	const paragraph = () =>  {
@@ -78,12 +78,12 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, path, index
 	const onMouseOver = (e: MouseEvent) => {
 		const target = e.target as HTMLElement;
 		if (target.dataset.square) {
-			squareHovered?.(target.dataset.square);
+			setSquareHovered?.(target.dataset.square);
 		}
 	};
 
 	const onMouseLeave = () => {
-		squareHovered?.(undefined);
+		setSquareHovered?.(undefined);
 	};
 
 	const onBlur = (e: Event) => {

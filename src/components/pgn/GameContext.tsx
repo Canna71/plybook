@@ -5,12 +5,11 @@ import { Path, PlyData } from "../../models/pgn";
 
 
 export interface GameContextType {
-	// game?: () => { initial: { comments: string[] } };
 	game: Accessor<GameModel | undefined>;
 	setGame: Setter<GameModel | undefined>;
 	currentPath: Accessor<Path | undefined>;
 	setCurrentPath: Setter<Path | undefined>;
-	squareHovered?: (square: string | undefined) => void;
+	setSquareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
 }
 
