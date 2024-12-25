@@ -15,6 +15,7 @@ import { getEnPassantSquares } from "../common/utils";
 
 
 import './BoardEditor.scss';
+import Button from "../common/Button";
 
 export type BoardEditorProps = {
     fen: Accessor<string | undefined>;
@@ -193,8 +194,8 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         </div>
         <div class="form-line">
             En passant: <Select options={availableEnPassant} selectedValue={enPassant} setSelectedValue={setEnPassant}  />
-            <button onClick={onClear}>Clear</button>
-            <button onClick={onStartingPosition}>Starting Position</button>
+            <Button onClick={onClear}>Clear</Button>
+            <Button onClick={onStartingPosition}>Starting Position</Button>
         </div>
         <PiecesToolbar
             color='black'

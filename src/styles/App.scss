@@ -5,6 +5,7 @@
 // @use "./PgnView.scss";
 @use "./DBTest.scss";
 // @use "./BoardEdit.scss";
+@import "bulma/bulma";
 
 cg-board {
     background-color: #a1bfef;
@@ -22,21 +23,13 @@ cg-board {
         padding-bottom: 100%;
     }
 
-    button {
-        height: auto;
-
-        &.selected {
-            background-color: var(--background-modifier-form-field);
-        }
-    }
-
     
 }
 
 body {
     overflow: hidden;
-    background-color: var(--background-color);
-    color: var(--color);
+    // background-color: var(--background-color);
+    // color: var(--color);
 
 }
 
@@ -75,68 +68,19 @@ body {
 }
 
 
-.navbar {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: start;
-    padding: 8px 8px;
-}
 
-h1 {
-    text-align: center;
-}
-
-
-
-button {
-    cursor: pointer;
-    // border-radius: 3px;
-    border-width: 1px;
-    // border-color: var(--border-color);
-    padding: 4px 8px;
-    background-color: var(--background-modifier-active);
-    box-shadow: none;
-    outline: none;
-}
-
-button:hover {
-
-}
-button:active {
-
-}
-
-
-button {
-    outline: none;
-}
 
 
 
 @media (prefers-color-scheme: dark) {
     :root {
-        color: var(--color);
-        background-color: var(--background-color);
+        // color: var(--color);
+        // background-color: var(--background-color);
     }
 
   
-    input,
-    button,
-    select {
-        color: var(--color);
-        background-color: var(--background-color);
-        font-size: initial;
-    }
-    button:active {
-        background-color: #0f0f0f69;
-    }
 }
 
-a {
-    color: #007bff;
-    text-decoration: none;
-}
 
 .form-line {
     display: flex;

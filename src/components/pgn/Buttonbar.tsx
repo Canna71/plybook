@@ -2,6 +2,7 @@ import { IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerTrackN
 import { Accessor, Component, Setter, Show } from "solid-js";
 import { Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
+import Button from '../common/Button';
 
 export type ButtonBarProps = {
 	game: Accessor<GameModel | undefined>;
@@ -79,18 +80,19 @@ const ButtonBar: Component<ButtonBarProps> = ({ game, currentPath, setCurrentPat
 
 	return <div class="pgnviewer-buttonbar">
 		<Show when={game() && currentPath()}>
-			<button onClick={onRewind} disabled={!canRewind()}>
+			
+			<Button onClick={onRewind} disabled={!canRewind()}>
 				<IconPlayerTrackPrevFilled size="14" />
-			</button>
-			<button onClick={onPrev} disabled={!canGoBack()}> 
+			</Button>
+			<Button onClick={onPrev} disabled={!canGoBack()}> 
 				<IconPlayerSkipBackFilled size="14" />
-			</button>
-			<button onClick={onNext} disabled={!canMoveNext()}>
+			</Button>
+			<Button onClick={onNext} disabled={!canMoveNext()}>
 				<IconPlayerSkipForwardFilled size="14" />
-			</button>
-			<button onClick={onFastForward} disabled={!canFastForward()}>
+			</Button>
+			<Button onClick={onFastForward} disabled={!canFastForward()}>
 				<IconPlayerTrackNextFilled size="14" />
-			</button>
+			</Button>
 		</Show>
 	</div>;
 }

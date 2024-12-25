@@ -3,6 +3,7 @@ import { Config } from "chessground/config";
 import { Accessor, Component, createEffect, createSignal, For } from "solid-js";
 import { makeGame, PlyData, Path } from "../models/pgn";
 import { GameModel } from "../models/GameModel";
+import Button from "./common/Button";
 
 
 // see: https://github.com/lichess-org/pgn-viewer
@@ -138,7 +139,7 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
 
 
 				<div class="pgn-viewer-buttonbar">
-					<button onClick={onNext} >&gt;|</button>
+					<Button onClick={onNext} >&gt;|</Button>
 				</div>
 
 			</div>

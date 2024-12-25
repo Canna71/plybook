@@ -94,7 +94,6 @@ export class GameModel {
     private getNewGameModel(): GameModel {
 
         // const moves = this.updateMoves();
-        console.log("this.game.pgn", this.pgn());
         // return new GameModel(this.initial, moves, this.players, this.metadata, this.game);
         return makeGameInternal(this.game);
     }
@@ -121,10 +120,8 @@ export class GameModel {
     }
 
     updateComment(path: Path, index: number, comment: string, starting: boolean = false): GameModel {
-        console.log("updateComment", path, index, comment, starting);
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
-        console.log(pgnNode);
         if (isChildNode(pgnNode)) {
             const comments = (starting ? pgnNode.data.startingComments : pgnNode.data.comments) || []
             comments[index] = this.changeCommentText(comments[index], comment);
@@ -138,7 +135,6 @@ export class GameModel {
     }
 
     insertComment(path: Path, comment: string, before: boolean = false) {
-        console.log("insertComment", path, comment, before);
         if (before) path = path.previous();
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
@@ -156,7 +152,6 @@ export class GameModel {
     }
 
     deleteComment(path: Path, index: number, starting: boolean = false) {
-        console.log("deleteComment", path, index, starting);
         const pgnNode = this.findPgnNode(path);
         const node = nodeAtPathFrom(this.moves, path);
 
@@ -187,7 +182,6 @@ export class GameModel {
     }
 
     deleteFrom(path: Path) {
-        console.log("deleteFrom", path);
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
         if (isChildNode(pgnNode)) {
@@ -201,7 +195,6 @@ export class GameModel {
     }
 
     public annotate(path: Path, nag: number): GameModel {
-        console.log("annotate", path, nag);
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
         if (isChildNode(pgnNode)) {
@@ -235,11 +228,9 @@ export class GameModel {
     }
 
     public updateShapes(path: Path, shapes: DrawShape[]) {
-        console.log("updateShapes", shapes);
         const pgnNode = this.findPgnNode(path);
         const node = nodeAtPathFrom(this.moves, path);
         if (!pgnNode || !node) return this;
-        console.log(node, pgnNode);
         if (isChildNode(node) && isChildNode(pgnNode)) {
             pgnNode.data.comments = this.mergeShapes(pgnNode.data.comments, shapes);
         } else {

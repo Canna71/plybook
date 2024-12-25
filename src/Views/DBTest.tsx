@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { BaseDirectory, readTextFile } from "@tauri-apps/plugin-fs";
 import { makeGame } from "../models/pgn";
+import Button from "../components/common/Button";
 
 type IGame = {
     file: string,
@@ -67,10 +68,10 @@ const DBTest = () => {
     return (
         <div class="dbtest-container">
             <div>
-                <button onClick={initDB}>Init DB</button>
-                <button onClick={createRecord}>Index Game</button>
-                <button onClick={listGames}>List Games</button>
-                <button onClick={uploadPgn}>Upload PGN</button>
+                <Button onClick={initDB}>Init DB</Button>
+                <Button onClick={createRecord}>Index Game</Button>
+                <Button onClick={listGames}>List Games</Button>
+                <Button onClick={uploadPgn}>Upload PGN</Button>
             </div>
             <div>
 

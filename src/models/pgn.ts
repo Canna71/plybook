@@ -318,7 +318,7 @@ export function makeGameInternal(game: Game<PgnNodeData>): GameModel {
 
     const gameModel = new GameModel(initial, moves, players, metadata, game);
 
-    console.log("gameModel", gameModel);
+    // console.log("gameModel", gameModel);
 
     return gameModel;
 }
