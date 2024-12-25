@@ -48,7 +48,6 @@ const ButtonBar: Component<ButtonBarProps> = ({ game, currentPath, setCurrentPat
 
 	const onPrev = () => {
 		const previous = previousPath();
-		console.log(previous);
 		previous && setCurrentPath(previous);
 	}
 

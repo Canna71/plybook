@@ -1,28 +1,38 @@
 import { Chessboard } from "../common/chessboard";
-import { Accessor, Component, createEffect, createSignal } from "solid-js";
+import { Accessor, Component, createEffect, createSignal, Match, Switch } from "solid-js";
 import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
 import { getPosition, makeConfig } from "../common/utils";
 import { Key, Piece } from "chessground/types";
-import { parseSquare } from "chessops";
+import { parseSquare, Position } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 import "./PgnViewer.scss";
+import Button from "../common/Button";
+import BoardEditor from "../boardeditor/BoardEditor";
+import { makeFen, parseFen } from "chessops/fen";
 
 export type PgnEditorOptions = {
 	pgn: Accessor<string | undefined>;
 	setPgn: (pgn: string) => void;
 }
 
-const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
+enum ViewMode {
+	STARTING_POSITION,
+	MOVES
+}
+
+const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
 	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
+	const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
+	const [startingPosition, setStartingPosition] = createSignal<string | undefined>(undefined);
 	// const currentData = useCurrentData(game, currentPath)
 
 
-	// After loading the pgn string, create the game model
+
 	createEffect(() => {
 		// const cg = api();
 		let pgnString = pgn();
@@ -31,6 +41,12 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 		}
 		const gameModel = makeGame(pgnString);
 		setGame(gameModel);
+		if (gameModel.headers.get("FEN")) {
+			const setup = parseFen(gameModel.headers.get("FEN") || "");
+			if (setup.isOk) {
+				setStartingPosition(makeFen(setup.value));
+			}
+		}
 		setCurrentPath(gameModel.pathAtMainlinePly(0));
 
 	});
@@ -100,16 +116,56 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 		}
 	}
 
+	// #region Starting Position Editing
+
+	const onEditStartingPosition = () => {
+		setViewMode(ViewMode.STARTING_POSITION);
+	}
+
+	const onAcceptStartingPosition = () => {
+		game()?.headers.set("FEN",startingPosition() || "");
+		game()?.headers.set("Setup","1");
+		setPgn(game()?.pgn() || "");
+		setViewMode(ViewMode.MOVES);
+	}
+
+	const onCancelStartingPosition = () => {
+		setViewMode(ViewMode.MOVES);
+	}
+
+	// #endregion
+
 	return (
 		<>
 			<div class="pgnviewer-container">
 				<div class="pgnviewer-content">
-					<div class="pgnviewer-chessboard">
-						<Chessboard config={config} />
-					</div>
+					<Switch>
+						<Match when={viewMode() === ViewMode.MOVES}>
+							<div class="pgnviewer-chessboard">
+								<Chessboard config={config} />
+							</div>
+						</Match>
+						<Match when={viewMode() === ViewMode.STARTING_POSITION}>
+							<BoardEditor fen={startingPosition} setFen={setStartingPosition} />
+						</Match>
+					</Switch>
+
 				</div>
 
 				<div class="pgnviewer-sidebar">
+					<div class="pgnviewer-sidebar-header">
+						<Switch>
+							<Match when={viewMode() === ViewMode.MOVES}>
+								<Button onClick={onEditStartingPosition}>Set Starting Position</Button>
+							</Match>
+							<Match when={viewMode() === ViewMode.STARTING_POSITION}>
+								<div class="is-flex is-flex-direction-row is-gap-1">
+									<Button onClick={onAcceptStartingPosition}>Accept</Button>
+									<Button onClick={onCancelStartingPosition}>Cancel</Button>
+								</div>
+							</Match>
+						</Switch>
+					</div>
 					<div class="pgnviewer-moves-wrapper">
 						<Moves
 							setGame={setGame}
@@ -127,7 +183,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 					/>
 				</div>
 			</div>
-			<div class="pfn-viewer-bottom">
+			<div class="pgn-viewer-bottom">
 
 			</div>
 		</>

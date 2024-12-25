@@ -12,7 +12,6 @@ const PgnEditView = () => {
             {
             baseDir: BaseDirectory.Resource
         });
-        // console.log(pgn);
         setPgn("[]");
     });
 

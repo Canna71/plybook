@@ -242,6 +242,12 @@ export class GameModel {
     pgn() {
         return makePgn(this.game);
     }
+
+    // get a header from the game
+    get headers() {
+        return this.game.headers;
+    }
+    
 }
 
 

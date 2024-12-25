@@ -5,7 +5,7 @@ import { Api } from "chessground/api";
 import { PiecesToolbar } from "./Piece";
 import { Piece, Role } from "chessground/types";
 import ToggleSwitch from "../common/ToggleSwitch";
-import { makeFen, parseFen } from "chessops/fen";
+import { INITIAL_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
 import { SquareSet } from "chessops";
 import { squareFromCoords } from "chessops/util";
 import Select from "../common/Select";
@@ -42,9 +42,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         if (!cg) {
             return;
         }
-        if (!props.fen()) {
-            setBaseFen(cg.getFen());
-        }
+        setBaseFen(props.fen() || INITIAL_BOARD_FEN);
     });
 
     // const onSave = () => {
@@ -116,7 +114,10 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     }
 
     createEffect(() => {
-        props.setFen(fen());
+        const newFen = fen();
+        if (newFen) {
+            props.setFen(fen());
+        }
     });
 
     const onClear = () => {
@@ -141,7 +142,6 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         }
         //  squares = ["a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3"];
         const options = [{ key: "", value: "None" }].concat(squares.map(square => ({ key: square, value: square })));
-        console.log("options", options);
         return options;
     }
 
@@ -183,24 +183,19 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     return (<div class="board-editor-container"
 
     >
-        <div class="is-flex is-flex-direction-row is-align-items-center is-gap-1">
-            <div class="">
+        <div class="is-flex is-flex-direction-row is-align-items-center is-gap-1 is-flex-wrap-wrap" >
+            <div class="is-flex is-flex-direction-row is-align-items-center is-gap-1">
                 <ToggleSwitch isToggled={whitesTurn} setIsToggled={setWhitesTurn} labels={["Black's turn", "White's turn"]} />
-            </div>
-            <div class="">
+
                 <ToggleSwitch isToggled={flip} setIsToggled={setFlip} labels={["A1⇄H8", "H8⇄A1"]} />
             </div>
-            <div class="">
-                <Button onClick={onClear}>
-                    <IconRestore />
-                    Clear</Button>
-            </div>
-            <div class="">
+            <div class="is-flex is-flex-direction-row is-align-items-center is-gap-1">
+                <Button onClick={onClear}><IconRestore />Clear</Button>
                 <Button onClick={onStartingPosition}>Starting Position</Button>
             </div>
         </div>
 
-        <Collapsible title="Advanced settings" class="mt-4">  
+        <Collapsible title="Advanced settings" class="mt-4">
             <label class="label">Castling rights:</label>
             <div class="fixed-grid mb-4">
                 <div class="grid">

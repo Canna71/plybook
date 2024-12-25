@@ -42,6 +42,10 @@
         min-height: 100px;
         flex-direction: column;
 
+        .pgnviewer-sidebar-header {
+            flex: 0;
+        }
+
         .pgnviewer-moves-wrapper {
             // flex: 1 1 0;
             flex: 1;

@@ -304,7 +304,6 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 	}
 
 	const onAnnotate = (nag: number) => {
-		console.log("Annotating", nag);
 		const ng = game()?.annotate(plyData?.path!, nag);
 		setGame(ng);
 	}

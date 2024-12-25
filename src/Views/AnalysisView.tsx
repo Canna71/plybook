@@ -11,7 +11,6 @@ const AnalysisView = () => {
             {
             baseDir: BaseDirectory.Resource
         });
-        // console.log(pgn);
         setPgn(pgn);
     });
 
