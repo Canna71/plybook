@@ -16,6 +16,7 @@ import { getEnPassantSquares } from "../common/utils";
 
 import './BoardEditor.scss';
 import Button from "../common/Button";
+import { IconRestore } from "@tabler/icons-solidjs";
 
 export type BoardEditorProps = {
     fen: Accessor<string | undefined>;
@@ -217,7 +218,9 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
 
         <div class="field is-grouped mb-4">
             <div class="control">
-                <Button onClick={onClear}>Clear</Button>
+                <Button onClick={onClear}>
+                    <IconRestore />
+                    Clear</Button>
             </div>
             <div class="control">
                 <Button onClick={onStartingPosition}>Starting Position</Button>
