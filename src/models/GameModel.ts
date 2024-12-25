@@ -22,9 +22,9 @@ export class GameModel {
         this.mainline = Array.from(this.moves.mainline());
     }
 
-    // private clone(): GameModel {
-    //     return new GameModel(this.initial, this.moves, this.players, this.metadata, this.game);
-    // }
+    clone(): GameModel {
+        return new GameModel(this.initial, this.moves, this.players, this.metadata, this.game);
+    }
 
     nodeAt = (path: Path): AnyNode | undefined => nodeAtPathFrom(this.moves, path);
 

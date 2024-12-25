@@ -12,7 +12,7 @@ const PgnEditView = () => {
             {
             baseDir: BaseDirectory.Resource
         });
-        setPgn("[]");
+        setPgn(pgnText || "[]");
     });
 
     return (

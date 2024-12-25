@@ -1,17 +1,39 @@
 import { Chessboard } from "../common/chessboard";
-import { Accessor, Component, createEffect, createSignal, Match, Switch } from "solid-js";
+import { Accessor, Component, createEffect, createSignal, Match, Show, Switch } from "solid-js";
 import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
 import { getPosition, makeConfig } from "../common/utils";
 import { Key, Piece } from "chessground/types";
-import { parseSquare, Position } from "chessops";
+import { Color, parseSquare, Position } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 import "./PgnViewer.scss";
 import Button from "../common/Button";
 import BoardEditor from "../boardeditor/BoardEditor";
 import { makeFen, parseFen } from "chessops/fen";
+import { IconUser, IconUserFilled } from "@tabler/icons-solidjs";
+
+const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) => void, color: Color }> = ({ name, setName, color }) => {
+	return (
+		<div class="is-flex is-flex-direction-row is-align-items-center pgnviewer-player-name is-fullwidth m-2">
+			<Show when={color === "white"}>
+				<IconUserFilled />
+			</Show>
+
+			<Show when={color === "black"}>
+				<IconUser />
+			</Show>
+
+
+			<div class="is-size-5 p-1 is-flex-grow-1"
+				contentEditable={true}
+				onChange={(e) => setName(e.currentTarget.textContent || "")}
+			>{name()}</div>
+		</div>
+
+	);
+}
 
 export type PgnEditorOptions = {
 	pgn: Accessor<string | undefined>;
@@ -29,6 +51,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
 	const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
 	const [startingPosition, setStartingPosition] = createSignal<string | undefined>(undefined);
+
 	// const currentData = useCurrentData(game, currentPath)
 
 
@@ -41,6 +64,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		}
 		const gameModel = makeGame(pgnString);
 		setGame(gameModel);
+
 		if (gameModel.headers.get("FEN")) {
 			const setup = parseFen(gameModel.headers.get("FEN") || "");
 			if (setup.isOk) {
@@ -116,6 +140,18 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		}
 	}
 
+	const whitePlayer = () => game()?.players.white.name || "White";
+	const setWhitePlayer = (name: string) => {
+		game()!.players.white.name = name;
+		setGame(game()?.clone());
+	}
+
+	const blackPlayer = () => game()?.players.black.name || "Black";
+	const setBlackPlayer = (name: string) => {
+		game()!.players.black.name = name;
+		setGame(game()?.clone());
+	}
+
 	// #region Starting Position Editing
 
 	const onEditStartingPosition = () => {
@@ -123,8 +159,8 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	}
 
 	const onAcceptStartingPosition = () => {
-		game()?.headers.set("FEN",startingPosition() || "");
-		game()?.headers.set("Setup","1");
+		game()?.headers.set("FEN", startingPosition() || "");
+		game()?.headers.set("Setup", "1");
 		setPgn(game()?.pgn() || "");
 		setViewMode(ViewMode.MOVES);
 	}
@@ -141,9 +177,11 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 				<div class="pgnviewer-content">
 					<Switch>
 						<Match when={viewMode() === ViewMode.MOVES}>
+							<PlayerName name={blackPlayer} setName={setBlackPlayer} color="black" />
 							<div class="pgnviewer-chessboard">
 								<Chessboard config={config} />
 							</div>
+							<PlayerName name={whitePlayer} setName={setWhitePlayer} color="white" />
 						</Match>
 						<Match when={viewMode() === ViewMode.STARTING_POSITION}>
 							<BoardEditor fen={startingPosition} setFen={setStartingPosition} />
