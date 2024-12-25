@@ -2,10 +2,10 @@ import { Color } from "chessops";
 import { Component, useContext, createEffect, Show, ValidComponent } from "solid-js";
 import { DOMElement } from "solid-js/types/jsx.js";
 import { HierarchicalMoveData } from "../../models/tree";
-import { MovesContext } from "./Moves";
 import { useContextMenu } from "../common/contextmenu";
 import { Dynamic } from "solid-js/web";
 import { range } from "es-toolkit";
+import { GameContext, TooltipContext } from "./GameContext";
 
 const GoodMove = () => {
 	return <svg xmlns="http://www.w3.org/2000/svg" class="" width="18" height="18" viewBox="0 0 18 19">
@@ -291,7 +291,8 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 	const turn = color;
 	const plyData = color && line[color];
 	let ref: HTMLDivElement | undefined;
-	const { currentPath, showTooltip, editable, game, setGame } = useContext(MovesContext)!;
+	const { currentPath, editable, game, setGame } = useContext(GameContext)!;
+  const { showTooltip } = useContext(TooltipContext)!;
 
 	const onAddComment = (before: boolean) => {
 		const ng = game()?.insertComment(plyData?.path!, "", before);

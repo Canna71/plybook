@@ -1,5 +1,5 @@
 import { Chessboard } from "../common/chessboard";
-import { Accessor, Component, createEffect, createSignal, Match, Show, Switch } from "solid-js";
+import { Accessor, Component, createContext, createEffect, createSignal, Match, Show, Switch } from "solid-js";
 import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
@@ -13,6 +13,7 @@ import Button from "../common/Button";
 import BoardEditor from "../boardeditor/BoardEditor";
 import { makeFen, parseFen } from "chessops/fen";
 import { IconUser, IconUserFilled } from "@tabler/icons-solidjs";
+import { GameContext, GameContextType } from "./GameContext";
 
 const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) => void, color: Color }> = ({ name, setName, color }) => {
 	return (
@@ -44,6 +45,8 @@ enum ViewMode {
 	STARTING_POSITION,
 	MOVES
 }
+
+
 
 const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
@@ -173,57 +176,67 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
 	return (
 		<>
-			<div class="pgnviewer-container">
-				<div class="pgnviewer-content">
-					<Switch>
-						<Match when={viewMode() === ViewMode.MOVES}>
-							<PlayerName name={blackPlayer} setName={setBlackPlayer} color="black" />
-							<div class="pgnviewer-chessboard">
-								<Chessboard config={config} />
-							</div>
-							<PlayerName name={whitePlayer} setName={setWhitePlayer} color="white" />
-						</Match>
-						<Match when={viewMode() === ViewMode.STARTING_POSITION}>
-							<BoardEditor fen={startingPosition} setFen={setStartingPosition} />
-						</Match>
-					</Switch>
-
-				</div>
-
-				<div class="pgnviewer-sidebar">
-					<div class="pgnviewer-sidebar-header">
+			<GameContext.Provider value={
+				{
+					game: game,
+					setGame: setGame,
+					currentPath: currentPath,
+					setCurrentPath: setCurrentPath,
+					squareHovered: squareHovered,
+					editable: ()=>true,
+				}
+			}>
+				<div class="pgnviewer-container">
+					<div class="pgnviewer-content">
 						<Switch>
 							<Match when={viewMode() === ViewMode.MOVES}>
-								<Button onClick={onEditStartingPosition}>Set Starting Position</Button>
+								<PlayerName name={blackPlayer} setName={setBlackPlayer} color="black" />
+								<div class="pgnviewer-chessboard">
+									<Chessboard config={config} />
+								</div>
+								<PlayerName name={whitePlayer} setName={setWhitePlayer} color="white" />
 							</Match>
 							<Match when={viewMode() === ViewMode.STARTING_POSITION}>
-								<div class="is-flex is-flex-direction-row is-gap-1">
-									<Button onClick={onAcceptStartingPosition}>Accept</Button>
-									<Button onClick={onCancelStartingPosition}>Cancel</Button>
-								</div>
+								<BoardEditor fen={startingPosition} setFen={setStartingPosition} />
 							</Match>
 						</Switch>
+
 					</div>
-					<div class="pgnviewer-moves-wrapper">
-						<Moves
-							setGame={setGame}
+
+					<div class="pgnviewer-sidebar">
+						<div class="pgnviewer-sidebar-header">
+							<Switch>
+								<Match when={viewMode() === ViewMode.MOVES}>
+									<Button onClick={onEditStartingPosition}>Set Starting Position</Button>
+								</Match>
+								<Match when={viewMode() === ViewMode.STARTING_POSITION}>
+									<div class="is-flex is-flex-direction-row is-gap-1">
+										<Button onClick={onAcceptStartingPosition}>Accept</Button>
+										<Button onClick={onCancelStartingPosition}>Cancel</Button>
+									</div>
+								</Match>
+							</Switch>
+						</div>
+						<div class="pgnviewer-moves-wrapper">
+							<Moves
+								setGame={setGame}
+								game={game}
+								currentPath={currentPath}
+								setCurrentPath={setCurrentPath}
+								squareHovered={setSquareHovered}
+							/>
+						</div>
+						<ButtonBar
 							game={game}
 							currentPath={currentPath}
 							setCurrentPath={setCurrentPath}
-							squareHovered={setSquareHovered}
-							editable={() => true}
 						/>
 					</div>
-					<ButtonBar
-						game={game}
-						currentPath={currentPath}
-						setCurrentPath={setCurrentPath}
-					/>
 				</div>
-			</div>
-			<div class="pgn-viewer-bottom">
+				<div class="pgn-viewer-bottom">
 
-			</div>
+				</div>
+			</GameContext.Provider>
 		</>
 	);
 }

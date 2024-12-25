@@ -2,9 +2,9 @@ import { Accessor, Component, createEffect, For, useContext } from "solid-js";
 
 import { GameModel } from "../../models/GameModel";
 import { useCurrentData } from "../common/utils";
-import { MovesContext } from "../pgn/Moves";
 import { useContextMenu } from "../common/contextmenu";
 import { isPlyData, Path } from "../../models/pgn";
+import { GameContext } from "./GameContext";
 
 // regex for square names
 export const squareRegex = /([a-h][1-8])/g;
@@ -38,7 +38,7 @@ export const Comments2: Component<CommentsProps> = ({ game, currentPath, squareH
 	};
 
 	return <For each={comments()}>
-		{(comment, index) => <CommentsView comments={() => comment} squareHovered={squareHovered} path={path} index={index()} />}
+		{(comment, index) => <CommentsView comments={() => comment}  path={path} index={index()} />}
 	</For>;
 
 
@@ -47,19 +47,19 @@ export const Comments2: Component<CommentsProps> = ({ game, currentPath, squareH
 
 export type CommentsViewProps = {
 	comments: Accessor<string>;
-	squareHovered?: (square: string | undefined) => void;
+	// squareHovered?: (square: string | undefined) => void;
 	path: Path;
 	index: number;
 	starting?: boolean;
 };
 
-export const CommentsView:Component<CommentsViewProps> = ({comments, squareHovered, path, index, starting
+export const CommentsView:Component<CommentsViewProps> = ({comments, path, index, starting
 
 }) => {
 	
 	// take editable from context
 
-	const { editable, game, setGame } = useContext(MovesContext)!;
+	const { editable, game, setGame, squareHovered } = useContext(GameContext)!;
 	let ref: HTMLDivElement | undefined;
 	
 	const paragraph = () =>  {
