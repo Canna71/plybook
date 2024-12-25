@@ -9,7 +9,7 @@ export interface GameContextType {
 	game: Accessor<GameModel | undefined>;
 	setGame: Setter<GameModel | undefined>;
 	currentPath: Accessor<Path | undefined>;
-	setCurrentPath: (path: string[]) => void;
+	setCurrentPath: Setter<Path | undefined>;
 	squareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
 }

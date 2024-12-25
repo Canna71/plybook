@@ -218,13 +218,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 							</Switch>
 						</div>
 						<div class="pgnviewer-moves-wrapper">
-							<Moves
-								setGame={setGame}
-								game={game}
-								currentPath={currentPath}
-								setCurrentPath={setCurrentPath}
-								squareHovered={setSquareHovered}
-							/>
+							<Moves />
 						</div>
 						<ButtonBar
 							game={game}

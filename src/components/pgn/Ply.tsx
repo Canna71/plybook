@@ -361,7 +361,9 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 		const cl = {
 			"pgnviewer-move": isValid(),
 			[turn + `-move`]: !!turn,
-			"current-move": isCurrent()
+			"current-move": isCurrent(),
+      "has-background-primary": isCurrent(),
+      "has-text-primary-invert": isCurrent(),
 		};
 		const nag = mainNag();
 		if(nag) {

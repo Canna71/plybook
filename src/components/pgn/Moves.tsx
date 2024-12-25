@@ -13,11 +13,11 @@ import { Ply } from "./Ply";
 import { GameContext, TooltipContext } from "./GameContext";
 
 export type MovesProps = {
-	game: Accessor<GameModel | undefined>;
-	setGame: Setter<GameModel | undefined>;
-	currentPath: Accessor<Path | undefined>;
-	setCurrentPath: Setter<Path | undefined>;
-	squareHovered?: (square: string | undefined) => void;
+	// game: Accessor<GameModel | undefined>;
+	// setGame: Setter<GameModel | undefined>;
+	// currentPath: Accessor<Path | undefined>;
+	// setCurrentPath: Setter<Path | undefined>;
+	// squareHovered?: (square: string | undefined) => void;
 };
 
 
@@ -140,7 +140,7 @@ const MovesTree: Component<MovesTreeProps> = ({ movesTree, initialComments }) =>
 const Moves: Component<MovesProps> = (props) => {
 	const [reference, setReference] = createSignal<ReferenceElement | null | undefined>(undefined);
 	const [ply, setPly] = createSignal<PlyData>();
-
+	const {currentPath, setCurrentPath, game} = useContext(GameContext)!;
 
 
 	const onClick = (e: Event) => {
@@ -156,7 +156,7 @@ const Moves: Component<MovesProps> = (props) => {
 		if (!path) {
 			return;
 		}
-		props.setCurrentPath(new Path(path));
+		setCurrentPath(new Path(path));
 	}
 
 	const showTooltip = (anchor: Element | undefined, plyData: PlyData | undefined) => {
@@ -166,13 +166,13 @@ const Moves: Component<MovesProps> = (props) => {
 
 	const movesTree = (): HierarchicalMoveData[] => {
 
-		const moves = props.game()?.moves;
+		const moves = game()?.moves;
 		const tree = moves && makeTree(moves);
 		return tree || [];
 	}
 
 	const initialComments = () => {
-		return props.game()?.initial.comments || [];
+		return game()?.initial.comments || [];
 	}
 
 
