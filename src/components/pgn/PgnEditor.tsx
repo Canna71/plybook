@@ -8,7 +8,7 @@ import { getPosition, makeConfig } from "../common/utils";
 import { Key, Piece } from "chessground/types";
 import { parseSquare } from "chessops";
 import { chessgroundDests } from "chessops/compat";
-
+import "./PgnView.scss";
 
 export type PgnEditorOptions = {
 	pgn: Accessor<string | undefined>;

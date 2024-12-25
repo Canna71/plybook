@@ -13,6 +13,9 @@ import { makeSan } from "chessops/san";
 import { getEnPassantSquares } from "../common/utils";
 // see: https://lichess.org/editor/1nbqkbn1/p3pppp/1bp2n2/3r3r/8/8/PPPPPPPP/RNBQKBNR_w_KQha_-_0_1?color=white
 
+
+import './BoardEditor.scss';
+
 export type BoardEditorProps = {
     fen: Accessor<string | undefined>;
     setFen: Setter<string | undefined>;
