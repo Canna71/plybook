@@ -1,6 +1,6 @@
 import { Accessor, Setter, Show } from 'solid-js';
 import { For } from 'solid-js/web';
-import styles from './Select.module.scss';
+// import styles from './Select.module.scss';
 
 export type Option = {
     key: string;
@@ -26,9 +26,9 @@ const Select = (props: SelectProps) => {
     };
 
     return (
-        <div class={styles.selectContainer}>
+        <div class="select">
             <select
-                class={styles.selectElement}
+                // class={styles.selectElement}
                 value={props.selectedValue()}
                 onChange={handleChange}
             >
@@ -39,7 +39,7 @@ const Select = (props: SelectProps) => {
                 </Show>
                 <For each={props.options()}>
                     {(option) => (
-                        <option class={styles.selectOption} value={option.key} selected={option.key === props.selectedValue()}>
+                        <option value={option.key} selected={option.key === props.selectedValue()}>
                             {option.value}
                         </option>
                     )}

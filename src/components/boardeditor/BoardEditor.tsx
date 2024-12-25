@@ -103,7 +103,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
                     castlingRights = castlingRights.with(squareFromCoords(0, 7)!)
                 }
 
-                if(enPassant() !== "") {
+                if (enPassant() !== "") {
                     setup.epSquare = squareFromCoords(enPassant().charCodeAt(0) - 'a'.charCodeAt(0), enPassant().charCodeAt(1) - '1'.charCodeAt(0));
                 }
 
@@ -133,7 +133,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         if (!fen) {
             return [];
         }
-        
+
         const parsed = parseFen(fen);
         let squares: string[] = [];
         if (parsed.isOk) {
@@ -180,22 +180,48 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     };
 
     return (<div class="board-editor-container"
-    
+
     >
-        <div class="form-line">
-            <ToggleSwitch isToggled={whitesTurn} setIsToggled={setWhitesTurn} labels={["Black's turn", "White's turn"]} />
-            <ToggleSwitch isToggled={flip} setIsToggled={setFlip} labels={["A1⇄H8", "H8⇄A1"]} />
+        <div class="grid">
+            <div class="cell">
+                <ToggleSwitch isToggled={whitesTurn} setIsToggled={setWhitesTurn} labels={["Black's turn", "White's turn"]} />
+            </div>
+            <div class="cell">
+                <ToggleSwitch isToggled={flip} setIsToggled={setFlip} labels={["A1⇄H8", "H8⇄A1"]} />
+            </div>
         </div>
-        <div class="form-line">
-            <ToggleSwitch isToggled={whiteKingside} setIsToggled={setWhiteKingside} labels={["White O-O", "White O-O"]} />
-            <ToggleSwitch isToggled={whiteQueenside} setIsToggled={setWhiteQueenside} labels={["White O-O-O", "White O-O-O"]} />
-            <ToggleSwitch isToggled={blackKingside} setIsToggled={setBlackKingside} labels={["Black O-O", "Black O-O"]} />
-            <ToggleSwitch isToggled={blackQueenside} setIsToggled={setBlackQueenside} labels={["Black O-O-O", "Black O-O-O"]} />
+        <label class="label">Castling rights:</label>
+        <div class="fixed-grid">
+            <div class="grid">
+                {/* <div class="column"> */}
+                <ToggleSwitch isToggled={blackQueenside} setIsToggled={setBlackQueenside} labels={["Black O-O-O", "Black O-O-O"]} />
+                {/* </div> */}
+                {/* <div class="column"> */}
+                <ToggleSwitch isToggled={blackKingside} setIsToggled={setBlackKingside} labels={["Black O-O", "Black O-O"]} />
+                {/* </div> */}
+                {/* <div class="column"> */}
+                <ToggleSwitch isToggled={whiteQueenside} setIsToggled={setWhiteQueenside} labels={["White O-O-O", "White O-O-O"]} />
+                {/* </div> */}
+                {/* <div class="column"> */}
+                <ToggleSwitch isToggled={whiteKingside} setIsToggled={setWhiteKingside} labels={["White O-O", "White O-O"]} />
+                {/* </div> */}
+            </div>
+
         </div>
-        <div class="form-line">
-            En passant: <Select options={availableEnPassant} selectedValue={enPassant} setSelectedValue={setEnPassant}  />
-            <Button onClick={onClear}>Clear</Button>
-            <Button onClick={onStartingPosition}>Starting Position</Button>
+        <div class="field">
+            <label class="label">En passant:</label>
+            <div class="control">
+                <Select options={availableEnPassant} selectedValue={enPassant} setSelectedValue={setEnPassant} />
+            </div>
+        </div>
+
+        <div class="field is-grouped mb-4">
+            <div class="control">
+                <Button onClick={onClear}>Clear</Button>
+            </div>
+            <div class="control">
+                <Button onClick={onStartingPosition}>Starting Position</Button>
+            </div>
         </div>
         <PiecesToolbar
             color='black'
@@ -213,7 +239,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         />
         <div class="board-editor-toolbar">
 
-            <input class="board-editor-textbox fen" type="text" value={props.fen()} />
+            <input class="input" type="text" value={props.fen()} />
 
         </div>
     </div>);
