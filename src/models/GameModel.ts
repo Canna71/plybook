@@ -135,6 +135,7 @@ export class GameModel {
     }
 
     insertComment(path: Path, comment: string, before: boolean = false) {
+        console.log("insertComment", path, comment, before);
         if (before) path = path.previous();
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
@@ -142,11 +143,11 @@ export class GameModel {
         if (isChildNode(pgnNode)) {
             const comments = pgnNode.data.comments || [];
             comments.splice(0, 0, comment);
-            // pgnNode.data.comments = comments;
+            pgnNode.data.comments = comments;
         } else {
             const comments = this.game.comments || [];
             comments.splice(0, 0, comment);
-            // this.game.comments = comments;
+            this.game.comments = comments;
         }
         return this.getNewGameModel();
     }
