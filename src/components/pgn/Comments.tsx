@@ -17,7 +17,7 @@ type CommentsProps = {
 };
 
 
-export const Comments2: Component<CommentsProps> = ({ game, currentPath, squareHovered, commentType }) => {
+export const Comments2: Component<CommentsProps> = ({ game, currentPath, commentType }) => {
 
 	const currentData = useCurrentData(game, currentPath);
 

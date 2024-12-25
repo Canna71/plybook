@@ -6,14 +6,14 @@ import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
 import { getPosition, makeConfig } from "../common/utils";
 import { Key, Piece } from "chessground/types";
-import { Color, parseSquare, Position } from "chessops";
+import { Color, parseSquare } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 import "./PgnViewer.scss";
 import Button from "../common/Button";
 import BoardEditor from "../boardeditor/BoardEditor";
 import { makeFen, parseFen } from "chessops/fen";
 import { IconUser, IconUserFilled } from "@tabler/icons-solidjs";
-import { GameContext, GameContextType } from "./GameContext";
+import { GameContext } from "./GameContext";
 
 const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) => void, color: Color }> = ({ name, setName, color }) => {
 	

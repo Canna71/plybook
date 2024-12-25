@@ -23,7 +23,7 @@ export type PgnViewerOptions = {
 const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
 	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
-	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
+	const [squareHovered] = createSignal<string | undefined>(undefined);
 	// const currentData = useCurrentData(game, currentPath)
 
 

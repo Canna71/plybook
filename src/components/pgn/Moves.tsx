@@ -1,6 +1,5 @@
-import { For, Component, Setter, Show, createContext, useContext } from "solid-js";
+import { For, Component, Show, useContext } from "solid-js";
 import { Path, PlyData } from "../../models/pgn";
-import { GameModel } from "../../models/GameModel";
 import { createSignal } from 'solid-js';
 import { Accessor } from "solid-js";
 import { ReferenceElement } from "@floating-ui/dom";
@@ -137,10 +136,10 @@ const MovesTree: Component<MovesTreeProps> = ({ movesTree, initialComments }) =>
 
 
 
-const Moves: Component<MovesProps> = (props) => {
+const Moves: Component<MovesProps> = () => {
 	const [reference, setReference] = createSignal<ReferenceElement | null | undefined>(undefined);
 	const [ply, setPly] = createSignal<PlyData>();
-	const {currentPath, setCurrentPath, game} = useContext(GameContext)!;
+	const { setCurrentPath, game} = useContext(GameContext)!;
 
 
 	const onClick = (e: Event) => {
