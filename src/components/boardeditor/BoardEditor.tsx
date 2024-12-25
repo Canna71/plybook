@@ -1,6 +1,6 @@
 import { Chessboard } from "../common/chessboard";
 import { Config } from "chessground/config";
-import { Accessor, Component, createEffect, createSignal, onMount, Setter } from "solid-js";
+import { Accessor, Component, createEffect, createSignal, Setter } from "solid-js";
 import { Api } from "chessground/api";
 import { PiecesToolbar } from "./Piece";
 import { Piece, Role } from "chessground/types";
@@ -9,15 +9,13 @@ import { makeFen, parseFen } from "chessops/fen";
 import { SquareSet } from "chessops";
 import { squareFromCoords } from "chessops/util";
 import Select from "../common/Select";
-import { makeSan } from "chessops/san";
 import { getEnPassantSquares } from "../common/utils";
 // see: https://lichess.org/editor/1nbqkbn1/p3pppp/1bp2n2/3r3r/8/8/PPPPPPPP/RNBQKBNR_w_KQha_-_0_1?color=white
 
 
 import './BoardEditor.scss';
 import Button from "../common/Button";
-import { IconChevronRight, IconRestore } from "@tabler/icons-solidjs";
-import { Collapse } from "solid-collapse";
+import { IconRestore } from "@tabler/icons-solidjs";
 import Collapsible from "../common/Collapsible";
 
 export type BoardEditorProps = {
@@ -26,8 +24,8 @@ export type BoardEditorProps = {
 };
 
 const BoardEditor: Component<BoardEditorProps> = (props) => {
-    const [selectedPiece, setSelectedPiece] = createSignal<Piece | null>(null);
-    const [deleteMode, setDeleteMode] = createSignal(false);
+    const [selectedPiece, _setSelectedPiece] = createSignal<Piece | null>(null);
+    const [deleteMode, _setDeleteMode] = createSignal(false);
     const [api, setApi] = createSignal<Api | undefined>(undefined);
     const [whitesTurn, setWhitesTurn] = createSignal(true);
     const [baseFen, setBaseFen] = createSignal<string | undefined>(undefined);
@@ -49,13 +47,13 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         }
     });
 
-    const onSave = () => {
-        const cg = api();
-        if (!cg) {
-            return;
-        }
-        const fen = cg.getFen();
-    }
+    // const onSave = () => {
+    //     const cg = api();
+    //     if (!cg) {
+    //         return;
+    //     }
+    //     const fen = cg.getFen();
+    // }
 
     const onChessboardClick = (e: MouseEvent) => {
         const cg = api();
@@ -118,7 +116,6 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     }
 
     createEffect(() => {
-        const turn = whitesTurn() ? 'white' : 'black';
         props.setFen(fen());
     });
 
@@ -164,6 +161,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
                 color: 'both', // Both sides can move pieces
                 events: {
                     after: (orig, dest, metadata) => {
+                        console.log("after", orig, dest, metadata);
                     },
 
                 }
@@ -185,7 +183,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     return (<div class="board-editor-container"
 
     >
-        <div class="is-flex is-flex-direction-row is-align-items-center">
+        <div class="is-flex is-flex-direction-row is-align-items-center is-gap-1">
             <div class="">
                 <ToggleSwitch isToggled={whitesTurn} setIsToggled={setWhitesTurn} labels={["Black's turn", "White's turn"]} />
             </div>

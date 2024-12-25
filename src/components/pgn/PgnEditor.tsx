@@ -15,9 +15,7 @@ export type PgnEditorOptions = {
 	setPgn: (pgn: string) => void;
 }
 
-
-
-const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
+const PgnEditor: Component<PgnEditorOptions> = ({ pgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
 	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
@@ -37,7 +35,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
 	});
 
-    const onMove = (orig: Key, dest: Key, capturedPiece?: Piece)  => {
+    const onMove = (orig: Key, dest: Key, _capturedPiece?: Piece)  => {
 		const g = game();
 		if (!g) {
 			return;

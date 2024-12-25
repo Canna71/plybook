@@ -1,6 +1,5 @@
 import { Color, Role } from 'chessground/types';
-import { Accessor, Component, createSignal, Setter } from 'solid-js';
-import type * as cg from 'chessground/types';
+import { Component, createSignal } from 'solid-js';
 import { createDraggable } from '@neodrag/solid';
 
 // const roles is all values of Role type, using typescript
@@ -17,6 +16,7 @@ export type PieceProps = {
 };
 
 export const Piece:Component<PieceProps> = (props) => {
+	// @ts-ignore
 	const { draggable } = createDraggable();
 	const [position, setPosition] = createSignal({ x: 0, y: 0 });
 	
