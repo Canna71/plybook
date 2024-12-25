@@ -30,7 +30,7 @@ const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) =>
 			</Show>
 
 
-			<div class="is-size-5 p-1 is-flex-grow-1"
+			<div class="is-size-6 p-1 is-flex-grow-1"
 				contentEditable={editable()}
 				onChange={(e) => setName(e.currentTarget.textContent || "")}
 			>{name()}</div>

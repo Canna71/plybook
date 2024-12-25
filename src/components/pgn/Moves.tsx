@@ -27,13 +27,13 @@ const CommentsRows: Component<{
 }> = ({ comments, path, starting }) => {
 	// const { squareHovered } = useContext(GameContext)!;
 
-	return <For each={comments()}>{(comment,index) =>
+	return <For each={comments()}>{(comment, index) =>
 		<tr><td colSpan={3}>
-			<CommentsView comments={() => comment} 
+			<CommentsView comments={() => comment}
 				path={path}
 				index={index()}
 				starting={starting}
-				/>
+			/>
 		</td></tr>}
 	</For>;
 }
@@ -53,10 +53,11 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
 
 		<tr>
 			<td>
-				<div class="pgnviewer-movenumber">{move.number}.
-
+				<div class="move-cell">
+				<span class="pgnviewer-movenumber">
+					{move.number}.
+				</span>
 				</div>
-
 			</td>
 			<td>
 				<Ply line={move} color="white" />
@@ -139,7 +140,7 @@ const MovesTree: Component<MovesTreeProps> = ({ movesTree, initialComments }) =>
 const Moves: Component<MovesProps> = () => {
 	const [reference, setReference] = createSignal<ReferenceElement | null | undefined>(undefined);
 	const [ply, setPly] = createSignal<PlyData>();
-	const { setCurrentPath, game} = useContext(GameContext)!;
+	const { setCurrentPath, game } = useContext(GameContext)!;
 
 
 	const onClick = (e: Event) => {
@@ -189,12 +190,12 @@ const Moves: Component<MovesProps> = () => {
 						initialComments={initialComments}
 					/>
 				</TooltipContext.Provider>
-				
+
 			</div>
 			<Show when={reference()}>
 				<Tooltip plyData={ply} reference={reference} />
 			</Show>
-			
+
 		</>);
 
 

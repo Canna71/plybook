@@ -108,10 +108,6 @@ const Inaccuracy = () => {
 
 const mainNags : ValidComponent[] = [GoodMove, GoodMove, BadMove, Brilliant, Blunder, Interesting, Inaccuracy];
 
-type PlyProps = {
-	line: HierarchicalMoveData;
-	color?: Color;
-};
 
 const NagIcon : Component<{nag: number}> = ({nag}) => {
 	return <span class="pgnviewer-annotation">
@@ -285,8 +281,13 @@ function getChessDescription(nag: number) {
     return descriptions[nag] || "Invalid number";
 }
 
+type PlyProps = {
+	line: HierarchicalMoveData;
+	color?: Color;
+  tooltipEnabled?: boolean;
+};
 
-export const Ply: Component<PlyProps> = ({ line, color }) => {
+export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
 
 	const turn = color;
 	const plyData = color && line[color];
@@ -350,8 +351,9 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 		currentTarget: HTMLDivElement;
 		target: DOMElement;
 	}) | undefined) => {
+    if(!tooltipEnabled) return;
 		if (e) {
-			isValid() && !editable() && showTooltip(e.currentTarget, plyData);
+			isValid() && showTooltip(e.currentTarget, plyData);
 		} else {
 			showTooltip(undefined, undefined);
 		}
@@ -359,6 +361,7 @@ export const Ply: Component<PlyProps> = ({ line, color }) => {
 
 	const moveClass = () => {
 		const cl = {
+      "move-cell": true,
 			"pgnviewer-move": isValid(),
 			[turn + `-move`]: !!turn,
 			"current-move": isCurrent(),

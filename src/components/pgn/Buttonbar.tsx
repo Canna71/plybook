@@ -40,7 +40,7 @@ const ButtonBar: Component<ButtonBarProps> = ({ game, currentPath, setCurrentPat
 	const onNext = () => {
 
 		const next = nextNode();
-		
+
 		if (next) {
 			setCurrentPath(next?.data.path);
 		}
@@ -58,7 +58,7 @@ const ButtonBar: Component<ButtonBarProps> = ({ game, currentPath, setCurrentPat
 	const canRewind = () => {
 		const path = currentPath();
 
-		return  path && !game()?.pathAtMainlinePly(0).equals(path);
+		return path && !game()?.pathAtMainlinePly(0).equals(path);
 	}
 
 	const onFastForward = () => {
@@ -79,19 +79,28 @@ const ButtonBar: Component<ButtonBarProps> = ({ game, currentPath, setCurrentPat
 
 	return <div class="pgnviewer-buttonbar">
 		<Show when={game() && currentPath()}>
-			
-			<Button onClick={onRewind} disabled={!canRewind()}>
-				<IconPlayerTrackPrevFilled size="14" />
-			</Button>
-			<Button onClick={onPrev} disabled={!canGoBack()}> 
-				<IconPlayerSkipBackFilled size="14" />
-			</Button>
-			<Button onClick={onNext} disabled={!canMoveNext()}>
-				<IconPlayerSkipForwardFilled size="14" />
-			</Button>
-			<Button onClick={onFastForward} disabled={!canFastForward()}>
-				<IconPlayerTrackNextFilled size="14" />
-			</Button>
+			<div class="buttons">
+				<Button onClick={onRewind} disabled={!canRewind()}>
+					<span class="icon">
+						<IconPlayerTrackPrevFilled size="14" class="is-small" />
+					</span>
+				</Button>
+				<Button onClick={onPrev} disabled={!canGoBack()}>
+					<span class="icon">
+						<IconPlayerSkipBackFilled size="14" />
+					</span>
+				</Button>
+				<Button onClick={onNext} disabled={!canMoveNext()}>
+					<span class="icon">
+						<IconPlayerSkipForwardFilled size="14" />
+					</span>
+				</Button>
+				<Button onClick={onFastForward} disabled={!canFastForward()}>
+					<span class="icon">
+						<IconPlayerTrackNextFilled size="14" />
+					</span>
+				</Button>
+			</div>
 		</Show>
 	</div>;
 }

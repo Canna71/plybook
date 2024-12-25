@@ -9,8 +9,7 @@
     display: grid;
     flex: 1;
 
-    grid-template-areas:
-        "board sidebar";
+    grid-template-areas: "board sidebar";
     grid-template-columns: minmax(200px, calc(100vh)) minmax(50%, 1fr);
     // grid-template-columns: 1fr 0;
     grid-template-rows: minmax(0, 1fr, 0);
@@ -55,88 +54,100 @@
             user-select: none;
             border: 1px solid var(--bulma-border);
 
-            table.pgnviewer-moves {
-                width: 100%;
-                td.pgnviewer-variation-cell {
-                    padding-left: 6px;
-                    font-size: 90%;
+            .pgnviewer-moves-panel {
+                padding: 0.5em;
 
-                    table.pgnviewer-moves {
-                        width: 100%;
+                table.pgnviewer-moves {
+                    width: 100%;
+                    td.pgnviewer-variation-cell {
+                        padding-left: 6px;
+                        font-size: 90%;
+
+                        table.pgnviewer-moves {
+                            width: 100%;
+                        }
+
+                        table.pgnviewer-moves {
+                            border-left: 1px solid
+                                var(--background-modifier-active);
+                        }
                     }
 
-                    table.pgnviewer-moves {
-                        border-left: 1px solid var(--background-modifier-active);
-                    }
-                }
-
-                .pgnviewer-comment-icon {
-                    display: inline-block;
-                    margin: 0.3em 0;
-                }
-
-                .pgnviewer-move {
-                    cursor: pointer;
-                    // padding: 4px 8px;
-                    margin: 4px;
-                    border-radius: 4px;
-                    transition: background-color 0.2s;
-                    font-size: 90%;
-
-                    &:not(.current-move):hover {
-                        background-color: var(--background-modifier-active);
+                    .pgnviewer-comment-icon {
+                        display: inline-block;
+                        margin: 0.3em 0;
                     }
 
-                    &.nag-1 {
-                        color: #5c8bb0; /* Good move ! */
-                    }
-                    &.nag-2 {
-                        color: #e6912c; /* Poor move ? */
-                    }
-                    &.nag-3 {
-                        color: #1baca6; /* Very good move !! */
-                    }
-                    &.nag-4 {
-                        color: #b33430; /* Very poor move ?? */
-                    }
-                    &.nag-5 {
-                        color: #7979a1; /* Interesting move !? */
-                    }
-                    &.nag-6 {
-                        color: #f0c15c; /* Dubious move ?! */
+                    .move-cell {
+                        margin: 4px;
+                        font-size: 90%;
+
                     }
 
-                    .pgnviewer-annotation {
-                        float: left;
-                        position: relative;
-                        top: 4px;
-                        width: 20px;
+                    .pgnviewer-move {
+                        cursor: pointer;
+                        // padding: 4px 8px;
+                        border-radius: 4px;
+                        transition: background-color 0.2s;
+
+                        &:not(.current-move):hover {
+                            background-color: var(--background-modifier-active);
+                        }
+
+                        &.nag-1 {
+                            color: #5c8bb0; /* Good move ! */
+                        }
+                        &.nag-2 {
+                            color: #e6912c; /* Poor move ? */
+                        }
+                        &.nag-3 {
+                            color: #1baca6; /* Very good move !! */
+                        }
+                        &.nag-4 {
+                            color: #b33430; /* Very poor move ?? */
+                        }
+                        &.nag-5 {
+                            color: #7979a1; /* Interesting move !? */
+                        }
+                        &.nag-6 {
+                            color: #f0c15c; /* Dubious move ?! */
+                        }
+
+                        .pgnviewer-annotation {
+                            float: left;
+                            position: relative;
+                            top: 4px;
+                            width: 20px;
+                        }
                     }
 
+                    .pgnviewer-movenumber {
+                        line-height: 24px;
+                    
+                    }
 
-                }
+                    .pgnviewer-movecontent {
+                        display: inline-block;
+                        height: 24px;
+                        line-height: 24px;
+                        padding: 0 4px;
+                        font-weight: 800;
+                    }
 
-                .pgnviewer-movecontent {
-                    display: inline-block;
-                    height: 24px;
-                    line-height: 24px;
-                    padding: 0 4px;
-                    font-weight: 800;
-                }
+                    .current-move {
+                        background-color: var(--background-modifier-accent);
+                    }
 
-                .current-move {
-                    background-color: var(--background-modifier-accent);
-                }
+                    .pgnviewer-comments {
+                        min-height: 1em;
 
-                .pgnviewer-comments {
-                    min-height: 1em;
-
-                    &:empty::before {
-                        content: attr(
-                            data-placeholder
-                        ); /* Use the value of the attribute as content */
-                        color: gray; /* Optional styling */
-                        font-style: italic; /* Optional styling */
+                        &:empty::before {
+                            content: attr(
+                                data-placeholder
+                            ); /* Use the value of the attribute as content */
+                            color: gray; /* Optional styling */
+                            font-style: italic; /* Optional styling */
+                        }
                     }
                 }
             }

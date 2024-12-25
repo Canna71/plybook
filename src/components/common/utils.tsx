@@ -49,7 +49,7 @@ export function makeConfig(game: Accessor<GameModel | undefined>, currentPath: A
 			lastMove: undefined,
 			// viewOnly: true,
 			highlight: {
-				lastMove: false,
+				lastMove: true,
 				check: false
 			},
 			drawable: {
@@ -73,7 +73,6 @@ export function makeConfig(game: Accessor<GameModel | undefined>, currentPath: A
 		}
 
 		const lastMoveKey = lastMove(data);
-
 		let shapes = toShapes(squareHovered, data);
 
 		const config: Config = {
