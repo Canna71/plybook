@@ -7,7 +7,7 @@ import Moves from "../pgn/Moves";
 
 import { makeConfig } from "../common/utils";
 import ButtonBar from "./Buttonbar";
-import "./PgnView.scss";
+import "./PgnViewer.scss";
 
 // see: https://github.com/lichess-org/pgn-viewer
 
@@ -82,7 +82,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 			</div>
 			<div class="pfn-viewer-bottom">
-
+			&nbsp;
 			</div>
 		</>
 	);
