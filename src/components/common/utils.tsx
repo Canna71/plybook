@@ -6,6 +6,7 @@ import { Key } from "chessground/types";
 import { Config } from "chessground/config";
 import { INITIAL_FEN, parseFen } from "chessops/fen";
 import { squareFromCoords } from "chessops/util";
+import Split from "split-grid";
 
 
 
@@ -136,5 +137,22 @@ export function getEnPassantSquares(setup: Setup, whitesTurn: boolean) {
         }
     }).filter(square => square !== undefined) as string[];
     return squares;
+}
+export function useSplitter(saveLayout?: (layout: string) => void) {
+	let divider: HTMLDivElement | null = null;
+
+	return (divider: HTMLDivElement) => {
+		divider = divider;
+		Split({
+			columnGutters: [{
+				track: 1,
+				element: divider!
+			}],
+			writeStyle: (grid, prop, value) => {
+				(grid.style as any)[prop] = value;
+				saveLayout?.(value);
+			}
+		});
+	};
 }
 

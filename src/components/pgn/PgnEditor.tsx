@@ -4,7 +4,7 @@ import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
-import { getPosition, makeConfig } from "../common/utils";
+import { getPosition, makeConfig, useSplitter } from "../common/utils";
 import { Key, Piece } from "chessground/types";
 import { Color, parseSquare } from "chessops";
 import { chessgroundDests } from "chessops/compat";
@@ -14,31 +14,8 @@ import BoardEditor from "../boardeditor/BoardEditor";
 import { makeFen, parseFen } from "chessops/fen";
 import { IconUser, IconUserFilled } from "@tabler/icons-solidjs";
 import { GameContext } from "./GameContext";
-import Split from 'split-grid'
-
-const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) => void, color: Color }> = ({ name, setName, color }) => {
-	
-	const { editable } = useContext(GameContext)!;
-	
-	return (
-		<div class="is-flex is-flex-direction-row is-align-items-center pgnviewer-player-name is-fullwidth m-2">
-			<Show when={color === "white"}>
-				<IconUserFilled />
-			</Show>
-
-			<Show when={color === "black"}>
-				<IconUser />
-			</Show>
-
-
-			<div class="is-size-6 p-1 is-flex-grow-1"
-				contentEditable={editable()}
-				onChange={(e) => setName(e.currentTarget.textContent || "")}
-			>{name()}</div>
-		</div>
-
-	);
-}
+import { VDivider } from "../common/VDivider";
+import PlayerName from "../boardeditor/PlayerName";
 
 export type PgnEditorOptions = {
 	pgn: Accessor<string | undefined>;
@@ -58,7 +35,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
 	const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
 	const [startingPosition, setStartingPosition] = createSignal<string | undefined>(undefined);
-	let divider: HTMLDivElement | null = null;
+	// let divider: HTMLDivElement | null = null;
 	// const currentData = useCurrentData(game, currentPath)
 
 
@@ -178,20 +155,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
 	// #endregion
 
-	// #region Splitter
-	createEffect(() => {
-		console.log("Splitter", divider);
-        Split({
-            columnGutters: [{
-                track: 1,
-                element: divider!
-            }],
-            writeStyle: (grid, prop, value) => {
-                (grid.style as any)[prop] = value;
-                // saveLayout(value);
-            }
-        });
-    });
+	const divider = useSplitter();
 	// #endregion
 
 	return (
@@ -222,9 +186,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 						</Switch>
 
 					</div>
-					<div ref={divider!} class="divider" >
-						<div class="divider-line"></div>
-					</div>
+					<VDivider ref={divider!} />
 					<div class="pgnviewer-sidebar">
 						<div class="pgnviewer-sidebar-header">
 							<Switch>
@@ -258,6 +220,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 }
 
 export default PgnEditor;
+
 
 
 

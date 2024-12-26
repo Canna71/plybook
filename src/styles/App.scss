@@ -94,21 +94,21 @@ button.button {
     }
 }
 
-.divider {
+.v-divider {
     width: 5px;
     cursor: ew-resize;
     position: relative;
 
 
 
-    .divider-line {
+    .v-divider-line {
         border-left: 1px solid var(--bulma-border);
         position: absolute;
         left: 2px;
         height: 100%;
         visibility: hidden;
     }
-    &:hover .divider-line {
+    &:hover .v-divider-line {
         visibility: visible;
     }
 
