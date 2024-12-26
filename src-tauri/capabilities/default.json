@@ -49,6 +49,14 @@
       ]
     },
     "fs:allow-appdata-read",
-    "fs:allow-appdata-write"
+    "fs:allow-appdata-write",
+    {
+      "identifier": "fs:scope-appdata-recursive",
+      "allow": [
+        {
+          "path": "*/**"
+        }
+      ]
+    }
   ]
 }

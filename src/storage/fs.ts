@@ -1,8 +1,11 @@
 import { BaseDirectory, exists, mkdir, readTextFile } from "@tauri-apps/plugin-fs";
-import { appDataDir, appLocalDataDir } from "@tauri-apps/api/path";
+import { appDataDir, appLocalDataDir, join } from "@tauri-apps/api/path";
+import { path } from "@tauri-apps/api";
+
+const LIBRARY_FOLDER = "Library";
 
 export async function initStorage() {
-    await ensureAppDataFolder();
+    await ensureAppDataFolders();
 }
 
 export async function readDataFile(subPath: string) {
@@ -11,22 +14,28 @@ export async function readDataFile(subPath: string) {
     });
 }
 
-export async function ensureAppDataFolder() {
+async function ensureFolderExists(folderPath: string): Promise<void> {
     try {
-      // Get the AppData directory path
-      const appDataPath = await appDataDir();
-  
-      // Check if the directory exists
-      const folderExists = await exists(appDataPath);
-  
-      if (!folderExists) {
-        // Create the directory if it doesn't exist
-        await mkdir(appDataPath, { recursive: true });
-        console.log(`AppData folder created at: ${appDataPath}`);
-      } else {
-        console.log(`AppData folder already exists at: ${appDataPath}`);
-      }
+        const folderExists = await exists(folderPath);
+
+        if (!folderExists) {
+            await mkdir(folderPath, { recursive: true });
+            console.log(`Folder created at: ${folderPath}`);
+        } else {
+            console.log(`Folder already exists at: ${folderPath}`);
+        }
     } catch (error) {
-      console.error("Error ensuring AppData folder exists:", error);
+        console.error(`Error ensuring folder exists at ${folderPath}:`, error);
     }
-  }
+}
+
+export async function ensureAppDataFolders() {
+    try {
+        const appDataPath = await appDataDir();
+        await ensureFolderExists(appDataPath);
+        await ensureFolderExists(await join(appDataPath, LIBRARY_FOLDER, "pgn"));
+    } catch (error) {
+        console.error("Error ensuring AppData folders exist:", error);
+    }
+}
+
