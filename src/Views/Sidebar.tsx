@@ -1,13 +1,10 @@
 import { createSignal, Show } from "solid-js";
 import TreeView, { TreeNode } from "../components/common/TreeView";
+import { IconChevronDown, IconChevronRight } from "@tabler/icons-solidjs";
 
 const Sidebar = () => {
     const [selectedNode, setSelectedNode] = createSignal<TreeNode<any> | null>(null);
 
-    const handleNodeClick = (node: TreeNode<any>) => {
-        setSelectedNode(node);
-        console.log('Node clicked:', node);
-    };
     const treeData: TreeNode<any> = {
         id: 'root',
         label: 'Root',
@@ -22,10 +19,15 @@ const Sidebar = () => {
                     ];
                 }
             },
-            { id: 'child2', label: 'Child 2', loadChildren: async () => [] },
+            { id: 'child2', label: 'Empty Child 2', loadChildren: async () => [] },
+            {
+                id: 'child3',
+                label: 'Child 3'
+            },
         ],
     };
     return (
+        <>
         <aside class="menu">
             <p class="menu-label">Dev Pages</p>
             <ul class="menu-list">
@@ -40,14 +42,24 @@ const Sidebar = () => {
             </ul>
             <p class="menu-label">Library</p>
             <ul class="menu-list">
-                <TreeView root={treeData} onNodeClick={handleNodeClick} />
+                
+            </ul>
+        </aside>
+        <aside>
+            <TreeView root={treeData} 
+                    onSelectedChanged={setSelectedNode}
+                    renderNode={(node) => <span>{node.label}</span>}
+                    renderExpandedIndicator={
+                        (isExpanded, node) => isExpanded ? <IconChevronDown /> : <IconChevronRight />
+                    }   
+                />
                 <Show when={selectedNode()}>
                     <p class="menu-label">
                         Selected Node: {selectedNode()?.label}
                     </p>
                 </Show>
-            </ul>
         </aside>
+        </>
     );
 }
 

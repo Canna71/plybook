@@ -1,12 +1,31 @@
 .treeView {
-    ul {
-        // list-style-type: none;
-        padding-left: 1rem;
+    white-space: nowrap;
+
+    .nodeList {
+
+
     }
 
-    .node {
-        cursor: pointer;
-        // padding: 0.5rem;
-       
+    .treeRow {
+        display: flex;
+        flex-wrap: nowrap;
+
+        &:hover {
+            background-color: var(--bulma-background-hover);
+        }
+
+        &.selected {
+            background-color: var(--bulma-background-active);
+        }
     }
+
+    .nodeContent {
+        flex: 1;
+        cursor: pointer;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        // line-height: 24px;
+    }
+
+
 }
