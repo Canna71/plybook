@@ -3,7 +3,7 @@ import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
 import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, makeComment, CommentShape, parseComment } from "chessops/pgn";
 import { makeSan } from "chessops/san";
-import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal } from "./pgn";
+import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal, EMPTY_COMMENT } from "./pgn";
 import { DrawShape } from "chessground/draw";
 
 // immutable ?
@@ -138,18 +138,29 @@ export class GameModel {
         console.log("insertComment", path, comment, before);
         if (before) path = path.previous();
         const pgnNode = this.findPgnNode(path);
-        if (!pgnNode) return this;
-
-        if (isChildNode(pgnNode)) {
-            const comments = pgnNode.data.comments || [];
+        const node = nodeAtPathFrom(this.moves, path);
+        if (!pgnNode || !node) return this;
+        const shapes = isChildNode(node) ? node.data.shapes : this.initial.shapes;
+        // TODO: when inserting a new comment we should check if there is already an empty comment for shapes, and merge them
+        // now the issue is that currently the merge operation will replace an empty comment with the placeholder
+        if (isChildNode(pgnNode) && isChildNode(node)) {
+            const comments = node.data.comments.filter(t => t !== EMPTY_COMMENT) || [];
             comments.splice(0, 0, comment);
-            pgnNode.data.comments = comments;
+            pgnNode.data.comments = this.mergeShapes(comments,shapes,true);
+            // pgnNode.data.comments = this.insertCommentInternal(node.data.comments, comment, shapes);
         } else {
             const comments = this.game.comments || [];
             comments.splice(0, 0, comment);
-            this.game.comments = comments;
+            this.game.comments = this.mergeShapes(comments,shapes,true);
+            // this.game.comments = this.insertCommentInternal(this.initial.comments, comment, shapes);
         }
         return this.getNewGameModel();
+    }
+
+    private insertCommentInternal(comments: string[], comment:string, shapes: CommentShape[]) {
+        const c = comments.filter(t => t !== EMPTY_COMMENT) || [];
+        comments.splice(0, 0, comment);
+        return this.mergeShapes(comments, shapes);
     }
 
     deleteComment(path: Path, index: number, starting: boolean = false) {
@@ -170,15 +181,19 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
-    private removeCommentAtIndex(comments: string[], index: number, shapes: CommentShape[]) {
-        comments = this.mergeShapes(comments, []);
-        comments.splice(index, 1);
-        comments = this.mergeShapes(comments, shapes.map(s => {
+    private toDrawShapes(s: CommentShape[]): DrawShape[] {
+        return s.map(s => {
             const orig = makeSquare(s.from);
             const dest = makeSquare(s.to);
             const brush = s.color;
             return { orig, dest, brush } as DrawShape;
-        }));
+        });
+    }
+
+    private removeCommentAtIndex(comments: string[], index: number, shapes: CommentShape[]) {
+        comments = this.mergeShapes(comments, []);
+        comments.splice(index, 1);
+        comments = this.mergeShapes(comments, shapes);
         return comments;
     }
 
@@ -213,16 +228,25 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
-    private  mergeShapes(oldComments: string[] | undefined, shapes: DrawShape[]):string[] {
-        const cShapes = shapes.map(s => {
+    private toCommentShapes(shapes: DrawShape[]): CommentShape[] {
+        return shapes.map(s => {
             const from = parseSquare(s.orig)!;
             const to = s.dest && parseSquare(s.dest)!;
             const color = s.brush! as CommentShapeColor;
             return { from, to, color } as CommentShape;
         });
-        const comments = (oldComments || [""]).map(parseComment);
+    }
+
+    private  mergeShapes(oldComments: string[] | undefined, shapes: CommentShape[], allowEmpty:boolean=false):string[] {
+        
+        const comments = (oldComments || [""])
+            .map(parseComment)
+            .filter(c => c.text !== EMPTY_COMMENT);
         const tc = comments.map((c, i) => {
-            c.shapes = i === 0 ? cShapes : [];
+            c.shapes = i === 0 ? shapes : [];
+            c.text = (i > 0 || allowEmpty) ? c.text : (
+                c.text || EMPTY_COMMENT
+            );
             return makeComment(c);
         });
         return tc;
@@ -233,9 +257,9 @@ export class GameModel {
         const node = nodeAtPathFrom(this.moves, path);
         if (!pgnNode || !node) return this;
         if (isChildNode(node) && isChildNode(pgnNode)) {
-            pgnNode.data.comments = this.mergeShapes(pgnNode.data.comments, shapes);
+            pgnNode.data.comments = this.mergeShapes(pgnNode.data.comments, this.toCommentShapes(shapes));
         } else {
-            this.game.comments = this.mergeShapes(this.game.comments, shapes);
+            this.game.comments = this.mergeShapes(this.game.comments, this.toCommentShapes(shapes));
         }
         return this.getNewGameModel();
     }

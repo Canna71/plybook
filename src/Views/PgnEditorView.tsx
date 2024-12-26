@@ -4,6 +4,7 @@ import { createEffect, createSignal, onMount } from "solid-js";
 import PgnEditor from "../components/pgn/PgnEditor";
 import { readDataFile } from "../storage/fs";
 import { useSearchParams } from "@solidjs/router";
+import Button from "../components/common/Button";
 
 const PgnEditView = () => {
 
@@ -18,20 +19,15 @@ const PgnEditView = () => {
         } else {
             setPgn("[]");
         }
-        // const pgnText = await readTextFile('testdata/02.pgn', 
-        //     {
-        //     baseDir: BaseDirectory.Resource
-        // });
-        // const pgnText = await readDataFile('testdata/02.pgn');
-        // console.log(pgnText);
-        // setPgn(pgnText || "[]");
 
-        // get the AppData directory
     
     });
 
     return (
-        <PgnEditor pgn={pgn} setPgn={setPgn} />
+        <div>
+            <PgnEditor pgn={pgn} setPgn={setPgn} />
+            <Button onClick={() => console.log(pgn())}>Show PGN</Button>
+        </div>
     );
 }
 

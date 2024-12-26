@@ -157,6 +157,13 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		setViewMode(ViewMode.MOVES);
 	}
 
+	createEffect(() => {
+		const newPgn = game()?.pgn();
+		if (newPgn) {
+			setPgn(newPgn);
+		}
+	});
+
 	// #endregion
 
 	const divider = useSplitter();

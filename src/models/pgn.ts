@@ -209,14 +209,14 @@ function makePlayers(headers: Headers, metadata: Metadata): Players {
 
 
 
-
+export const EMPTY_COMMENT = "%EMPTY%";
 
 function parseComments(strings: string[]): Comments {
     const comments = strings.map(parseComment);
     const reduceTimes = (times: Array<number | undefined>) =>
         times.reduce<number | undefined>((last, time) => (typeof time == undefined ? last : time), undefined);
     return {
-        texts: comments.map(c => c.text), //.filter(t => !!t), HACK: we keep empty comments for now
+        texts: comments.map(c => c.text).filter(c => c !== EMPTY_COMMENT), //.filter(t => !!t), HACK: we keep empty comments for now
         shapes: comments.flatMap(c => c.shapes),
         clock: reduceTimes(comments.map(c => c.clock)),
         emt: reduceTimes(comments.map(c => c.emt)),
