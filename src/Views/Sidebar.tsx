@@ -15,12 +15,14 @@ const Sidebar = () => {
             {
                 id: 'child1',
                 label: 'Child 1',
-                children: [
-                    { id: 'child1-1', label: 'Child 1.1' },
-                    { id: 'child1-2', label: 'Child 1.2' },
-                ],
+                loadChildren: async () => {
+                    return [
+                        { id: 'child1-1', label: 'Child 1.1' },
+                        { id: 'child1-2', label: 'Child 1.2' },
+                    ];
+                }
             },
-            { id: 'child2', label: 'Child 2' },
+            { id: 'child2', label: 'Child 2', loadChildren: async () => [] },
         ],
     };
     return (
