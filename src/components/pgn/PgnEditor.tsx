@@ -14,6 +14,7 @@ import BoardEditor from "../boardeditor/BoardEditor";
 import { makeFen, parseFen } from "chessops/fen";
 import { IconUser, IconUserFilled } from "@tabler/icons-solidjs";
 import { GameContext } from "./GameContext";
+import Split from 'split-grid'
 
 const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) => void, color: Color }> = ({ name, setName, color }) => {
 	
@@ -57,7 +58,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
 	const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
 	const [startingPosition, setStartingPosition] = createSignal<string | undefined>(undefined);
-
+	let divider: HTMLDivElement | null = null;
 	// const currentData = useCurrentData(game, currentPath)
 
 
@@ -177,6 +178,22 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
 	// #endregion
 
+	// #region Splitter
+	createEffect(() => {
+		console.log("Splitter", divider);
+        Split({
+            columnGutters: [{
+                track: 1,
+                element: divider!
+            }],
+            writeStyle: (grid, prop, value) => {
+                (grid.style as any)[prop] = value;
+                // saveLayout(value);
+            }
+        });
+    });
+	// #endregion
+
 	return (
 		<>
 			<GameContext.Provider value={
@@ -205,7 +222,9 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 						</Switch>
 
 					</div>
-
+					<div ref={divider!} class="divider" >
+						<div class="divider-line"></div>
+					</div>
 					<div class="pgnviewer-sidebar">
 						<div class="pgnviewer-sidebar-header">
 							<Switch>

@@ -4,14 +4,15 @@
     // justify-content ;
     // align-items: start;
     // width: 100%;
-    padding: 20px;
+    padding: 8px;
     overflow: hidden;
     display: grid;
     flex: 1;
 
-    grid-template-areas: "board sidebar";
-    grid-template-columns: minmax(200px, calc(100vh)) minmax(50%, 1fr);
-    // grid-template-columns: 1fr 0;
+    grid-template-areas: "board divider sidebar";
+    // grid-template-columns: minmax(200px, calc(100vh)) 10px minmax(50%, 1fr);
+
+    grid-template-columns: 400px 5px 1fr;
     grid-template-rows: minmax(0, 1fr, 0);
 
     .pgnviewer-comments {
@@ -25,9 +26,11 @@
         }
     }
 
+
+
     .pgnviewer-content {
         flex: 0 0 70%;
-        padding: 24px;
+        padding: 8px;
         grid-area: board;
         aspect-ratio: 1 / 1;
     }
@@ -36,7 +39,7 @@
         grid-area: sidebar;
         height: 100%;
         // flex: 0 0 30%;
-        padding: 24px;
+        padding: 8px;
         display: flex;
         min-height: 100px;
         flex-direction: column;

@@ -59,6 +59,9 @@ importers:
       solid-js:
         specifier: ^1.7.8
         version: 1.9.2
+      split-grid:
+        specifier: ^1.0.11
+        version: 1.0.11
       stockfish.wasm:
         specifier: ^0.10.0
         version: 0.10.0
@@ -1330,6 +1333,9 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
+  split-grid@1.0.11:
+    resolution: {integrity: sha512-ELtFtxc3r5we5GZfe6Fi0BFFxIi2M6BY1YEntBscKRDD3zx4JVHqx2VnTRSQu1BixCYSTH3MTjKd4esI2R7EgQ==}
+
   stockfish.wasm@0.10.0:
     resolution: {integrity: sha512-OTvOlz0ijCSmIb/YvOZ1Dn6vwZVS4Ge3N+RcV0d2b6LXUtCJ9UwmBHypRW3DZ+VXf8WNm7E3P+6jMTVvb3QaBg==}
 
@@ -2600,6 +2606,8 @@ snapshots:
       solid-js: 1.9.2
 
   source-map-js@1.2.1: {}
+
+  split-grid@1.0.11: {}
 
   stockfish.wasm@0.10.0: {}
 

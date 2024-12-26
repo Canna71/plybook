@@ -94,3 +94,25 @@ button.button {
     }
 }
 
+.divider {
+    width: 5px;
+    cursor: ew-resize;
+    position: relative;
+
+
+
+    .divider-line {
+        border-left: 1px solid var(--bulma-border);
+        position: absolute;
+        left: 2px;
+        height: 100%;
+        visibility: hidden;
+    }
+    &:hover .divider-line {
+        visibility: visible;
+    }
+
+
+
+}
+
