@@ -98,8 +98,9 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
 
 		const pos = getPosition(game, currentPath);
+		const isCheck = pos.isCheck();
 		const allDests = chessgroundDests(pos);
-		return {
+		const config = {
 			...baseConfig,
 			draggable: {
 				enabled: true,
@@ -111,6 +112,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 				color: pos.turn,
 				dests: allDests
 			},
+			check: isCheck,
 			events: {
 				move: onMove,
 
@@ -121,7 +123,9 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 				eraseOnClick: false,
 				onChange: onDrawChange
 			}
-		}
+		};
+		console.log('Config:', config);
+		return config;
 	}
 
 	const whitePlayer = () => game()?.players.white.name || "White";

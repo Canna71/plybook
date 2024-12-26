@@ -51,7 +51,7 @@ export function makeConfig(game: Accessor<GameModel | undefined>, currentPath: A
 			// viewOnly: true,
 			highlight: {
 				lastMove: true,
-				check: false
+				check: true
 			},
 			drawable: {
 				enabled: true,
