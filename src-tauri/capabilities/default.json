@@ -47,6 +47,8 @@
           "sidecar": true
         }
       ]
-    }
+    },
+    "fs:allow-appdata-read",
+    "fs:allow-appdata-write"
   ]
 }
