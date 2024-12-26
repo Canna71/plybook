@@ -1,22 +1,21 @@
 
-.container {
+.layout-container {
     display: grid;
-    grid-template-columns: var(--sidebar-width, 150px) 1fr;
+    grid-template-columns: 150px 5px 1fr;
     grid-template-rows: 1fr;
     height: 100vh;
     width: 100vw;
     overflow: hidden;
 
     .sidebar {
-        padding: 10px;
-        resize: horizontal;
+        padding: 8px;
         overflow: auto;
         min-width: 100px;
         max-width: 500px;
     }
 
     .main-content {
-        padding: 20px;
+        // padding: 20px;
         overflow: hidden;
         position: relative;
         display: flex;
