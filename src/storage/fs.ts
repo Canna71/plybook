@@ -1,4 +1,4 @@
-import { BaseDirectory, exists, mkdir, readTextFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory, exists, mkdir, readDir, readTextFile } from "@tauri-apps/plugin-fs";
 import { appDataDir, appLocalDataDir, join } from "@tauri-apps/api/path";
 import { path } from "@tauri-apps/api";
 
@@ -37,5 +37,10 @@ export async function ensureAppDataFolders() {
     } catch (error) {
         console.error("Error ensuring AppData folders exist:", error);
     }
+}
+
+export async function listLibrary(path: string) {
+    const files = await readDir(path, { baseDir: BaseDirectory.AppData });
+    return files;
 }
 

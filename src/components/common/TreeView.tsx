@@ -72,7 +72,6 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
             [styles.selected]: isSelected(),
             "selected": isSelected(),
         };
-        console.log('classes:', classes);
         return classes;
     }
 
@@ -124,7 +123,6 @@ const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
 
     const handleNodeClick = (node: TreeNode<T>) => {
         setSelectedNode(node);
-        console.log('Node clicked:', node);
         if (props.onNodeClick) {
             props.onNodeClick(node);
         }
