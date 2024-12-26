@@ -1,6 +1,6 @@
 import { createSignal } from 'solid-js';
 import TreeView, { TreeNode } from '../common/TreeView';
-import { listLibrary } from '../../storage/fs';
+import { listAppData } from '../../storage/fs';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-solidjs';
 
 type FileBrowserProps = {
@@ -16,8 +16,7 @@ export interface FileBrowserFile {
 }
 
 async function directoryToNodes(path: string) {
-    const content = await listLibrary(path);
-    console.log('Content:', content);
+    const content = await listAppData(path);
     const ret = content
         .filter(de => de.isFile || de.isDirectory)
         .filter(de => !de.name.startsWith('.'))
@@ -34,7 +33,6 @@ async function directoryToNodes(path: string) {
             loadChildren: file.isDirectory ? (async () => directoryToNodes(fullPath)) : undefined,
         };
     });
-    console.log('Ret:', ret);
     return ret;
 }
 

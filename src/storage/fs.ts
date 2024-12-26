@@ -39,7 +39,7 @@ export async function ensureAppDataFolders() {
     }
 }
 
-export async function listLibrary(path: string) {
+export async function listAppData(path: string) {
     const files = await readDir(path, { baseDir: BaseDirectory.AppData });
     return files;
 }

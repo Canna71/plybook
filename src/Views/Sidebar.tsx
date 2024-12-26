@@ -2,14 +2,20 @@ import { createSignal, Show } from "solid-js";
 import TreeView, { TreeNode } from "../components/common/TreeView";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-solidjs";
 import FileBrowser, { FileBrowserFile } from "../components/sidebar/FileBrowser";
+import { useNavigate } from "@solidjs/router";
 
 const Sidebar = () => {
     // const [selectedFile, setSelectedFile] = createSignal<FileBrowserFile | undefined>(undefined);
 
-
+    const navigate = useNavigate();
 
     const onSelectedFileChanged = (file: FileBrowserFile) => {
-        console.log('Selected file:', file);
+        if(file && !file.isDirectory) {
+            if(file.name.endsWith('.pgn')) {
+                console.log('PGN File Selected', file);
+                navigate(`/pgnedit?path=${file.path}&source=library`);
+            }
+        }
     }
     
 
