@@ -40,7 +40,8 @@ const CommentsRows: Component<{
 
 const MoveLine: Component<MoveProps> = ({ move }) => {
 
-	const startingComments = move.white?.startingComments || [];
+	const startingComments = move.white?.startingComments || move.black?.startingComments || [];
+	const startingPath = move.white?.startingComments ? move.white.path : move.black!.path;
 	const afterWhite = move.white?.comments || [];
 	const afterBlack = move.black?.comments || [];
 
@@ -49,7 +50,7 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
 	const bpath = move.black?.path || wpath;
 
 	return <>
-		<CommentsRows comments={() => startingComments} path={wpath} starting={true} />
+		<CommentsRows comments={() => startingComments} path={startingPath} starting={true} />
 
 		<tr>
 			<td>
