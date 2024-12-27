@@ -70,9 +70,15 @@ export class StockfishManager {
 
         if (this.isReady) return;
 
-        this.command = await Command.sidecar('./binaries/stockfish', [
+        // this.command = await Command.sidecar('./binaries/stockfish', [
 
-        ]);
+        // ]);
+
+
+        // this.command = await Command.create('stockfish', []);
+        console.log("creating command");
+
+        this.command = await Command.create('exec-sh', ["-c", "/Users/gcannata/Library/Application\\ Support/rechess/Binaries/stockfish-aarch64-apple-darwin"]);
 
         console.log("command", this.command);
 
@@ -94,7 +100,7 @@ export class StockfishManager {
         console.log("child", this.child);
 
         this.sendCommand('uci');
-       
+
         // Wait for the engine to be ready
         while (!this.isReady && !this.exited) {
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -138,16 +144,20 @@ export class StockfishManager {
     /**
      * Start analyzing from the starting position with moves
      */
-    analyzeFromMoves(moves: string[], options: {
+    analyzeFromMoves(moves: string[] | string, options: {
         depth?: number;
         movetime?: number;
         multipv?: number;
     } = {}): void {
 
-        
+
 
         this.sendCommand('stop');
-        this.sendCommand(`position startpos moves ${moves.join(' ')}`);
+        if (typeof moves === 'string') {
+            this.sendCommand(`position fen ${moves}`);
+        } else {
+            this.sendCommand(`position startpos moves ${moves.join(' ')}`);
+        }
 
         let goCommand = 'go';
         if (options.depth) goCommand += ` depth ${options.depth}`;

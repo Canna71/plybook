@@ -51,10 +51,13 @@ const PlaySF = () => {
         if (event === 'bestmove') {
             var bestMove = args[0];
             const m = {from: bestMove.slice(0, 2), to: bestMove.slice(2, 4)};
+            console.log("best move", m);
             const move : NormalMove = makeMove(m.from, m.to);
             game().play(move);
+            const newFen = makeFen(game().toSetup());
+            console.log("new fen", newFen);
             api()?.set({
-                fen: makeFen(game().toSetup()),
+                fen: newFen,
                 lastMove: [m.from, m.to]
             });
             updateStatus();
@@ -86,10 +89,12 @@ const PlaySF = () => {
         // const moves = game().history({
         //     verbose: true
         // }).map(move => move.lan);
-        const moves:string[] = [];
+        // const moves:string[] = [];
+        const fen = makeFen(game().toSetup());
         // TODO: use gamemodel to keep track of moves
 
-        stockfish()?.analyzeFromMoves(moves, {
+
+        stockfish()?.analyzeFromMoves(fen, {
             depth: 15
         });
 

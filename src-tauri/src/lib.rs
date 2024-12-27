@@ -1,4 +1,6 @@
 #![allow(non_snake_case)]
+use tauri::Manager;
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -133,6 +135,14 @@ async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) -> Res
     Ok(game)
 }
 
+// use add_capability to enable an arbitrary engine to run
+// #[tauri::command]
+// // #[tokio::main]
+// async fn enable_program() -> Result<None> {
+//    app.
+
+//     Ok(None)
+// }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -146,6 +156,21 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet, init_db, index_game, list_games, upload_pgn
         ])
+        .setup(|app| {
+        //     let _ = app.add_capability(r#"
+        //     {
+        //     "$schema": "../gen/schemas/desktop-schema.json",
+        //     "identifier": "stockfish",
+        //     "description": "Stockfish engine",
+        //     "windows": [
+        //         "main"
+        //     ],
+        //     "permissions" : [
+           
+        //     ]
+        // }"#);
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -25,6 +25,12 @@
           "name": "./binaries/stockfish",
           "args": true,
           "sidecar": true
+        },
+        {
+          "name": "exec-sh",
+          "cmd": "sh",
+          "args": true,
+          "sidecar": false
         }
       ]
     },
@@ -35,6 +41,12 @@
           "name": "./binaries/stockfish",
           "args": true,
           "sidecar": true
+        },
+        {
+          "name": "exec-sh",
+          "cmd": "sh",
+          "args": true,
+          "sidecar": false
         }
       ]
     },
@@ -45,6 +57,12 @@
           "name": "./binaries/stockfish",
           "args": true,
           "sidecar": true
+        },
+        {
+          "name": "exec-sh",
+          "cmd": "sh",
+          "args": true,
+          "sidecar": false
         }
       ]
     },
