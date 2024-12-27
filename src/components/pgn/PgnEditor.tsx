@@ -15,9 +15,7 @@ import { GameContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
-import { useFloating } from "solid-floating-ui";
-import { ReferenceElement, VirtualElement } from "@floating-ui/dom";
-import { makeSquare, parseSquare, Square, squareFile, squareRank } from "chessops";
+
 
 export type PgnEditorOptions = {
 	pgn: Accessor<string | undefined>;
@@ -43,46 +41,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	// const currentData = useCurrentData(game, currentPath)
 	// `position` is a reactive object.
 
-	const reference =
-		() => {
-			console.log("reference");
 
-			const key = promotingCell();
-			if (!key) return null;
-
-			// todo calculate the position of the cell, given the square in key and the chessboard div in chessBoardDiv
-			const square = parseSquare(key) as Square;
-			const sx = squareFile(square);
-			const sy = squareRank(square);
-			const chessboardwidth = chessBoardDiv!.clientWidth;
-			const chessboardPosition = chessBoardDiv!.getBoundingClientRect();
-			const squareSize = chessboardwidth / 8;
-
-			const x = chessboardPosition.x + sx * squareSize;
-			const y =  chessboardPosition.y + ((sy === 7) ? -1 : 8) * squareSize;
-
-			
-			console.log({ square, sx, sy, chessboardwidth, chessboardPosition, squareSize, x, y });
-			
-			const rect = {
-				x: x,
-				y: y,
-				top: y,
-				left: x,
-				bottom: y + squareSize,
-				right: x + squareSize,
-				width: squareSize,
-				height: squareSize,
-			};
-			console.log("reference", rect);
-			return {
-				getBoundingClientRect() {
-					return rect;
-				}
-			} as VirtualElement;
-
-
-		};
 
 
 	createEffect(() => {
@@ -146,6 +105,8 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		const ng = game()?.updateShapes(currentPath()!, shapes);
 		setGame(ng);
 	}
+
+	const turn = () => getPosition(game, currentPath).turn;
 
 	const config = () => {
 
@@ -244,8 +205,9 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 									<Chessboard config={config} />
 									<Show when={promotingCell()}>
 										<PiecesPopup
-											reference={reference}
-											color={() => getPosition(game, currentPath).turn} />
+											chessBoardDiv={chessBoardDiv}
+											promotingCell={promotingCell}
+											color={turn} />
 									</Show>
 								</div>
 								<PlayerName name={whitePlayer} setName={setWhitePlayer} color="white" />
