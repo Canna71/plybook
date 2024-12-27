@@ -3,7 +3,7 @@ import { ToolbarProps } from "../boardeditor/PiecesToolbar";
 import { Piece } from "../common/Piece";
 import styles from "./PiecesPopup.module.scss";
 import { Accessor, createSignal } from "solid-js";
-import { ReferenceElement, VirtualElement } from "@floating-ui/dom";
+import { flip, ReferenceElement, VirtualElement } from "@floating-ui/dom";
 import { useFloating } from "solid-floating-ui";
 
 export type PiecesPopupProps = {
@@ -16,7 +16,10 @@ const promotableRoles = ROLES.filter(role => role !== "pawn" && role !== "king")
 
 export const PiecesPopup = (props: PiecesPopupProps) => {
     const [floating, setFloating] = createSignal<HTMLElement>();
-    const position = useFloating(props.reference, floating);
+    const position = useFloating(props.reference, floating, {
+        placement: "bottom",
+        middleware: [flip()],
+    });
 
     return <div
         class={styles.piecespopup}

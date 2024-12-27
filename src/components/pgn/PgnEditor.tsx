@@ -59,7 +59,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 			const squareSize = chessboardwidth / 8;
 
 			const x = chessboardPosition.x + sx * squareSize;
-			const y = chessboardPosition.y + (6-sy) * squareSize;
+			const y =  chessboardPosition.y + ((sy === 7) ? -1 : 8) * squareSize;
 
 			
 			console.log({ square, sx, sy, chessboardwidth, chessboardPosition, squareSize, x, y });
