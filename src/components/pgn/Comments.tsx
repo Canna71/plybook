@@ -86,11 +86,21 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, path, index
 		setSquareHovered?.(undefined);
 	};
 
+
+
 	const onBlur = (e: Event) => {
 		const target = e.target as HTMLElement;
 		const text = target.textContent || "";
 		const ng = game()?.updateComment(path, index, text, starting);
 		setGame(ng);
+	}
+
+	const onKeyDown = (e: KeyboardEvent) => {
+		// newline should exit the contenteditable
+		if (e.key === "Enter") {
+			e.preventDefault();
+			ref?.blur();
+		}
 	}
 
 	// focuses the element if it's empty and editable
@@ -122,6 +132,7 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, path, index
 		data-placeholder="Add a comment"
 		contentEditable={editable()}
 		onMouseOver={onMouseOver}
+		onKeyDown={onKeyDown}
 		onMouseLeave={onMouseLeave}
 		onBlur={onBlur}
 		class="pgnviewer-comments"

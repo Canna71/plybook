@@ -24,10 +24,10 @@ const PgnEditView = () => {
     });
 
     return (
-        <div>
+        <>
             <PgnEditor pgn={pgn} setPgn={setPgn} />
             <Button onClick={() => console.log(pgn())}>Show PGN</Button>
-        </div>
+        </>
     );
 }
 
