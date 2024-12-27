@@ -71,10 +71,7 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		if (!g) {
 			return;
 		};
-		const path = currentPath() || Path.root;
 
-		// see https://github.com/linrock/blitz-tactics/blob/788cfad907dc1c88d3a008b25c1d09e8c37ce5c5/app/javascript/components/chessground_board/index.ts#L103
-		// const pos = getPosition(game, currentPath);
 		const move = makeMove(orig, dest);
 
 		const position = getPosition(game, currentPath);
@@ -109,7 +106,7 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		setGame(ng);
 	}
 
-	const onPromotionSelected = (role: Role, color: Color) => {
+	const onPromotionSelected = (role: Role, _color: Color) => {
 		const promoData = promotionData();
 		setPromotionData(undefined);
 		if (promoData) {

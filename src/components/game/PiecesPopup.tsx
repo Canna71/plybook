@@ -1,9 +1,8 @@
 import { Color, parseSquare, Role, ROLES, Square, squareFile, squareRank } from "chessops";
-import { ToolbarProps } from "../boardeditor/PiecesToolbar";
 import { Piece } from "../common/Piece";
 import styles from "./PiecesPopup.module.scss";
 import { Accessor, createSignal } from "solid-js";
-import { flip, ReferenceElement, VirtualElement } from "@floating-ui/dom";
+import { flip, VirtualElement } from "@floating-ui/dom";
 import { useFloating } from "solid-floating-ui";
 import { Key } from "chessground/types";
 
