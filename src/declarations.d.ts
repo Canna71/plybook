@@ -6,9 +6,7 @@ declare module "solid-js" {
 			"piece": JSX.HTMLAttributes<HTMLDivElement>;
 		}
 
-		interface piece {
-			draggable: DragOptions;
-		}
+
 	}
 }
 declare module '*.scss' {

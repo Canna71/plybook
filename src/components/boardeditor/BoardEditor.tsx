@@ -2,7 +2,7 @@ import { Chessboard } from "../common/chessboard";
 import { Config } from "chessground/config";
 import { Accessor, Component, createEffect, createSignal, Setter } from "solid-js";
 import { Api } from "chessground/api";
-import { PiecesToolbar } from "./Piece";
+import { PiecesToolbar } from "./DraggablePiece";
 import { Piece, Role } from "chessground/types";
 import ToggleSwitch from "../common/ToggleSwitch";
 import { INITIAL_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
