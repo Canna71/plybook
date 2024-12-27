@@ -1,0 +1,26 @@
+.piecespopup {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 12.5%;
+    aspect-ratio: 1 / 4;
+    z-index: 1000;
+    background-color: #ffffff;
+
+    button {
+        width: 100%;
+    }
+
+    piece {
+        cursor: pointer;
+        pointer-events: auto;
+        aspect-ratio: 1 / 1; /* Width to height ratio */
+        width: 100%;
+        position: relative;
+        display: inline-block;
+    }
+}

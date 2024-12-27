@@ -14,6 +14,7 @@ import { makeFen, parseFen } from "chessops/fen";
 import { GameContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
+import { PiecesPopup } from "./PiecesPopup";
 
 export type PgnEditorOptions = {
 	pgn: Accessor<string | undefined>;
@@ -194,6 +195,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 								<PlayerName name={blackPlayer} setName={setBlackPlayer} color="black" />
 								<div class="pgnviewer-chessboard">
 									<Chessboard config={config} />
+									<PiecesPopup color={"white"} />
 								</div>
 								<PlayerName name={whitePlayer} setName={setWhitePlayer} color="white" />
 							</Match>
