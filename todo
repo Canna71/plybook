@@ -1,18 +1,29 @@
-Rechess
-
-Bugs:
-Handle Promotion:
-	- Intercept Move @done
-	- Implent Popup
-File Operations:
-	- Save As
-	- Save
-	- Open
-	- New
-	- New Folder
+Main:
+	- Game Editing
+		- Edit Metadata
+		- Allow for multiple games in pgn
+		- Import PGN from text, clipboard or file (?)
+		- Board Editing
+			- set FEN directly
+	- Game Viewing
+		- Use PGN Editor for viewing
+			- disable editing and engine
+	- File Operations
+		- Save As @priority(5)
+		- Save
+		- Open
+		- New
+		- New Folder
+	- Analysis Board
+		- Use PGN Editor for analysis 
+			- disable editing
+			- add engine
+		- Interface with engine
+		- Use user-configurable engine
+		- Display move lines
+		- Display tooltip from moves
+	- GUI
+		- Ensure that there is enough vertical space for chessboard
+		- 
+		
 Various:
-	- How to ensure that there is also enough vertical space for chessboard?
-	- How to maintain both view and edit and analysis modes?
-	- Use an engine configurable by user
-	- Allow for multiple games in pgn
-	- Edit metadata

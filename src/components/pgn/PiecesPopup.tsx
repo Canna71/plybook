@@ -23,7 +23,6 @@ export const PiecesPopup = (props: PiecesPopupProps) => {
     // calculates the virtual element for the promotion popup
     const reference =
         () => {
-            console.log("reference");
 
             const key = props.promotingCell();
             if (!key) return null;
@@ -52,7 +51,6 @@ export const PiecesPopup = (props: PiecesPopupProps) => {
                 width: squareSize,
                 height: squareSize,
             };
-            console.log("reference", rect);
             return {
                 getBoundingClientRect() {
                     return rect;
@@ -79,7 +77,7 @@ export const PiecesPopup = (props: PiecesPopupProps) => {
         <div
             class="cg-wrap">
             {promotableRoles.map(role =>
-                <button>
+                <button onClick={() => props.onSelected?.(role, props.color())}>
                     <Piece role={role} color={props.color()} />
                 </button>
             )}

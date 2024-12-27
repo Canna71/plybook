@@ -5,7 +5,7 @@ import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
 import { getPosition, isPromotion, makeConfig, makeMove, useSplitter } from "../common/utils";
-import { Key, Piece } from "chessground/types";
+import { Color, Key, Piece, Role } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
 import "./PgnViewer.scss";
 import Button from "../common/Button";
@@ -15,6 +15,7 @@ import { GameContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
+import { NormalMove } from "chessops";
 
 
 export type PgnEditorOptions = {
@@ -27,7 +28,10 @@ enum ViewMode {
 	MOVES
 }
 
-
+type PromotionData = {
+	promotionCell: Key;
+	move: NormalMove;
+};
 
 const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
@@ -35,15 +39,11 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
 	const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
 	const [startingPosition, setStartingPosition] = createSignal<string | undefined>(undefined);
-	const [promotingCell, setPromotingCell] = createSignal<Key | undefined>(undefined);
+	const [promotionData, setPromotionData] = createSignal<PromotionData | undefined>(undefined);
 	let chessBoardDiv: HTMLDivElement | null = null;
-	// let divider: HTMLDivElement | null = null;
-	// const currentData = useCurrentData(game, currentPath)
-	// `position` is a reactive object.
+	const divider = useSplitter();
 
-
-
-
+	// #region Game Setup
 	createEffect(() => {
 		// const cg = api();
 		let pgnString = pgn();
@@ -63,6 +63,9 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
 	});
 
+	// #endregion
+
+	// #region Event Handlers
 	const onMove = (orig: Key, dest: Key, _capturedPiece?: Piece) => {
 		const g = game();
 		if (!g) {
@@ -78,15 +81,17 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
 		const isLegal = position.isLegal(move);
 		if (isLegal) {
-			const [newGameModel, newPath] = g.applyMove(path, move);
-			setGame(newGameModel);
-			setCurrentPath(newPath);
+			applyMove(move);
 		} else {
 			// check for promotion
 			const promo = isPromotion(move, position);
 			if (promo) {
 				console.debug("TODO: Promotion");
-				setPromotingCell(dest);
+				const promoData = {
+					promotionCell: dest,
+					move: move
+				}
+				setPromotionData(promoData);
 				setGame(g.clone());
 			} else {
 				console.debug("Illegal move");
@@ -96,8 +101,6 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
 	}
 
-
-
 	const onSelect = (_key: Key) => {
 	}
 
@@ -105,6 +108,20 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		const ng = game()?.updateShapes(currentPath()!, shapes);
 		setGame(ng);
 	}
+
+	const onPromotionSelected = (role: Role, color: Color) => {
+		const promoData = promotionData();
+		setPromotionData(undefined);
+		if (promoData) {
+			const move = promoData.move;
+			move.promotion = role;
+			applyMove(move);
+		}
+	}
+
+	// #endregion
+
+	// #region Computed Properties
 
 	const turn = () => getPosition(game, currentPath).turn;
 
@@ -156,7 +173,6 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	}
 
 	// #region Starting Position Editing
-
 	const onEditStartingPosition = () => {
 		setViewMode(ViewMode.STARTING_POSITION);
 	}
@@ -172,6 +188,28 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		setViewMode(ViewMode.MOVES);
 	}
 
+	// #endregion
+
+	// #endregion
+
+
+	// #region Game Manipulation
+
+	const applyMove = (move: NormalMove) => {
+		const g = game();
+		if (!g) {
+			return;
+		};
+		const path = currentPath() || Path.root;
+		const [newGameModel, newPath] = g.applyMove(path, move);
+		setGame(newGameModel);
+		setCurrentPath(newPath);
+	}
+
+	// #endregion
+
+	// #region Update PGN
+
 	createEffect(() => {
 		const newPgn = game()?.pgn();
 		if (newPgn) {
@@ -181,8 +219,6 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
 	// #endregion
 
-	const divider = useSplitter();
-	// #endregion
 
 	return (
 		<>
@@ -203,10 +239,11 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 								<PlayerName name={blackPlayer} setName={setBlackPlayer} color="black" />
 								<div ref={chessBoardDiv!} class="pgnviewer-chessboard" >
 									<Chessboard config={config} />
-									<Show when={promotingCell()}>
+									<Show when={!!promotionData()}>
 										<PiecesPopup
 											chessBoardDiv={chessBoardDiv}
-											promotingCell={promotingCell}
+											promotingCell={() => promotionData()?.promotionCell}
+											onSelected={onPromotionSelected}
 											color={turn} />
 									</Show>
 								</div>
