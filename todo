@@ -23,6 +23,7 @@ Main:
 		- Display move lines
 		- Display tooltip from moves
 	- Playing against engine
+		- Dispose the engine when over?
 		- Use PGN Editor for playing
 			- disable editing
 			- add engine
