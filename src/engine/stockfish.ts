@@ -1,5 +1,8 @@
+import { path } from '@tauri-apps/api';
+import { join } from '@tauri-apps/api/path';
 
 import { Child, Command } from '@tauri-apps/plugin-shell';
+import { getEngineFolder } from '../storage/fs';
 
 // Type definitions for Stockfish events
 // @ts-ignore
@@ -78,7 +81,11 @@ export class StockfishManager {
         // this.command = await Command.create('stockfish', []);
         console.log("creating command");
 
-        this.command = await Command.create('exec-sh', ["-c", "/Users/gcannata/Library/Application\\ Support/rechess/Binaries/stockfish-aarch64-apple-darwin"]);
+        const enginePath = await getEngineFolder("stockfish-aarch64-apple-darwin");
+        console.log("engine path", enginePath);
+
+        // this.command = await Command.create('exec-sh', ["-c", "/Users/gcannata/Library/Application\\ Support/rechess/Binaries/stockfish-aarch64-apple-darwin"]);
+        this.command = await Command.create('exec-sh', ["-c", `"${enginePath}"`]);
 
         console.log("command", this.command);
 

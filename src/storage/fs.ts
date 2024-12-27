@@ -1,8 +1,9 @@
 import { BaseDirectory, exists, mkdir, readDir, readFile, writeFile } from "@tauri-apps/plugin-fs";
-import { appDataDir, join } from "@tauri-apps/api/path";
+import { appDataDir, join, resolve } from "@tauri-apps/api/path";
 // import { path } from "@tauri-apps/api";
 
 const LIBRARY_FOLDER = "Library";
+const ENGINES_FOLDER = "Engines";
 
 export async function initStorage() {
     await ensureAppDataFolders();
@@ -47,6 +48,7 @@ export async function ensureAppDataFolders() {
         const appDataPath = await appDataDir();
         await ensureFolderExists(appDataPath);
         await ensureFolderExists(await join(appDataPath, LIBRARY_FOLDER, "pgn"));
+        await ensureFolderExists(await join(appDataPath, LIBRARY_FOLDER, ENGINES_FOLDER));
     } catch (error) {
         console.error("Error ensuring AppData folders exist:", error);
     }
@@ -57,3 +59,12 @@ export async function listAppData(path: string) {
     return files;
 }
 
+export async function getEngineFolder(name: string) {
+    const appDataDirPath = await appDataDir();
+    return join(appDataDirPath, ENGINES_FOLDER, name);
+}
+
+export async function getAvailableEngines() {
+    const enginesPath = await getEngineFolder("");
+    return (await listAppData(enginesPath)).map((entry) => entry.name);
+}

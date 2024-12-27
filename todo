@@ -37,6 +37,11 @@ Main:
 			- for ELO
 			- for moves
 			- ... ?
+	- Use GameEditor for puzzles
+		- moves only if correct
+		- other color automatic
+		- edit only correct color
+		- no engine
 	- GUI
 		- Ensure that there is enough vertical space for chessboard
 		- Integrate directly with Bulma SASS
