@@ -8,7 +8,8 @@ import Button from "../components/common/Button";
 
 const PgnEditView = () => {
 
-    const [pgn, setPgn] = createSignal<string | undefined>(undefined);
+    const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(undefined);
+    const [newPgn, setNewPgn] = createSignal<string | undefined>(undefined);
     const [searchParams, _setSearchParams] = useSearchParams();
     
     createEffect(async () => {
@@ -16,17 +17,17 @@ const PgnEditView = () => {
             console.log('Reading PGN file', searchParams.path);
             const pgnText = await readDataFile(searchParams.path);
             console.log("pgnText",pgnText);
-            setPgn(pgnText || "[]");
+            setOriginalPgn(pgnText || "[]");
         } else {
-            setPgn("[]");
+            setOriginalPgn("[]");
         }
 
     
     });
 
     const  onSave = async () => {
-        console.log(pgn());
-        const pgnText = pgn();
+        const pgnText = newPgn();
+        console.log(pgnText);
         if(typeof(searchParams.path) === "string" && pgnText) {
             await writeDataFile(searchParams.path, pgnText);
             // await writeDataFile("test.pgn", pgnText);
@@ -35,7 +36,7 @@ const PgnEditView = () => {
 
     return (
         <>
-            <PgnEditor pgn={pgn} setPgn={setPgn} />
+            <PgnEditor pgn={originalPgn} setPgn={setNewPgn} />
             <Button onClick={onSave}>Save PGN</Button>
         </>
     );
