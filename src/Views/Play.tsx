@@ -1,5 +1,4 @@
 import { createSignal, onMount } from "solid-js";
-import { Chess } from "chess.js";
 import { Api } from "chessground/api";
 import { Chessboard } from "../components/common/chessboard";
 import { Key } from "chessground/types";

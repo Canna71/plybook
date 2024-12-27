@@ -57,6 +57,8 @@
           "path": "*/**"
         }
       ]
-    }
+    },
+    "dialog:default",
+    "clipboard-manager:default"
   ]
 }

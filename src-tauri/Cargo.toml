@@ -27,3 +27,8 @@ surrealdb = { version = "2.1.4", features = ["kv-rocksdb"] }
 tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread"] }
 pgnparse = "0.1.15"
 tauri-plugin-process = "2.2.0"
+tauri-plugin-dialog = "2"
+tauri-plugin-clipboard-manager = "2.2.0"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-window-state = "2"

@@ -1,14 +1,15 @@
 import { createSignal, onMount } from "solid-js";
-import { Chess } from "chess.js";
 import { Api } from "chessground/api";
 import { Chessboard } from "../components/common/chessboard";
 import { Key } from "chessground/types";
-import { Piece } from "chessops";
+import { Chess, NormalMove, Piece } from "chessops";
 import { StockfishManager } from "../engine/stockfish";
+import { makeMove } from "../components/common/utils";
+import { makeFen } from "chessops/fen";
 
 const PlaySF = () => {
-    // @ts-ignore
-    const [game, setGame] = createSignal(new Chess());
+    
+    const [game, setGame] = createSignal(Chess.default());
     const [api, setApi] = createSignal<Api | undefined>(undefined);
     const [stockfish, setStockfish] = createSignal<StockfishManager | undefined>(undefined);
 
@@ -16,7 +17,7 @@ const PlaySF = () => {
         var status = ''
 
         var moveColor = 'White'
-        if (game().turn() === 'b') {
+        if (game().turn === 'black') {
             moveColor = 'Black'
         }
 
@@ -26,7 +27,7 @@ const PlaySF = () => {
         }
 
         // draw?
-        else if (game().isDraw()) {
+        else if (game().isStalemate()) {
             status = 'Game over, drawn position'
         }
 
@@ -35,7 +36,7 @@ const PlaySF = () => {
             status = moveColor + ' to move'
 
             // check?
-            if (game().inCheck()) {
+            if (game().isCheck()) {
                 status += ', ' + moveColor + ' is in check'
             }
         }
@@ -49,9 +50,12 @@ const PlaySF = () => {
         console.log(event, args);
         if (event === 'bestmove') {
             var bestMove = args[0];
-            game().move({ from: bestMove.slice(0, 2), to: bestMove.slice(2, 4), promotion: 'q' });
+            const m = {from: bestMove.slice(0, 2), to: bestMove.slice(2, 4)};
+            const move : NormalMove = makeMove(m.from, m.to);
+            game().play(move);
             api()?.set({
-                fen: game().fen()
+                fen: makeFen(game().toSetup()),
+                lastMove: [m.from, m.to]
             });
             updateStatus();
         }
@@ -71,20 +75,19 @@ const PlaySF = () => {
     // @ts-ignore
     function onMove(from: Key, to: Key, captured: Piece | undefined) {
         // see if the move is legal
-        var move = game().move({
-            from: from,
-            to: to,
-            promotion: 'q' // NOTE: always promote to a queen for example simplicity
-        })
+        const m = makeMove(from, to);
+        var move = game().play(m)   
 
         // illegal move
         if (move === null) return 'snapback'
 
         updateStatus();
 
-        const moves = game().history({
-            verbose: true
-        }).map(move => move.lan);
+        // const moves = game().history({
+        //     verbose: true
+        // }).map(move => move.lan);
+        const moves:string[] = [];
+        // TODO: use gamemodel to keep track of moves
 
         stockfish()?.analyzeFromMoves(moves, {
             depth: 15
