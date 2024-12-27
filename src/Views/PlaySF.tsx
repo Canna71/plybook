@@ -6,6 +6,7 @@ import { Chess, NormalMove, Piece } from "chessops";
 import { StockfishManager } from "../engine/stockfish";
 import { makeMove } from "../components/common/utils";
 import { makeFen } from "chessops/fen";
+import { setSettingValue } from "../models/settings";
 
 const PlaySF = () => {
     
@@ -71,6 +72,8 @@ const PlaySF = () => {
         console.log("engine initialized");
         setStockfish(engine);
         engine.newGame();
+
+        setSettingValue("engine.lastUsed", "stockfish");    
     });
     // const stockfish = new Worker('node_modules/stockfish-nnue.wasm/stockfish.js');
 

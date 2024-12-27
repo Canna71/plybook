@@ -1,5 +1,6 @@
-import { BaseDirectory, exists, mkdir, readDir, readFile, writeFile } from "@tauri-apps/plugin-fs";
-import { appDataDir, join, resolve } from "@tauri-apps/api/path";
+import { BaseDirectory, exists, mkdir, readDir, readFile, readTextFile, writeFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { appConfigDir, appDataDir, join, resolve } from "@tauri-apps/api/path";
+import { className } from "solid-js/web";
 // import { path } from "@tauri-apps/api";
 
 const LIBRARY_FOLDER = "Library";
@@ -9,6 +10,13 @@ export async function initStorage() {
     await ensureAppDataFolders();
 }
 
+export async function ensureConfigFileExists(subPath: string) {
+    const fileExists = await exists(subPath, { baseDir: BaseDirectory.AppConfig });
+    if (!fileExists) {
+        await writeFile(subPath, new Uint8Array(), { baseDir: BaseDirectory.AppConfig });
+    }
+}
+
 export async function readDataFile(subPath: string) {
     // return readTextFile(subPath, {
     //     baseDir: BaseDirectory.AppLocalData
@@ -16,6 +24,25 @@ export async function readDataFile(subPath: string) {
     return readFile(subPath, {
         baseDir: BaseDirectory.AppLocalData
     }).then((data) => new TextDecoder().decode(data));
+}
+
+export async function readConfigFileAsJson<T>(subPath: string): Promise<T> {
+    const data = await readFile(subPath, {
+        baseDir: BaseDirectory.AppConfig
+    });
+    const json =  new TextDecoder().decode(data);
+    try {
+        return JSON.parse(json) as T;
+    } catch (error) {
+        console.error("Error parsing JSON from file:", error);
+        return {} as T;
+    }
+}
+
+export async function writeConfigFile<T>(subPath: string, data: T) {
+    return writeFile(subPath, new TextEncoder().encode(JSON.stringify(data)), {
+        baseDir: BaseDirectory.AppConfig
+    });
 }
 
 export async function writeDataFile(subPath: string, data: string) {
@@ -34,9 +61,7 @@ async function ensureFolderExists(folderPath: string): Promise<void> {
 
         if (!folderExists) {
             await mkdir(folderPath, { recursive: true });
-            console.log(`Folder created at: ${folderPath}`);
         } else {
-            console.log(`Folder already exists at: ${folderPath}`);
         }
     } catch (error) {
         console.error(`Error ensuring folder exists at ${folderPath}:`, error);
