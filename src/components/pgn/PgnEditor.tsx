@@ -1,5 +1,5 @@
 import { Chessboard } from "../common/chessboard";
-import { Accessor, Component, createEffect, createSignal, Match, Switch } from "solid-js";
+import { Accessor, Component, createEffect, createSignal, Match, Show, Switch } from "solid-js";
 import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
@@ -15,6 +15,9 @@ import { GameContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
+import { useFloating } from "solid-floating-ui";
+import { ReferenceElement, VirtualElement } from "@floating-ui/dom";
+import { makeSquare, parseSquare, Square, squareFile, squareRank } from "chessops";
 
 export type PgnEditorOptions = {
 	pgn: Accessor<string | undefined>;
@@ -34,9 +37,52 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
 	const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
 	const [startingPosition, setStartingPosition] = createSignal<string | undefined>(undefined);
+	const [promotingCell, setPromotingCell] = createSignal<Key | undefined>(undefined);
+	let chessBoardDiv: HTMLDivElement | null = null;
 	// let divider: HTMLDivElement | null = null;
 	// const currentData = useCurrentData(game, currentPath)
+	// `position` is a reactive object.
 
+	const reference =
+		() => {
+			console.log("reference");
+
+			const key = promotingCell();
+			if (!key) return null;
+
+			// todo calculate the position of the cell, given the square in key and the chessboard div in chessBoardDiv
+			const square = parseSquare(key) as Square;
+			const sx = squareFile(square);
+			const sy = squareRank(square);
+			const chessboardwidth = chessBoardDiv!.clientWidth;
+			const chessboardPosition = chessBoardDiv!.getBoundingClientRect();
+			const squareSize = chessboardwidth / 8;
+
+			const x = chessboardPosition.x + sx * squareSize;
+			const y = chessboardPosition.y + (6-sy) * squareSize;
+
+			
+			console.log({ square, sx, sy, chessboardwidth, chessboardPosition, squareSize, x, y });
+			
+			const rect = {
+				x: x,
+				y: y,
+				top: y,
+				left: x,
+				bottom: y + squareSize,
+				right: x + squareSize,
+				width: squareSize,
+				height: squareSize,
+			};
+			console.log("reference", rect);
+			return {
+				getBoundingClientRect() {
+					return rect;
+				}
+			} as VirtualElement;
+
+
+		};
 
 
 	createEffect(() => {
@@ -68,19 +114,20 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		// see https://github.com/linrock/blitz-tactics/blob/788cfad907dc1c88d3a008b25c1d09e8c37ce5c5/app/javascript/components/chessground_board/index.ts#L103
 		// const pos = getPosition(game, currentPath);
 		const move = makeMove(orig, dest);
-		
+
 		const position = getPosition(game, currentPath);
-		
+
 		const isLegal = position.isLegal(move);
-		if(isLegal) {
+		if (isLegal) {
 			const [newGameModel, newPath] = g.applyMove(path, move);
 			setGame(newGameModel);
 			setCurrentPath(newPath);
 		} else {
 			// check for promotion
 			const promo = isPromotion(move, position);
-			if(promo) {
+			if (promo) {
 				console.debug("TODO: Promotion");
+				setPromotingCell(dest);
 				setGame(g.clone());
 			} else {
 				console.debug("Illegal move");
@@ -185,7 +232,7 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 					currentPath: currentPath,
 					setCurrentPath: setCurrentPath,
 					setSquareHovered: setSquareHovered,
-					editable: ()=>true,
+					editable: () => true,
 				}
 			}>
 				<div class="pgnviewer-container">
@@ -193,9 +240,13 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 						<Switch>
 							<Match when={viewMode() === ViewMode.MOVES}>
 								<PlayerName name={blackPlayer} setName={setBlackPlayer} color="black" />
-								<div class="pgnviewer-chessboard">
+								<div ref={chessBoardDiv!} class="pgnviewer-chessboard" >
 									<Chessboard config={config} />
-									<PiecesPopup color={"white"} />
+									<Show when={promotingCell()}>
+										<PiecesPopup
+											reference={reference}
+											color={() => getPosition(game, currentPath).turn} />
+									</Show>
 								</div>
 								<PlayerName name={whitePlayer} setName={setWhitePlayer} color="white" />
 							</Match>

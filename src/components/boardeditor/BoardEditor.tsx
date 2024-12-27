@@ -59,6 +59,9 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
             return;
         }
         const square = cg.getKeyAtDomPos([e.clientX, e.clientY]);
+
+        
+
         if (!square) return;
         const piece = selectedPiece();
         if (piece !== null) {
