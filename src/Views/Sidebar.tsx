@@ -9,7 +9,7 @@ const Sidebar = () => {
     const onSelectedFileChanged = (file: FileBrowserFile) => {
         if(file && !file.isDirectory) {
             if(file.name.endsWith('.pgn')) {
-                navigate(`/pgnedit?path=${file.path}&source=library`);
+                navigate(`/game?path=${file.path}&source=library`);
             }
         }
     }
@@ -21,10 +21,8 @@ const Sidebar = () => {
                 <p class="menu-label">Dev Pages</p>
                 <ul class="menu-list">
                     <li><a href="/">Home</a></li>
-                    <li><a href="/viewer">Board Viewer</a></li>
-                    <li><a href="/editor">Board Editor</a></li>
-                    <li><a href="/pgn">Pgn View</a></li>
-                    <li><a href="/pgnedit">Pgn Edit</a></li>
+                    <li><a href="/boardeditor">Board Editor</a></li>
+                    <li><a href="/game">Pgn Edit</a></li>
                     <li><a href="/playsf">Play</a></li>
                     <li><a href="/analysis">Analysis</a></li>
                     <li><a href="/db">DB Test</a></li>

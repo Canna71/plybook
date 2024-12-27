@@ -1,12 +1,12 @@
 import { createEffect, createSignal } from "solid-js";
 
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
-import PgnEditor from "../components/pgn/PgnEditor";
+import GameEditor from "../components/game/GameEditor";
 import { readDataFile, writeDataFile } from "../storage/fs";
 import { useSearchParams } from "@solidjs/router";
 import Button from "../components/common/Button";
 
-const PgnEditView = () => {
+const GameView = () => {
 
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(undefined);
     const [newPgn, setNewPgn] = createSignal<string | undefined>(undefined);
@@ -36,10 +36,10 @@ const PgnEditView = () => {
 
     return (
         <>
-            <PgnEditor pgn={originalPgn} setPgn={setNewPgn} />
+            <GameEditor pgn={originalPgn} setPgn={setNewPgn} />
             <Button onClick={onSave}>Save PGN</Button>
         </>
     );
 }
 
-export default PgnEditView;
+export default GameView;

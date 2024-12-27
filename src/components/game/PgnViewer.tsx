@@ -2,12 +2,12 @@ import { Chessboard } from "../common/chessboard";
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
 import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
-import Moves from "../pgn/Moves";
+import Moves from "../game/Moves";
 
 
 import { makeConfig } from "../common/utils";
 import ButtonBar from "./Buttonbar";
-import "./PgnViewer.scss";
+import "./GameEditor.scss";
 
 // see: https://github.com/lichess-org/pgn-viewer
 

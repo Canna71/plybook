@@ -1,6 +1,6 @@
 import { IconUser, IconUserFilled } from "@tabler/icons-solidjs";
 import { Accessor, Component, Show, useContext } from "solid-js";
-import { GameContext } from "../pgn/GameContext";
+import { GameContext } from "../game/GameContext";
 import { Color } from "chessops";
 
 const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) => void, color: Color }> = ({ name, setName, color }) => {

@@ -22,8 +22,28 @@ Main:
 		- Use user-configurable engine
 		- Display move lines
 		- Display tooltip from moves
+	- Playing against engine
+		- Use PGN Editor for playing
+			- disable editing
+			- add engine
+		- Interface with engine
+		- Use user-configurable engine
+		- record games
+	- Games Database
+		- index folders
+		- bulk import
+		- search games
+			- for player
+			- for ELO
+			- for moves
+			- ... ?
 	- GUI
 		- Ensure that there is enough vertical space for chessboard
-		- 
+		- Integrate directly with Bulma SASS
+		- Add Menu
+		- Keyboard Shortcuts
+	- Applcation Settings
+		- Persist settings
+		- Provide GUI for settings
 		
-Various:
+Various: 

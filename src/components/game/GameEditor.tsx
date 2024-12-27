@@ -7,7 +7,6 @@ import ButtonBar from "./Buttonbar";
 import { getPosition, isPromotion, makeConfig, makeMove, useSplitter } from "../common/utils";
 import { Color, Key, Piece, Role } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
-import "./PgnViewer.scss";
 import Button from "../common/Button";
 import BoardEditor from "../boardeditor/BoardEditor";
 import { makeFen, parseFen } from "chessops/fen";
@@ -16,6 +15,7 @@ import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
 import { NormalMove } from "chessops";
+import "./GameEditor.scss";
 
 
 export type PgnEditorOptions = {
@@ -33,7 +33,7 @@ type PromotionData = {
 	move: NormalMove;
 };
 
-const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
+const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
 	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
 	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
@@ -288,6 +288,6 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 	);
 }
 
-export default PgnEditor;
+export default GameEditor;
 
 

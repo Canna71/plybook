@@ -3,13 +3,11 @@ import "./styles/App.scss";
 import { Router, Route } from "@solidjs/router";
 import Home from "./Views/Home";
 import Layout from "./Views/Layout";
-import Viewer from "./Views/Viewer";
-import PgnView from "./Views/PgnView";
 import Editor from "./Views/Editor";
 import DBTest from "./Views/DBTest";
 import PlaySF from "./Views/PlaySF";
 import AnalysisView from "./Views/AnalysisView";
-import PgnEditView from "./Views/PgnEditorView";
+import GameView from "./Views/GameView";
 function App() {
   // const [greetMsg, setGreetMsg] = createSignal("");
   // const [name, setName] = createSignal("");
@@ -24,10 +22,8 @@ function App() {
   return (
     <Router root={Layout}>
             <Route path="/" component={Home} />
-            <Route path="/viewer" component={Viewer} />
-            <Route path="/pgn" component={PgnView} />
-            <Route path="/pgnedit" component={PgnEditView} />
-            <Route path="/editor" component={Editor} />
+            <Route path="/game" component={GameView} />
+            <Route path="/boardeditor" component={Editor} />
             <Route path="/db" component={DBTest} />
             <Route path="/playsf" component={PlaySF} />
             <Route path="/analysis" component={AnalysisView} />
