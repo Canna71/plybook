@@ -124,7 +124,6 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 				onChange: onDrawChange
 			}
 		};
-		console.log('Config:', config);
 		return config;
 	}
 

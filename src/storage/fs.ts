@@ -1,4 +1,4 @@
-import { BaseDirectory, exists, mkdir, readDir, readTextFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory, exists, mkdir, readDir, readFile, readTextFile, writeFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { appDataDir, appLocalDataDir, join } from "@tauri-apps/api/path";
 import { path } from "@tauri-apps/api";
 
@@ -9,8 +9,21 @@ export async function initStorage() {
 }
 
 export async function readDataFile(subPath: string) {
-    return readTextFile(subPath, {
-        baseDir: BaseDirectory.AppData
+    // return readTextFile(subPath, {
+    //     baseDir: BaseDirectory.AppLocalData
+    // });
+    return readFile(subPath, {
+        baseDir: BaseDirectory.AppLocalData
+    }).then((data) => new TextDecoder().decode(data));
+}
+
+export async function writeDataFile(subPath: string, data: string) {
+    // return writeTextFile(subPath, data, {  
+    //     baseDir: BaseDirectory.AppLocalData
+    // });
+    // HACK: changed tp use TextEncoder to avoid issues with "unexpected invoke body" error
+    return writeFile(subPath, new TextEncoder().encode(data), {
+        baseDir: BaseDirectory.AppLocalData
     });
 }
 
@@ -40,7 +53,7 @@ export async function ensureAppDataFolders() {
 }
 
 export async function listAppData(path: string) {
-    const files = await readDir(path, { baseDir: BaseDirectory.AppData });
+    const files = await readDir(path, { baseDir: BaseDirectory.AppLocalData });
     return files;
 }
 

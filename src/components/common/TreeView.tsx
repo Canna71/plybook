@@ -42,7 +42,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
             expanded.delete(node.id);
         } else {
             expanded.add(node.id);
-            if (node.loadChildren && !node.children) {
+            if (node.loadChildren /* && !node.children */) {
                 node.children = await node.loadChildren();
                 setChildren(node.children);
             }
