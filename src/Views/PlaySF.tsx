@@ -9,7 +9,7 @@ import { makeFen } from "chessops/fen";
 
 const PlaySF = () => {
     
-    const [game, setGame] = createSignal(Chess.default());
+    const [game, _setGame] = createSignal(Chess.default());
     const [api, setApi] = createSignal<Api | undefined>(undefined);
     const [stockfish, setStockfish] = createSignal<StockfishManager | undefined>(undefined);
 

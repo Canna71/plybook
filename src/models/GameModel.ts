@@ -1,4 +1,4 @@
-import { Move, Chess, parseSquare, makeSquare } from "chessops";
+import { Move, Chess, parseSquare  } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
 import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, makeComment, CommentShape, parseComment } from "chessops/pgn";
@@ -168,11 +168,11 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
-    private insertCommentInternal(comments: string[], comment:string, shapes: CommentShape[]) {
-        const c = comments.filter(t => t !== EMPTY_COMMENT) || [];
-        comments.splice(0, 0, comment);
-        return this.mergeShapes(comments, shapes);
-    }
+    // private insertCommentInternal(comments: string[], comment:string, shapes: CommentShape[]) {
+    //     const c = comments.filter(t => t !== EMPTY_COMMENT) || [];
+    //     comments.splice(0, 0, comment);
+    //     return this.mergeShapes(comments, shapes);
+    // }
 
     deleteComment(path: Path, index: number, starting: boolean = false) {
         const pgnNode = this.findPgnNode(path);
@@ -192,14 +192,14 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
-    private toDrawShapes(s: CommentShape[]): DrawShape[] {
-        return s.map(s => {
-            const orig = makeSquare(s.from);
-            const dest = makeSquare(s.to);
-            const brush = s.color;
-            return { orig, dest, brush } as DrawShape;
-        });
-    }
+    // private toDrawShapes(s: CommentShape[]): DrawShape[] {
+    //     return s.map(s => {
+    //         const orig = makeSquare(s.from);
+    //         const dest = makeSquare(s.to);
+    //         const brush = s.color;
+    //         return { orig, dest, brush } as DrawShape;
+    //     });
+    // }
 
     private removeCommentAtIndex(comments: string[], index: number, shapes: CommentShape[]) {
         comments = this.mergeShapes(comments, []);

@@ -1,4 +1,4 @@
-import { Accessor, Component, createEffect, createSignal, For, JSX, Setter, Show } from 'solid-js';
+import { Accessor, createEffect, createSignal, For, JSX, Setter, Show } from 'solid-js';
 import styles from './TreeView.module.scss'; // Create and import your custom styles
 
 export type TreeNode<T> = {

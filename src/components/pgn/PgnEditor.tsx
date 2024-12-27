@@ -1,5 +1,5 @@
 import { Chessboard } from "../common/chessboard";
-import { Accessor, Component, createEffect, createSignal, Match, Show, Switch, useContext } from "solid-js";
+import { Accessor, Component, createEffect, createSignal, Match, Switch } from "solid-js";
 import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";

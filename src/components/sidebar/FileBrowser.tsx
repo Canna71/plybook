@@ -57,7 +57,7 @@ const FileBrowser = (props: FileBrowserProps) => {
             onSelectedChanged={(node) => props.onSelectedFileChanged(node?.data!)}
             renderNode={(node) => <span>{node.label}</span>}
             renderExpandedIndicator={
-                (isExpanded, node) => isExpanded ? <IconChevronDown /> : <IconChevronRight />
+                (isExpanded, _node) => isExpanded ? <IconChevronDown /> : <IconChevronRight />
             }
         />
     );

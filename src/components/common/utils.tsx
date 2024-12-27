@@ -1,4 +1,4 @@
-import { Chess, Color, Move, NormalMove, Position, Setup, Square, SquareSet, makeSquare, squareFile, squareRank } from "chessops";
+import { Chess, Color, NormalMove, Position, Setup, Square, SquareSet, makeSquare, squareFile, squareRank } from "chessops";
 import { Initial, isPlyData, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import { Accessor } from "solid-js";
@@ -139,7 +139,7 @@ export function getEnPassantSquares(setup: Setup, whitesTurn: boolean) {
     return squares;
 }
 export function useSplitter(saveLayout?: (layout: string) => void) {
-	let divider: HTMLDivElement | null = null;
+	// let dividerEl: HTMLDivElement | null = null;
 
 	return (divider: HTMLDivElement) => {
 		divider = divider;
