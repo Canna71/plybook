@@ -17,7 +17,7 @@ type CommentsProps = {
 };
 
 
-export const Comments2: Component<CommentsProps> = ({ game, currentPath, commentType }) => {
+export const __Comments2: Component<CommentsProps> = ({ game, currentPath, commentType }) => {
 
 	const currentData = useCurrentData(game, currentPath);
 
@@ -60,7 +60,7 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, path, index
 	// take editable from context
 
 	const { editable, game, setGame, setSquareHovered } = useContext(GameContext)!;
-	let ref: HTMLDivElement | undefined;
+	let ref: HTMLTextAreaElement | undefined;
 	
 	const paragraph = () =>  {
 		let line = comments() || "";
@@ -87,11 +87,20 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, path, index
 	};
 
 	const onBlur = (e: Event) => {
-		const target = e.target as HTMLElement;
-		const text = target.textContent || "";
+		const target = e.target as HTMLTextAreaElement;
+		let text = target.value || "";
+		console.log('onBlur', text);
+		// target.childNodes.forEach((node) => {
+		// 	if (node.nodeType === Node.TEXT_NODE) {
+		// 		text += node.textContent;
+		// 	} else if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === "BR") {
+		// 		text += "\n";
+		// 	}
+		// });
+
 		const ng = game()?.updateComment(path, index, text, starting);
 		setGame(ng);
-	}
+	};
 
 	// focuses the element if it's empty and editable
 	createEffect(() => {
@@ -117,15 +126,16 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, path, index
 		}
 	}
 
-	return <div
-		ref={ref}
-		data-placeholder="Add a comment"
+	return <textarea
+		ref={ref!}
+		// data-placeholder="Add a comment"
+		placeholder="Add a comment"
 		contentEditable={editable()}
 		onMouseOver={onMouseOver}
 		onMouseLeave={onMouseLeave}
 		onBlur={onBlur}
-		class="pgnviewer-comments"
+		class="textarea pgnviewer-comments"
 		innerHTML={paragraph()}
 		onContextMenu={onContextMenu}
-		></div>;
+		></textarea>;
 }
