@@ -4,15 +4,13 @@ import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
-import { getPosition, makeConfig, useSplitter } from "../common/utils";
+import { getPosition, isPromotion, makeConfig, makeMove, useSplitter } from "../common/utils";
 import { Key, Piece } from "chessground/types";
-import { Color, parseSquare } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 import "./PgnViewer.scss";
 import Button from "../common/Button";
 import BoardEditor from "../boardeditor/BoardEditor";
 import { makeFen, parseFen } from "chessops/fen";
-import { IconUser, IconUserFilled } from "@tabler/icons-solidjs";
 import { GameContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
@@ -66,23 +64,32 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		};
 		const path = currentPath() || Path.root;
 
-
+		// see https://github.com/linrock/blitz-tactics/blob/788cfad907dc1c88d3a008b25c1d09e8c37ce5c5/app/javascript/components/chessground_board/index.ts#L103
 		// const pos = getPosition(game, currentPath);
-		const sq1 = parseSquare(orig);
-		const sq2 = parseSquare(dest);
-		const move = {
-			from: sq1!,
-			to: sq2!,
-			promotion: undefined
-		};
-
-		const [newGameModel, newPath] = g.applyMove(path, move);
-
-		setGame(newGameModel);
-
-		setCurrentPath(newPath);
+		const move = makeMove(orig, dest);
+		
+		const position = getPosition(game, currentPath);
+		
+		const isLegal = position.isLegal(move);
+		if(isLegal) {
+			const [newGameModel, newPath] = g.applyMove(path, move);
+			setGame(newGameModel);
+			setCurrentPath(newPath);
+		} else {
+			// check for promotion
+			const promo = isPromotion(move, position);
+			if(promo) {
+				console.debug("TODO: Promotion");
+				setGame(g.clone());
+			} else {
+				console.debug("Illegal move");
+				setGame(g.clone());
+			}
+		}
 
 	}
+
+
 
 	const onSelect = (_key: Key) => {
 	}
@@ -230,10 +237,5 @@ const PgnEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 }
 
 export default PgnEditor;
-
-
-
-
-
 
 

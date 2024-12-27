@@ -1,11 +1,11 @@
-import { Chess, Color, NormalMove, Position, Setup, Square, SquareSet, makeSquare, squareFile, squareRank } from "chessops";
+import { Chess, Color, Move, NormalMove, Position, Setup, Square, SquareSet, makeSquare, squareFile, squareRank } from "chessops";
 import { Initial, isPlyData, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import { Accessor } from "solid-js";
 import { Key } from "chessground/types";
 import { Config } from "chessground/config";
 import { INITIAL_FEN, parseFen } from "chessops/fen";
-import { squareFromCoords } from "chessops/util";
+import { parseSquare, squareFromCoords } from "chessops/util";
 import Split from "split-grid";
 
 
@@ -154,5 +154,27 @@ export function useSplitter(saveLayout?: (layout: string) => void) {
 			}
 		});
 	};
+}
+export function makeMove(orig: string, dest: string): NormalMove {
+	const sq1 = parseSquare(orig);
+	const sq2 = parseSquare(dest);
+	const move = {
+		from: sq1!,
+		to: sq2!,
+		promotion: undefined
+	};
+	return move;
+}
+
+export function isPromotion(move: NormalMove, position: Chess) {
+	const piece = position.board.get(move.from);
+	if(!piece) return false;
+	if(piece.role === "pawn") {
+		if(position.turn === "white") {
+			return squareRank(move.to) === 7;
+		} else {
+			return squareRank(move.to) === 0;
+		}
+	}
 }
 
