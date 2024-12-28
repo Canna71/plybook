@@ -1,6 +1,3 @@
-import { path } from '@tauri-apps/api';
-import { join } from '@tauri-apps/api/path';
-
 import { Child, Command } from '@tauri-apps/plugin-shell';
 import { getEngineFolder } from '../storage/fs';
 

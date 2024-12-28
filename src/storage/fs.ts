@@ -1,6 +1,5 @@
-import { BaseDirectory, exists, mkdir, readDir, readFile, readTextFile, writeFile, writeTextFile } from "@tauri-apps/plugin-fs";
-import { appConfigDir, appDataDir, join, resolve } from "@tauri-apps/api/path";
-import { className } from "solid-js/web";
+import { BaseDirectory, exists, mkdir, readDir, readFile, writeFile } from "@tauri-apps/plugin-fs";
+import { appDataDir, join } from "@tauri-apps/api/path";
 // import { path } from "@tauri-apps/api";
 
 const LIBRARY_FOLDER = "Library";

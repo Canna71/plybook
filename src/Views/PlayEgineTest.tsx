@@ -3,16 +3,18 @@ import { Api } from "chessground/api";
 import { Chessboard } from "../components/common/chessboard";
 import { Key } from "chessground/types";
 import { Chess, NormalMove, Piece } from "chessops";
-import { StockfishManager } from "../engine/stockfish";
 import { makeMove } from "../components/common/utils";
 import { makeFen } from "chessops/fen";
-import { setSettingValue } from "../models/settings";
+import { IChessEngine, IEngineEventEmitter } from "../engine/engineinterfaces";
+import { getEngineFolder } from "../storage/fs";
+import { ExecutableUCIInterface } from "../engine/executableuci";
+import { UCIEngine } from "../engine/uciengine";
 
-const PlaySF = () => {
-    
+const PlayEngineTest = () => {
+
     const [game, _setGame] = createSignal(Chess.default());
     const [api, setApi] = createSignal<Api | undefined>(undefined);
-    const [stockfish, setStockfish] = createSignal<StockfishManager | undefined>(undefined);
+    const [engine, setEngine] = createSignal<IChessEngine & IEngineEventEmitter | undefined>(undefined);
 
     const updateStatus = () => {
         var status = ''
@@ -47,33 +49,38 @@ const PlaySF = () => {
         // $pgn.html(game.pgn())
     }
 
-    const onEngineEvent = (event: string, ...args: any[]) => {
-        console.log(event, args);
-        if (event === 'bestmove') {
-            var bestMove = args[0];
-            const m = {from: bestMove.slice(0, 2), to: bestMove.slice(2, 4)};
-            console.log("best move", m);
-            const move : NormalMove = makeMove(m.from, m.to);
-            game().play(move);
-            const newFen = makeFen(game().toSetup());
-            console.log("new fen", newFen);
-            api()?.set({
-                fen: newFen,
-                lastMove: [m.from, m.to]
-            });
-            updateStatus();
-        }
+    const onBestMove = (bestMove:string, ponder:string) => {
+        console.log(event, bestMove, ponder);
+
+        // var bestMove = args[0];
+        const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
+        console.log("best move", m);
+        const move: NormalMove = makeMove(m.from, m.to);
+        game().play(move);
+        const newFen = makeFen(game().toSetup());
+        console.log("new fen", newFen);
+        api()?.set({
+            fen: newFen,
+            lastMove: [m.from as Key, m.to as Key]
+        });
+        updateStatus();
+
     }
 
     onMount(async () => {
-        var engine = StockfishManager.GetEngine(onEngineEvent); 
+        const enginePath = await getEngineFolder("stockfish-aarch64-apple-darwin");
+        const uciInterface = new ExecutableUCIInterface(enginePath);
+        const engine = new UCIEngine(uciInterface);
+        // var engine = StockfishManager.GetEngine(onEngineEvent); 
         console.log("waiting for engine to init");
         await engine.init();
-        console.log("engine initialized");
-        setStockfish(engine);
+        // console.log("engine initialized");
+        // setStockfish(engine);
+        engine.on('bestmove', onBestMove);
+        setEngine(engine);
         engine.newGame();
 
-        setSettingValue("engine.lastUsed", "stockfish");    
+        // setSettingValue("engine.lastUsed", "stockfish");    
     });
     // const stockfish = new Worker('node_modules/stockfish-nnue.wasm/stockfish.js');
 
@@ -82,7 +89,7 @@ const PlaySF = () => {
     function onMove(from: Key, to: Key, captured: Piece | undefined) {
         // see if the move is legal
         const m = makeMove(from, to);
-        var move = game().play(m)   
+        var move = game().play(m)
 
         // illegal move
         if (move === null) return 'snapback'
@@ -96,8 +103,9 @@ const PlaySF = () => {
         const fen = makeFen(game().toSetup());
         // TODO: use gamemodel to keep track of moves
 
+        console.log("fen submitted to engine: ", fen);
 
-        stockfish()?.analyzeFromMoves(fen, {
+        engine()?.analyzeFromFenOrMoves(fen, {
             depth: 15
         });
 
@@ -129,4 +137,4 @@ const PlaySF = () => {
     );
 }
 
-export default PlaySF;
+export default PlayEngineTest;

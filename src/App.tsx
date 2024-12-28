@@ -5,7 +5,7 @@ import Home from "./Views/Home";
 import Layout from "./Views/Layout";
 import Editor from "./Views/Editor";
 import DBTest from "./Views/DBTest";
-import PlaySF from "./Views/PlaySF";
+import PlayEngineTest from "./Views/PlayEgineTest";
 import AnalysisView from "./Views/AnalysisView";
 import GameView from "./Views/GameView";
 import { getSettingValue } from "./models/settings";
@@ -41,7 +41,7 @@ function App() {
             <Route path="/game" component={GameView} />
             <Route path="/boardeditor" component={Editor} />
             <Route path="/db" component={DBTest} />
-            <Route path="/playsf" component={PlaySF} />
+            <Route path="/playsf" component={PlayEngineTest} />
             <Route path="/analysis" component={AnalysisView} />
 
         </Router>

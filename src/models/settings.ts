@@ -1,6 +1,5 @@
-import { save } from "@tauri-apps/plugin-dialog";
 import { ensureConfigFileExists, readConfigFileAsJson, writeConfigFile } from "../storage/fs";
-import { get, set } from "es-toolkit/compat";
+import { get } from "es-toolkit/compat";
 import { createStore, Part } from "solid-js/store";
 import { createSignal } from "solid-js";
 export interface AppSettings {
@@ -32,15 +31,12 @@ const [settingsLoaded, setSettingsLoaded] = createSignal(false);
 //     if(!theSettings) loadSettings();
 // }
 async function loadSettings() {
-    console.log("loadSettings", settings);
     if(settingsLoaded()) return settings;
-    console.log("loadSettings loading");
     await ensureConfigFileExists("settings.json");
     const newSettings = await readConfigFileAsJson<AppSettings>("settings.json") || {} as AppSettings;
     
     const mergedSettings = {...DEFAULT, ...newSettings};
     
-    console.log("loadSettings merged", mergedSettings);
 
     setSettings(mergedSettings);
     setSettingsLoaded(true);
@@ -59,13 +55,12 @@ export async function saveSettings() {
 
 export async function getSettingValue<T>(path: string,defaultValue?: T) {
     const settings = await loadSettings();
-    console.log("getSettingValue", path, settings);
     const value = get(settings, path, defaultValue);
     return value;
 }
 
 export async function setSettingValue(path: string , value: any) {
-    const ssttings = await loadSettings();
+    await loadSettings();
     setSettings(path as Part<AppSettings, keyof AppSettings>, value);
     await saveSettings();
 }
