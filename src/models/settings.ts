@@ -70,4 +70,4 @@ export async function setSettingValue(path: string , value: any) {
     await saveSettings();
 }
 
-window.setSettingValue = setSettingValue;
+(window as any).setSettingValue = setSettingValue;
