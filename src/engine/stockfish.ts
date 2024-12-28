@@ -1,31 +1,9 @@
 import { Child, Command } from '@tauri-apps/plugin-shell';
 import { getEngineFolder } from '../storage/fs';
+import { EngineInfo } from './engineinterfaces';
 
-// Type definitions for Stockfish events
-// @ts-ignore
-type StockfishEvents = {
-    'ready': () => void;
-    'bestmove': (move: string, ponder?: string) => void;
-    'info': (info: EngineInfo) => void;
-    'error': (error: Error) => void;
-};
 
-// Type for parsed engine info
-export interface EngineInfo {
-    depth?: number;
-    seldepth?: number;
-    multipv?: number;
-    score?: {
-        value: number;
-        type: 'cp' | 'mate';
-    };
-    nodes?: number;
-    nps?: number;
-    time?: number;
-    pv?: string[];
-    string?: string;
-}
-
+/** @deprecated Use IChessEngine type instead */
 export class StockfishManager {
     private isReady = false;
     private exited = false;
