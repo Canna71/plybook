@@ -53,6 +53,9 @@ importers:
       es-toolkit:
         specifier: ^1.27.0
         version: 1.27.0
+      loadcss:
+        specifier: ^0.0.2
+        version: 0.0.2
       solid-collapse:
         specifier: ^1.1.0
         version: 1.1.0(solid-js@1.9.2)
@@ -823,6 +826,9 @@ packages:
   bulma@1.0.2:
     resolution: {integrity: sha512-D7GnDuF6seb6HkcnRMM9E739QpEY9chDzzeFrHMyEns/EXyDJuQ0XA0KxbBl/B2NTsKSoDomW61jFGFaAxhK5A==}
 
+  callasync@1.0.2:
+    resolution: {integrity: sha512-SXmjXJXdcyaFlyflMCNlAYUyTmgA/OUYGI1TDBIxmvlC9Ur9mmw2wi3+lQYF1BxaWyh87Bb/3Yeo1oYgxBQttA==}
+
   callsites@3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
@@ -1143,6 +1149,9 @@ packages:
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
+
+  loadcss@0.0.2:
+    resolution: {integrity: sha512-XbBLDH1NQBJCOCDB78W/BSG3VK/2lq7Ec6AnDxrKJ5ICTmlkt5cx0Kf4lTQ1tPTREIdaLxSa8IQq/FGC7a8y+w==}
 
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
@@ -2135,6 +2144,8 @@ snapshots:
 
   bulma@1.0.2: {}
 
+  callasync@1.0.2: {}
+
   callsites@3.1.0: {}
 
   caniuse-lite@1.0.30001669: {}
@@ -2436,6 +2447,10 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
+
+  loadcss@0.0.2:
+    dependencies:
+      callasync: 1.0.2
 
   locate-path@6.0.0:
     dependencies:

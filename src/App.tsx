@@ -17,7 +17,9 @@ function App() {
   //   setGreetMsg(await invoke("greet", { name: name() }));
   // }
 
-
+  // dynamically load css in assets folder 
+  const piecescss = import("/src/assets/styles/pieces/smart/smart.css");
+  const boardcss = import("/src/assets/styles/boards/bluish.css");
 
   return (
     <Router root={Layout}>
