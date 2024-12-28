@@ -8,6 +8,9 @@ import DBTest from "./Views/DBTest";
 import PlaySF from "./Views/PlaySF";
 import AnalysisView from "./Views/AnalysisView";
 import GameView from "./Views/GameView";
+import { getSettingValue } from "./models/settings";
+import { createEffect } from "solid-js";
+import { CSSLoader } from "./theming/CssLoader";
 function App() {
   // const [greetMsg, setGreetMsg] = createSignal("");
   // const [name, setName] = createSignal("");
@@ -17,9 +20,20 @@ function App() {
   //   setGreetMsg(await invoke("greet", { name: name() }));
   // }
 
+  const cssLoader = new CSSLoader();
+
   // dynamically load css in assets folder 
-  const piecescss = import("/src/assets/styles/pieces/smart/smart.css");
-  const boardcss = import("/src/assets/styles/boards/bluish.css");
+  createEffect(async () => {
+    // TODOL load from resources folder
+    const boardTheme = await getSettingValue("themes.board");
+    console.log("boardTheme", boardTheme);
+    cssLoader.unloadCSS("board-theme");
+    cssLoader.loadCSS(`/src/assets/styles/boards/${boardTheme}.css`, { id: "board-theme" });
+    const piecesTheme = await getSettingValue("themes.pieces");
+    cssLoader.unloadCSS("pieces-theme");
+    cssLoader.loadCSS(`/src/assets/styles/pieces/${piecesTheme}/pieces.css`, { id: "pieces-theme" });
+  });
+
 
   return (
     <Router root={Layout}>
