@@ -1,0 +1,38 @@
+/** Embedded SVGs for all chess pieces */
+.cg-wrap piece.pawn.white {
+    background-image: url('/src/styles/pieces/cases/pw.svg');
+  }
+  .cg-wrap piece.bishop.white {
+    background-image: url('/src/styles/pieces/cases/bw.svg');
+  }
+  .cg-wrap piece.knight.white {
+    background-image: url('/src/styles/pieces/cases/nw.svg');
+  }
+  .cg-wrap piece.rook.white {
+    background-image: url('/src/styles/pieces/cases/rw.svg');
+  }
+  .cg-wrap piece.queen.white {
+    background-image: url('/src/styles/pieces/cases/qw.svg');
+  }
+  .cg-wrap piece.king.white {
+    background-image: url('/src/styles/pieces/cases/kw.svg');
+  }
+  .cg-wrap piece.pawn.black {
+    background-image: url('/src/styles/pieces/cases/pb.svg');
+  }
+  .cg-wrap piece.bishop.black {
+    background-image: url('/src/styles/pieces/cases/bb.svg');
+  }
+  .cg-wrap piece.knight.black {
+    background-image: url('/src/styles/pieces/cases/nb.svg');
+  }
+  .cg-wrap piece.rook.black {
+    background-image: url('/src/styles/pieces/cases/rb.svg');
+  }
+  .cg-wrap piece.queen.black {
+    background-image: url('/src/styles/pieces/cases/qb.svg');
+  }
+  .cg-wrap piece.king.black {
+    background-image: url('/src/styles/pieces/cases/kb.svg');
+  }
+  
