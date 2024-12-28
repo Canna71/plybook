@@ -1,6 +1,7 @@
 @use "/node_modules/chessground/assets/chessground.base.css";
-@use "/node_modules/chessground/assets/chessground.brown.css" as brown;
+// @use "/node_modules/chessground/assets/chessground.brown.css" as brown;
 // @use "/node_modules/chessground/assets/chessground.cburnett.css" as cburnett;
+@use "./boards/bluish.css";
 @use "./pieces/tatiana/tatiana.css";
 // @use "./Layout.scss";
 // @use "./PgnView.scss";
@@ -8,9 +9,7 @@
 // @use "./BoardEdit.scss";
 @import "bulma/bulma";
 
-cg-board {
-    background-color: #a1bfef;
-}
+
 
 .chess-container {
     width: 100%;

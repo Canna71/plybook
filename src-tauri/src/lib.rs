@@ -156,7 +156,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet, init_db, index_game, list_games, upload_pgn
         ])
-        .setup(|app| {
+        // .setup(|app| {
         //     let _ = app.add_capability(r#"
         //     {
         //     "$schema": "../gen/schemas/desktop-schema.json",
@@ -169,8 +169,8 @@ pub fn run() {
            
         //     ]
         // }"#);
-            Ok(())
-        })
+            // Ok(())
+        // })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

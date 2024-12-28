@@ -102,7 +102,10 @@ export class StockfishManager {
             console.error(`error: ${err}`);
         });
 
+        console.log("spawning child");
+
         this.child = await this.command.spawn();
+
 
         console.log("child", this.child);
 
