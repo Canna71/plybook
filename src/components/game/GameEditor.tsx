@@ -1,10 +1,27 @@
 import { Chessboard } from "../common/chessboard";
-import { Accessor, Component, createEffect, createSignal, Match, Show, Switch } from "solid-js";
+import {
+    Accessor,
+    batch,
+    Component,
+    createEffect,
+    createResource,
+    createSignal,
+    Match,
+    onCleanup,
+    Show,
+    Switch,
+} from "solid-js";
 import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
-import { getPosition, isPromotion, makeConfig, makeMove, useSplitter } from "../common/utils";
+import {
+    getPosition,
+    isPromotion,
+    makeConfig,
+    makeMove,
+    useSplitter,
+} from "../common/utils";
 import { Color, Key, Piece, Role } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
 import Button from "../common/Button";
@@ -16,275 +33,402 @@ import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
 import { NormalMove } from "chessops";
 import "./GameEditor.scss";
-
+import {
+    IChessEngine,
+    IEngineEventEmitter,
+} from "../../engine/engineinterfaces";
+import { getEngineFolder } from "../../storage/fs";
+import { ExecutableUCIInterface } from "../../engine/executableuci";
+import { UCIEngine } from "../../engine/uciengine";
 
 export type PgnEditorOptions = {
-	pgn: Accessor<string | undefined>;
-	setPgn: (pgn: string) => void;
-}
+    pgn: Accessor<string | undefined>;
+    setPgn: (pgn: string) => void;
+};
 
 enum ViewMode {
-	STARTING_POSITION,
-	MOVES
+    STARTING_POSITION,
+    MOVES,
 }
 
 type PromotionData = {
-	promotionCell: Key;
-	move: NormalMove;
+    promotionCell: Key;
+    move: NormalMove;
 };
 
 const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
-	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
-	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
-	const [squareHovered, setSquareHovered] = createSignal<string | undefined>(undefined);
-	const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
-	const [startingPosition, setStartingPosition] = createSignal<string | undefined>(undefined);
-	const [promotionData, setPromotionData] = createSignal<PromotionData | undefined>(undefined);
-	let chessBoardDiv: HTMLDivElement | null = null;
-	const divider = useSplitter();
+    const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
+        undefined,
+    );
+    const [game, setGame] = createSignal<GameModel | undefined>(undefined);
+    const [squareHovered, setSquareHovered] = createSignal<string | undefined>(
+        undefined,
+    );
+    const [startingPosition, setStartingPosition] = createSignal<
+        string | undefined
+    >(undefined);
+    const [promotionData, setPromotionData] = createSignal<
+        PromotionData | undefined
+    >(undefined);
+    // view mode flags
+    const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
+    // Engine
+    const [engineOn, setEngineOn] = createSignal<boolean>(true);
+    const [engineColor, setEngineColor] = createSignal<Color>("black");
+    const [engineFolder, _others] = createResource(() =>
+        getEngineFolder("stockfish-aarch64-apple-darwin"),
+    );
+    const [engine, setEngine] = createSignal<IChessEngine | undefined>(
+        undefined,
+    );
 
-	// #region Game Setup
-	createEffect(() => {
-		// const cg = api();
-		let pgnString = pgn();
-		if (!pgnString) {
-			pgnString = "[]";
-		}
-		const gameModel = makeGame(pgnString);
-		setGame(gameModel);
+    let chessBoardDiv: HTMLDivElement | null = null;
+    const divider = useSplitter();
 
-		if (gameModel.headers.get("FEN")) {
-			const setup = parseFen(gameModel.headers.get("FEN") || "");
-			if (setup.isOk) {
-				setStartingPosition(makeFen(setup.value));
-			}
-		}
-		setCurrentPath(gameModel.pathAtMainlinePly(0));
+    // #region Game Setup
+    createEffect(() => {
+        // const cg = api();
+        let pgnString = pgn();
+        if (!pgnString) {
+            pgnString = "[]";
+        }
+        const gameModel = makeGame(pgnString);
+        setGame(gameModel);
 
-	});
+        if (gameModel.headers.get("FEN")) {
+            const setup = parseFen(gameModel.headers.get("FEN") || "");
+            if (setup.isOk) {
+                setStartingPosition(makeFen(setup.value));
+            }
+        }
+        setCurrentPath(gameModel.pathAtMainlinePly(0));
+    });
 
-	// #endregion
+    // #endregion
 
-	// #region Event Handlers
-	const onMove = (orig: Key, dest: Key, _capturedPiece?: Piece) => {
-		const g = game();
-		if (!g) {
-			return;
-		};
+    // #region Event Handlers
+    const onManualMove = (orig: Key, dest: Key, _capturedPiece?: Piece) => {
+        const g = game();
+        if (!g) {
+            return;
+        }
 
-		const move = makeMove(orig, dest);
+        const move = makeMove(orig, dest);
 
-		const position = getPosition(game, currentPath);
+        const position = getPosition(game, currentPath);
 
-		const isLegal = position.isLegal(move);
-		if (isLegal) {
-			applyMove(move);
-		} else {
-			// check for promotion
-			const promo = isPromotion(move, position);
-			if (promo) {
-				console.debug("TODO: Promotion");
-				const promoData = {
-					promotionCell: dest,
-					move: move
-				}
-				setPromotionData(promoData);
-				setGame(g.clone());
-			} else {
-				console.debug("Illegal move");
-				setGame(g.clone());
-			}
-		}
+        const isLegal = position.isLegal(move);
+        if (isLegal) {
+            applyMove(move);
+        } else {
+            // check for promotion
+            const promo = isPromotion(move, position);
+            if (promo) {
+                console.debug("TODO: Promotion");
+                const promoData = {
+                    promotionCell: dest,
+                    move: move,
+                };
+                setPromotionData(promoData);
+                setGame(g.clone());
+            } else {
+                console.debug("Illegal move");
+                setGame(g.clone());
+            }
+        }
+    };
 
-	}
+    const onSelect = (_key: Key) => {};
 
-	const onSelect = (_key: Key) => {
-	}
+    const onDrawChange = (shapes: any) => {
+        const ng = game()?.updateShapes(currentPath()!, shapes);
+        setGame(ng);
+    };
 
-	const onDrawChange = (shapes: any) => {
-		const ng = game()?.updateShapes(currentPath()!, shapes);
-		setGame(ng);
-	}
+    const onPromotionSelected = (role: Role, _color: Color) => {
+        const promoData = promotionData();
+        setPromotionData(undefined);
+        if (promoData) {
+            const move = promoData.move;
+            move.promotion = role;
+            applyMove(move);
+        }
+    };
 
-	const onPromotionSelected = (role: Role, _color: Color) => {
-		const promoData = promotionData();
-		setPromotionData(undefined);
-		if (promoData) {
-			const move = promoData.move;
-			move.promotion = role;
-			applyMove(move);
-		}
-	}
+    const setWhitePlayer = (name: string) => {
+        game()!.players.white.name = name;
+        setGame(game()?.clone());
+    };
 
-	// #endregion
+    const setBlackPlayer = (name: string) => {
+        game()!.players.black.name = name;
+        setGame(game()?.clone());
+    };
+    // #endregion
 
-	// #region Computed Properties
+    // #region Computed Properties
 
-	const turn = () => getPosition(game, currentPath).turn;
+    const turn = () => getPosition(game, currentPath).turn;
 
-	const config = () => {
+    const config = () => {
+        const baseConfig = makeConfig(game, currentPath, squareHovered)();
 
-		const baseConfig = makeConfig(game, currentPath, squareHovered)();
+        const pos = getPosition(game, currentPath);
+        const isCheck = pos.isCheck();
+        const allDests = chessgroundDests(pos);
 
+		// movable color is current color if not playing against engine
+		const movableColor = engineColor() && pos.turn === engineColor() ? undefined : pos.turn;
 
-		const pos = getPosition(game, currentPath);
-		const isCheck = pos.isCheck();
-		const allDests = chessgroundDests(pos);
-		const config = {
-			...baseConfig,
-			draggable: {
-				enabled: true,
-			},
-			viewOnly: false,
-			turnColor: pos.turn,
-			movable: {
-				free: false,
-				color: pos.turn,
-				dests: allDests
-			},
-			check: isCheck,
-			events: {
-				move: onMove,
+		console.log("pos.turn", pos.turn);
+		console.log("movableColor", movableColor);
+        const config = {
+            ...baseConfig,
+            draggable: {
+                enabled: true,
+            },
+            viewOnly: false,
+            turnColor: pos.turn,
+            movable: {
+                free: false,
+                color: movableColor,
+                dests: allDests,
+            },
+            check: isCheck,
+            events: {
+                move: onManualMove,
 
-				select: onSelect
-			},
-			drawable: {
-				...baseConfig.drawable,
-				eraseOnClick: false,
-				onChange: onDrawChange
-			}
-		};
-		return config;
-	}
+                select: onSelect,
+            },
+            drawable: {
+                ...baseConfig.drawable,
+                eraseOnClick: false,
+                onChange: onDrawChange,
+            },
+        };
+        return config;
+    };
 
-	const whitePlayer = () => game()?.players.white.name || "White";
-	const setWhitePlayer = (name: string) => {
-		game()!.players.white.name = name;
-		setGame(game()?.clone());
-	}
+    const whitePlayer = () => game()?.players.white.name || "White";
 
-	const blackPlayer = () => game()?.players.black.name || "Black";
-	const setBlackPlayer = (name: string) => {
-		game()!.players.black.name = name;
-		setGame(game()?.clone());
-	}
+    const blackPlayer = () => game()?.players.black.name || "Black";
 
-	// #region Starting Position Editing
-	const onEditStartingPosition = () => {
-		setViewMode(ViewMode.STARTING_POSITION);
-	}
+    // #region Starting Position Editing
+    const onEditStartingPosition = () => {
+        setViewMode(ViewMode.STARTING_POSITION);
+    };
 
-	const onAcceptStartingPosition = () => {
-		game()?.headers.set("FEN", startingPosition() || "");
-		game()?.headers.set("Setup", "1");
-		setPgn(game()?.pgn() || "");
-		setViewMode(ViewMode.MOVES);
-	}
+    const onAcceptStartingPosition = () => {
+        game()?.headers.set("FEN", startingPosition() || "");
+        game()?.headers.set("Setup", "1");
+        setPgn(game()?.pgn() || "");
+        setViewMode(ViewMode.MOVES);
+    };
 
-	const onCancelStartingPosition = () => {
-		setViewMode(ViewMode.MOVES);
-	}
+    const onCancelStartingPosition = () => {
+        setViewMode(ViewMode.MOVES);
+    };
 
-	// #endregion
+    // #endregion
 
-	// #endregion
+    // #endregion
 
+    // #region Game Manipulation
 
-	// #region Game Manipulation
+    const applyMove = (move: NormalMove) => {
+        console.log("Applying move", move);
+        const g = game();
+        if (!g) {
+            return;
+        }
+        const path = currentPath() || Path.root;
+        const [newGameModel, newPath] = g.applyMove(path, move);
+        batch(() => {
+            setGame(newGameModel);
+            setCurrentPath(newPath);
+        });
+    };
 
-	const applyMove = (move: NormalMove) => {
-		const g = game();
-		if (!g) {
-			return;
-		};
-		const path = currentPath() || Path.root;
-		const [newGameModel, newPath] = g.applyMove(path, move);
-		setGame(newGameModel);
-		setCurrentPath(newPath);
-	}
+    // #endregion
 
-	// #endregion
+    // #region Update PGN
 
-	// #region Update PGN
+    createEffect(() => {
+        const newPgn = game()?.pgn();
+        if (newPgn) {
+            setPgn(newPgn);
+        }
+    });
 
-	createEffect(() => {
-		const newPgn = game()?.pgn();
-		if (newPgn) {
-			setPgn(newPgn);
-		}
-	});
+    // #endregion
 
-	// #endregion
+    // #region Engine
 
+    const engineCallable = () => engine() && engineOn() && engineFolder();
 
-	return (
-		<>
-			<GameContext.Provider value={
-				{
-					game: game,
-					setGame: setGame,
-					currentPath: currentPath,
-					setCurrentPath: setCurrentPath,
-					setSquareHovered: setSquareHovered,
-					editable: () => true,
-				}
-			}>
-				<div class="pgnviewer-container">
-					<div class="pgnviewer-content">
-						<Switch>
-							<Match when={viewMode() === ViewMode.MOVES}>
-								<PlayerName name={blackPlayer} setName={setBlackPlayer} color="black" />
-								<div ref={chessBoardDiv!} class="pgnviewer-chessboard" >
-									<Chessboard config={config} />
-									<Show when={!!promotionData()}>
-										<PiecesPopup
-											chessBoardDiv={chessBoardDiv}
-											promotingCell={() => promotionData()?.promotionCell}
-											onSelected={onPromotionSelected}
-											color={turn} />
-									</Show>
-								</div>
-								<PlayerName name={whitePlayer} setName={setWhitePlayer} color="white" />
-							</Match>
-							<Match when={viewMode() === ViewMode.STARTING_POSITION}>
-								<BoardEditor fen={startingPosition} setFen={setStartingPosition} />
-							</Match>
-						</Switch>
+    createEffect(async () => {
+        console.log("Engine init effect");
+        console.log("engine: ", engine());
+        console.log("engineOn: ", engineOn());
+        console.log("engineFolder: ", engineFolder());
+        if (engineOn() && engineFolder() && !engine()) {
+            const engine = new UCIEngine(
+                new ExecutableUCIInterface(engineFolder()!),
+            );
 
-					</div>
-					<VDivider ref={divider!} />
-					<div class="pgnviewer-sidebar">
-						<div class="pgnviewer-sidebar-header">
-							<Switch>
-								<Match when={viewMode() === ViewMode.MOVES}>
-									<Button onClick={onEditStartingPosition}>Set Starting Position</Button>
-								</Match>
-								<Match when={viewMode() === ViewMode.STARTING_POSITION}>
-									<div class="is-flex is-flex-direction-row is-gap-1">
-										<Button onClick={onAcceptStartingPosition}>Accept</Button>
-										<Button onClick={onCancelStartingPosition}>Cancel</Button>
-									</div>
-								</Match>
-							</Switch>
-						</div>
-						<div class="pgnviewer-moves-wrapper">
-							<Moves />
-						</div>
-						<ButtonBar
-							game={game}
-							currentPath={currentPath}
-							setCurrentPath={setCurrentPath}
-						/>
-					</div>
-				</div>
-				<div class="pgn-viewer-bottom">
+            console.log("waiting for engine to init...");
+            await engine.init();
+            console.log("...engine initialized");
+            setEngine(engine);
+            engine.on("bestmove", onEngineBestMove);
+            engine.newGame();
+        }
+    });
 
-				</div>
-			</GameContext.Provider>
-		</>
-	);
-}
+    createEffect(() => {
+        if (!engineOn()) {
+            const eng = engine();
+            if (eng) {
+                eng.quit();
+                eng.off("bestmove", onEngineBestMove);
+            }
+        }
+    });
+
+    onCleanup(() => {
+        const eng = engine();
+        if (eng) {
+            console.log("cleaning up engine");
+            eng.quit();
+            eng.off("bestmove", onEngineBestMove);
+        }
+    });
+
+    const onEngineBestMove = (bestMove: string, ponder: string) => {
+        console.log("onEngineBestMove", bestMove, ponder);
+        const g = game();
+        if (!g) {
+            return;
+        }
+        const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
+        console.log("best move", m);
+        const move: NormalMove = makeMove(m.from, m.to);
+        applyMove(move);
+    };
+    // handles engine processing
+    createEffect(() => {
+        console.log("Engine processing effect");
+        if (engineCallable()) {
+            console.log("Engine is callable");
+        }
+
+        if (engineCallable() && turn() === engineColor()) {
+            console.log("Engine is callable and it's my turn");
+
+            const pos = getPosition(game, currentPath);
+            const fen = makeFen(pos.toSetup());
+            engine()!.analyzeFromFenOrMoves(fen, { depth: 15 });
+        }
+    });
+
+    // #endregion
+    return (
+        <>
+            <GameContext.Provider
+                value={{
+                    game: game,
+                    setGame: setGame,
+                    currentPath: currentPath,
+                    setCurrentPath: setCurrentPath,
+                    setSquareHovered: setSquareHovered,
+                    editable: () => true,
+                }}
+            >
+                <div class="pgnviewer-container">
+                    <div class="pgnviewer-content">
+                        <Switch>
+                            <Match when={viewMode() === ViewMode.MOVES}>
+                                <PlayerName
+                                    name={blackPlayer}
+                                    setName={setBlackPlayer}
+                                    color="black"
+                                />
+                                <div
+                                    ref={chessBoardDiv!}
+                                    class="pgnviewer-chessboard"
+                                >
+                                    <Chessboard config={config} />
+                                    <Show when={!!promotionData()}>
+                                        <PiecesPopup
+                                            chessBoardDiv={chessBoardDiv}
+                                            promotingCell={() =>
+                                                promotionData()?.promotionCell
+                                            }
+                                            onSelected={onPromotionSelected}
+                                            color={turn}
+                                        />
+                                    </Show>
+                                </div>
+                                <PlayerName
+                                    name={whitePlayer}
+                                    setName={setWhitePlayer}
+                                    color="white"
+                                />
+                            </Match>
+                            <Match
+                                when={viewMode() === ViewMode.STARTING_POSITION}
+                            >
+                                <BoardEditor
+                                    fen={startingPosition}
+                                    setFen={setStartingPosition}
+                                />
+                            </Match>
+                        </Switch>
+                    </div>
+                    <VDivider ref={divider!} />
+                    <div class="pgnviewer-sidebar">
+                        <div class="pgnviewer-sidebar-header">
+                            <Switch>
+                                <Match when={viewMode() === ViewMode.MOVES}>
+                                    <Button onClick={onEditStartingPosition}>
+                                        Set Starting Position
+                                    </Button>
+                                </Match>
+                                <Match
+                                    when={
+                                        viewMode() ===
+                                        ViewMode.STARTING_POSITION
+                                    }
+                                >
+                                    <div class="is-flex is-flex-direction-row is-gap-1">
+                                        <Button
+                                            onClick={onAcceptStartingPosition}
+                                        >
+                                            Accept
+                                        </Button>
+                                        <Button
+                                            onClick={onCancelStartingPosition}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </Match>
+                            </Switch>
+                        </div>
+                        <div class="pgnviewer-moves-wrapper">
+                            <Moves />
+                        </div>
+                        <ButtonBar
+                            game={game}
+                            currentPath={currentPath}
+                            setCurrentPath={setCurrentPath}
+                        />
+                    </div>
+                </div>
+                <div class="pgn-viewer-bottom"></div>
+            </GameContext.Provider>
+        </>
+    );
+};
 
 export default GameEditor;
-
-

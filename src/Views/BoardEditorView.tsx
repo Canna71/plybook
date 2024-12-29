@@ -2,7 +2,7 @@
 import { createSignal } from "solid-js";
 import BoardEditor from "../components/boardeditor/BoardEditor";
 
-const Editor = () => {
+const BoardEditorView = () => {
 
     const [fen, setFen] = createSignal<string | undefined>(undefined);
 
@@ -16,4 +16,4 @@ const Editor = () => {
     );
 }
 
-export default Editor;
+export default BoardEditorView;

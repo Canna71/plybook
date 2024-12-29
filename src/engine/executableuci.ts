@@ -21,7 +21,6 @@ export class ExecutableUCIInterface implements IUCIInterface {
         this.command = await Command.create('exec-sh', ["-c", `"${this.enginePath}"`]);
         
         this.command.stdout.on('data', (line: string) => {
-            console.log(`Engine output: ${line}`);
             if (line.includes('uciok')) {
                 this.isReady = true;
             }
@@ -54,7 +53,6 @@ export class ExecutableUCIInterface implements IUCIInterface {
     }
 
     sendCommand(command: string): void {
-        console.log("sending command", command);
         this.child?.write(command + '\n');
     }
 

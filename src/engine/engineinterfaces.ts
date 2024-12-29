@@ -21,7 +21,7 @@ export interface EngineInfo {
 }
 
 // IChessEngine.ts
-export interface IChessEngine {
+export interface IChessEngine extends IEngineEventEmitter {
     init(): Promise<void>;
     // analyzePosition(fen: string, options: AnalysisOptions): void;
     analyzeFromFenOrMoves(fenOrMoves: string[] | string, options: AnalysisOptions): void;
