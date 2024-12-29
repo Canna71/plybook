@@ -7,6 +7,19 @@ interface LoadCSSOptions {
   export class CSSLoader {
     private loadedStyles: Map<string, HTMLLinkElement> = new Map();
   
+     injectCSS(cssContent: string, id: string): HTMLStyleElement {
+      const existingStyle = document.getElementById(id) as HTMLStyleElement;
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+
+      const style = document.createElement('style');
+      style.id = id;
+      style.textContent = cssContent;
+      document.head.appendChild(style);
+      return style;
+    }
+
     async loadCSS(url: string, options: LoadCSSOptions = {}): Promise<HTMLLinkElement> {
       // Return existing if already loaded
       if (this.loadedStyles.has(url)) {
@@ -24,7 +37,7 @@ interface LoadCSSOptions {
         if (options.disabled) link.disabled = true;
   
         link.onload = () => {
-          this.loadedStyles.set(url, link);
+          this.loadedStyles.set(options.id || url, link);
           resolve(link);
         };
   
@@ -36,11 +49,12 @@ interface LoadCSSOptions {
       });
     }
   
-    unloadCSS(url: string): boolean {
-      const link = this.loadedStyles.get(url);
+    unloadCSS(id: string): boolean {
+      const link = this.loadedStyles.get(id);
+
       if (link) {
         link.remove();
-        this.loadedStyles.delete(url);
+        this.loadedStyles.delete(id);
         return true;
       }
       return false;

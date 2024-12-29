@@ -4,6 +4,7 @@ import { appDataDir, join } from "@tauri-apps/api/path";
 
 const LIBRARY_FOLDER = "Library";
 const ENGINES_FOLDER = "Engines";
+const THEMES_FOLDER = "Themes";
 
 export async function initStorage() {
     await ensureAppDataFolders();
@@ -72,7 +73,8 @@ export async function ensureAppDataFolders() {
         const appDataPath = await appDataDir();
         await ensureFolderExists(appDataPath);
         await ensureFolderExists(await join(appDataPath, LIBRARY_FOLDER, "pgn"));
-        await ensureFolderExists(await join(appDataPath, LIBRARY_FOLDER, ENGINES_FOLDER));
+        await ensureFolderExists(await join(appDataPath, ENGINES_FOLDER));
+        await ensureFolderExists(await join(appDataPath, THEMES_FOLDER));
     } catch (error) {
         console.error("Error ensuring AppData folders exist:", error);
     }

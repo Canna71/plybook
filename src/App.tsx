@@ -8,6 +8,8 @@ import PlayEngineTest from "./Views/PlayEgineTest";
 import AnalysisView from "./Views/AnalysisView";
 import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
+import { createEffect } from "solid-js";
+import { getSettingValue } from "./models/settings";
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
     // const [name, setName] = createSignal("");
@@ -21,6 +23,13 @@ function App() {
 
     // dynamically load css in assets folder
     useThemes();
+
+
+    createEffect(() => {
+        const board = getSettingValue("themes.board");
+        console.log("board changed", board);
+        // loadSettings();
+    });
 
     return (
         <Router root={Layout}>

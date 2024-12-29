@@ -1,6 +1,6 @@
 import { ensureConfigFileExists, readConfigFileAsJson, writeConfigFile } from "../storage/fs";
-import { get } from "es-toolkit/compat";
-import { createStore, Part } from "solid-js/store";
+import { get, set } from "es-toolkit/compat";
+import { createStore, Part, produce } from "solid-js/store";
 import { createSignal } from "solid-js";
 export interface AppSettings {
     themes?: {
@@ -24,7 +24,7 @@ const DEFAULT : AppSettings = {
 }
 
 // let theSettings: AppSettings;
-const [settings, setSettings] = createStore<AppSettings>(undefined); //= [undefined, undefined ];
+const [settings, setSettings] = createStore<AppSettings>(DEFAULT); //= [undefined, undefined ];
 const [settingsLoaded, setSettingsLoaded] = createSignal(false);
 // createStore(undefined as AppSettings | undefined);
 // export async function initSettings() {
@@ -42,6 +42,7 @@ async function loadSettings() {
     setSettingsLoaded(true);
     return newSettings;
 }
+loadSettings();
 
 export async function reloadSettings() {
     setSettingsLoaded(false);
@@ -53,15 +54,22 @@ export async function saveSettings() {
     await writeConfigFile("settings.json", settings);
 }
 
-export async function getSettingValue<T>(path: string,defaultValue?: T) {
-    const settings = await loadSettings();
+export  function getSettingValue<T>(path: string,defaultValue?: T) {
+    // const settings = await loadSettings();
     const value = get(settings, path, defaultValue);
     return value;
 }
 
 export async function setSettingValue(path: string , value: any) {
-    await loadSettings();
-    setSettings(path as Part<AppSettings, keyof AppSettings>, value);
+    // await loadSettings();
+    console.log("setSettingValue", path, value);
+    setSettings("themes", "board", value);
+    // produce<AppSettings>(draft => {
+    //     // set(draft, path, value);
+    //     draft.themes.board = "bluish";
+    // });
+
+    console.log("setting:", settings);
     await saveSettings();
 }
 
