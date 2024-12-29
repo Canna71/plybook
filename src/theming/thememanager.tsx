@@ -24,7 +24,6 @@ import traveller from "/src/assets/styles/pieces/traveller/pieces.css?inline";
 import trendy from "/src/assets/styles/pieces/trendy/pieces.css?inline";
 import trendy_ink from "/src/assets/styles/pieces/trendy_ink/pieces.css?inline";
 
-
 const buildinPiecesThemes = {
     alfarishy,
     alpha,
@@ -43,75 +42,57 @@ const buildinPiecesThemes = {
     tatiana,
     traveller,
     trendy,
-    trendy_ink
-
+    trendy_ink,
 } as Record<string, string>;
 
 import brown from "/src/assets/styles/boards/brown.css?inline";
 import bluish from "/src/assets/styles/boards/bluish.css?inline";
 
-const boardBuiltinStyles  = {
+const boardBuiltinStyles = {
     bluish: bluish,
-    brown: brown
+    brown: brown,
 } as Record<string, string>;
 
 export function useThemes() {
     createEffect(() => {
-        const piecesTheme = getSettingValue<string>(
-            "themes.pieces",
-            "merida",
-        );
+        const piecesTheme = getSettingValue<string>("themes.pieces", "merida");
         loadPiecesStyle(piecesTheme!);
-        const boardTheme =  getSettingValue<string>("themes.board", "bluish");
+        const boardTheme = getSettingValue<string>("themes.board", "bluish");
         loadBoardStyle(boardTheme!);
     });
 }
 
+async function  loadStyle(path: string) {
+    const fullPath = await join(
+        await appConfigDir(),
+        path,
+    );
+    const url = convertFileSrc(fullPath);
+    const css = await fetch(url).then((res) => res.text());
+    return css;
+}
+
 async function loadPiecesStyle(piecesTheme: string) {
-    console.log("loading pieces style");
    
-
-    console.log("piecesTheme", piecesTheme);
-
     if (!piecesTheme) return;
     cssLoader.unloadCSS("pieces-theme");
-
+    let css = "";
     if (piecesTheme in buildinPiecesThemes) {
-        console.log("loading builtin pieces theme", piecesTheme);
-        const css = buildinPiecesThemes[piecesTheme];
-        cssLoader.injectCSS(css, "pieces-theme");
-        console.log("loaded builtin pieces theme", piecesTheme, css);
+        css = buildinPiecesThemes[piecesTheme];
     } else {
-         // TODOL load from resources folder
-         const path = await join(await appConfigDir(),`Themes/pieces/${piecesTheme}/pieces.css`);
-         console.log("loading external pieces theme", path);
-         const url = convertFileSrc(path);
-         console.log("loading external pieces theme", url);
-         cssLoader.loadCSS(url, {
-             id: "pieces-theme",
-         });
+        css = await loadStyle(`Themes/pieces/${piecesTheme}/pieces.css`);
     }
+    cssLoader.injectCSS(css, "pieces-theme");
 }
 
 async function loadBoardStyle(boardTheme: string) {
-    
     if (!boardTheme) return;
-    console.log("boardTheme", boardTheme);
     cssLoader.unloadCSS("board-theme");
-
+    let css = "";
     if (boardTheme in boardBuiltinStyles) {
-        console.log("loading builtin board theme", boardTheme, boardBuiltinStyles[boardTheme]);
-        const css = boardBuiltinStyles[boardTheme] as string;
-        console.log("css", css);
-        cssLoader.injectCSS(css, "board-theme");
+        css = boardBuiltinStyles[boardTheme] as string;
     } else {
-        // TODOL load from resources folder
-        const path = await join(await appConfigDir(),`Themes/boards/${boardTheme}.css`);
-        console.log("loading external board theme", path);
-        const url = convertFileSrc(path);
-        console.log("loading external board theme", url);
-        const css = await fetch(url).then(res => res.text());
-        cssLoader.injectCSS(css, "board-theme");
-
+        css = await loadStyle(`Themes/boards/${boardTheme}.css`);
     }
+    cssLoader.injectCSS(css, "board-theme");
 }
