@@ -177,18 +177,19 @@
         max-height: 100%;
     }
 
-    .pgnviewer-tooltip {
-        padding: 8px;
-        // background-color: #1baca6;
-        // border: 1px solid var(--background-modifier-active);
-        height: 200px;
-        width: 200px;
-        overflow: hidden;
-    }
+
 
     .square {
         font-family: monospace;
         font-weight: 600;
         cursor: pointer;
     }
+}
+.pgnviewer-tooltip {
+    padding: 8px;
+    // background-color: #1baca6;
+    // border: 1px solid var(--background-modifier-active);
+    height: 200px;
+    width: 200px;
+    overflow: hidden;
 }

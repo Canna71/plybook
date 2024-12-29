@@ -6,6 +6,7 @@ import { useContextMenu } from "../common/contextmenu";
 import { Dynamic } from "solid-js/web";
 import { range } from "es-toolkit";
 import { GameContext, TooltipContext } from "./GameContext";
+import { useFenTooltip } from "../common/utils";
 
 const GoodMove = () => {
 	return <svg xmlns="http://www.w3.org/2000/svg" class="" width="18" height="18" viewBox="0 0 18 19">
@@ -293,7 +294,7 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
 	const plyData = color && line[color];
 	let ref: HTMLDivElement | undefined;
 	const { currentPath, editable, game, setGame } = useContext(GameContext)!;
-  const { showTooltip } = useContext(TooltipContext)!;
+  // const { showTooltip } = useContext(TooltipContext)!;
 
 	const onAddComment = (before: boolean) => {
 		const ng = game()?.insertComment(plyData?.path!, "", before);
@@ -347,17 +348,19 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
 		return plyData !== undefined;
 	};
 
-	const innerShowTooltip = (e: (MouseEvent & {
-		currentTarget: HTMLDivElement;
-		target: DOMElement;
-	}) | undefined) => {
-    if(!tooltipEnabled) return;
-		if (e) {
-			isValid() && showTooltip(e.currentTarget, plyData);
-		} else {
-			showTooltip(undefined, undefined);
-		}
-	};
+	// const innerShowTooltip = (e: (MouseEvent & {
+	// 	currentTarget: HTMLDivElement;
+	// 	target: DOMElement;
+	// }) | undefined) => {
+  //   if(!tooltipEnabled) return;
+	// 	if (e) {
+	// 		isValid() && showTooltip(e.currentTarget, plyData);
+	// 	} else {
+	// 		showTooltip(undefined, undefined);
+	// 	}
+	// };
+
+  const innerShowTooltip = useFenTooltip(tooltipEnabled || false, plyData);
 
 	const moveClass = () => {
 		const cl = {

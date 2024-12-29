@@ -11,7 +11,7 @@ import {
     Show,
     Switch,
 } from "solid-js";
-import { makeGame, Path } from "../../models/pgn";
+import { makeGame, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
@@ -27,14 +27,14 @@ import { chessgroundDests } from "chessops/compat";
 import Button from "../common/Button";
 import BoardEditor from "../boardeditor/BoardEditor";
 import { makeFen, parseFen } from "chessops/fen";
-import { GameContext } from "./GameContext";
+import { GameContext, TooltipContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
 import { NormalMove } from "chessops";
 import "./GameEditor.scss";
 import {
-	EngineInfo,
+    EngineInfo,
     IChessEngine,
     IEngineEventEmitter,
 } from "../../engine/engineinterfaces";
@@ -44,6 +44,8 @@ import { UCIEngine } from "../../engine/uciengine";
 import { createStore } from "solid-js/store";
 import EngineInfoViewer from "./EngineInfoViewer";
 import { create } from "@tauri-apps/plugin-fs";
+import { ReferenceElement } from "@floating-ui/dom";
+import { Tooltip } from "../common/Tooltip";
 
 export type PgnEditorOptions = {
     pgn: Accessor<string | undefined>;
@@ -61,9 +63,8 @@ type PromotionData = {
 };
 
 const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
-   
-	// #region Game State
-	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
+    // #region Game State
+    const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
         undefined,
     );
     const [game, setGame] = createSignal<GameModel | undefined>(undefined);
@@ -76,28 +77,30 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     const [promotionData, setPromotionData] = createSignal<
         PromotionData | undefined
     >(undefined);
-	// #endregion
+    // #endregion
 
     // #region view mode state
     const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
     // #endregion
-	
-	// #region Engine state
+
+    // #region Engine state
     const [engineOn, setEngineOn] = createSignal<boolean>(true);
-    const [engineColor, setEngineColor] = createSignal<Color | undefined>(undefined);
+    const [engineColor, setEngineColor] = createSignal<Color | undefined>(
+        undefined,
+    );
     const [engineFolder, _others] = createResource(() =>
         getEngineFolder("stockfish-aarch64-apple-darwin"),
     );
     const [engine, setEngine] = createSignal<IChessEngine | undefined>(
         undefined,
     );
-	const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
-	// #endregion
+    const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
+    // #endregion
 
-	// #region Layout
+    // #region Layout
     let chessBoardDiv: HTMLDivElement | null = null;
     const divider = useSplitter();
-	// #endregion
+    // #endregion
 
     // #region Game Setup
     createEffect(() => {
@@ -191,8 +194,9 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         const isCheck = pos.isCheck();
         const allDests = chessgroundDests(pos);
 
-		// movable color is current color if not playing against engine
-		const movableColor = engineColor() && pos.turn === engineColor() ? undefined : pos.turn;
+        // movable color is current color if not playing against engine
+        const movableColor =
+            engineColor() && pos.turn === engineColor() ? undefined : pos.turn;
 
         const config = {
             ...baseConfig,
@@ -278,7 +282,6 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     const engineCallable = () => engine() && engineOn() && engineFolder();
 
     createEffect(async () => {
-      
         if (engineOn() && engineFolder() && !engine()) {
             const engine = new UCIEngine(
                 new ExecutableUCIInterface(engineFolder()!),
@@ -287,12 +290,12 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
             await engine.init();
             setEngine(engine);
             engine.on("bestmove", onEngineBestMove);
-			engine.on("info", onEngineInfo)
+            engine.on("info", onEngineInfo);
             engine.newGame();
         }
     });
 
-	// cleanup engine when engineOn is false
+    // cleanup engine when engineOn is false
     createEffect(() => {
         if (!engineOn()) {
             const eng = engine();
@@ -316,36 +319,46 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         if (!g) {
             return;
         }
-		if(!engineColor()) {
-			return;
-		}
+        if (!engineColor()) {
+            return;
+        }
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
         const move: NormalMove = makeMove(m.from, m.to);
         applyMove(move);
     };
 
-	const onEngineInfo = (info: EngineInfo) => {
-		
-		if(info.multipv) {
-			setEngineInfo(info.multipv-1, info);
-		}
-	}
-
+    const onEngineInfo = (info: EngineInfo) => {
+        if (info.multipv) {
+            setEngineInfo(info.multipv - 1, info);
+        }
+    };
 
     // handles engine processing
     createEffect(() => {
-		
-      
         if (engineCallable()) {
-
             const pos = getPosition(game, currentPath);
             const fen = makeFen(pos.toSetup());
-			setEngineInfo([]);
+            setEngineInfo([]);
             engine()!.analyzeFromFenOrMoves(fen, { depth: 15, multipv: 3 });
         }
     });
 
-    // #endregion 
+    // #endregion
+
+    // #region tooltip
+    const [reference, setReference] = createSignal<
+        ReferenceElement | null | undefined
+    >(undefined);
+    const [ply, setPly] = createSignal<PlyData>();
+
+    const showTooltip = (
+        anchor: Element | undefined,
+        plyData: PlyData | undefined,
+    ) => {
+	
+        setPly(plyData);
+        setReference(anchor);
+    };
 
     return (
         <>
@@ -359,55 +372,38 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
                     editable: () => true,
                 }}
             >
-                <div class="pgnviewer-container">
-                    <div class="pgnviewer-content">
-                        <Switch>
-                            <Match when={viewMode() === ViewMode.MOVES}>
-                                <PlayerName
-                                    name={blackPlayer}
-                                    setName={setBlackPlayer}
-                                    color="black"
-                                />
-                                <div
-                                    ref={chessBoardDiv!}
-                                    class="pgnviewer-chessboard"
-                                >
-                                    <Chessboard config={config} />
-                                    <Show when={!!promotionData()}>
-                                        <PiecesPopup
-                                            chessBoardDiv={chessBoardDiv}
-                                            promotingCell={() =>
-                                                promotionData()?.promotionCell
-                                            }
-                                            onSelected={onPromotionSelected}
-                                            color={turn}
-                                        />
-                                    </Show>
-                                </div>
-                                <PlayerName
-                                    name={whitePlayer}
-                                    setName={setWhitePlayer}
-                                    color="white"
-                                />
-                            </Match>
-                            <Match
-                                when={viewMode() === ViewMode.STARTING_POSITION}
-                            >
-                                <BoardEditor
-                                    fen={startingPosition}
-                                    setFen={setStartingPosition}
-                                />
-                            </Match>
-                        </Switch>
-                    </div>
-                    <VDivider ref={divider!} />
-                    <div class="pgnviewer-sidebar">
-                        <div class="pgnviewer-sidebar-header">
+                <TooltipContext.Provider value={{ showTooltip }}>
+                    <div class="pgnviewer-container">
+                        <div class="pgnviewer-content">
                             <Switch>
                                 <Match when={viewMode() === ViewMode.MOVES}>
-                                    <Button onClick={onEditStartingPosition}>
-                                        Set Starting Position
-                                    </Button>
+                                    <PlayerName
+                                        name={blackPlayer}
+                                        setName={setBlackPlayer}
+                                        color="black"
+                                    />
+                                    <div
+                                        ref={chessBoardDiv!}
+                                        class="pgnviewer-chessboard"
+                                    >
+                                        <Chessboard config={config} />
+                                        <Show when={!!promotionData()}>
+                                            <PiecesPopup
+                                                chessBoardDiv={chessBoardDiv}
+                                                promotingCell={() =>
+                                                    promotionData()
+                                                        ?.promotionCell
+                                                }
+                                                onSelected={onPromotionSelected}
+                                                color={turn}
+                                            />
+                                        </Show>
+                                    </div>
+                                    <PlayerName
+                                        name={whitePlayer}
+                                        setName={setWhitePlayer}
+                                        color="white"
+                                    />
                                 </Match>
                                 <Match
                                     when={
@@ -415,34 +411,66 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
                                         ViewMode.STARTING_POSITION
                                     }
                                 >
-                                    <div class="is-flex is-flex-direction-row is-gap-1">
-                                        <Button
-                                            onClick={onAcceptStartingPosition}
-                                        >
-                                            Accept
-                                        </Button>
-                                        <Button
-                                            onClick={onCancelStartingPosition}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </div>
+                                    <BoardEditor
+                                        fen={startingPosition}
+                                        setFen={setStartingPosition}
+                                    />
                                 </Match>
                             </Switch>
                         </div>
-						<EngineInfoViewer engineInfo={engineInfo} />
-                        <div class="pgnviewer-moves-wrapper">
-                            <Moves />
+                        <VDivider ref={divider!} />
+                        <div class="pgnviewer-sidebar">
+                            <div class="pgnviewer-sidebar-header">
+                                <Switch>
+                                    <Match when={viewMode() === ViewMode.MOVES}>
+                                        <Button
+                                            onClick={onEditStartingPosition}
+                                        >
+                                            Set Starting Position
+                                        </Button>
+                                    </Match>
+                                    <Match
+                                        when={
+                                            viewMode() ===
+                                            ViewMode.STARTING_POSITION
+                                        }
+                                    >
+                                        <div class="is-flex is-flex-direction-row is-gap-1">
+                                            <Button
+                                                onClick={
+                                                    onAcceptStartingPosition
+                                                }
+                                            >
+                                                Accept
+                                            </Button>
+                                            <Button
+                                                onClick={
+                                                    onCancelStartingPosition
+                                                }
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                    </Match>
+                                </Switch>
+                            </div>
+                            <EngineInfoViewer engineInfo={engineInfo} />
+                            <div class="pgnviewer-moves-wrapper">
+                                <Moves />
+                            </div>
+                            <ButtonBar
+                                game={game}
+                                currentPath={currentPath}
+                                setCurrentPath={setCurrentPath}
+                            />
                         </div>
-                        <ButtonBar
-                            game={game}
-                            currentPath={currentPath}
-                            setCurrentPath={setCurrentPath}
-                        />
                     </div>
-                </div>
-                <div class="pgn-viewer-bottom"></div>
+                    <div class="pgn-viewer-bottom"></div>
+                </TooltipContext.Provider>
             </GameContext.Provider>
+			<Show when={reference()}>
+				<Tooltip plyData={ply} reference={reference} />
+			</Show>
         </>
     );
 };

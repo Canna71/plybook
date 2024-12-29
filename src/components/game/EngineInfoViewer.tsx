@@ -4,7 +4,7 @@ import "./EngineInfoViewer.scss"; // Create and import your custom styles
 import { GameContext } from "./GameContext";
 import { Path, PlyData, sanToFan, State } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
-import { getPosition, getPositionFromData, makeMove } from "../common/utils";
+import { getPosition, getPositionFromData, makeMove, useFenTooltip } from "../common/utils";
 import { Chess, makeUci, parseUci, Position } from "chessops";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSanAndPlay, parseSan } from "chessops/san";
@@ -55,6 +55,17 @@ function makeLine(info: EngineInfo, path: Path, game: GameModel) {
     return line[2];
 }
 
+const PVMove = (props: { move: PlyData }) => {
+
+    const innerShowTooltip = useFenTooltip(true, props.move);
+    return (
+        <span 
+        onMouseEnter={innerShowTooltip}
+		onMouseLeave={() => innerShowTooltip(undefined)}
+        class="engine-info-pv-move">{props.move.fan}</span>
+    );
+}
+
 const EngineInfoViewer = (props: EngineInfoViewerProps) => {
     const { currentPath, game } = useContext(GameContext)!;
 
@@ -72,7 +83,8 @@ const EngineInfoViewer = (props: EngineInfoViewerProps) => {
                         </span>{
                             makeLine(info, currentPath()!, game()!).map((move) => {
                                 return (
-                                    <span class="engine-info-pv-move">{move.fan}</span>
+                                    <PVMove move={move} />
+                                    
                                 );
                             })
                         }
