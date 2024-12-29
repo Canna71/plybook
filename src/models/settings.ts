@@ -61,15 +61,10 @@ export  function getSettingValue<T>(path: string,defaultValue?: T) {
 }
 
 export async function setSettingValue(path: string , value: any) {
-    // await loadSettings();
-    console.log("setSettingValue", path, value);
-    setSettings("themes", "board", value);
-    // produce<AppSettings>(draft => {
-    //     // set(draft, path, value);
-    //     draft.themes.board = "bluish";
-    // });
 
-    console.log("setting:", settings);
+    const args = [...path.split("."), value];
+    (setSettings as Function)(...args);
+    console.log("set setting", settings);
     await saveSettings();
 }
 

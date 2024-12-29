@@ -135,7 +135,6 @@ export class GameModel {
     }
 
     insertComment(path: Path, comment: string, before: boolean = false) {
-        console.log("insertComment", path, comment, before);
         let isStarting = false;
         const originalPath = path;
         if (before) path = path.previous();
@@ -144,15 +143,12 @@ export class GameModel {
         if (!pgnNode || !node) return this;
         const isVariation = node?.children.length > 1 && !node.children[0].data.path.equals(originalPath);
         if (isVariation) {
-            console.log("TODO: handle variations");
             pgnNode = this.findPgnNode(originalPath);
             node = nodeAtPathFrom(this.moves, originalPath);
             if(before) isStarting = true;
             if (!pgnNode || !node) return this;
         }
         const shapes = isChildNode(node) ? node.data.shapes : this.initial.shapes;
-        // TODO: when inserting a new comment we should check if there is already an empty comment for shapes, and merge them
-        // now the issue is that currently the merge operation will replace an empty comment with the placeholder
         const field = isStarting ? "startingComments" : "comments";
         if (isChildNode(pgnNode) && isChildNode(node)) {
             const comments = node.data[field].filter(t => t !== EMPTY_COMMENT) || [];

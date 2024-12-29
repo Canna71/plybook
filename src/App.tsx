@@ -24,13 +24,6 @@ function App() {
     // dynamically load css in assets folder
     useThemes();
 
-
-    createEffect(() => {
-        const board = getSettingValue("themes.board");
-        console.log("board changed", board);
-        // loadSettings();
-    });
-
     return (
         <Router root={Layout}>
             <Route path="/" component={Home} />

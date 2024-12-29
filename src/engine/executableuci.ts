@@ -17,12 +17,11 @@ export class ExecutableUCIInterface implements IUCIInterface {
     async init(): Promise<void> {
 
         if (this.isReady) return;
-        console.log("executable uci init");
 
         this.command = await Command.create('exec-sh', ["-c", `"${this.enginePath}"`]);
         
         this.command.stdout.on('data', (line: string) => {
-
+            console.log(`Engine output: ${line}`);
             if (line.includes('uciok')) {
                 this.isReady = true;
             }
