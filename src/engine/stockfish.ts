@@ -268,10 +268,10 @@ export class StockfishManager {
                     i--; // Adjust for the next iteration
                     break;
 
-                case 'string':
-                    info.string = tokens.slice(i + 1).join(' ');
-                    i = tokens.length; // End parsing
-                    break;
+                // case 'string':
+                //     info.string = tokens.slice(i + 1).join(' ');
+                //     i = tokens.length; // End parsing
+                //     break;
             }
         }
 

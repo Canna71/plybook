@@ -1,4 +1,9 @@
-import { AnalysisOptions, EngineInfo, IChessEngine, IEngineEventEmitter } from "./engineinterfaces";
+import {
+    AnalysisOptions,
+    EngineInfo,
+    IChessEngine,
+    IEngineEventEmitter,
+} from "./engineinterfaces";
 import { IUCIInterface } from "./iuciinterface";
 
 // UCIEngine.ts
@@ -9,48 +14,51 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
 
     constructor(uciInterface: IUCIInterface) {
         this.uciInterface = uciInterface;
-        this.uciInterface.onResponse(line => this.processEngineOutput(line));
+        this.uciInterface.onResponse((line) => this.processEngineOutput(line));
     }
     analyzePosition(fen: string, options: AnalysisOptions): void {
         // throw new Error("Method not implemented.");
-        this.uciInterface.sendCommand('stop');
+        this.uciInterface.sendCommand("stop");
         this.uciInterface.sendCommand(`position fen ${fen}`);
-        let goCommand = 'go';
+        let goCommand = "go";
         if (options.depth) goCommand += ` depth ${options.depth}`;
         if (options.movetime) goCommand += ` movetime ${options.movetime}`;
         if (options.multipv) {
-            this.setOption('MultiPV', options.multipv);
+            this.setOption("MultiPV", options.multipv);
         }
         this.uciInterface.sendCommand(goCommand);
     }
-    analyzeFromFenOrMoves(fenOrMoves: string[] | string, options: AnalysisOptions): void {
-        this.uciInterface.sendCommand('stop');
-        if (typeof fenOrMoves === 'string') {
+    analyzeFromFenOrMoves(
+        fenOrMoves: string[] | string,
+        options: AnalysisOptions,
+    ): void {
+        this.uciInterface.sendCommand("stop");
+        if (typeof fenOrMoves === "string") {
             this.uciInterface.sendCommand(`position fen ${fenOrMoves}`);
         } else {
-            this.uciInterface.sendCommand(`position startpos moves ${fenOrMoves.join(' ')}`);
+            this.uciInterface.sendCommand(
+                `position startpos moves ${fenOrMoves.join(" ")}`,
+            );
         }
-        let goCommand = 'go';
+        let goCommand = "go";
         if (options.depth) goCommand += ` depth ${options.depth}`;
         if (options.movetime) goCommand += ` movetime ${options.movetime}`;
         if (options.multipv) {
-            this.setOption('MultiPV', options.multipv);
+            this.setOption("MultiPV", options.multipv);
         }
         // wait 10 ms
         setTimeout(() => {
             this.uciInterface.sendCommand(goCommand);
         }, 10);
-
-
     }
     stop(): void {
-        this.uciInterface.sendCommand('stop');
+        this.uciInterface.sendCommand("stop");
     }
     quit(): void {
-        this.uciInterface.sendCommand('quit');
+        this.uciInterface.sendCommand("quit");
     }
     newGame(): void {
-        this.uciInterface.sendCommand('ucinewgame');
+        this.uciInterface.sendCommand("ucinewgame");
     }
     setOption(name: string, value: any): void {
         this.uciInterface.sendCommand(`setoption name ${name} value ${value}`);
@@ -71,12 +79,12 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     }
 
     private emit(event: string, ...args: any[]): void {
-        this.callbacks.get(event)?.forEach(callback => callback(...args));
+        this.callbacks.get(event)?.forEach((callback) => callback(...args));
     }
 
     async init(): Promise<void> {
         await this.uciInterface.init();
-        this.uciInterface.sendCommand('uci');
+        this.uciInterface.sendCommand("uci");
 
         // Wait for engine to be ready
         return new Promise((resolve) => {
@@ -91,32 +99,34 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     // ... other IChessEngine implementation methods ...
 
     private processEngineOutput(line: string): void {
-        const tokens = line.trim().split(' ');
+        console.log("Engine:", line);
+        const tokens = line.trim().split(" ");
 
         switch (tokens[0]) {
-            case 'uciok':
-                this.uciInterface.sendCommand('isready');
+            case "uciok":
+                this.uciInterface.sendCommand("isready");
                 break;
-            case 'readyok':
+            case "readyok":
                 this.isReady = true;
-                this.emit('ready');
+                this.emit("ready");
                 break;
-            case 'bestmove':
+            case "bestmove":
                 const bestmove = tokens[1];
                 const ponder = tokens[3]; // Optional ponder move
-                this.emit('bestmove', bestmove, ponder);
+                this.emit("bestmove", bestmove, ponder);
                 break;
 
-            case 'info':
-                const info = this.parseInfo(tokens.slice(1));
-                if (Object.keys(info).length > 0) {
-                    this.emit('info', info);
+            case "info":
+                const info = this.parseInfoMessage(tokens.slice(1));
+                console.log("info", info);
+                if (info) {
+                    this.emit("info", info);
                 }
                 break;
 
             default:
-                if (line.startsWith('error')) {
-                    this.emit('error', new Error(line));
+                if (line.startsWith("error")) {
+                    this.emit("error", new Error(line));
                 }
         }
     }
@@ -124,57 +134,122 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     /**
      * Parse info string from engine
      */
-    private parseInfo(tokens: string[]): EngineInfo {
-        const info: EngineInfo = {};
+    /**
+     * Parses a UCI engine info message into a structured format
+     * @param infoMessage - The raw info message from the engine
+     * @returns Parsed engine information or null if parsing fails
+     */
+    private parseInfoMessage(tokens: string[]): EngineInfo | null {
+        try {
+        
+            const result: EngineInfo = {};
 
-        for (let i = 0; i < tokens.length; i++) {
-            switch (tokens[i]) {
-                case 'depth':
-                    info.depth = parseInt(tokens[++i]);
-                    break;
+            // Skip 'info' at parts[0]
+            for (let i = 1; i < tokens.length; i++) {
+                switch (tokens[i]) {
+                    case "multipv":
+                        if (i + 1 < tokens.length) {
+                            result.multipv = parseInt(tokens[++i], 10);
+                        }
+                        break;
 
-                case 'seldepth':
-                    info.seldepth = parseInt(tokens[++i]);
-                    break;
+                    case "depth":
+                        if (i + 1 < tokens.length) {
+                            result.depth = parseInt(tokens[++i], 10);
+                        }
+                        break;
 
-                case 'multipv':
-                    info.multipv = parseInt(tokens[++i]);
-                    break;
+                    case "score":
+                        if (i + 2 < tokens.length) {
+                            const scoreType = tokens[++i] as "cp" | "mate";
+                            const scoreValue = parseInt(tokens[++i], 10);
+                            result.score = {
+                                type: scoreType,
+                                value: scoreValue,
+                            };
+                        }
+                        break;
 
-                case 'score':
-                    info.score = {
-                        type: tokens[++i] as 'cp' | 'mate',
-                        value: parseInt(tokens[++i])
-                    };
-                    break;
+                    case "pv":
+                        // Collect all remaining tokens as moves
+                        const moves: string[] = [];
+                        while (
+                            ++i < tokens.length &&
+                            !tokens[i].includes("bmc")
+                        ) {
+                            // Stop at known keywords or end of string
+                            if (
+                                [
+                                    "depth",
+                                    "multipv",
+                                    "score",
+                                    "nodes",
+                                    "nps",
+                                    "time",
+                                ].includes(tokens[i])
+                            ) {
+                                i--; // Back up one to allow the next iteration to handle this token
+                                break;
+                            }
+                            moves.push(tokens[i]);
+                        }
+                        result.pv = moves;
+                        break;
 
-                case 'nodes':
-                    info.nodes = parseInt(tokens[++i]);
-                    break;
+                    case "nodes":
+                        if (i + 1 < tokens.length) {
+                            result.nodes = parseInt(tokens[++i], 10);
+                        }
+                        break;
 
-                case 'nps':
-                    info.nps = parseInt(tokens[++i]);
-                    break;
+                    case "nps":
+                        if (i + 1 < tokens.length) {
+                            result.nps = parseInt(tokens[++i], 10);
+                        }
+                        break;
 
-                case 'time':
-                    info.time = parseInt(tokens[++i]);
-                    break;
+                    case "time":
+                        if (i + 1 < tokens.length) {
+                            result.time = parseInt(tokens[++i], 10);
+                        }
+                        break;
 
-                case 'pv':
-                    info.pv = [];
-                    while (++i < tokens.length && !tokens[i].includes('score')) {
-                        info.pv.push(tokens[i]);
-                    }
-                    i--; // Adjust for the next iteration
-                    break;
+                    case "currmove":
+                        if (i + 1 < tokens.length) {
+                            result.currmove = tokens[++i];
+                        }
+                        break;
 
-                case 'string':
-                    info.string = tokens.slice(i + 1).join(' ');
-                    i = tokens.length; // End parsing
-                    break;
+                    case "currmovenumber":
+                        if (i + 1 < tokens.length) {
+                            result.currmovenumber = parseInt(tokens[++i], 10);
+                        }
+                        break;
+
+                    case "hashfull":
+                        if (i + 1 < tokens.length) {
+                            result.hashfull = parseInt(tokens[++i], 10);
+                        }
+                        break;
+
+                    case "tbhits":
+                        if (i + 1 < tokens.length) {
+                            result.tbhits = parseInt(tokens[++i], 10);
+                        }
+                        break;
+
+                    case "seldepth":
+                        if (i + 1 < tokens.length) {
+                            result.seldepth = parseInt(tokens[++i], 10);
+                        }
+                        break;
+                }
             }
-        }
 
-        return info;
+            return result;
+        } catch (error) {
+            console.error("Error parsing info message:", error);
+            return null;
+        }
     }
 }

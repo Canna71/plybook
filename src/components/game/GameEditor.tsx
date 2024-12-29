@@ -74,7 +74,7 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
     // Engine
     const [engineOn, setEngineOn] = createSignal<boolean>(true);
-    const [engineColor, setEngineColor] = createSignal<Color>("black");
+    const [engineColor, setEngineColor] = createSignal<Color | undefined>(undefined);
     const [engineFolder, _others] = createResource(() =>
         getEngineFolder("stockfish-aarch64-apple-darwin"),
     );
@@ -310,6 +310,10 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         if (!g) {
             return;
         }
+		if(!engineColor()) {
+			console.log("Engine color not set, auto move disabled");
+			return;
+		}
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
         console.log("best move", m);
         const move: NormalMove = makeMove(m.from, m.to);
@@ -318,16 +322,14 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     // handles engine processing
     createEffect(() => {
         console.log("Engine processing effect");
+		
+      
         if (engineCallable()) {
-            console.log("Engine is callable");
-        }
-
-        if (engineCallable() && turn() === engineColor()) {
-            console.log("Engine is callable and it's my turn");
+            console.log("Engine is callable, analyzing position");
 
             const pos = getPosition(game, currentPath);
             const fen = makeFen(pos.toSetup());
-            engine()!.analyzeFromFenOrMoves(fen, { depth: 15 });
+            engine()!.analyzeFromFenOrMoves(fen, { depth: 15, multipv: 3 });
         }
     });
 
