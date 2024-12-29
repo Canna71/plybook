@@ -34,12 +34,16 @@ import { PiecesPopup } from "./PiecesPopup";
 import { NormalMove } from "chessops";
 import "./GameEditor.scss";
 import {
+	EngineInfo,
     IChessEngine,
     IEngineEventEmitter,
 } from "../../engine/engineinterfaces";
 import { getEngineFolder } from "../../storage/fs";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
 import { UCIEngine } from "../../engine/uciengine";
+import { createStore } from "solid-js/store";
+import EngineInfoViewer from "./EngineInfoViewer";
+import { create } from "@tauri-apps/plugin-fs";
 
 export type PgnEditorOptions = {
     pgn: Accessor<string | undefined>;
@@ -57,7 +61,9 @@ type PromotionData = {
 };
 
 const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
-    const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
+   
+	// #region Game State
+	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
         undefined,
     );
     const [game, setGame] = createSignal<GameModel | undefined>(undefined);
@@ -70,9 +76,13 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     const [promotionData, setPromotionData] = createSignal<
         PromotionData | undefined
     >(undefined);
-    // view mode flags
+	// #endregion
+
+    // #region view mode state
     const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
-    // Engine
+    // #endregion
+	
+	// #region Engine state
     const [engineOn, setEngineOn] = createSignal<boolean>(true);
     const [engineColor, setEngineColor] = createSignal<Color | undefined>(undefined);
     const [engineFolder, _others] = createResource(() =>
@@ -81,9 +91,13 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     const [engine, setEngine] = createSignal<IChessEngine | undefined>(
         undefined,
     );
+	const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
+	// #endregion
 
+	// #region Layout
     let chessBoardDiv: HTMLDivElement | null = null;
     const divider = useSplitter();
+	// #endregion
 
     // #region Game Setup
     createEffect(() => {
@@ -281,10 +295,12 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
             console.log("...engine initialized");
             setEngine(engine);
             engine.on("bestmove", onEngineBestMove);
+			engine.on("info", onEngineInfo)
             engine.newGame();
         }
     });
 
+	// cleanup engine when engineOn is false
     createEffect(() => {
         if (!engineOn()) {
             const eng = engine();
@@ -319,6 +335,21 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         const move: NormalMove = makeMove(m.from, m.to);
         applyMove(move);
     };
+
+	const onEngineInfo = (info: EngineInfo) => {
+		
+		if(info.multipv) {
+			setEngineInfo(info.multipv-1, info);
+			console.log("onEngineInfo", engineInfo);
+		}
+	}
+
+	createEffect(() => {
+		for (const info of engineInfo) {
+			console.log("EngineInfo", info);
+		}
+	});
+
     // handles engine processing
     createEffect(() => {
         console.log("Engine processing effect");
@@ -329,11 +360,13 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
             const pos = getPosition(game, currentPath);
             const fen = makeFen(pos.toSetup());
+			setEngineInfo([]);
             engine()!.analyzeFromFenOrMoves(fen, { depth: 15, multipv: 3 });
         }
     });
 
-    // #endregion
+    // #endregion 
+
     return (
         <>
             <GameContext.Provider
@@ -417,6 +450,7 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
                                 </Match>
                             </Switch>
                         </div>
+						<EngineInfoViewer engineInfo={engineInfo} />
                         <div class="pgnviewer-moves-wrapper">
                             <Moves />
                         </div>

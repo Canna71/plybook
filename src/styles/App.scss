@@ -98,8 +98,7 @@ button.button {
     width: 5px;
     cursor: ew-resize;
     position: relative;
-
-
+    height: 100%;
 
     .v-divider-line {
         border-left: 1px solid var(--bulma-border);

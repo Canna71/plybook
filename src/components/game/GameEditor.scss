@@ -42,7 +42,7 @@
     .pgnviewer-sidebar {
         grid-area: sidebar;
         height: 100%;
-        // flex: 0 0 30%;
+        overflow: hidden;
         padding: 8px;
         display: flex;
         min-height: 100px;
