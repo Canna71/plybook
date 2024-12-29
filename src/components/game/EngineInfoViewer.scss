@@ -1,32 +1,49 @@
 .engine-info-viewer {
     display: flex;
     flex-direction: column;
-    gap: 0.3em;
+    gap: 0.4em;
     width: 100%;
     overflow: hidden;
-}
+    padding: 0.5em;
 
-.engine-info-row {
-    display: flex;
-    flex-direction: row;
-    gap: 0.3em;
-    overflow: hidden;
-    position: relative;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 100%;
-
-    // .engine-info-depth,
-    .engine-info-score {
-        // flex: 1;
-        padding: 0 5px;
-        text-align: center;
-        border-radius: 0.2em;
-    }
-    .engine-info-pv-move {
-
+    .engine-info-row {
+        // display: flex;
+        // flex-direction: row;
+        // gap: 0.3em;
+        overflow: hidden;
+        position: relative;
+        text-overflow: ellipsis;
         white-space: nowrap;
+        width: 100%;
+        padding-right: 1.8em;
+
+        &.engine-info-row-expanded {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+        }
+
+        // .engine-info-depth,
+        .engine-info-score {
+            // flex: 1;
+            padding: 0 5px;
+            text-align: center;
+            border-radius: 0.2em;
+        }
+        .engine-info-pv-move {
+            display: inline-block;
+            cursor: pointer;
+            white-space: nowrap;
+            margin-right: 0.4em;
+            &:hover {
+                background-color: var(--bulma-background-hover);
+            }
+        }
+
+        button.expand-line {
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
     }
-
-
 }
