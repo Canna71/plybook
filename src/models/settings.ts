@@ -64,7 +64,6 @@ export async function setSettingValue(path: string , value: any) {
 
     const args = [...path.split("."), value];
     (setSettings as Function)(...args);
-    console.log("set setting", settings);
     await saveSettings();
 }
 
