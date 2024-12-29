@@ -113,13 +113,24 @@ export function toColor(pos: Position): Color {
 	return pos.turn === "black" ? "white" : "black";
 }
 
+export function toOrientation(pos: Position): Color {
+	return pos.turn;
+}
+
+
+
 export function getPosition(game: Accessor<GameModel | undefined>, currentPath: Accessor<Path | undefined>) {
 	const data = useCurrentData(game, currentPath)();
+	const pos = getPositionFromData(data);
+	return pos;
+}
+export function getPositionFromData(data: Initial | PlyData | undefined) {
 	const fen = data?.fen || INITIAL_FEN;
 	const setup = parseFen(fen).unwrap();
 	const pos = Chess.fromSetup(setup).unwrap();
 	return pos;
 }
+
 export function getEnPassantSquares(setup: Setup, whitesTurn: boolean) {
     const pawns = setup.board.pawn;
     // returns squares where a pawn can eat en passant

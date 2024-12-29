@@ -194,8 +194,6 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		// movable color is current color if not playing against engine
 		const movableColor = engineColor() && pos.turn === engineColor() ? undefined : pos.turn;
 
-		console.log("pos.turn", pos.turn);
-		console.log("movableColor", movableColor);
         const config = {
             ...baseConfig,
             draggable: {
@@ -250,7 +248,6 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     // #region Game Manipulation
 
     const applyMove = (move: NormalMove) => {
-        console.log("Applying move", move);
         const g = game();
         if (!g) {
             return;
@@ -281,18 +278,13 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     const engineCallable = () => engine() && engineOn() && engineFolder();
 
     createEffect(async () => {
-        console.log("Engine init effect");
-        console.log("engine: ", engine());
-        console.log("engineOn: ", engineOn());
-        console.log("engineFolder: ", engineFolder());
+      
         if (engineOn() && engineFolder() && !engine()) {
             const engine = new UCIEngine(
                 new ExecutableUCIInterface(engineFolder()!),
             );
 
-            console.log("waiting for engine to init...");
             await engine.init();
-            console.log("...engine initialized");
             setEngine(engine);
             engine.on("bestmove", onEngineBestMove);
 			engine.on("info", onEngineInfo)
@@ -314,24 +306,20 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     onCleanup(() => {
         const eng = engine();
         if (eng) {
-            console.log("cleaning up engine");
             eng.quit();
             eng.off("bestmove", onEngineBestMove);
         }
     });
 
     const onEngineBestMove = (bestMove: string, ponder: string) => {
-        console.log("onEngineBestMove", bestMove, ponder);
         const g = game();
         if (!g) {
             return;
         }
 		if(!engineColor()) {
-			console.log("Engine color not set, auto move disabled");
 			return;
 		}
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
-        console.log("best move", m);
         const move: NormalMove = makeMove(m.from, m.to);
         applyMove(move);
     };
@@ -340,23 +328,15 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 		
 		if(info.multipv) {
 			setEngineInfo(info.multipv-1, info);
-			console.log("onEngineInfo", engineInfo);
 		}
 	}
 
-	createEffect(() => {
-		for (const info of engineInfo) {
-			console.log("EngineInfo", info);
-		}
-	});
 
     // handles engine processing
     createEffect(() => {
-        console.log("Engine processing effect");
 		
       
         if (engineCallable()) {
-            console.log("Engine is callable, analyzing position");
 
             const pos = getPosition(game, currentPath);
             const fen = makeFen(pos.toSetup());
