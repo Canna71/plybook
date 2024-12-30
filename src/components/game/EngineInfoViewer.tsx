@@ -121,8 +121,9 @@ const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
         //     },
         //     [game(), currentPath()!],
         // );
+        console.log("applying all moves up to this move", moves);
         const [newGameModel, newPath] = game()!.applyMoves(currentPath()!, moves.map((m) => m.move));
-        console.log("TODO: apply all moves up to this move", newGameModel, newPath);
+        console.log("applied all moves up to this move", newGameModel, newPath);
         batch(() => {
             setGame(newGameModel);
             setCurrentPath(newPath);

@@ -195,7 +195,7 @@ export function useSplitter(saveLayout?: (layout: string) => void) {
         });
     };
 }
-export function makeMove(orig: string, dest: string): NormalMove {
+ export function makeMove(orig: string, dest: string): NormalMove {
     const sq1 = parseSquare(orig);
     const sq2 = parseSquare(dest);
     const move = {

@@ -148,7 +148,10 @@ export const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: M
 function makeMove(metadata: Metadata): (ctx: State, data: PgnNodeData, childIndex: number) => PlyData | undefined {
     return (state, node, _index) => {
         const move = parseSan(state.pos, node.san);
-        if (!move) return undefined;
+        if (!move) {
+            console.debug('Invalid move', node.san, state.pos);
+            return undefined;
+        }
         const moveId = scalachessCharPair(move);
         const path = state.path.append(moveId);
         const san = makeSanAndPlay(state.pos, move);

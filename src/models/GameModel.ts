@@ -2,7 +2,7 @@ import { Move, Chess, parseSquare  } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
 import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, makeComment, CommentShape, parseComment } from "chessops/pgn";
-import { makeSan } from "chessops/san";
+import { makeSan, makeSanAndPlay } from "chessops/san";
 import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal, EMPTY_COMMENT } from "./pgn";
 import { DrawShape } from "chessground/draw";
 
@@ -92,14 +92,14 @@ export class GameModel {
     }
 
     applyMoves(path: Path, moves: Move[]): [GameModel, Path] {
-        const pos = this.getPosition(path);
+        const pos = this.getPosition(path).clone();
 
         const pgnNode = this.findPgnNode(path);
         let node = pgnNode;
         let p = path;
         for(let i=0; i<moves.length; i++) {
             const move = moves[i];
-            const san = makeSan(pos, move);
+            const san = makeSanAndPlay(pos, move);
             const moveId = scalachessCharPair(move);
             p = p.append(moveId);
             extend(node!, [{ san }]);
