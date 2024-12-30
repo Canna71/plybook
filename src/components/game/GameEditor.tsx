@@ -4,6 +4,7 @@ import {
     batch,
     Component,
     createEffect,
+    createMemo,
     createResource,
     createSignal,
     Match,
@@ -130,14 +131,14 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
         const move = makeMove(orig, dest);
 
-        const position = getPosition(game, currentPath);
+        const pos = position();
 
-        const isLegal = position.isLegal(move);
+        const isLegal = pos.isLegal(move);
         if (isLegal) {
             applyMove(move);
         } else {
             // check for promotion
-            const promo = isPromotion(move, position);
+            const promo = isPromotion(move, pos);
             if (promo) {
                 console.debug("TODO: Promotion");
                 const promoData = {
@@ -183,12 +184,17 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
     // #region Computed Properties
 
-    const turn = () => getPosition(game, currentPath).turn;
+    
+    const position = createMemo(() => getPosition(game, currentPath));
 
+    const fen = createMemo(() => makeFen(position().toSetup()));
+
+    const turn = () => createMemo(()=>position().turn);
+    
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered)();
 
-        const pos = getPosition(game, currentPath);
+        const pos = position();
         const isCheck = pos.isCheck();
         const allDests = chessgroundDests(pos);
 
@@ -334,10 +340,11 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     // handles engine processing
     createEffect(() => {
         if (engineCallable()) {
-            const pos = getPosition(game, currentPath);
-            const fen = makeFen(pos.toSetup());
+           
+            const fenStr = fen();
             setEngineInfo([]);
-            engine()!.analyzeFromFenOrMoves(fen, { depth: 15, multipv: 3 });
+            console.log("Analyzing position", fenStr);
+            engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 3 });
         }
     });
 
@@ -357,6 +364,8 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         setPly(plyData);
         setReference(anchor);
     };
+
+    // #endregion
 
     return (
         <>
@@ -393,7 +402,7 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
                                                         ?.promotionCell
                                                 }
                                                 onSelected={onPromotionSelected}
-                                                color={turn}
+                                                color={turn()}
                                             />
                                         </Show>
                                     </div>
