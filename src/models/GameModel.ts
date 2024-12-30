@@ -93,7 +93,7 @@ export class GameModel {
 
     applyMoves(path: Path, moves: Move[]): [GameModel, Path] {
         const pos = this.getPosition(path).clone();
-
+        // TODO: skip moves that we already have!
         const pgnNode = this.findPgnNode(path);
         let node = pgnNode;
         let p = path;
@@ -102,12 +102,20 @@ export class GameModel {
             const san = makeSanAndPlay(pos, move);
             const moveId = scalachessCharPair(move);
             p = p.append(moveId);
-            extend(node!, [{ san }]);
-            node = node!.children[node!.children!.length - 1];
+            // extend(node!, [{ san }]);
+            const children = node!.children;
+            const existing = children.find(c => c.data.san === san);
+            if(existing) {
+                node = existing;
+            } else {
+               node = extend(node!, [{ san }]);
+                // node = node!.children[node!.children!.length - 1];
+            }
         }
         // this.updateMoves();
         const newGameModel = this.getNewGameModel();
         const newPath = p;
+        console.log("newPath", newPath.path);
         return [newGameModel, newPath];
     }
 
