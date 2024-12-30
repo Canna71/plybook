@@ -2,7 +2,7 @@ import { Move, Chess, parseSquare  } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
 import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, makeComment, CommentShape, parseComment } from "chessops/pgn";
-import { makeSan, makeSanAndPlay, parseSan } from "chessops/san";
+import { makeSan, parseSan } from "chessops/san";
 import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal, EMPTY_COMMENT } from "./pgn";
 import { DrawShape } from "chessground/draw";
 

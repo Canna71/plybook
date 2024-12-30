@@ -3,7 +3,7 @@ import { Component, JSXElement, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { isPiece } from "../../models/pgn";
 
-import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight, IconArrowRight } from "@tabler/icons-solidjs";
+import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight } from "@tabler/icons-solidjs";
 
 const figurineMap: Record<string, ()=>JSXElement> = {
     K: ()=> <IconChessKingFilled />,
