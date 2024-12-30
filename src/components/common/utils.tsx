@@ -15,7 +15,6 @@ import { GameModel } from "../../models/GameModel";
 import { Accessor, useContext } from "solid-js";
 import { Key } from "chessground/types";
 import { Config } from "chessground/config";
-import { INITIAL_FEN, parseFen } from "chessops/fen";
 import { parseSquare, squareFromCoords } from "chessops/util";
 import Split from "split-grid";
 import { DOMElement } from "solid-js/jsx-runtime";

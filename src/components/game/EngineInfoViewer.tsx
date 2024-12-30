@@ -1,20 +1,16 @@
-import { Accessor, createSignal, For, useContext } from "solid-js";
+import { createSignal, For, useContext } from "solid-js";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import "./EngineInfoViewer.scss"; // Create and import your custom styles
 import { GameContext } from "./GameContext";
-import { Path, PlyData, sanToFan, State } from "../../models/pgn";
+import { Path, PlyData, sanToFan } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import {
-    getPosition,
-    getPositionFromData,
-    makeMove,
     useFenTooltip,
 } from "../common/utils";
-import { Chess, makeUci, parseUci, Position } from "chessops";
-import { makeFen, parseFen } from "chessops/fen";
-import { makeSanAndPlay, parseSan } from "chessops/san";
+import { makeUci, parseUci, Position } from "chessops";
+import { makeFen } from "chessops/fen";
+import { makeSanAndPlay } from "chessops/san";
 import { scalachessCharPair } from "chessops/compat";
-import { Collapse } from "solid-collapse";
 import { IconChevronRight } from "@tabler/icons-solidjs";
 
 type EngineInfoViewerProps = {

@@ -35,15 +35,13 @@ import { NormalMove } from "chessops";
 import "./GameEditor.scss";
 import {
     EngineInfo,
-    IChessEngine,
-    IEngineEventEmitter,
+    IChessEngine
 } from "../../engine/engineinterfaces";
 import { getEngineFolder } from "../../storage/fs";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
 import { UCIEngine } from "../../engine/uciengine";
 import { createStore } from "solid-js/store";
 import EngineInfoViewer from "./EngineInfoViewer";
-import { create } from "@tauri-apps/plugin-fs";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "../common/Tooltip";
 
@@ -314,7 +312,7 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         }
     });
 
-    const onEngineBestMove = (bestMove: string, ponder: string) => {
+    const onEngineBestMove = (bestMove: string, _ponder: string) => {
         const g = game();
         if (!g) {
             return;

@@ -1,6 +1,6 @@
 import { ensureConfigFileExists, readConfigFileAsJson, writeConfigFile } from "../storage/fs";
-import { get, set } from "es-toolkit/compat";
-import { createStore, Part, produce } from "solid-js/store";
+import { get } from "es-toolkit/compat";
+import { createStore } from "solid-js/store";
 import { createSignal } from "solid-js";
 export interface AppSettings {
     themes?: {

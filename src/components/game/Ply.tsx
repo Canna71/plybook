@@ -7,12 +7,11 @@ import {
     ValidComponent,
     JSXElement,
 } from "solid-js";
-import { DOMElement } from "solid-js/types/jsx.js";
 import { HierarchicalMoveData } from "../../models/tree";
 import { useContextMenu } from "../common/contextmenu";
 import { Dynamic } from "solid-js/web";
 import { range } from "es-toolkit";
-import { GameContext, TooltipContext } from "./GameContext";
+import { GameContext } from "./GameContext";
 import { useFenTooltip } from "../common/utils";
 import { isPiece } from "../../models/pgn";
 import {
