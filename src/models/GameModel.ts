@@ -2,7 +2,7 @@ import { Move, Chess, parseSquare  } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
 import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, makeComment, CommentShape, parseComment } from "chessops/pgn";
-import { makeSan, makeSanAndPlay } from "chessops/san";
+import { makeSan, makeSanAndPlay, parseSan } from "chessops/san";
 import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal, EMPTY_COMMENT } from "./pgn";
 import { DrawShape } from "chessground/draw";
 
@@ -99,8 +99,11 @@ export class GameModel {
         let p = path;
         for(let i=0; i<moves.length; i++) {
             const move = moves[i];
-            const san = makeSanAndPlay(pos, move);
-            const moveId = scalachessCharPair(move);
+            const san = makeSan(pos, move);
+            // Note: this is to avoid different Ids for castling moves
+            const move2 = parseSan(pos, san);
+            pos.play(move2!);
+            const moveId = scalachessCharPair(move2!);
             p = p.append(moveId);
             // extend(node!, [{ san }]);
             const children = node!.children;
