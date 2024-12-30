@@ -3,7 +3,7 @@ import { Component, JSXElement, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { isPiece } from "../../models/pgn";
 
-import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight } from "@tabler/icons-solidjs";
+import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight, IconArrowRight } from "@tabler/icons-solidjs";
 
 const figurineMap: Record<string, ()=>JSXElement> = {
     K: ()=> <IconChessKingFilled />,
@@ -26,7 +26,13 @@ export const PlyFan: Component<{ san: string; color: Color; }> = ({
             ? san[0].toUpperCase()
             : san[0].toLowerCase()
         : undefined;
-    const content = piece ? san.slice(1) : san;
+    let content = piece ? san.slice(1) : san;
+    let promotion: string | undefined;
+    // handle promotion
+    if (content[2] === "=") {
+        promotion = content[3];
+        content = content.slice(0, 2);
+    }
 
 
 
@@ -38,6 +44,12 @@ export const PlyFan: Component<{ san: string; color: Color; }> = ({
                 </span>
             </Show>
             <span class="move-fan-content">{content}</span>
+            <Show when={promotion}>
+                <span class="move-fan-figurine">
+                    →
+                    <Dynamic component={figurineMap[promotion!]} />
+                </span>
+            </Show>
         </>
     );
 };
