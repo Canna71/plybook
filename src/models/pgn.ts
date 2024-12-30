@@ -254,7 +254,7 @@ const makeClocks = (prev: Clocks, turn: Color, clk?: number): Clocks =>
     turn == 'white' ? { ...prev, black: clk } : { ...prev, white: clk };
 
 export function isPiece(letter: string): boolean {
-    return 'KQRBN'.includes(letter.toUpperCase());
+    return 'KQRBN'.includes(letter);
 }
 
 export function sanToFan(san: string, turn: Color): string {
