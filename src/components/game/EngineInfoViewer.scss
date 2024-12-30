@@ -39,6 +39,16 @@
             &:hover {
                 background-color: var(--bulma-background-hover);
             }
+
+            .move-fan-figurine {
+                svg {
+                    width: 18px;
+                    height: 18px;
+                    vertical-align: text-bottom;
+                }
+                
+            }
+
         }
 
         button.expand-line {

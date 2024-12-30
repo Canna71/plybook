@@ -4,8 +4,7 @@ import {
     useContext,
     createEffect,
     Show,
-    ValidComponent,
-    JSXElement,
+    ValidComponent
 } from "solid-js";
 import { HierarchicalMoveData } from "../../models/tree";
 import { useContextMenu } from "../common/contextmenu";
@@ -521,18 +520,6 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
     const isValid = () => {
         return plyData !== undefined;
     };
-
-    // const innerShowTooltip = (e: (MouseEvent & {
-    // 	currentTarget: HTMLDivElement;
-    // 	target: DOMElement;
-    // }) | undefined) => {
-    //   if(!tooltipEnabled) return;
-    // 	if (e) {
-    // 		isValid() && showTooltip(e.currentTarget, plyData);
-    // 	} else {
-    // 		showTooltip(undefined, undefined);
-    // 	}
-    // };
 
     const innerShowTooltip = useFenTooltip(tooltipEnabled || false, plyData);
 

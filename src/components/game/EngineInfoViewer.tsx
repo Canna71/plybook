@@ -5,6 +5,7 @@ import { GameContext } from "./GameContext";
 import { Path, PlyData, sanToFan } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import {
+    toColor,
     useFenTooltip,
 } from "../common/utils";
 import { makeUci, parseUci, Position } from "chessops";
@@ -12,6 +13,7 @@ import { makeFen } from "chessops/fen";
 import { makeSanAndPlay } from "chessops/san";
 import { scalachessCharPair } from "chessops/compat";
 import { IconChevronRight } from "@tabler/icons-solidjs";
+import { PlyFan } from "../common/PlyFan";
 
 type EngineInfoViewerProps = {
     engineInfo: EngineInfo[];
@@ -20,11 +22,12 @@ type EngineInfoViewerProps = {
 function makeLine(info: EngineInfo, path: Path, game: GameModel) {
     const data = game.dataAt(path);
     const pos = data?.pos.clone();
-
+    console.log("makeline initial pos", pos, data);
     const pvMoves = info.pv || [];
     const line = pvMoves.reduce(
-        ([pos, path, list], currentMove) => {
+        ([prevPos, path, list], currentMove) => {
             // const move = parseSan(pos as Position, currentMove)!;
+            const pos = prevPos.clone();
             const move = parseUci(currentMove)!;
             const moveId = scalachessCharPair(move);
             const nextPath = path.append(moveId);
@@ -61,6 +64,9 @@ function makeLine(info: EngineInfo, path: Path, game: GameModel) {
         },
         [pos, path, []] as [Position, Path, PlyData[]],
     );
+
+    console.log("line", line[2]);
+
     return line[2];
 }
 
@@ -81,7 +87,8 @@ const PVMove = (props: { move: PlyData }) => {
                 onMouseLeave={() => innerShowTooltip(undefined)}
                 class="engine-info-pv-move"
             >   <span class="engine-info-pv-number">{moveNumber()}</span>
-                <span class="enngine-info-pv-fan">{props.move.fan}</span>
+                {/* <span class="enngine-info-pv-fan">{props.move.fan}</span> */}
+                <PlyFan san={props.move.san} color={toColor(props.move.pos)} />
                 
             </span>
         </>
@@ -95,6 +102,7 @@ type EngineInfoLineProps = {
 const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
     const { currentPath, game } = useContext(GameContext)!;
     const [isExpanded, setIsExpanded] = createSignal(false);
+
 
     const classList = () => ({
         "engine-info-row": true,

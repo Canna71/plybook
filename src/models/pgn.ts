@@ -185,6 +185,7 @@ function makeMove(metadata: Metadata): (ctx: State, data: PgnNodeData, childInde
             pgnNode: node,
             pos: state.pos.clone(),
         };
+        console.log("makeMove",moveNode);
         return moveNode;
     };
 }
