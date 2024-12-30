@@ -84,7 +84,7 @@
                     }
 
                     .move-cell {
-                        margin: 4px;
+                        padding: 4px;
                         font-size: 90%;
                     }
 
@@ -147,7 +147,8 @@
                     }
 
                     .current-move {
-                        background-color: var(--background-modifier-accent);
+                        background-color: var(--bulma-background-active);
+                        color: var(--bulma-strong-color);
                     }
 
                     .pgnviewer-comments {

@@ -528,9 +528,8 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
             "move-cell": true,
             "pgnviewer-move": isValid(),
             [turn + `-move`]: !!turn,
-            "current-move": isCurrent(),
-            "has-background-primary": isCurrent(),
-            "has-text-primary-invert": isCurrent(),
+            "current-move": isCurrent()
+            
         };
         const nag = mainNag();
         if (nag) {
