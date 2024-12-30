@@ -6,7 +6,8 @@ import { IconChevronDown, IconChevronRight } from '@tabler/icons-solidjs';
 type FileBrowserProps = {
     rootFolder: FileBrowserFile;
     // fetchFiles: (path: string) => Promise<TreeNode<FileBrowserFile>[]>;
-    onSelectedFileChanged: (file: FileBrowserFile) => void;
+    onSelectedFileChanged?: (file: FileBrowserFile) => void;
+    onNodeClick?: (node: FileBrowserFile) => void;
 };
 
 export interface FileBrowserFile {
@@ -54,7 +55,8 @@ const FileBrowser = (props: FileBrowserProps) => {
     return (
         <TreeView
             root={rootNode()}
-            onSelectedChanged={(node) => props.onSelectedFileChanged(node?.data!)}
+            onSelectedChanged={(node) => props.onSelectedFileChanged?.(node?.data!)}
+            onNodeClick={(node) => props.onNodeClick?.(node.data!)}
             renderNode={(node) => <span>{node.label}</span>}
             renderExpandedIndicator={
                 (isExpanded, _node) => isExpanded ? <IconChevronDown /> : <IconChevronRight />

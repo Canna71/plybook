@@ -6,7 +6,7 @@ const Sidebar = () => {
 
     const navigate = useNavigate();
 
-    const onSelectedFileChanged = (file: FileBrowserFile) => {
+    const onNodeClick = (file: FileBrowserFile) => {
         if(file && !file.isDirectory) {
             if(file.name.endsWith('.pgn')) {
                 navigate(`/game?path=${file.path}&source=library`);
@@ -35,7 +35,7 @@ const Sidebar = () => {
 
             <aside>
                 <FileBrowser
-                    onSelectedFileChanged={onSelectedFileChanged}
+                    onNodeClick={onNodeClick}
                     rootFolder={{
                         path: `Library`,
                         name: 'Library',
