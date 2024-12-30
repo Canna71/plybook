@@ -4,7 +4,6 @@ import { Accessor } from "solid-js";
 import { HierarchicalMoveData, makeTree } from "../../models/tree";
 import { CommentsView } from "./Comments";
 
-// import "solid-contextmenu/dist/index.css";
 import { Ply } from "./Ply";
 import { GameContext } from "./GameContext";
 

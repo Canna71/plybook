@@ -46,7 +46,6 @@ import { Tooltip } from "../common/Tooltip";
 export type GameManagerOptions = {
     pgn?: Accessor<string | undefined>;
     setPgn?: (pgn: string) => void;
-    onSave?: () => void;
     engineColor?: Accessor<Color | undefined>;
 };
 
@@ -92,7 +91,6 @@ const SetPositionSwitch: Component<SetPositionSwitchProps> = (props) => {
 const GameManager: Component<GameManagerOptions> = ({
     pgn,
     setPgn,
-    onSave,
     engineColor
 }) => {
     // #region Game State
@@ -113,7 +111,6 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region view mode state
     const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
-    const [modified, setModified] = createSignal(false);
     // #endregion
 
     // #region Engine state
@@ -153,7 +150,6 @@ const GameManager: Component<GameManagerOptions> = ({
             }
             setCurrentPath(gameModel.pathAtMainlinePly(0));
         });
-        setTimeout(() => setModified(false), 10);
     });
 
     // #endregion
@@ -216,10 +212,7 @@ const GameManager: Component<GameManagerOptions> = ({
         setGame(game()?.clone());
     };
 
-    const onSaveInternal = () => {
-        setModified(false);
-        onSave?.();
-    };
+
     // #endregion
 
     // #region Computed Properties
@@ -275,7 +268,7 @@ const GameManager: Component<GameManagerOptions> = ({
     const blackPlayer = () => game()?.players.black.name || "Black";
 
     const isEditable = () => {
-        if (!onSave || !setPgn) return false;
+        if (!setPgn) return false;
 
         return true;
     };
@@ -321,9 +314,9 @@ const GameManager: Component<GameManagerOptions> = ({
 
     createEffect(() => {
         const newPgn = game()?.pgn();
-        if (newPgn) {
+        if (newPgn &&   newPgn !== pgn?.()) {
+            console.log("Setting PGN", newPgn, pgn?.());
             setPgn?.(newPgn);
-            setModified(true);
         }
     });
 
@@ -432,7 +425,7 @@ const GameManager: Component<GameManagerOptions> = ({
                     currentPath: currentPath,
                     setCurrentPath: setCurrentPath,
                     setSquareHovered: setSquareHovered,
-                    editable: () => true,
+                    editable: isEditable,
                 }}
             >
                 <TooltipContext.Provider value={{ showTooltip }}>
@@ -483,18 +476,10 @@ const GameManager: Component<GameManagerOptions> = ({
                         </div>
                         <VDivider ref={divider!} />
                         <div class="pgnviewer-sidebar">
-                            <div class="pgnviewer-sidebar-header buttons are-small">
-                                <Show when={onSave}>
-                                    <button
-                                        disabled={!modified()}
-                                        class="button is-primary"
-                                        onClick={onSaveInternal}
-                                    >
-                                        Save
-                                    </button>
-                                </Show>
-                            </div>
-                            <EngineInfoViewer engineInfo={engineInfo} />
+                            
+                            <Show when={engineCallable() && !engineColor?.()}>
+                                <EngineInfoViewer engineInfo={engineInfo} />
+                            </Show>
                             <Show when={hasMoves()}>
                                 <div class="pgnviewer-moves-wrapper">
                                     <Moves />
