@@ -34,10 +34,7 @@ import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
 import { NormalMove } from "chessops";
 import "./GameEditor.scss";
-import {
-    EngineInfo,
-    IChessEngine
-} from "../../engine/engineinterfaces";
+import { EngineInfo, IChessEngine } from "../../engine/engineinterfaces";
 import { getEngineFolder } from "../../storage/fs";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
 import { UCIEngine } from "../../engine/uciengine";
@@ -59,6 +56,35 @@ enum ViewMode {
 type PromotionData = {
     promotionCell: Key;
     move: NormalMove;
+};
+
+type SetPositionSwitchProps = {
+    viewMode: Accessor<ViewMode>;
+    onEditStartingPosition: () => void;
+    onAcceptStartingPosition: () => void;
+    onCancelStartingPosition: () => void;
+};
+
+const SetPositionSwitch: Component<SetPositionSwitchProps> = (props) => {
+    return (
+        <Switch>
+            <Match when={props.viewMode() === ViewMode.MOVES}>
+                <Button onClick={props.onEditStartingPosition}>
+                    Set Starting Position
+                </Button>
+            </Match>
+            <Match when={props.viewMode() === ViewMode.STARTING_POSITION}>
+                <div class="is-flex is-flex-direction-row is-gap-1">
+                    <Button onClick={props.onAcceptStartingPosition}>
+                        Accept
+                    </Button>
+                    <Button onClick={props.onCancelStartingPosition}>
+                        Cancel
+                    </Button>
+                </div>
+            </Match>
+        </Switch>
+    );
 };
 
 const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
@@ -183,13 +209,12 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
     // #region Computed Properties
 
-    
     const position = createMemo(() => getPosition(game, currentPath));
 
     const fen = createMemo(() => makeFen(position().toSetup()));
 
-    const turn = () => createMemo(()=>position().turn);
-    
+    const turn = () => createMemo(() => position().turn);
+
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered)();
 
@@ -228,9 +253,13 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         return config;
     };
 
+    const hasMoves = createMemo(() => game()?.mainline?.length ?? 0 > 0);
+
     const whitePlayer = () => game()?.players.white.name || "White";
 
     const blackPlayer = () => game()?.players.black.name || "Black";
+
+    // #endregion
 
     // #region Starting Position Editing
     const onEditStartingPosition = () => {
@@ -247,8 +276,6 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     const onCancelStartingPosition = () => {
         setViewMode(ViewMode.MOVES);
     };
-
-    // #endregion
 
     // #endregion
 
@@ -339,7 +366,6 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     // handles engine processing
     createEffect(() => {
         if (engineCallable()) {
-           
             const fenStr = fen();
             setEngineInfo([]);
             console.log("Analyzing position", fenStr);
@@ -359,7 +385,6 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         anchor: Element | undefined,
         plyData: PlyData | undefined,
     ) => {
-	
         setPly(plyData);
         setReference(anchor);
     };
@@ -426,57 +451,40 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
                         </div>
                         <VDivider ref={divider!} />
                         <div class="pgnviewer-sidebar">
-                            <div class="pgnviewer-sidebar-header">
-                                <Switch>
-                                    <Match when={viewMode() === ViewMode.MOVES}>
-                                        <Button
-                                            onClick={onEditStartingPosition}
-                                        >
-                                            Set Starting Position
-                                        </Button>
-                                    </Match>
-                                    <Match
-                                        when={
-                                            viewMode() ===
-                                            ViewMode.STARTING_POSITION
-                                        }
-                                    >
-                                        <div class="is-flex is-flex-direction-row is-gap-1">
-                                            <Button
-                                                onClick={
-                                                    onAcceptStartingPosition
-                                                }
-                                            >
-                                                Accept
-                                            </Button>
-                                            <Button
-                                                onClick={
-                                                    onCancelStartingPosition
-                                                }
-                                            >
-                                                Cancel
-                                            </Button>
-                                        </div>
-                                    </Match>
-                                </Switch>
-                            </div>
+                            <div class="pgnviewer-sidebar-header"></div>
                             <EngineInfoViewer engineInfo={engineInfo} />
-                            <div class="pgnviewer-moves-wrapper">
-                                <Moves />
-                            </div>
-                            <ButtonBar
-                                game={game}
-                                currentPath={currentPath}
-                                setCurrentPath={setCurrentPath}
-                            />
+                            <Show when={hasMoves()}>
+                                <div class="pgnviewer-moves-wrapper">
+                                    <Moves />
+                                </div>
+                                <ButtonBar
+                                    game={game}
+                                    currentPath={currentPath}
+                                    setCurrentPath={setCurrentPath}
+                                />
+                            </Show>
+                            <Show when={!hasMoves()}>
+                                <SetPositionSwitch
+                                    viewMode={viewMode}
+                                    onEditStartingPosition={
+                                        onEditStartingPosition
+                                    }
+                                    onAcceptStartingPosition={
+                                        onAcceptStartingPosition
+                                    }
+                                    onCancelStartingPosition={
+                                        onCancelStartingPosition
+                                    }
+                                />
+                            </Show>
                         </div>
                     </div>
                     <div class="pgn-viewer-bottom"></div>
                 </TooltipContext.Provider>
             </GameContext.Provider>
-			<Show when={reference()}>
-				<Tooltip plyData={ply} reference={reference} />
-			</Show>
+            <Show when={reference()}>
+                <Tooltip plyData={ply} reference={reference} />
+            </Show>
         </>
     );
 };

@@ -21,8 +21,6 @@ const GameView = () => {
         } else {
             setOriginalPgn("[]");
         }
-
-    
     });
 
     const  onSave = async () => {
