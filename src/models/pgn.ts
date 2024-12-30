@@ -104,6 +104,7 @@ export interface PlyData extends InitialOrMove {
     emt?: number;
     fen: FEN;
     pgnNode?: PgnNodeData;
+    pos: Position
 }
 
 // Type guard function to check if an object is PlyData
@@ -182,6 +183,7 @@ function makeMove(metadata: Metadata): (ctx: State, data: PgnNodeData, childInde
             clocks,
             emt: comments.emt,
             pgnNode: node,
+            pos: state.pos.clone(),
         };
         return moveNode;
     };

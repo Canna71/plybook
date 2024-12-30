@@ -152,9 +152,8 @@ export function getPosition(
     return pos;
 }
 export function getPositionFromData(data: Initial | PlyData | undefined) {
-    const fen = data?.fen || INITIAL_FEN;
-    const setup = parseFen(fen).unwrap();
-    const pos = Chess.fromSetup(setup).unwrap();
+    
+	const pos = data?.pos;
     return pos;
 }
 

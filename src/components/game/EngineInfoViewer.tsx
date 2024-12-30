@@ -23,7 +23,7 @@ type EngineInfoViewerProps = {
 
 function makeLine(info: EngineInfo, path: Path, game: GameModel) {
     const data = game.dataAt(path);
-    const pos = getPositionFromData(data);
+    const pos = data?.pos.clone();
 
     const pvMoves = info.pv || [];
     const line = pvMoves.reduce(
@@ -53,6 +53,7 @@ function makeLine(info: EngineInfo, path: Path, game: GameModel) {
                 nags: [],
                 shapes: [],
                 clocks: {},
+                pos
                 // emt: comments.emt,
                 // pgnNode: node,
             };
@@ -69,14 +70,23 @@ function makeLine(info: EngineInfo, path: Path, game: GameModel) {
 
 const PVMove = (props: { move: PlyData }) => {
     const innerShowTooltip = useFenTooltip(true, props.move);
+
+    const moveNumber = () => {
+        const ply = props.move.ply;
+        const fullMoveNum = Math.ceil(ply / 2);
+        const hm = ply % 2;
+        return `${fullMoveNum}${hm === 0 ? "..." : "."} `;
+    }
+
     return (
         <>
             <span
                 onMouseEnter={innerShowTooltip}
                 onMouseLeave={() => innerShowTooltip(undefined)}
                 class="engine-info-pv-move"
-            >
-                {props.move.fan}
+            >   <span class="engine-info-pv-number">{moveNumber()}</span>
+                <span class="enngine-info-pv-fan">{props.move.fan}</span>
+                
             </span>
         </>
     );
