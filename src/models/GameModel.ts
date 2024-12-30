@@ -78,22 +78,21 @@ export class GameModel {
         }
     }
 
-    applyMove(path: Path, move: Move): [GameModel, Path] {
-        const pos = this.getPosition(path);
+    // applyMove(path: Path, move: Move): [GameModel, Path] {
+    //     const pos = this.getPosition(path);
 
-        const san = makeSan(pos, move);
-        const moveId = scalachessCharPair(move);
-        const pgnNode = this.findPgnNode(path);
-        extend(pgnNode!, [{ san }]);
-        // this.updateMoves();
-        const newGameModel = this.getNewGameModel();
-        const newPath = path.append(moveId);
-        return [newGameModel, newPath];
-    }
+    //     const san = makeSan(pos, move);
+    //     const moveId = scalachessCharPair(move);
+    //     const pgnNode = this.findPgnNode(path);
+    //     extend(pgnNode!, [{ san }]);
+    //     // this.updateMoves();
+    //     const newGameModel = this.getNewGameModel();
+    //     const newPath = path.append(moveId);
+    //     return [newGameModel, newPath];
+    // }
 
     applyMoves(path: Path, moves: Move[]): [GameModel, Path] {
         const pos = this.getPosition(path).clone();
-        // TODO: skip moves that we already have!
         const pgnNode = this.findPgnNode(path);
         let node = pgnNode;
         let p = path;
@@ -112,10 +111,8 @@ export class GameModel {
                 node = existing;
             } else {
                node = extend(node!, [{ san }]);
-                // node = node!.children[node!.children!.length - 1];
             }
         }
-        // this.updateMoves();
         const newGameModel = this.getNewGameModel();
         const newPath = p;
         console.log("newPath", newPath.path);

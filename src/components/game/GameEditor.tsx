@@ -260,7 +260,7 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
             return;
         }
         const path = currentPath() || Path.root;
-        const [newGameModel, newPath] = g.applyMove(path, move);
+        const [newGameModel, newPath] = g.applyMoves(path, [move]);
         batch(() => {
             setGame(newGameModel);
             setCurrentPath(newPath);

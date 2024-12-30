@@ -66,7 +66,7 @@ const ButtonBar: Component<ButtonBarProps> = ({ game, currentPath, setCurrentPat
 		if (!g) {
 			return;
 		}
-		const path = g.pathAtMainlinePly(g.mainline.length - 1);
+		const path = g.pathAtMainlinePly(g.mainline.length);
 		setCurrentPath(path);
 	}
 
