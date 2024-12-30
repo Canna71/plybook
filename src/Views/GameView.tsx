@@ -1,5 +1,5 @@
 import { batch, createEffect, createSignal } from "solid-js";
-
+import { save } from "@tauri-apps/plugin-dialog";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
 import { readDataFile, writeDataFile } from "../storage/fs";
@@ -40,11 +40,26 @@ const GameView = () => {
     const onSave = async () => {
         const pgnText = newPgn();
         console.log(pgnText);
-        if (typeof searchParams.path === "string" && pgnText) {
-            await writeDataFile(searchParams.path, pgnText);
-            // await writeDataFile("test.pgn", pgnText);
+        if(pgnText) {
+            if (typeof searchParams.path === "string") {
+            
+                await writeDataFile(searchParams.path, pgnText);
+                // await writeDataFile("test.pgn", pgnText);
+                setModified(false);
+            } else {
+                const path = await save({
+                    filters: [
+                        {
+                            name: "PGN File",
+                            extensions: ["pgn"],
+                        },
+                    ],
+                });
+                path && await writeDataFile(path, pgnText);
+                path && setModified(false);
+            }
         }
-        setModified(false);
+        
     };
 
     return (
