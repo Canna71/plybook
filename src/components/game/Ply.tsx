@@ -13,19 +13,7 @@ import { Dynamic } from "solid-js/web";
 import { range } from "es-toolkit";
 import { GameContext } from "./GameContext";
 import { useFenTooltip } from "../common/utils";
-import { isPiece } from "../../models/pgn";
-import {
-    IconChessBishop,
-    IconChessBishopFilled,
-    IconChessKing,
-    IconChessKingFilled,
-    IconChessKnight,
-    IconChessKnightFilled,
-    IconChessQueen,
-    IconChessQueenFilled,
-    IconChessRook,
-    IconChessRookFilled,
-} from "@tabler/icons-solidjs";
+import { PlyFan } from "../common/PlyFan";
 
 const GoodMove = () => {
     return (
@@ -450,43 +438,7 @@ function getChessDescription(nag: number) {
     return descriptions[nag] || "Invalid number";
 }
 
-const figurineMap: Record<string, ()=>JSXElement> = {
-    K: ()=> <IconChessKingFilled />,
-    Q: ()=> <IconChessQueenFilled />,
-    R: ()=> <IconChessRookFilled />,
-    B: ()=> <IconChessBishopFilled />,
-    N: ()=> <IconChessKnightFilled />,
-    k: ()=> <IconChessKing />,
-    q: ()=> <IconChessQueen />,
-    r: ()=> <IconChessRook />,
-    b: ()=> <IconChessBishop />,
-    n: ()=> <IconChessKnight />,
-};
 
-export const PlyFan: Component<{ san: string; color: Color }> = ({
-    san,
-    color,
-}) => {
-    const piece = isPiece(san[0])
-        ? color === "white"
-            ? san[0].toUpperCase()
-            : san[0].toLowerCase()
-        : undefined;
-    const content = piece ? san.slice(1) : san;
-
-
-
-    return (
-        <>
-            <Show when={piece}>
-                <span class="move-fan-figurine">
-                    <Dynamic component={figurineMap[piece!]} />
-                </span>
-            </Show>
-            <span class="move-fan-content">{content}</span>
-        </>
-    );
-};
 
 type PlyProps = {
     line: HierarchicalMoveData;
