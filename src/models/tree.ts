@@ -47,6 +47,10 @@ export function makeTree(root: Node<PlyData>, level: number = 0): HierarchicalMo
 		node = mainLine; // temporary
 	}
 
+	// removes last node if empty
+	if (currentMove && !currentMove.white && !currentMove.black) {
+		list.pop();
+	}
 
 	return list;
 }

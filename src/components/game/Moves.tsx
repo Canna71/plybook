@@ -46,7 +46,7 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
         move.white?.startingComments || move.black?.startingComments || [];
     const startingPath = move.white?.startingComments
         ? move.white.path
-        : move.black!.path;
+        : move.black?.path;
     const afterWhite = move.white?.comments || [];
     const afterBlack = move.black?.comments || [];
 
