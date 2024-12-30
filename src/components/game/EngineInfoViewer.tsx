@@ -112,15 +112,16 @@ const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
         const l = line();
         // gets the moves in l until and included move using es-toolkit
         const moves = [...takeWhile(l, (m) => m !== move), move];
-        const [newGameModel, newPath] = moves.reduce(
-            ([game, path], move) => {
-                const ret = game!.applyMove(path, move.move);
-                console.log("TODO: fix move", ret);
-                return ret;
-                // return [game.play(move), path.append(scalachessCharPair(move.move))];
-            },
-            [game(), currentPath()!],
-        );
+        // const [newGameModel, newPath] = moves.reduce(
+        //     ([game, path], move) => {
+        //         const ret = game!.applyMove(path, move.move);
+        //         console.log("TODO: fix move", ret);
+        //         return ret;
+        //         // return [game.play(move), path.append(scalachessCharPair(move.move))];
+        //     },
+        //     [game(), currentPath()!],
+        // );
+        const [newGameModel, newPath] = game()!.applyMoves(currentPath()!, moves.map((m) => m.move));
         console.log("TODO: apply all moves up to this move", newGameModel, newPath);
         batch(() => {
             setGame(newGameModel);

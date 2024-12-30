@@ -91,6 +91,26 @@ export class GameModel {
         return [newGameModel, newPath];
     }
 
+    applyMoves(path: Path, moves: Move[]): [GameModel, Path] {
+        const pos = this.getPosition(path);
+
+        const pgnNode = this.findPgnNode(path);
+        let node = pgnNode;
+        let p = path;
+        for(let i=0; i<moves.length; i++) {
+            const move = moves[i];
+            const san = makeSan(pos, move);
+            const moveId = scalachessCharPair(move);
+            p = p.append(moveId);
+            extend(node!, [{ san }]);
+            node = node!.children[node!.children!.length - 1];
+        }
+        // this.updateMoves();
+        const newGameModel = this.getNewGameModel();
+        const newPath = p;
+        return [newGameModel, newPath];
+    }
+
     private getNewGameModel(): GameModel {
 
         // const moves = this.updateMoves();

@@ -54,6 +54,10 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
     const wpath = move.white?.path || ppath;
     const bpath = move.black?.path || wpath;
 
+    if(!move.black) {
+        console.log("MoveLine no black", move);
+    }
+
     return (
         <>
             <CommentsRows
