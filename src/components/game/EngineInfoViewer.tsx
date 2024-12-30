@@ -1,19 +1,17 @@
-import { createSignal, For, useContext } from "solid-js";
+import { batch, createMemo, createSignal, For, useContext } from "solid-js";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import "./EngineInfoViewer.scss"; // Create and import your custom styles
 import { GameContext } from "./GameContext";
 import { Path, PlyData, sanToFan } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
-import {
-    toColor,
-    useFenTooltip,
-} from "../common/utils";
+import { toColor, useFenTooltip } from "../common/utils";
 import { makeUci, parseUci, Position } from "chessops";
 import { makeFen } from "chessops/fen";
 import { makeSanAndPlay } from "chessops/san";
 import { scalachessCharPair } from "chessops/compat";
 import { IconChevronRight } from "@tabler/icons-solidjs";
 import { PlyFan } from "../common/PlyFan";
+import { takeWhile } from "es-toolkit";
 
 type EngineInfoViewerProps = {
     engineInfo: EngineInfo[];
@@ -51,7 +49,7 @@ function makeLine(info: EngineInfo, path: Path, game: GameModel) {
                 nags: [],
                 shapes: [],
                 clocks: {},
-                pos
+                pos,
                 // emt: comments.emt,
                 // pgnNode: node,
             };
@@ -64,29 +62,35 @@ function makeLine(info: EngineInfo, path: Path, game: GameModel) {
         [pos, path, []] as [Position, Path, PlyData[]],
     );
 
-     return line[2];
+    return line[2];
 }
 
-const PVMove = (props: { move: PlyData }) => {
+const PVMove = (props: { move: PlyData; onClick: (move: PlyData) => void }) => {
     const innerShowTooltip = useFenTooltip(true, props.move);
+
+    const onClick = () => {
+        props.onClick(props.move);
+    };
 
     const moveNumber = () => {
         const ply = props.move.ply;
         const fullMoveNum = Math.ceil(ply / 2);
         const hm = ply % 2;
         return `${fullMoveNum}${hm === 0 ? "..." : "."} `;
-    }
+    };
 
     return (
         <>
             <span
+                onClick={onClick}
                 onMouseEnter={innerShowTooltip}
                 onMouseLeave={() => innerShowTooltip(undefined)}
                 class="engine-info-pv-move"
-            >   <span class="engine-info-pv-number">{moveNumber()}</span>
+            >
+                {" "}
+                <span class="engine-info-pv-number">{moveNumber()}</span>
                 {/* <span class="enngine-info-pv-fan">{props.move.fan}</span> */}
                 <PlyFan san={props.move.san} color={toColor(props.move.pos)} />
-                
             </span>
         </>
     );
@@ -97,9 +101,32 @@ type EngineInfoLineProps = {
 };
 
 const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
-    const { currentPath, game } = useContext(GameContext)!;
+    const { currentPath, setCurrentPath, game, setGame } = useContext(GameContext)!;
     const [isExpanded, setIsExpanded] = createSignal(false);
 
+    const line = createMemo(() => {
+        return makeLine(info, currentPath()!, game()!);
+    });
+
+    const onMoveClicked = (move: PlyData) => {
+        const l = line();
+        // gets the moves in l until and included move using es-toolkit
+        const moves = [...takeWhile(l, (m) => m !== move), move];
+        const [newGameModel, newPath] = moves.reduce(
+            ([game, path], move) => {
+                const ret = game!.applyMove(path, move.move);
+                console.log("TODO: fix move", ret);
+                return ret;
+                // return [game.play(move), path.append(scalachessCharPair(move.move))];
+            },
+            [game(), currentPath()!],
+        );
+        console.log("TODO: apply all moves up to this move", newGameModel, newPath);
+        batch(() => {
+            setGame(newGameModel);
+            setCurrentPath(newPath);
+        });
+    };
 
     const classList = () => ({
         "engine-info-row": true,
@@ -114,8 +141,8 @@ const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
                     ? info.score.value / 100
                     : `#${info.score?.value}`}
             </span>
-            {makeLine(info, currentPath()!, game()!).map((move) => {
-                return <PVMove move={move} />;
+            {line().map((move) => {
+                return <PVMove move={move} onClick={onMoveClicked} />;
             })}
             <button
                 class="expand-line"

@@ -130,7 +130,6 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
         }
 
         const move = makeMove(orig, dest);
-
         const pos = position();
 
         const isLegal = pos.isLegal(move);
