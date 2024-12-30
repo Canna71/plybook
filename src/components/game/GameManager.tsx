@@ -33,7 +33,7 @@ import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
 import { NormalMove } from "chessops";
-import "./GameEditor.scss";
+import "./GameManager.scss";
 import { EngineInfo, IChessEngine } from "../../engine/engineinterfaces";
 import { getEngineFolder } from "../../storage/fs";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
@@ -43,9 +43,10 @@ import EngineInfoViewer from "./EngineInfoViewer";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "../common/Tooltip";
 
-export type PgnEditorOptions = {
+export type GameManagerOptions = {
     pgn: Accessor<string | undefined>;
     setPgn: (pgn: string) => void;
+    onSave?: () => void;
 };
 
 enum ViewMode {
@@ -87,7 +88,11 @@ const SetPositionSwitch: Component<SetPositionSwitchProps> = (props) => {
     );
 };
 
-const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
+const GameManager: Component<GameManagerOptions> = ({
+    pgn,
+    setPgn,
+    onSave,
+}) => {
     // #region Game State
     const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
         undefined,
@@ -106,6 +111,7 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
     // #region view mode state
     const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
+    const [modified, setModified] = createSignal(false);
     // #endregion
 
     // #region Engine state
@@ -135,15 +141,16 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
             pgnString = "[]";
         }
         const gameModel = makeGame(pgnString);
-        setGame(gameModel);
-
-        if (gameModel.headers.get("FEN")) {
-            const setup = parseFen(gameModel.headers.get("FEN") || "");
-            if (setup.isOk) {
-                setStartingPosition(makeFen(setup.value));
+        batch(() => {
+            setGame(gameModel);
+            if (gameModel.headers.get("FEN")) {
+                const setup = parseFen(gameModel.headers.get("FEN") || "");
+                if (setup.isOk) {
+                    setStartingPosition(makeFen(setup.value));
+                }
             }
-        }
-        setCurrentPath(gameModel.pathAtMainlinePly(0));
+            setCurrentPath(gameModel.pathAtMainlinePly(0));
+        });
     });
 
     // #endregion
@@ -204,6 +211,11 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     const setBlackPlayer = (name: string) => {
         game()!.players.black.name = name;
         setGame(game()?.clone());
+    };
+
+    const onSaveInternal = () => {
+        setModified(false);
+        onSave?.();
     };
     // #endregion
 
@@ -296,12 +308,13 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
 
     // #endregion
 
-    // #region Update PGN
+    // #region Effects
 
     createEffect(() => {
         const newPgn = game()?.pgn();
         if (newPgn) {
             setPgn(newPgn);
+            setModified(true);
         }
     });
 
@@ -451,7 +464,17 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
                         </div>
                         <VDivider ref={divider!} />
                         <div class="pgnviewer-sidebar">
-                            <div class="pgnviewer-sidebar-header"></div>
+                            <div class="pgnviewer-sidebar-header buttons are-small">
+                                <Show when={onSave}>
+                                    <button
+                                        disabled={!modified()}
+                                        class="button is-primary"
+                                        onClick={onSaveInternal}
+                                    >
+                                        Save
+                                    </button>
+                                </Show>
+                            </div>
                             <EngineInfoViewer engineInfo={engineInfo} />
                             <Show when={hasMoves()}>
                                 <div class="pgnviewer-moves-wrapper">
@@ -489,4 +512,4 @@ const GameEditor: Component<PgnEditorOptions> = ({ pgn, setPgn }) => {
     );
 };
 
-export default GameEditor;
+export default GameManager;

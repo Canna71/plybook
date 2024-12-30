@@ -1,7 +1,7 @@
 import { createEffect, createSignal } from "solid-js";
 
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
-import GameEditor from "../components/game/GameEditor";
+import GameManager from "../components/game/GameManager";
 import { readDataFile, writeDataFile } from "../storage/fs";
 import { useSearchParams } from "@solidjs/router";
 import Button from "../components/common/Button";
@@ -34,8 +34,11 @@ const GameView = () => {
 
     return (
         <>
-            <GameEditor pgn={originalPgn} setPgn={setNewPgn} />
-            <Button onClick={onSave}>Save PGN</Button>
+            <GameManager 
+                pgn={originalPgn} 
+                setPgn={setNewPgn} 
+                onSave={onSave}
+            />
         </>
     );
 }
