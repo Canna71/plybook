@@ -151,6 +151,7 @@ const GameManager: Component<GameManagerOptions> = ({
             }
             setCurrentPath(gameModel.pathAtMainlinePly(0));
         });
+        setTimeout(()=>setModified(false),10);
     });
 
     // #endregion
