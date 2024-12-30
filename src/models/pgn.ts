@@ -250,12 +250,12 @@ export function makeMetadata(headers: Headers): Metadata {
 const makeClocks = (prev: Clocks, turn: Color, clk?: number): Clocks =>
     turn == 'white' ? { ...prev, black: clk } : { ...prev, white: clk };
 
+export function isPiece(letter: string): boolean {
+    return 'KQRBN'.includes(letter.toUpperCase());
+}
+
 export function sanToFan(san: string, turn: Color): string {
     // Define the mapping from SAN piece letters to FAN symbols
-
-    function isPiece(letter: string): boolean {
-        return 'KQRBN'.includes(letter);
-    }
 
     const fanMap: { [key: string]: string } = {
         K: '♔',  // King
