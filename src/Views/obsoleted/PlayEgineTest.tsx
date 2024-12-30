@@ -1,14 +1,14 @@
 import { createSignal, onMount } from "solid-js";
 import { Api } from "chessground/api";
-import { Chessboard } from "../components/common/chessboard";
+import { Chessboard } from "../../components/common/chessboard";
 import { Key } from "chessground/types";
 import { Chess, NormalMove, Piece } from "chessops";
-import { makeMove } from "../components/common/utils";
+import { makeMove } from "../../components/common/utils";
 import { makeFen } from "chessops/fen";
-import { IChessEngine, IEngineEventEmitter } from "../engine/engineinterfaces";
-import { getEngineFolder } from "../storage/fs";
-import { ExecutableUCIInterface } from "../engine/executableuci";
-import { UCIEngine } from "../engine/uciengine";
+import { IChessEngine, IEngineEventEmitter } from "../../engine/engineinterfaces";
+import { getEngineFolder } from "../../storage/fs";
+import { ExecutableUCIInterface } from "../../engine/executableuci";
+import { UCIEngine } from "../../engine/uciengine";
 
 const PlayEngineTest = () => {
     const [game, _setGame] = createSignal(Chess.default());

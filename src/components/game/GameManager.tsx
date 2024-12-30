@@ -44,9 +44,10 @@ import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "../common/Tooltip";
 
 export type GameManagerOptions = {
-    pgn: Accessor<string | undefined>;
-    setPgn: (pgn: string) => void;
+    pgn?: Accessor<string | undefined>;
+    setPgn?: (pgn: string) => void;
     onSave?: () => void;
+    engineColor?: Accessor<Color | undefined>;
 };
 
 enum ViewMode {
@@ -92,6 +93,7 @@ const GameManager: Component<GameManagerOptions> = ({
     pgn,
     setPgn,
     onSave,
+    engineColor
 }) => {
     // #region Game State
     const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
@@ -116,9 +118,9 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region Engine state
     const [engineOn, setEngineOn] = createSignal<boolean>(true);
-    const [engineColor, setEngineColor] = createSignal<Color | undefined>(
-        undefined,
-    );
+    // const [engineColor, setEngineColor] = createSignal<Color | undefined>(
+    //     undefined,
+    // );
     const [engineFolder, _others] = createResource(() =>
         getEngineFolder("stockfish-aarch64-apple-darwin"),
     );
@@ -136,7 +138,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // #region Game Setup
     createEffect(() => {
         // const cg = api();
-        let pgnString = pgn();
+        let pgnString = pgn?.();
         if (!pgnString) {
             pgnString = "[]";
         }
@@ -151,7 +153,7 @@ const GameManager: Component<GameManagerOptions> = ({
             }
             setCurrentPath(gameModel.pathAtMainlinePly(0));
         });
-        setTimeout(()=>setModified(false),10);
+        setTimeout(() => setModified(false), 10);
     });
 
     // #endregion
@@ -226,7 +228,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const fen = createMemo(() => makeFen(position().toSetup()));
 
-    const turn = () => createMemo(() => position().turn);
+    const turn = createMemo(() => position().turn as Color);
 
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered)();
@@ -237,7 +239,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
         // movable color is current color if not playing against engine
         const movableColor =
-            engineColor() && pos.turn === engineColor() ? undefined : pos.turn;
+            engineColor?.() && pos.turn === engineColor?.() ? undefined : pos.turn;
 
         const config = {
             ...baseConfig,
@@ -272,6 +274,12 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const blackPlayer = () => game()?.players.black.name || "Black";
 
+    const isEditable = () => {
+        if (!onSave || !setPgn) return false;
+
+        return true;
+    };
+
     // #endregion
 
     // #region Starting Position Editing
@@ -282,7 +290,7 @@ const GameManager: Component<GameManagerOptions> = ({
     const onAcceptStartingPosition = () => {
         game()?.headers.set("FEN", startingPosition() || "");
         game()?.headers.set("Setup", "1");
-        setPgn(game()?.pgn() || "");
+        setPgn?.(game()?.pgn() || "");
         setViewMode(ViewMode.MOVES);
     };
 
@@ -314,7 +322,7 @@ const GameManager: Component<GameManagerOptions> = ({
     createEffect(() => {
         const newPgn = game()?.pgn();
         if (newPgn) {
-            setPgn(newPgn);
+            setPgn?.(newPgn);
             setModified(true);
         }
     });
@@ -325,17 +333,27 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const engineCallable = () => engine() && engineOn() && engineFolder();
 
+    const shouldInitEngine = () => {
+        return (engineOn() || engineColor?.()) && engineFolder() && !engine();
+    };
+
     createEffect(async () => {
-        if (engineOn() && engineFolder() && !engine()) {
+        if (shouldInitEngine()) {
             const engine = new UCIEngine(
                 new ExecutableUCIInterface(engineFolder()!),
             );
 
             await engine.init();
-            setEngine(engine);
+
             engine.on("bestmove", onEngineBestMove);
             engine.on("info", onEngineInfo);
             engine.newGame();
+            batch(() => {
+                setEngine(engine);
+                setEngineOn(true);
+            });
+        } else {
+            console.log("Engine not needed",engineOn(), engineColor?.(), engineFolder(), engine());
         }
     });
 
@@ -363,7 +381,7 @@ const GameManager: Component<GameManagerOptions> = ({
         if (!g) {
             return;
         }
-        if (!engineColor()) {
+        if (!engineColor?.() || (engineColor?.() != turn())) {
             return;
         }
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
@@ -440,7 +458,7 @@ const GameManager: Component<GameManagerOptions> = ({
                                                         ?.promotionCell
                                                 }
                                                 onSelected={onPromotionSelected}
-                                                color={turn()}
+                                                color={turn}
                                             />
                                         </Show>
                                     </div>
