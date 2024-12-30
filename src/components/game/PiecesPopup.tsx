@@ -37,9 +37,6 @@ export const PiecesPopup = (props: PiecesPopupProps) => {
             const x = chessboardPosition.x + sx * squareSize;
             const y = chessboardPosition.y + ((sy === 7) ? -1 : 8) * squareSize;
 
-
-            console.log({ square, sx, sy, chessboardwidth, chessboardPosition, squareSize, x, y });
-
             const rect = {
                 x: x,
                 y: y,

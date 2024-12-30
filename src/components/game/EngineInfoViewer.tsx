@@ -22,7 +22,6 @@ type EngineInfoViewerProps = {
 function makeLine(info: EngineInfo, path: Path, game: GameModel) {
     const data = game.dataAt(path);
     const pos = data?.pos.clone();
-    console.log("makeline initial pos", pos, data);
     const pvMoves = info.pv || [];
     const line = pvMoves.reduce(
         ([prevPos, path, list], currentMove) => {
@@ -65,9 +64,7 @@ function makeLine(info: EngineInfo, path: Path, game: GameModel) {
         [pos, path, []] as [Position, Path, PlyData[]],
     );
 
-    console.log("line", line[2]);
-
-    return line[2];
+     return line[2];
 }
 
 const PVMove = (props: { move: PlyData }) => {

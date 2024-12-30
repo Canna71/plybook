@@ -231,7 +231,6 @@ export function useFenTooltip(tooltipEnabled: boolean, plyData: PlyData | undefi
     ) => {
         if (!tooltipEnabled) return;
         if (e) {
-			console.log("useFenTooltip", plyData, e, showTooltip);
             !!plyData && showTooltip(e.currentTarget, plyData);
         } else {
             showTooltip(undefined, undefined);
