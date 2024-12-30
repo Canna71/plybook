@@ -148,7 +148,7 @@ export function getPosition(
     currentPath: Accessor<Path | undefined>,
 ) {
     const data = useCurrentData(game, currentPath)();
-    const pos = getPositionFromData(data);
+    const pos = getPositionFromData(data) || Chess.default();
     return pos;
 }
 export function getPositionFromData(data: Initial | PlyData | undefined) {
