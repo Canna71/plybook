@@ -1,6 +1,9 @@
 import { createSignal, onMount } from "solid-js";
 import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
-import Analysis from "../components/Analysis";
+import Analysis from "../../components/Analysis";
+import GameManager from "../../components/game/GameManager";
+
+/**  @deprecated: Use GameManager instead of Analysis */
 const AnalysisView = () => {
 
     const [pgn, setPgn] = createSignal<string | undefined>(undefined);
@@ -16,7 +19,7 @@ const AnalysisView = () => {
 
     return (
         // <div>
-            <Analysis pgn={pgn} />
+            <GameManager pgn={pgn} defaultEngineOn={true} />
         // </div>
     );
 }

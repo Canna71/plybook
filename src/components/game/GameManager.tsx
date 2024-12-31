@@ -25,7 +25,6 @@ import {
 } from "../common/utils";
 import { Color, Key, Piece, Role } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
-import Button from "../common/Button";
 import BoardEditor from "../boardeditor/BoardEditor";
 import { makeFen, parseFen } from "chessops/fen";
 import { GameContext, TooltipContext } from "./GameContext";
@@ -42,56 +41,28 @@ import { createStore } from "solid-js/store";
 import EngineInfoViewer from "./EngineInfoViewer";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "../common/Tooltip";
+import SetPositionSwitch, { ViewMode } from "./SetPositionSwitch";
 
 export type GameManagerOptions = {
     pgn?: Accessor<string | undefined>;
     setPgn?: (pgn: string) => void;
     engineColor?: Accessor<Color | undefined>;
+    defaultEngineOn?: boolean;
 };
 
-enum ViewMode {
-    STARTING_POSITION,
-    MOVES,
-}
 
 type PromotionData = {
     promotionCell: Key;
     move: NormalMove;
 };
 
-type SetPositionSwitchProps = {
-    viewMode: Accessor<ViewMode>;
-    onEditStartingPosition: () => void;
-    onAcceptStartingPosition: () => void;
-    onCancelStartingPosition: () => void;
-};
 
-const SetPositionSwitch: Component<SetPositionSwitchProps> = (props) => {
-    return (
-        <Switch>
-            <Match when={props.viewMode() === ViewMode.MOVES}>
-                <Button onClick={props.onEditStartingPosition}>
-                    Set Starting Position
-                </Button>
-            </Match>
-            <Match when={props.viewMode() === ViewMode.STARTING_POSITION}>
-                <div class="is-flex is-flex-direction-row is-gap-1">
-                    <Button onClick={props.onAcceptStartingPosition}>
-                        Accept
-                    </Button>
-                    <Button onClick={props.onCancelStartingPosition}>
-                        Cancel
-                    </Button>
-                </div>
-            </Match>
-        </Switch>
-    );
-};
 
 const GameManager: Component<GameManagerOptions> = ({
     pgn,
     setPgn,
-    engineColor
+    engineColor,
+    defaultEngineOn = false,
 }) => {
     // #region Game State
     const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
@@ -114,7 +85,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // #endregion
 
     // #region Engine state
-    const [engineOn, setEngineOn] = createSignal<boolean>(true);
+    const [engineOn, setEngineOn] = createSignal<boolean>(defaultEngineOn);
     // const [engineColor, setEngineColor] = createSignal<Color | undefined>(
     //     undefined,
     // );

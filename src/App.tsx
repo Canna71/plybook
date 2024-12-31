@@ -5,7 +5,7 @@ import Layout from "./Views/Layout";
 import BoardEditorView from "./Views/BoardEditorView";
 import DBTest from "./Views/DBTest";
 import PlayEngineTest from "./Views/obsoleted/PlayEgineTest";
-import AnalysisView from "./Views/AnalysisView";
+import AnalysisView from "./Views/obsoleted/AnalysisView";
 import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
@@ -27,11 +27,11 @@ function App() {
     return (
         <Router root={Layout}>
             <Route path="/" component={Home} />
-            <Route path="/game" component={GameView} />
+            <Route path="/game" component={GameView} info={{engine: false}} />
             <Route path="/boardeditor" component={BoardEditorView} />
             <Route path="/db" component={DBTest} />
             <Route path="/play" component={Play} />
-            <Route path="/analysis" component={AnalysisView} />
+            <Route path="/analysis" component={GameView}info={{engine: true}} />
         </Router>
     );
 }
