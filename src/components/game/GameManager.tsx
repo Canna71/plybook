@@ -31,7 +31,7 @@ import { GameContext, TooltipContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
-import { NormalMove } from "chessops";
+import { NormalMove, Position } from "chessops";
 import "./GameManager.scss";
 import { EngineInfo, IChessEngine } from "../../engine/engineinterfaces";
 import { getEngineFolder } from "../../storage/fs";
@@ -42,6 +42,7 @@ import EngineInfoViewer from "./EngineInfoViewer";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "../common/Tooltip";
 import SetPositionSwitch, { ViewMode } from "./SetPositionSwitch";
+import { PlayAudioForMove } from "../audio";
 
 export type GameManagerOptions = {
     pgn?: Accessor<string | undefined>;
@@ -272,7 +273,14 @@ const GameManager: Component<GameManagerOptions> = ({
             return;
         }
         const path = currentPath() || Path.root;
+        const p = position();
+        const isCapture = p.board.has(move.to);
         const [newGameModel, newPath] = g.applyMoves(path, [move]);
+        const newPos = newGameModel.dataAt(newPath)?.pos;
+        const isCheck = !!newPos?.isCheck();
+        const isCheckmate = !!newPos?.isCheckmate();
+        const isSelf = turn() === 'white';
+        PlayAudioForMove(isCapture, isCheck, isCheckmate, isSelf);
         batch(() => {
             setGame(newGameModel);
             setCurrentPath(newPath);
