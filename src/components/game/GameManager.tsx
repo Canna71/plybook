@@ -12,7 +12,7 @@ import {
     Show,
     Switch,
 } from "solid-js";
-import { makeGame, Path, PlyData } from "../../models/pgn";
+import { isPlyData, makeGame, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
@@ -51,13 +51,10 @@ export type GameManagerOptions = {
     defaultEngineOn?: boolean;
 };
 
-
 type PromotionData = {
     promotionCell: Key;
     move: NormalMove;
 };
-
-
 
 const GameManager: Component<GameManagerOptions> = ({
     pgn,
@@ -111,6 +108,21 @@ const GameManager: Component<GameManagerOptions> = ({
         if (!pgnString) {
             pgnString = "[]";
         }
+        // const gameModel = makeGame(pgnString);
+        // batch(() => {
+        //     setGame(gameModel);
+        //     if (gameModel.headers.get("FEN")) {
+        //         const setup = parseFen(gameModel.headers.get("FEN") || "");
+        //         if (setup.isOk) {
+        //             setStartingPosition(makeFen(setup.value));
+        //         }
+        //     }
+        //     setCurrentPath(gameModel.pathAtMainlinePly(0));
+        // });
+        updateGameFromPgnString(pgnString);
+    });
+
+    const updateGameFromPgnString = (pgnString: string) => {
         const gameModel = makeGame(pgnString);
         batch(() => {
             setGame(gameModel);
@@ -122,7 +134,7 @@ const GameManager: Component<GameManagerOptions> = ({
             }
             setCurrentPath(gameModel.pathAtMainlinePly(0));
         });
-    });
+    }
 
     // #endregion
 
@@ -143,7 +155,6 @@ const GameManager: Component<GameManagerOptions> = ({
             // check for promotion
             const promo = isPromotion(move, pos);
             if (promo) {
-                console.debug("TODO: Promotion");
                 const promoData = {
                     promotionCell: dest,
                     move: move,
@@ -184,7 +195,6 @@ const GameManager: Component<GameManagerOptions> = ({
         setGame(game()?.clone());
     };
 
-
     // #endregion
 
     // #region Computed Properties
@@ -204,7 +214,9 @@ const GameManager: Component<GameManagerOptions> = ({
 
         // movable color is current color if not playing against engine
         const movableColor =
-            engineColor?.() && pos.turn === engineColor?.() ? undefined : pos.turn;
+            engineColor?.() && pos.turn === engineColor?.()
+                ? undefined
+                : pos.turn;
 
         const config = {
             ...baseConfig,
@@ -255,8 +267,11 @@ const GameManager: Component<GameManagerOptions> = ({
     const onAcceptStartingPosition = () => {
         game()?.headers.set("FEN", startingPosition() || "");
         game()?.headers.set("Setup", "1");
-        setPgn?.(game()?.pgn() || "");
-        setViewMode(ViewMode.MOVES);
+        batch(() => {
+            // setPgn?.(game()?.pgn() || "");
+            updateGameFromPgnString(game()?.pgn() || "");
+            setViewMode(ViewMode.MOVES);
+        });
     };
 
     const onCancelStartingPosition = () => {
@@ -273,14 +288,7 @@ const GameManager: Component<GameManagerOptions> = ({
             return;
         }
         const path = currentPath() || Path.root;
-        const p = position();
-        const isCapture = p.board.has(move.to);
         const [newGameModel, newPath] = g.applyMoves(path, [move]);
-        const newPos = newGameModel.dataAt(newPath)?.pos;
-        const isCheck = !!newPos?.isCheck();
-        const isCheckmate = !!newPos?.isCheckmate();
-        const isSelf = turn() === 'white';
-        PlayAudioForMove(isCapture, isCheck, isCheckmate, isSelf);
         batch(() => {
             setGame(newGameModel);
             setCurrentPath(newPath);
@@ -293,9 +301,31 @@ const GameManager: Component<GameManagerOptions> = ({
 
     createEffect(() => {
         const newPgn = game()?.pgn();
-        if (newPgn &&   newPgn !== pgn?.()) {
-            console.log("Setting PGN", newPgn, pgn?.());
+        if (newPgn && newPgn !== pgn?.()) {
             setPgn?.(newPgn);
+        }
+    });
+
+    createEffect(() => {
+        // play sound when path changes
+        const path = currentPath();
+        if((path?.size() || 0) === 0) return;
+        if (path) {
+            const ply = game()?.dataAt(path);
+            if (isPlyData(ply)) {
+                const pos = ply.pos;
+                const isCheck = pos.isCheck();
+                const isCheckmate = pos.isCheckmate();
+                const isSelf = pos.turn === "black"; // self is white
+                // determine if move is a capture
+                const lastMove = ply.move;
+                const previous = path.previous();
+                const previousPly = game()?.dataAt(previous);
+                
+                const isCapture = previousPly?.pos.board.has(lastMove.to) || false;
+                const flags = { isCapture, isCheck, isCheckmate, isSelf };
+                PlayAudioForMove(flags);
+            }
         }
     });
 
@@ -325,7 +355,7 @@ const GameManager: Component<GameManagerOptions> = ({
                 setEngineOn(true);
             });
         } else {
-            console.log("Engine not needed",engineOn(), engineColor?.(), engineFolder(), engine());
+            
         }
     });
 
@@ -353,7 +383,7 @@ const GameManager: Component<GameManagerOptions> = ({
         if (!g) {
             return;
         }
-        if (!engineColor?.() || (engineColor?.() != turn())) {
+        if (!engineColor?.() || engineColor?.() != turn()) {
             return;
         }
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
@@ -372,7 +402,7 @@ const GameManager: Component<GameManagerOptions> = ({
         if (engineCallable()) {
             const fenStr = fen();
             setEngineInfo([]);
-            console.log("Analyzing position", fenStr);
+            // console.log("Analyzing position", fenStr);
             engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 3 });
         }
     });
@@ -455,7 +485,6 @@ const GameManager: Component<GameManagerOptions> = ({
                         </div>
                         <VDivider ref={divider!} />
                         <div class="pgnviewer-sidebar">
-                            
                             <Show when={engineCallable() && !engineColor?.()}>
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>

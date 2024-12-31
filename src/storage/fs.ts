@@ -1,5 +1,5 @@
-import { BaseDirectory, exists, mkdir, readDir, readFile, writeFile } from "@tauri-apps/plugin-fs";
-import { appDataDir, join } from "@tauri-apps/api/path";
+import { BaseDirectory, exists, mkdir, readDir, readFile, rename, writeFile } from "@tauri-apps/plugin-fs";
+import { appDataDir, appLocalDataDir, join } from "@tauri-apps/api/path";
 // import { path } from "@tauri-apps/api";
 
 const LIBRARY_FOLDER = "Library";
@@ -93,4 +93,16 @@ export async function getEngineFolder(name: string) {
 export async function getAvailableEngines() {
     const enginesPath = await getEngineFolder("");
     return (await listAppData(enginesPath)).map((entry) => entry.name);
+}
+
+export async function renameOrCreateDataFile(oldName: string | undefined, newName: string, content: string) {
+    if(oldName && await exists(oldName, { baseDir: BaseDirectory.AppLocalData })) {
+       await rename(oldName, newName, { 
+            oldPathBaseDir: BaseDirectory.AppLocalData,
+            newPathBaseDir: BaseDirectory.AppLocalData
+        });
+    } else {
+        await writeDataFile(newName, content);
+        return join(await appLocalDataDir(), newName);
+    }
 }

@@ -115,7 +115,6 @@ export class GameModel {
         }
         const newGameModel = this.getNewGameModel();
         const newPath = p;
-        console.log("newPath", newPath.path);
         return [newGameModel, newPath];
     }
 

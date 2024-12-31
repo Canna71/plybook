@@ -202,15 +202,3 @@
     overflow: hidden;
 }
 
-.game-header {
-    display: flex;
-    justify-content: space-between;
-    justify-content: right;
-    // padding: 8px;
-    border-bottom: 1px solid var(--bulma-border);
-    margin-bottom: 8px;
-
-    button {
-        padding: 4px 8px;
-    }
-}

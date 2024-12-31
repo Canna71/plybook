@@ -2,10 +2,11 @@ import { batch, createEffect, createSignal } from "solid-js";
 import { save } from "@tauri-apps/plugin-dialog";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
-import { readDataFile, writeDataFile } from "../storage/fs";
+import { readDataFile, renameOrCreateDataFile, writeDataFile } from "../storage/fs";
 import { useLocation, useSearchParams } from "@solidjs/router";
-import Button from "../components/common/Button";
 import { IconDeviceFloppy } from "@tabler/icons-solidjs";
+import "./GameView.scss";
+import Editable from "../components/common/Editable";
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -16,12 +17,24 @@ const GameView = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
     const location = useLocation();
 
+    const displayedName = () => {
+        if (typeof searchParams.path === "string") {
+            return searchParams.path.split("/").pop();
+        }
+        return "Untitled";
+    };
+
+    const filePath = () => {
+        if (typeof searchParams.path === "string") {
+            return searchParams.path;
+        }
+        return undefined;
+    }
+
     createEffect(async () => {
         let pgnText = "[]";
         if (typeof searchParams.path === "string") {
-            console.log("Reading PGN file", searchParams.path);
             pgnText = await readDataFile(searchParams.path);
-            console.log("pgnText", pgnText);
         } else {
             // setOriginalPgn("[]");
         }
@@ -33,18 +46,20 @@ const GameView = () => {
 
     createEffect(() => {
         setModified(!!newPgn());
-        console.log("modified", newPgn());
     });
 
     const isEngineOn = () => {
         return location.pathname === "/analysis";
     };
 
+    const isEditable = () => {
+        return !isEngineOn();
+    };
+
     const canSave = () => modified();
 
     const onSave = async () => {
         const pgnText = newPgn();
-        console.log(pgnText);
         if (pgnText) {
             if (typeof searchParams.path === "string") {
                 await writeDataFile(searchParams.path, pgnText);
@@ -65,21 +80,42 @@ const GameView = () => {
         }
     };
 
+    const onTitleKeyDown = (e: KeyboardEvent) => {
+        const target = e.target as HTMLElement;
+        const text = target.innerText;
+        if (e.key === "Enter") {
+            e.preventDefault(); // This stops the default <br> insertion
+            // Optionally blur the element or trigger save
+
+            target.blur();
+        }
+    };
+
+    const onRename = (text: string) => {
+        renameOrCreateDataFile(filePath(), text, newPgn()||"[]");
+    };
+
     return (
         <>
             <nav class="game-header buttons are-small" role="navigation">
-                
-                        <div class="navbar-item">
-                            <button
-                                disabled={!canSave()}
-                                class="button is-primary"
-                                onClick={onSave}
-                            >
-                                <IconDeviceFloppy />
-                                Save
-                            </button>
-                        </div>
+                <div class="game-name">
+                    <Editable
+                        editable={isEditable}
+                        initialValue={displayedName() || ""}
+                        onSave={onRename}
+                    ></Editable>
+                </div>
 
+                <div class="navbar-item">
+                    <button
+                        disabled={!canSave()}
+                        class="button is-primary"
+                        onClick={onSave}
+                    >
+                        <IconDeviceFloppy />
+                        Save
+                    </button>
+                </div>
             </nav>
             <GameManager
                 pgn={originalPgn}

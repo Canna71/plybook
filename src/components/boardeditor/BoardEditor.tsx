@@ -183,6 +183,13 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         return config;
     };
 
+    const onFenChange = (e: Event) => {
+
+        const target = e.target as HTMLInputElement;
+        console.log(target.value);
+        setBaseFen(target.value);
+    }
+
     return (<div class="board-editor-container"
 
     >
@@ -233,7 +240,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         />
         <div class="board-editor-toolbar">
 
-            <input class="input" type="text" value={props.fen()} />
+            <input class="input" type="text" value={props.fen()} onChange={onFenChange} />
 
         </div>
     </div>);
