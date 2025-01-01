@@ -1,4 +1,11 @@
-import { batch, Component, createEffect, createSignal, useContext } from "solid-js";
+import {
+    Accessor,
+    batch,
+    Component,
+    createEffect,
+    createSignal,
+    useContext,
+} from "solid-js";
 import TreeView, { TreeNode } from "../common/TreeView";
 import {
     createNewDataFile,
@@ -12,6 +19,7 @@ import { useContextMenu } from "../common/contextmenu";
 import { MenuItemOptions } from "@tauri-apps/api/menu";
 import { ContentContext } from "../common/ContentContext";
 import FileBrowserItem from "./FileBrowserItem";
+import { set } from "es-toolkit/compat";
 
 type FileBrowserProps = {
     rootFolder: FileBrowserFile;
@@ -24,6 +32,7 @@ export interface FileBrowserFile {
     path: string;
     name: string;
     isDirectory: boolean;
+    // isRenaming: Accessor<boolean>;
 }
 
 async function directoryToNodes(path: string) {
@@ -35,7 +44,9 @@ async function directoryToNodes(path: string) {
             const fullPath = `${path}/${file.name}`;
             return {
                 id: fullPath,
-                label: file.isDirectory ? file.name : NameWithoutExtension(file.name),
+                label: file.isDirectory
+                    ? file.name
+                    : NameWithoutExtension(file.name),
                 data: {
                     path: fullPath,
                     name: file.name,
@@ -50,7 +61,8 @@ async function directoryToNodes(path: string) {
 }
 
 const FileBrowser = (props: FileBrowserProps) => {
-    const contentContext = useContext(ContentContext);
+    const { refreshTrigger, renaming } = useContext(ContentContext)!;
+
     const root = {
         id: props.rootFolder.path,
         label: NameWithoutExtension(props.rootFolder.name),
@@ -61,12 +73,21 @@ const FileBrowser = (props: FileBrowserProps) => {
         },
         loadChildren: async () => directoryToNodes(props.rootFolder.path),
     };
-    const [rootNode, setRootNode] = createSignal<TreeNode<FileBrowserFile>>(root);
+    const [rootNode, setRootNode] =
+        createSignal<TreeNode<FileBrowserFile>>(root);
 
-  
+    const onNodeClickInternal = (node: TreeNode<FileBrowserFile>) => {
+        props.onNodeClick?.(node.data!);
+    };
+
+    const onSelectedChangedInternal = (
+        node: TreeNode<FileBrowserFile> | null,
+    ) => {
+        props.onSelectedFileChanged?.(node?.data!);
+    };
 
     createEffect(() => {
-        const trigger = contentContext?.refreshTrigger();
+        const trigger = refreshTrigger();
         console.log("refreshing file browser: ", trigger);
         batch(() => {
             setRootNode({
@@ -75,24 +96,21 @@ const FileBrowser = (props: FileBrowserProps) => {
         });
     });
 
-
     return (
         <TreeView
             indentSize={8}
             root={rootNode}
-            onSelectedChanged={(node) =>
-                props.onSelectedFileChanged?.(node?.data!)
-            }
-            onNodeClick={(node) => props.onNodeClick?.(node.data!)}
-            renderNode={(node) => (
-                <FileBrowserItem node={node} />
+            onSelectedChanged={onSelectedChangedInternal}
+            onNodeClick={onNodeClickInternal}
+            renderNode={(node, isRenaming) => (
+                <FileBrowserItem node={node}  />
             )}
             renderExpandedIndicator={(isExpanded, _node) =>
                 isExpanded ? <IconChevronDown /> : <IconChevronRight />
             }
+            renaming={renaming}
         />
     );
 };
-
 
 export default FileBrowser;

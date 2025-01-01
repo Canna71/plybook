@@ -8,7 +8,7 @@ import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
 import { createSignal } from "solid-js";
-import { ContentContext } from "./components/common/ContentContext";
+import { ContentContext, useContentContext } from "./components/common/ContentContext";
 
 
 
@@ -21,14 +21,14 @@ function App() {
     //   setGreetMsg(await invoke("greet", { name: name() }));
     // }
 
-    // This will be our trigger for updates
-    const [refreshTrigger, setRefreshTrigger] = createSignal(0);
 
     // dynamically load css in assets folder
     useThemes();
 
+    const contentContext = useContentContext();
+
     return (
-        <ContentContext.Provider value={{ refreshTrigger, refresh: () => setRefreshTrigger((v) => v + 1) }}>
+        <ContentContext.Provider value={contentContext}>
             <Router root={Layout}>
                 <Route path="/" component={Home} />
                 <Route

@@ -1,18 +1,30 @@
 import { MenuItemOptions } from "@tauri-apps/api/menu";
-import { Component, useContext } from "solid-js";
+import {
+    batch,
+    Component,
+    createSignal,
+    Setter,
+    Show,
+    useContext,
+} from "solid-js";
 import { ContentContext } from "../common/ContentContext";
 import { TreeNode } from "../common/TreeView";
 import { FileBrowserFile } from "./FileBrowser";
-import { createNewDataFile, createNewDataFolder, deleteDataFileOrFolder } from "../../storage/fs";
+import {
+    createNewDataFile,
+    createNewDataFolder,
+    deleteDataFileOrFolder,
+    renameOrCreateDataFile,
+} from "../../storage/fs";
 import { useContextMenu } from "../common/contextmenu";
+import Editable from "../common/Editable";
 
 type FileBrowserItemProps = {
     node: TreeNode<FileBrowserFile>;
 };
 
-const FileBrowserItem : Component<FileBrowserItemProps> = ({node}) => {
-    const contentContext = useContext(ContentContext);
-
+const FileBrowserItem: Component<FileBrowserItemProps> = ({ node }) => {
+    const { renaming, setRenaming, refresh } = useContext(ContentContext)!;
 
     const onNewStudy = async (id: string, node: TreeNode<FileBrowserFile>) => {
         const newPath = await createNewDataFile(
@@ -20,15 +32,12 @@ const FileBrowserItem : Component<FileBrowserItemProps> = ({node}) => {
             "Untitled.pgn",
             "[]",
         );
-        contentContext?.refresh();
+        refresh();
     };
 
     const onNewFolder = async (id: string, node: TreeNode<FileBrowserFile>) => {
-        const newPath = await createNewDataFolder(
-            node.data!.path,
-            "Untitled"
-        );
-        contentContext?.refresh();
+        const newPath = await createNewDataFolder(node.data!.path, "Untitled");
+        refresh();
     };
 
     const onDeleteStudy = async (
@@ -36,20 +45,34 @@ const FileBrowserItem : Component<FileBrowserItemProps> = ({node}) => {
         node: TreeNode<FileBrowserFile>,
     ) => {
         await deleteDataFileOrFolder(node.data!.path);
-        contentContext?.refresh();
+        refresh();
     };
 
-    const onDeleteFolder = async (node: TreeNode<FileBrowserFile>, id: string) => {
+    const onDeleteFolder = async (
+        node: TreeNode<FileBrowserFile>,
+        id: string,
+    ) => {
         await deleteDataFileOrFolder(node.data!.path);
-        contentContext?.refresh();
+        refresh();
     };
 
     const onRenameFolder = (node: TreeNode<FileBrowserFile>, id: string) => {
         console.log("rename folder: ", node);
+        setRenaming(node.id);
     };
 
     const onRenameStudy = (node: TreeNode<FileBrowserFile>, id: string) => {
         console.log("rename study: ", node);
+        setRenaming(node.id);
+    };
+
+    const onRename = (value: string) => {
+        console.log("rename: ", node, value);
+        renameOrCreateDataFile(node.data!.path, value);
+        batch(() => {
+            setRenaming(undefined);
+            refresh();
+        });
     };
 
     const onContextMenuInternal = (
@@ -97,12 +120,25 @@ const FileBrowserItem : Component<FileBrowserItemProps> = ({node}) => {
         onContextMenu(e);
     };
 
+    const isRenaming = () => renaming() === node.id;
 
     return (
-        <span onContextMenu={(e) => onContextMenuInternal(e, node)}>
-            {node.label}
-        </span>
+        <>
+            <Show when={!isRenaming()}>
+                <span onContextMenu={(e) => onContextMenuInternal(e, node)}>
+                    {node.label}
+                </span>
+            </Show>
+            <Show when={isRenaming()}>
+                <Editable
+                    initialValue={node.label}
+                    editable={() => true}
+                    onSave={onRename}
+                    focus={true}
+                />
+            </Show>
+        </>
     );
-}
+};
 
 export default FileBrowserItem;

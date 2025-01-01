@@ -21,13 +21,14 @@ export type TreeNode<T> = {
 type TreeViewProps<T> = {
     root: Accessor<TreeNode<T>>;
     onNodeClick?: (node: TreeNode<T>) => void;
-    renderNode?: (node: TreeNode<T>) => JSX.Element;
+    renderNode?: (node: TreeNode<T>, isRenamimg: boolean) => JSX.Element;
     renderExpandedIndicator?: (
         expanded: boolean,
         node: TreeNode<T>,
     ) => JSX.Element;
     onSelectedChanged?: (node: TreeNode<T> | null) => void;
     indentSize?: number;
+    renaming?: Accessor<string | undefined>;
 };
 
 type TreeViewNodeProps<T> = {
@@ -36,13 +37,15 @@ type TreeViewNodeProps<T> = {
     expandedNodes: Accessor<Set<string>>;
     setExpandedNodes: Setter<Set<string>>;
     selectedNode: Accessor<TreeNode<T> | null>;
-    renderNode?: (node: TreeNode<T>) => JSX.Element;
+    renderNode?: (node: TreeNode<T>, isRenaming: boolean) => JSX.Element;
     renderExpandedIndicator?: (
         expanded: boolean,
         node: TreeNode<T>,
     ) => JSX.Element;
     level: number;
     indentSize: number;
+    renaming?: Accessor<string | undefined>;
+
 };
 
 const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
@@ -55,6 +58,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
         renderExpandedIndicator,
         selectedNode,
         level,
+        renaming
     } = props;
     const [children, setChildren] = createSignal<TreeNode<T>[] | undefined>(
         node().children,
@@ -84,7 +88,13 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
         setExpandedNodes(expanded);
     };
 
-    const handleNodeClick = () => {
+    const handleNodeClick = (e: MouseEvent) => {
+        console.log("click", isRenaming(), renaming?.(), node().id);
+        if(isRenaming()) {
+            console.log("click while renaming");
+            e.preventDefault();
+            return;
+        }
         batch(() => {
             onNodeClick?.(node());
             toggleNode();
@@ -100,6 +110,10 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
     const isSelected = () => {
         return selectedNode()?.id === node().id;
     };
+
+    const isRenaming = () => { 
+        return renaming?.() === node().id;
+    }
 
     const classList = () => {
         const classes = {
@@ -125,7 +139,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
                         when={renderNode}
                         fallback={<span>{node().label}</span>}
                     >
-                        {renderNode!(node())}
+                        {renderNode!(node(), isRenaming())}
                     </Show>
                 </div>
             </div>
@@ -142,6 +156,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
                             renderExpandedIndicator={renderExpandedIndicator}
                             selectedNode={selectedNode}
                             level={level + 1}
+                            renaming={renaming}
                         />
                     )}
                 </For>
@@ -183,6 +198,7 @@ const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
                 renderExpandedIndicator={props.renderExpandedIndicator}
                 selectedNode={selectedNode}
                 level={0}
+                renaming={props.renaming || (()=>undefined)}
             />
         </div>
     );

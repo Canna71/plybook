@@ -120,7 +120,7 @@ export async function getAvailableEngines() {
 export async function renameOrCreateDataFile(
     oldName: string | undefined,
     newName: string,
-    content: string,
+    content?: string,
 ) {
     const path = basePath(oldName || newName);
     const newFullPath = `${path}${sep()}${newName}`;
@@ -133,7 +133,7 @@ export async function renameOrCreateDataFile(
             newPathBaseDir: BaseDirectory.AppLocalData,
         });
     } else {
-        await writeDataFile(newFullPath, content);
+        await writeDataFile(newFullPath, content||"");
         return newFullPath;
     }
 }
