@@ -9,6 +9,14 @@ import AnalysisView from "./Views/obsoleted/AnalysisView";
 import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
+import { Accessor, createContext, createSignal, Setter } from "solid-js";
+
+interface ContentContext {
+    refreshTrigger: Accessor<number>;
+    setRefreshTrigger: Setter<number>;
+}
+
+const ContentContext = createContext();
 
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
@@ -19,20 +27,31 @@ function App() {
     //   setGreetMsg(await invoke("greet", { name: name() }));
     // }
 
-
+    // This will be our trigger for updates
+    const [refreshTrigger, setRefreshTrigger] = createSignal(0);
 
     // dynamically load css in assets folder
     useThemes();
 
     return (
-        <Router root={Layout}>
-            <Route path="/" component={Home} />
-            <Route path="/game" component={GameView} info={{engine: false}} />
-            <Route path="/boardeditor" component={BoardEditorView} />
-            <Route path="/db" component={DBTest} />
-            <Route path="/play" component={Play} />
-            <Route path="/analysis" component={GameView}info={{engine: true}} />
-        </Router>
+        <ContentContext.Provider value={{ refreshTrigger, setRefreshTrigger }}>
+            <Router root={Layout}>
+                <Route path="/" component={Home} />
+                <Route
+                    path="/game"
+                    component={GameView}
+                    info={{ engine: false }}
+                />
+                <Route path="/boardeditor" component={BoardEditorView} />
+                <Route path="/db" component={DBTest} />
+                <Route path="/play" component={Play} />
+                <Route
+                    path="/analysis"
+                    component={GameView}
+                    info={{ engine: true }}
+                />
+            </Router>
+        </ContentContext.Provider>
     );
 }
 
