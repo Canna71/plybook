@@ -2,7 +2,7 @@ import { batch, createEffect, createSignal } from "solid-js";
 import { save } from "@tauri-apps/plugin-dialog";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
-import { readDataFile, renameOrCreateDataFile, writeDataFile } from "../storage/fs";
+import { baseName, NameWithoutExtension, readDataFile, renameOrCreateDataFile, writeDataFile } from "../storage/fs";
 import { useLocation, useSearchParams } from "@solidjs/router";
 import { IconDeviceFloppy } from "@tabler/icons-solidjs";
 import "./GameView.scss";
@@ -18,8 +18,9 @@ const GameView = () => {
     const location = useLocation();
 
     const displayedName = () => {
-        if (typeof searchParams.path === "string") {
-            return searchParams.path.split("/").pop();
+        const path = searchParams.path;
+        if (path && typeof path === "string") {
+            return NameWithoutExtension(baseName(path));
         }
         return "Untitled";
     };

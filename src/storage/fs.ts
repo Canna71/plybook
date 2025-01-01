@@ -1,5 +1,5 @@
 import { BaseDirectory, exists, mkdir, readDir, readFile, rename, writeFile } from "@tauri-apps/plugin-fs";
-import { appDataDir, appLocalDataDir, join } from "@tauri-apps/api/path";
+import { appDataDir, appLocalDataDir, join, sep } from "@tauri-apps/api/path";
 // import { path } from "@tauri-apps/api";
 
 const LIBRARY_FOLDER = "Library";
@@ -96,14 +96,16 @@ export async function getAvailableEngines() {
 }
 
 export async function renameOrCreateDataFile(oldName: string | undefined, newName: string, content: string) {
+    const path = basePath(oldName || newName);
+    const newFullPath = `${path}${sep()}${newName}`;
     if(oldName && await exists(oldName, { baseDir: BaseDirectory.AppLocalData })) {
-       await rename(oldName, newName, { 
+       await rename(oldName, newFullPath, { 
             oldPathBaseDir: BaseDirectory.AppLocalData,
             newPathBaseDir: BaseDirectory.AppLocalData
         });
     } else {
-        await writeDataFile(newName, content);
-        return join(await appLocalDataDir(), newName);
+        await writeDataFile(newFullPath, content);
+        return newFullPath;
     }
 }
 
@@ -111,11 +113,27 @@ export async function renameOrCreateDataFile(oldName: string | undefined, newNam
 export async function createNewDataFile(folder: string, name: string, content: string) {
     name = await join(folder, name);
     let newName = name;
-    let i = 0;
+    let i = 1;
     while (await exists(newName, { baseDir: BaseDirectory.AppLocalData })) {
-        newName = i>0?`${name} (${i})`:name;
+        // the name can and with an extension, we should add a prgressive number but before the extension
+        const parts = name.split(".");
+        const ext = parts.pop();
+        const base = parts.join(".");
+        newName = `${base} (${i}).${ext}`;
         i++;
     }
     await writeDataFile(newName, content);
     return join(await appLocalDataDir(), newName);
+}
+
+export function NameWithoutExtension(name: string) {
+    return name.replace(/\.[^/.]+$/, "");
+}
+
+export function baseName(name: string) {
+    return name.split(sep()).pop() || "";
+}
+
+export function basePath(name: string) {
+    return name.split(sep()).slice(0, -1).join(sep());
 }

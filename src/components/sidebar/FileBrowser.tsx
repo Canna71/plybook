@@ -1,6 +1,6 @@
 import { createSignal } from 'solid-js';
 import TreeView, { TreeNode } from '../common/TreeView';
-import { createNewDataFile, listAppData } from '../../storage/fs';
+import { createNewDataFile, listAppData, NameWithoutExtension } from '../../storage/fs';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-solidjs';
 import { useContextMenu } from '../common/contextmenu';
 import { MenuItemOptions } from '@tauri-apps/api/menu';
@@ -19,6 +19,8 @@ export interface FileBrowserFile {
     isDirectory: boolean;
 }
 
+
+
 async function directoryToNodes(path: string) {
     const content = await listAppData(path);
     const ret = content
@@ -28,7 +30,7 @@ async function directoryToNodes(path: string) {
         const fullPath = `${path}/${file.name}`;
         return {
             id: fullPath,
-            label: file.name,
+            label: NameWithoutExtension(file.name),
             data: {
                 path: fullPath,
                 name: file.name,
@@ -43,13 +45,13 @@ async function directoryToNodes(path: string) {
 const FileBrowser = (props: FileBrowserProps) => {
     const [rootNode, _setRootNode] = createSignal<TreeNode<FileBrowserFile>>({
         id: props.rootFolder.path,
-        label: props.rootFolder.name,
+        label: NameWithoutExtension(props.rootFolder.name),
         loadChildren: async () => directoryToNodes(props.rootFolder.path),
     });
 
     const onNewStudy = async (id:string, node: TreeNode<FileBrowserFile>, refresh:()=>void) => {
         console.log('new study: ', node);
-        const newPath = await createNewDataFile(node.data!.path, 'New Study',"[]");
+        const newPath = await createNewDataFile(node.data!.path, 'New Study.pgn',"[]");
         refresh();
     } ;
 
