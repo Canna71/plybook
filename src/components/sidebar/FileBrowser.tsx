@@ -2,6 +2,7 @@ import { batch, createEffect, createSignal, useContext } from "solid-js";
 import TreeView, { TreeNode } from "../common/TreeView";
 import {
     createNewDataFile,
+    createNewDataFolder,
     deleteDataFile,
     listAppData,
     NameWithoutExtension,
@@ -64,10 +65,17 @@ const FileBrowser = (props: FileBrowserProps) => {
     const onNewStudy = async (id: string, node: TreeNode<FileBrowserFile>) => {
         const newPath = await createNewDataFile(
             node.data!.path,
-            "New Study.pgn",
+            "Untitled.pgn",
             "[]",
         );
-        // TODO: update views
+        contentContext?.refresh();
+    };
+
+    const onNewFolder = async (id: string, node: TreeNode<FileBrowserFile>) => {
+        const newPath = await createNewDataFolder(
+            node.data!.path,
+            "Untitled"
+        );
         contentContext?.refresh();
     };
 
@@ -76,7 +84,6 @@ const FileBrowser = (props: FileBrowserProps) => {
         node: TreeNode<FileBrowserFile>,
     ) => {
         await deleteDataFile(node.data!.path);
-        // TODO: update views
         contentContext?.refresh();
     };
 
@@ -113,6 +120,11 @@ const FileBrowser = (props: FileBrowserProps) => {
                 id: "file_new",
                 text: "New Study",
                 action: (id: string) => onNewStudy(id, node),
+            });
+            menuItems.push({
+                id: "folder_new",
+                text: "New Folder",
+                action: (id: string) => onNewFolder(id, node),
             });
             menuItems.push({
                 id: "folder_delete",
