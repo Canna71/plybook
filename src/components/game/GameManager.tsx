@@ -31,7 +31,7 @@ import { GameContext, TooltipContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
-import { NormalMove, Position } from "chessops";
+import { NormalMove, Position, squareRank } from "chessops";
 import "./GameManager.scss";
 import { EngineInfo, IChessEngine } from "../../engine/engineinterfaces";
 import { getEngineFolder } from "../../storage/fs";
@@ -318,12 +318,13 @@ const GameManager: Component<GameManagerOptions> = ({
                 const isCheckmate = pos.isCheckmate();
                 const isSelf = pos.turn === "black"; // self is white
                 // determine if move is a capture
-                const lastMove = ply.move;
+                const lastMove = ply.move as NormalMove;
                 const previous = path.previous();
                 const previousPly = game()?.dataAt(previous);
-                
+                const role = pos.board.get(lastMove.to)?.role;
+                const isCastling = role === "king" && Math.abs(squareRank(lastMove.to)-squareRank(lastMove.from)) === 2;
                 const isCapture = previousPly?.pos.board.has(lastMove.to) || false;
-                const flags = { isCapture, isCheck, isCheckmate, isSelf };
+                const flags = { isCapture, isCheck, isCheckmate, isSelf, isCastling };
                 PlayAudioForMove(flags);
             }
         }
