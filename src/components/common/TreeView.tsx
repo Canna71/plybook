@@ -14,7 +14,7 @@ export type TreeNode<T> = {
 type TreeViewProps<T> = {
     root: TreeNode<T>;
     onNodeClick?: (node: TreeNode<T>) => void;
-    renderNode?: (node: TreeNode<T>, refresh: ()=>void) => JSX.Element;
+    renderNode?: (node: TreeNode<T>) => JSX.Element;
     renderExpandedIndicator?: (expanded: boolean, node: TreeNode<T>) => JSX.Element;
     onSelectedChanged?: (node: TreeNode<T> | null) => void;
 };
@@ -25,7 +25,7 @@ type TreeViewNodeProps<T> = {
     expandedNodes: Accessor<Set<string>>;
     setExpandedNodes: Setter<Set<string>>;
     selectedNode: Accessor<TreeNode<T> | null>;
-    renderNode?: (node: TreeNode<T>, refresh: ()=>void) => JSX.Element;
+    renderNode?: (node: TreeNode<T>) => JSX.Element;
     renderExpandedIndicator?: (expanded: boolean, node: TreeNode<T>) => JSX.Element;
     level: number;
 };
@@ -93,7 +93,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
 
                 <div class={styles.nodeContent}>
                     <Show when={renderNode} fallback={<span>{node.label}</span>}>
-                        {renderNode!(node, refreshNode.bind(null, node))}
+                        {renderNode!(node)}
                     </Show>
                 </div>
             </div>

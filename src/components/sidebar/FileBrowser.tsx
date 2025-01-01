@@ -54,20 +54,16 @@ const FileBrowser = (props: FileBrowserProps) => {
         loadChildren: async () => directoryToNodes(props.rootFolder.path),
     });
 
-    const onNewStudy = async (id:string, node: TreeNode<FileBrowserFile>, refresh:()=>void) => {
+    const onNewStudy = async (id:string, node: TreeNode<FileBrowserFile>) => {
         console.log('new study: ', node);
         const newPath = await createNewDataFile(node.data!.path, 'New Study.pgn',"[]");
-        refresh();
+        // TODO: update views
     } ;
 
-    const onDeleteStudy = async (id:string,node: TreeNode<FileBrowserFile>,  refresh:()=>void) => {
+    const onDeleteStudy = async (id:string,node: TreeNode<FileBrowserFile>) => {
         console.log('delete study: ', node);
         await deleteDataFile(node.data!.path);
-        // refresh();
-        setRootNode({
-            ...rootNode(),
-            children: undefined
-        })
+        // TODO: update views
     } ;
     
     const onDeleteFolder = (node: TreeNode<FileBrowserFile>, id:string) => {
@@ -82,15 +78,15 @@ const FileBrowser = (props: FileBrowserProps) => {
         console.log('rename study: ', node);
     } ;
 
-    const onContextMenuInternal = (e: MouseEvent,node: TreeNode<FileBrowserFile>, refresh:()=>void) => {
+    const onContextMenuInternal = (e: MouseEvent,node: TreeNode<FileBrowserFile>) => {
         e.preventDefault();
         const menuItems: MenuItemOptions[] = [];
         if(!node.data || node.data.isDirectory) {
-            menuItems.push({ id: "file_new", text: "New Study", action: (id:string)=>onNewStudy(id,node,refresh) });
+            menuItems.push({ id: "file_new", text: "New Study", action: (id:string)=>onNewStudy(id,node) });
             menuItems.push({ id: "folder_delete", text: "Delete Folder", action: (id:string)=>onDeleteFolder(node,id) });
             menuItems.push({ id: "folder_rename", text: "Rename Folder", action: (id:string)=>onRenameFolder(node,id) });
         } else {
-            menuItems.push({ id: "file_delete", text: "Delete Study", action: (id:string)=>onDeleteStudy(id, node, refresh) });
+            menuItems.push({ id: "file_delete", text: "Delete Study", action: (id:string)=>onDeleteStudy(id, node) });
             menuItems.push({ id: "file_rename", text: "Rename Study", action: (id:string)=>onRenameStudy(node,id) });
         }
         const onContextMenu = useContextMenu({
@@ -104,7 +100,7 @@ const FileBrowser = (props: FileBrowserProps) => {
             root={rootNode()}
             onSelectedChanged={(node) => props.onSelectedFileChanged?.(node?.data!)}
             onNodeClick={(node) => props.onNodeClick?.(node.data!)}
-            renderNode={(node, refresh) => <span onContextMenu={(e) => onContextMenuInternal(e,node,refresh)}>{node.label}</span>}
+            renderNode={(node) => <span onContextMenu={(e) => onContextMenuInternal(e,node)}>{node.label}</span>}
             renderExpandedIndicator={
                 (isExpanded, _node) => isExpanded ? <IconChevronDown /> : <IconChevronRight />
             }
