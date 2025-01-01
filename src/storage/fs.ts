@@ -173,7 +173,6 @@ export async function createNewDataFolder(folder: string, name: string) {
             ext = parts.pop() || "";
             ext = ext ? `.${ext}` : "";
             base = parts.join(".");
-            // console.log("newName", parts, ext, base, newName, i);
         }
 
         newName = `${base} (${i})${ext}`;
