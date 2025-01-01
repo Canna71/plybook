@@ -1,6 +1,6 @@
 import { createSignal } from 'solid-js';
 import TreeView, { TreeNode } from '../common/TreeView';
-import { createNewDataFile, listAppData, NameWithoutExtension } from '../../storage/fs';
+import { createNewDataFile, deleteDataFile, listAppData, NameWithoutExtension } from '../../storage/fs';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-solidjs';
 import { useContextMenu } from '../common/contextmenu';
 import { MenuItemOptions } from '@tauri-apps/api/menu';
@@ -43,9 +43,14 @@ async function directoryToNodes(path: string) {
 }
 
 const FileBrowser = (props: FileBrowserProps) => {
-    const [rootNode, _setRootNode] = createSignal<TreeNode<FileBrowserFile>>({
+    const [rootNode, setRootNode] = createSignal<TreeNode<FileBrowserFile>>({
         id: props.rootFolder.path,
         label: NameWithoutExtension(props.rootFolder.name),
+        data: {
+            path: props.rootFolder.path,
+            name: props.rootFolder.name,
+            isDirectory: props.rootFolder.isDirectory
+        },
         loadChildren: async () => directoryToNodes(props.rootFolder.path),
     });
 
@@ -55,8 +60,14 @@ const FileBrowser = (props: FileBrowserProps) => {
         refresh();
     } ;
 
-    const onDeleteStudy = (node: TreeNode<FileBrowserFile>, id:string) => {
+    const onDeleteStudy = async (id:string,node: TreeNode<FileBrowserFile>,  refresh:()=>void) => {
         console.log('delete study: ', node);
+        await deleteDataFile(node.data!.path);
+        // refresh();
+        setRootNode({
+            ...rootNode(),
+            children: undefined
+        })
     } ;
     
     const onDeleteFolder = (node: TreeNode<FileBrowserFile>, id:string) => {
@@ -74,12 +85,12 @@ const FileBrowser = (props: FileBrowserProps) => {
     const onContextMenuInternal = (e: MouseEvent,node: TreeNode<FileBrowserFile>, refresh:()=>void) => {
         e.preventDefault();
         const menuItems: MenuItemOptions[] = [];
-        if(node.data?.isDirectory) {
+        if(!node.data || node.data.isDirectory) {
             menuItems.push({ id: "file_new", text: "New Study", action: (id:string)=>onNewStudy(id,node,refresh) });
             menuItems.push({ id: "folder_delete", text: "Delete Folder", action: (id:string)=>onDeleteFolder(node,id) });
             menuItems.push({ id: "folder_rename", text: "Rename Folder", action: (id:string)=>onRenameFolder(node,id) });
         } else {
-            menuItems.push({ id: "file_delete", text: "Delete Study", action: (id:string)=>onDeleteStudy(node,id) });
+            menuItems.push({ id: "file_delete", text: "Delete Study", action: (id:string)=>onDeleteStudy(id, node, refresh) });
             menuItems.push({ id: "file_rename", text: "Rename Study", action: (id:string)=>onRenameStudy(node,id) });
         }
         const onContextMenu = useContextMenu({

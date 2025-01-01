@@ -1,4 +1,4 @@
-import { BaseDirectory, exists, mkdir, readDir, readFile, rename, writeFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory, exists, mkdir, readDir, readFile, remove, rename, writeFile } from "@tauri-apps/plugin-fs";
 import { appDataDir, appLocalDataDir, join, sep } from "@tauri-apps/api/path";
 // import { path } from "@tauri-apps/api";
 
@@ -124,6 +124,14 @@ export async function createNewDataFile(folder: string, name: string, content: s
     }
     await writeDataFile(newName, content);
     return join(await appLocalDataDir(), newName);
+}
+
+export async function deleteDataFile(path: string) {
+    const ex = await exists(path, { baseDir: BaseDirectory.AppLocalData });
+    if(ex) {
+        await remove(path, { baseDir: BaseDirectory.AppLocalData });
+    }
+
 }
 
 export function NameWithoutExtension(name: string) {
