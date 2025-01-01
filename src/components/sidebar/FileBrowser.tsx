@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { batch, createEffect, createSignal, useContext } from "solid-js";
 import TreeView, { TreeNode } from "../common/TreeView";
 import {
     createNewDataFile,
@@ -9,6 +9,7 @@ import {
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-solidjs";
 import { useContextMenu } from "../common/contextmenu";
 import { MenuItemOptions } from "@tauri-apps/api/menu";
+import { ContentContext } from "../common/ContentContext";
 
 type FileBrowserProps = {
     rootFolder: FileBrowserFile;
@@ -47,7 +48,8 @@ async function directoryToNodes(path: string) {
 }
 
 const FileBrowser = (props: FileBrowserProps) => {
-    const [rootNode, setRootNode] = createSignal<TreeNode<FileBrowserFile>>({
+    const contentContext = useContext(ContentContext);
+    const root = {
         id: props.rootFolder.path,
         label: NameWithoutExtension(props.rootFolder.name),
         data: {
@@ -56,31 +58,26 @@ const FileBrowser = (props: FileBrowserProps) => {
             isDirectory: props.rootFolder.isDirectory,
         },
         loadChildren: async () => directoryToNodes(props.rootFolder.path),
-    });
+    };
+    const [rootNode, setRootNode] = createSignal<TreeNode<FileBrowserFile>>(root);
 
     const onNewStudy = async (id: string, node: TreeNode<FileBrowserFile>) => {
-        console.log("new study: ", node);
         const newPath = await createNewDataFile(
             node.data!.path,
             "New Study.pgn",
             "[]",
         );
         // TODO: update views
-        setRootNode({
-            ...rootNode(),
-        });
+        contentContext?.refresh();
     };
 
     const onDeleteStudy = async (
         id: string,
         node: TreeNode<FileBrowserFile>,
     ) => {
-        console.log("delete study: ", node);
         await deleteDataFile(node.data!.path);
         // TODO: update views
-        setRootNode({
-            ...rootNode(),
-        });
+        contentContext?.refresh();
     };
 
     const onDeleteFolder = (node: TreeNode<FileBrowserFile>, id: string) => {
@@ -94,6 +91,16 @@ const FileBrowser = (props: FileBrowserProps) => {
     const onRenameStudy = (node: TreeNode<FileBrowserFile>, id: string) => {
         console.log("rename study: ", node);
     };
+
+    createEffect(() => {
+        const trigger = contentContext?.refreshTrigger();
+        console.log("refreshing file browser: ", trigger);
+        batch(() => {
+            setRootNode({
+                ...root,
+            });
+        });
+    });
 
     const onContextMenuInternal = (
         e: MouseEvent,

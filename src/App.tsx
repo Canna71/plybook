@@ -10,13 +10,9 @@ import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
 import { Accessor, createContext, createSignal, Setter } from "solid-js";
+import { ContentContext } from "./components/common/ContentContext";
 
-interface ContentContext {
-    refreshTrigger: Accessor<number>;
-    setRefreshTrigger: Setter<number>;
-}
 
-const ContentContext = createContext();
 
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
@@ -34,7 +30,7 @@ function App() {
     useThemes();
 
     return (
-        <ContentContext.Provider value={{ refreshTrigger, setRefreshTrigger }}>
+        <ContentContext.Provider value={{ refreshTrigger, refresh: () => setRefreshTrigger((v) => v + 1) }}>
             <Router root={Layout}>
                 <Route path="/" component={Home} />
                 <Route

@@ -57,14 +57,11 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
     const [children, setChildren] = createSignal<TreeNode<T>[] | undefined>(
         node().children,
     );
-    console.log("rendering node: ", node());
     const refreshNode = async () => {
         if (node().loadChildren) {
             node().children = await node().loadChildren?.();
-            console.log("loaded children: ", node().children);
             // setTimeout(() => setChildren(node.children), 0);
             setChildren(node().children);
-            console.log("set children: ", node().children);
         }
     };
 
