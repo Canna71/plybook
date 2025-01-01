@@ -14,7 +14,7 @@ export type TreeNode<T> = {
 type TreeViewProps<T> = {
     root: TreeNode<T>;
     onNodeClick?: (node: TreeNode<T>) => void;
-    renderNode?: (node: TreeNode<T>) => JSX.Element;
+    renderNode?: (node: TreeNode<T>, refresh: ()=>void) => JSX.Element;
     renderExpandedIndicator?: (expanded: boolean, node: TreeNode<T>) => JSX.Element;
     onSelectedChanged?: (node: TreeNode<T> | null) => void;
 };
@@ -25,7 +25,7 @@ type TreeViewNodeProps<T> = {
     expandedNodes: Accessor<Set<string>>;
     setExpandedNodes: Setter<Set<string>>;
     selectedNode: Accessor<TreeNode<T> | null>;
-    renderNode?: (node: TreeNode<T>) => JSX.Element;
+    renderNode?: (node: TreeNode<T>, refresh: ()=>void) => JSX.Element;
     renderExpandedIndicator?: (expanded: boolean, node: TreeNode<T>) => JSX.Element;
     level: number;
 };
@@ -35,6 +35,15 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
     const [children, setChildren] = createSignal<TreeNode<T>[] | undefined>(node.children);
 
 
+    const refreshNode = async (node: TreeNode<T>) => {
+        if (node.loadChildren) {
+            node.children = await node.loadChildren();
+            console.log('loaded children: ', node.children);
+            // setTimeout(() => setChildren(node.children), 0);
+            setChildren(node.children);
+            console.log('set children: ', children());
+        }
+    }
 
     const toggleNode = async (node: TreeNode<T>) => {
         const expanded = new Set(expandedNodes());
@@ -42,10 +51,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
             expanded.delete(node.id);
         } else {
             expanded.add(node.id);
-            if (node.loadChildren /* && !node.children */) {
-                node.children = await node.loadChildren();
-                setChildren(node.children);
-            }
+            await refreshNode(node);
         }
         setExpandedNodes(expanded);
     };
@@ -87,12 +93,12 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
 
                 <div class={styles.nodeContent}>
                     <Show when={renderNode} fallback={<span>{node.label}</span>}>
-                        {renderNode!(node)}
+                        {renderNode!(node, refreshNode.bind(null, node))}
                     </Show>
                 </div>
             </div>
             <Show when={isExpanded() && children()!.length > 0}>
-                <For each={node.children}>
+                <For each={children()}>
                     {(child) => (
                         <Node node={child}
                             onNodeClick={onNodeClick}

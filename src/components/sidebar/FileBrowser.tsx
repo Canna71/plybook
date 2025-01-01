@@ -1,7 +1,10 @@
 import { createSignal } from 'solid-js';
 import TreeView, { TreeNode } from '../common/TreeView';
-import { listAppData } from '../../storage/fs';
+import { createNewDataFile, listAppData } from '../../storage/fs';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-solidjs';
+import { useContextMenu } from '../common/contextmenu';
+import { MenuItemOptions } from '@tauri-apps/api/menu';
+
 
 type FileBrowserProps = {
     rootFolder: FileBrowserFile;
@@ -44,20 +47,51 @@ const FileBrowser = (props: FileBrowserProps) => {
         loadChildren: async () => directoryToNodes(props.rootFolder.path),
     });
 
-    // onMount(async () => {
-    //     // const children = await props.fetchFiles(props.basePath);
-    //     setRootNode({
-    //         ...rootNode(),
-    //         children,
-    //     });
-    // });
+    const onNewStudy = async (id:string, node: TreeNode<FileBrowserFile>, refresh:()=>void) => {
+        console.log('new study: ', node);
+        const newPath = await createNewDataFile(node.data!.path, 'New Study',"[]");
+        refresh();
+    } ;
+
+    const onDeleteStudy = (node: TreeNode<FileBrowserFile>, id:string) => {
+        console.log('delete study: ', node);
+    } ;
+    
+    const onDeleteFolder = (node: TreeNode<FileBrowserFile>, id:string) => {
+        console.log('delete folder: ', node);
+    } ;
+
+    const onRenameFolder = (node: TreeNode<FileBrowserFile>, id:string) => {
+        console.log('rename folder: ', node);
+    } ;
+    
+    const onRenameStudy = (node: TreeNode<FileBrowserFile>, id:string) => {
+        console.log('rename study: ', node);
+    } ;
+
+    const onContextMenuInternal = (e: MouseEvent,node: TreeNode<FileBrowserFile>, refresh:()=>void) => {
+        e.preventDefault();
+        const menuItems: MenuItemOptions[] = [];
+        if(node.data?.isDirectory) {
+            menuItems.push({ id: "file_new", text: "New Study", action: (id:string)=>onNewStudy(id,node,refresh) });
+            menuItems.push({ id: "folder_delete", text: "Delete Folder", action: (id:string)=>onDeleteFolder(node,id) });
+            menuItems.push({ id: "folder_rename", text: "Rename Folder", action: (id:string)=>onRenameFolder(node,id) });
+        } else {
+            menuItems.push({ id: "file_delete", text: "Delete Study", action: (id:string)=>onDeleteStudy(node,id) });
+            menuItems.push({ id: "file_rename", text: "Rename Study", action: (id:string)=>onRenameStudy(node,id) });
+        }
+        const onContextMenu = useContextMenu({
+            items: menuItems,
+        });
+        onContextMenu(e);
+    }
 
     return (
         <TreeView
             root={rootNode()}
             onSelectedChanged={(node) => props.onSelectedFileChanged?.(node?.data!)}
             onNodeClick={(node) => props.onNodeClick?.(node.data!)}
-            renderNode={(node) => <span>{node.label}</span>}
+            renderNode={(node, refresh) => <span onContextMenu={(e) => onContextMenuInternal(e,node,refresh)}>{node.label}</span>}
             renderExpandedIndicator={
                 (isExpanded, _node) => isExpanded ? <IconChevronDown /> : <IconChevronRight />
             }

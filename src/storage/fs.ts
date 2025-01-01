@@ -106,3 +106,16 @@ export async function renameOrCreateDataFile(oldName: string | undefined, newNam
         return join(await appLocalDataDir(), newName);
     }
 }
+
+// create a new file with a tentative name, appending progressive numbers if the file already exists
+export async function createNewDataFile(folder: string, name: string, content: string) {
+    name = await join(folder, name);
+    let newName = name;
+    let i = 0;
+    while (await exists(newName, { baseDir: BaseDirectory.AppLocalData })) {
+        newName = i>0?`${name} (${i})`:name;
+        i++;
+    }
+    await writeDataFile(newName, content);
+    return join(await appLocalDataDir(), newName);
+}
