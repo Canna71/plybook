@@ -4,12 +4,10 @@ import Home from "./Views/Home";
 import Layout from "./Views/Layout";
 import BoardEditorView from "./Views/BoardEditorView";
 import DBTest from "./Views/DBTest";
-import PlayEngineTest from "./Views/obsoleted/PlayEgineTest";
-import AnalysisView from "./Views/obsoleted/AnalysisView";
 import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
-import { Accessor, createContext, createSignal, Setter } from "solid-js";
+import { createSignal } from "solid-js";
 import { ContentContext } from "./components/common/ContentContext";
 
 

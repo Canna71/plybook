@@ -3,7 +3,7 @@ import TreeView, { TreeNode } from "../common/TreeView";
 import {
     createNewDataFile,
     createNewDataFolder,
-    deleteDataFile,
+    deleteDataFileOrFolder,
     listAppData,
     NameWithoutExtension,
 } from "../../storage/fs";
@@ -34,7 +34,7 @@ async function directoryToNodes(path: string) {
             const fullPath = `${path}/${file.name}`;
             return {
                 id: fullPath,
-                label: NameWithoutExtension(file.name),
+                label: file.isDirectory ? file.name : NameWithoutExtension(file.name),
                 data: {
                     path: fullPath,
                     name: file.name,
@@ -83,12 +83,13 @@ const FileBrowser = (props: FileBrowserProps) => {
         id: string,
         node: TreeNode<FileBrowserFile>,
     ) => {
-        await deleteDataFile(node.data!.path);
+        await deleteDataFileOrFolder(node.data!.path);
         contentContext?.refresh();
     };
 
-    const onDeleteFolder = (node: TreeNode<FileBrowserFile>, id: string) => {
-        console.log("delete folder: ", node);
+    const onDeleteFolder = async (node: TreeNode<FileBrowserFile>, id: string) => {
+        await deleteDataFileOrFolder(node.data!.path);
+        contentContext?.refresh();
     };
 
     const onRenameFolder = (node: TreeNode<FileBrowserFile>, id: string) => {
@@ -156,6 +157,7 @@ const FileBrowser = (props: FileBrowserProps) => {
 
     return (
         <TreeView
+            indentSize={8}
             root={rootNode}
             onSelectedChanged={(node) =>
                 props.onSelectedFileChanged?.(node?.data!)

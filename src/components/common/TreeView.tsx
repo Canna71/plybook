@@ -27,6 +27,7 @@ type TreeViewProps<T> = {
         node: TreeNode<T>,
     ) => JSX.Element;
     onSelectedChanged?: (node: TreeNode<T> | null) => void;
+    indentSize?: number;
 };
 
 type TreeViewNodeProps<T> = {
@@ -41,6 +42,7 @@ type TreeViewNodeProps<T> = {
         node: TreeNode<T>,
     ) => JSX.Element;
     level: number;
+    indentSize: number;
 };
 
 const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
@@ -111,7 +113,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
     return (
         <>
             <div classList={classList()} onClick={handleNodeClick}>
-                <div style={{ width: `${level * 20}px` }}></div>
+                <div style={{ width: `${level * (props.indentSize??20)}px` }}></div>
 
                 <Show when={isExpandable()}>
                     {renderExpandedIndicator?.(isExpanded(), node()) ||
@@ -131,6 +133,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
                 <For each={children()}>
                     {(child) => (
                         <Node
+                            indentSize={props.indentSize??20}
                             node={()=>child}
                             onNodeClick={onNodeClick}
                             expandedNodes={expandedNodes}
@@ -171,6 +174,7 @@ const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
     return (
         <div class={styles.treeView}>
             <Node
+                indentSize={props.indentSize??20}
                 node={props.root}
                 onNodeClick={handleNodeClick}
                 expandedNodes={expandedNodes}

@@ -144,19 +144,32 @@ export async function createNewDataFile(
     name: string,
     content: string,
 ) {
-    name = await join(folder, name);
     let newName = name;
     let i = 1;
-    while (await exists(newName, { baseDir: BaseDirectory.AppLocalData })) {
+    let fullPath = "";
+    // let fullPath = await join(folder, newName);
+    while (fullPath = await join(folder, newName), await exists(fullPath, { baseDir: BaseDirectory.AppLocalData })) {
         // the name can and with an extension, we should add a prgressive number but before the extension
-        const parts = name.split(".");
-        const ext = parts.pop();
-        const base = parts.join(".");
-        newName = `${base} (${i}).${ext}`;
+        newName = createIncrementedName(name, newName, i);
         i++;
     }
-    await writeDataFile(newName, content);
-    return join(await appLocalDataDir(), newName);
+    
+    await writeDataFile(fullPath, content);
+    return fullPath;
+}
+
+function createIncrementedName(name: string, newName: string, i: number) {
+    let base = name;
+    let ext = "";
+    if (name.includes(".")) {
+        const parts = name.split(".");
+        ext = parts.pop() || "";
+        ext = ext ? `.${ext}` : "";
+        base = parts.join(".");
+    }
+
+    newName = `${base} (${i})${ext}`;
+    return newName;
 }
 
 export async function createNewDataFolder(folder: string, name: string) {
@@ -166,16 +179,17 @@ export async function createNewDataFolder(folder: string, name: string) {
     // let fullPath = await join(folder, newName);
     while (fullPath = await join(folder, newName), await exists(fullPath, { baseDir: BaseDirectory.AppLocalData })) {
         // the name can and with an extension, we should add a prgressive number but before the extension
-        let base = name;
-        let ext = "";
-        if (name.includes(".")) {
-            const parts = name.split(".");
-            ext = parts.pop() || "";
-            ext = ext ? `.${ext}` : "";
-            base = parts.join(".");
-        }
+        // let base = name;
+        // let ext = "";
+        // if (name.includes(".")) {
+        //     const parts = name.split(".");
+        //     ext = parts.pop() || "";
+        //     ext = ext ? `.${ext}` : "";
+        //     base = parts.join(".");
+        // }
 
-        newName = `${base} (${i})${ext}`;
+        // newName = `${base} (${i})${ext}`;
+        newName = createIncrementedName(name, newName, i);
         i++;
     }
     
@@ -183,10 +197,10 @@ export async function createNewDataFolder(folder: string, name: string) {
     return fullPath;
 }
 
-export async function deleteDataFile(path: string) {
+export async function deleteDataFileOrFolder(path: string) {
     const ex = await exists(path, { baseDir: BaseDirectory.AppLocalData });
     if (ex) {
-        await remove(path, { baseDir: BaseDirectory.AppLocalData });
+        await remove(path, { baseDir: BaseDirectory.AppLocalData, recursive: true });
     }
 }
 
