@@ -138,6 +138,12 @@ export async function renameOrCreateDataFile(
     content?: string,
 ) {
     const path = basePath(oldName || newName);
+    const oldExt =  oldName ? fileOrFolderExtension(oldName) : "";
+    const newExt = fileOrFolderExtension(newName);
+    console.log("oldExt: ", oldExt, "newExt: ", newExt);
+    if (oldExt && !newExt) {
+        newName = `${newName}.${oldExt}`;
+    }
     const newFullPath = `${path}${sep()}${newName}`;
     if (
         oldName &&
@@ -229,6 +235,12 @@ export function baseName(name: string) {
 
 export function basePath(name: string) {
     return name.split(sep()).slice(0, -1).join(sep());
+}
+
+export function fileOrFolderExtension(name: string) {
+    const base = baseName(name);
+    const dotIndex = base.lastIndexOf('.');
+    return dotIndex !== -1 ? base.substring(dotIndex) : "";
 }
 
 export function getDefaultStudyContent() {
