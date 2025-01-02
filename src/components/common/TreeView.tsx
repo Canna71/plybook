@@ -4,6 +4,7 @@ import {
     createEffect,
     createSignal,
     For,
+    Index,
     JSX,
     Setter,
     Show,
@@ -151,11 +152,11 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
                 </div>
             </div>
             <Show when={isExpanded() && children() && children()!.length > 0}>
-                <For each={children()}>
+                <Index each={children()}>
                     {(child) => (
                         <Node
                             indentSize={props.indentSize??20}
-                            node={()=>child}
+                            node={child}
                             onNodeClick={onNodeClick}
                             expandedNodesSignal={expandedNodesSignal}
                             renderNode={renderNode}
@@ -166,7 +167,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
                             renaming={renaming}
                         />
                     )}
-                </For>
+                </Index>
             </Show>
         </>
     );
