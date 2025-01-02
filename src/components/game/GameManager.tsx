@@ -43,6 +43,7 @@ import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "../common/Tooltip";
 import SetPositionSwitch, { ViewMode } from "./SetPositionSwitch";
 import { PlayAudioForMove } from "../audio";
+import PgnTextArea from "./PgnTextArea";
 
 export type GameManagerOptions = {
     pgn?: Accessor<string | undefined>;
@@ -260,30 +261,9 @@ const GameManager: Component<GameManagerOptions> = ({
     // #endregion
 
     // #region Starting Position Editing
-    const onEditStartingPosition = () => {
-        setViewMode(ViewMode.STARTING_POSITION);
-    };
+    
 
-    const onAcceptStartingPosition = () => {
-        game()?.headers.set("FEN", startingPosition() || "");
-        game()?.headers.set("Setup", "1");
-
-        const newGame = game()?.updateHeaders(new Map([
-            ["FEN", startingPosition() || ""],
-            ["Setup", "1"],
-        ]));
-        batch(() => {
-            // setPgn?.(game()?.pgn() || "");
-            // TODO: refactor this to act directly on the game model
-            // updateGameFromPgnString(game()?.pgn() || "");
-            setGame(newGame);
-            setViewMode(ViewMode.MOVES);
-        });
-    };
-
-    const onCancelStartingPosition = () => {
-        setViewMode(ViewMode.MOVES);
-    };
+    
 
     // #endregion
 
@@ -440,6 +420,7 @@ const GameManager: Component<GameManagerOptions> = ({
                     gameSignal: [game, setGame],
                     currentPathSignal: [currentPath, setCurrentPath],
                     startingPositionSignal: [startingPosition, setStartingPosition],
+                    viewModeSignal: [viewMode, setViewMode],
                     setSquareHovered: setSquareHovered,
                     editable: isEditable,
                 }}
@@ -507,16 +488,11 @@ const GameManager: Component<GameManagerOptions> = ({
                             </Show>
                             <Show when={!hasMoves()}>
                                 <SetPositionSwitch
-                                    viewMode={viewMode}
-                                    onEditStartingPosition={
-                                        onEditStartingPosition
-                                    }
-                                    onAcceptStartingPosition={
-                                        onAcceptStartingPosition
-                                    }
-                                    onCancelStartingPosition={
-                                        onCancelStartingPosition
-                                    }
+                                    
+                                />
+                                <PgnTextArea
+                                    initialPgn={pgn?.() || ""}
+                                    setPgn={updateGameFromPgnString}   
                                 />
                             </Show>
                         </div>

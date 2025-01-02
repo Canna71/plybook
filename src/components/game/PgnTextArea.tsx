@@ -21,11 +21,11 @@ const PgnTextArea: Component<PgnTextAreaProps> = (props) => {
     };
 
     return (
-        <div>
-            <div contentEditable={true} onInput={onInput}>
+        <div class="pgn-text-area">
+            <div contentEditable={true} onInput={onInput} class="pgn-text">
                 {pgn()}
             </div>
-            <button onClick={() => props.setPgn(pgn())}>Set PGN</button>
+            <button class="button" onClick={() => props.setPgn(pgn())}>Set PGN</button>
         </div>
     );
 };

@@ -202,3 +202,23 @@
     overflow: hidden;
 }
 
+
+.pgn-text-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .pgn-text {
+        flex: 1;
+        overflow-y: auto;
+        margin: 4px 0;
+        padding: 8px;
+        border: 1px solid var(--bulma-border);
+        // border-radius: 2px;
+        font-family: monospace;
+        font-size: 90%;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        line-height: 1.5;
+    }
+}
