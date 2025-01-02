@@ -59,7 +59,7 @@ export const CommentsView:Component<CommentsViewProps> = ({comments, path, index
 	
 	// take editable from context
 
-	const { editable, game, setGame, setSquareHovered } = useContext(GameContext)!;
+	const { editable, gameSignal: [game, setGame], setSquareHovered } = useContext(GameContext)!;
 	let ref: HTMLDivElement | undefined;
 	
 	const paragraph = () =>  {

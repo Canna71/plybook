@@ -267,9 +267,16 @@ const GameManager: Component<GameManagerOptions> = ({
     const onAcceptStartingPosition = () => {
         game()?.headers.set("FEN", startingPosition() || "");
         game()?.headers.set("Setup", "1");
+
+        const newGame = game()?.updateHeaders(new Map([
+            ["FEN", startingPosition() || ""],
+            ["Setup", "1"],
+        ]));
         batch(() => {
             // setPgn?.(game()?.pgn() || "");
-            updateGameFromPgnString(game()?.pgn() || "");
+            // TODO: refactor this to act directly on the game model
+            // updateGameFromPgnString(game()?.pgn() || "");
+            setGame(newGame);
             setViewMode(ViewMode.MOVES);
         });
     };
@@ -430,10 +437,9 @@ const GameManager: Component<GameManagerOptions> = ({
         <>
             <GameContext.Provider
                 value={{
-                    game: game,
-                    setGame: setGame,
-                    currentPath: currentPath,
-                    setCurrentPath: setCurrentPath,
+                    gameSignal: [game, setGame],
+                    currentPathSignal: [currentPath, setCurrentPath],
+                    startingPositionSignal: [startingPosition, setStartingPosition],
                     setSquareHovered: setSquareHovered,
                     editable: isEditable,
                 }}

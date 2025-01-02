@@ -101,7 +101,7 @@ type EngineInfoLineProps = {
 };
 
 const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
-    const { currentPath, setCurrentPath, game, setGame } = useContext(GameContext)!;
+    const { currentPathSignal: [currentPath, setCurrentPath], gameSignal: [game, setGame] } = useContext(GameContext)!;
     const [isExpanded, setIsExpanded] = createSignal(false);
 
     const line = createMemo(() => {

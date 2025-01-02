@@ -298,6 +298,11 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
+    public updateHeaders(headers: Map<string, string>) {
+        headers.forEach((value, key) => this.game.headers.set(key, value));
+        return this.getNewGameModel();
+    }
+
     pgn() {
         return makePgn(this.game);
     }

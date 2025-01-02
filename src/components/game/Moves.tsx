@@ -148,7 +148,7 @@ const MovesTree: Component<MovesTreeProps> = ({
 };
 
 const Moves: Component<MovesProps> = () => {
-    const { setCurrentPath, game } = useContext(GameContext)!;
+    const { currentPathSignal:[_, setCurrentPath], gameSignal:[game] } = useContext(GameContext)!;
 
     const onClick = (e: Event) => {
         const target = e.target as HTMLElement;

@@ -107,7 +107,7 @@ const FileBrowser = (props: FileBrowserProps) => {
             root={rootNode}
             
             onNodeClick={onNodeClickInternal}
-            renderNode={(node, isRenaming) => (
+            renderNode={(node, _isRenaming) => (
                 <FileBrowserItem node={node} expandedNodesSignal={[expandedNodes, setExpandedNodes]} />
             )}
             renderItemIcon={(node) =>(

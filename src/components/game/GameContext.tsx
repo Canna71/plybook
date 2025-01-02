@@ -1,14 +1,13 @@
-import { Accessor, createContext, Setter } from "solid-js";
+import { Accessor, createContext, Setter, Signal } from "solid-js";
 import { GameModel } from "../../models/GameModel";
 import { Path, PlyData } from "../../models/pgn";
 
 
 
 export interface GameContextType {
-	game: Accessor<GameModel | undefined>;
-	setGame: Setter<GameModel | undefined>;
-	currentPath: Accessor<Path | undefined>;
-	setCurrentPath: Setter<Path | undefined>;
+	gameSignal: Signal<GameModel | undefined>;
+	currentPathSignal: Signal<Path | undefined>;
+	startingPositionSignal: Signal<string | undefined>;
 	setSquareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
 }
