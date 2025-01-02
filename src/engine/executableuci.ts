@@ -1,5 +1,6 @@
 import { Child, Command } from "@tauri-apps/plugin-shell";
 import { IUCIInterface } from "./iuciinterface";
+import { isWindows } from "../models/osutils";
 
 // ExecutableUCIInterface.ts
 export class ExecutableUCIInterface implements IUCIInterface {
@@ -14,11 +15,21 @@ export class ExecutableUCIInterface implements IUCIInterface {
         this.enginePath = enginePath;
     }
 
+    private async getEngineCommand() {
+        if(isWindows()) {
+            return  Command.create("exec-cmd", ["/c", `${this.enginePath}`]);
+        } else {
+            return  Command.create("exec-sh", ["-c", `"${this.enginePath}"`]);
+        }
+
+        
+    }
+
     async init(): Promise<void> {
 
         if (this.isReady) return;
 
-        this.command = await Command.create('exec-sh', ["-c", `"${this.enginePath}"`]);
+        this.command = await this.getEngineCommand();
         
         this.command.stdout.on('data', (line: string) => {
             if (line.includes('uciok')) {

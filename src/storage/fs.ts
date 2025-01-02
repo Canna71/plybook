@@ -83,7 +83,7 @@ async function ensureFolderExists(folderPath: string): Promise<void> {
 
 export async function ensureAppDataFolders() {
     try {
-        const appDataPath = await appDataDir();
+        const appDataPath = await appLocalDataDir();
         await ensureFolderExists(appDataPath);
         await ensureFolderExists(
             await join(appDataPath, LIBRARY_FOLDER, "pgn"),
@@ -107,13 +107,28 @@ export async function listAppData(path: string) {
     });
 }
 
-export async function getEngineFolder(name: string) {
-    const appDataDirPath = await appDataDir();
-    return join(appDataDirPath, ENGINES_FOLDER, name);
+export async function getEnginePath(name?: string) {
+    const appDataDirPath = await appLocalDataDir();
+    let enginePath = undefined;
+    if(name) {
+        const tentative = await join(appDataDirPath, ENGINES_FOLDER, name);
+        const isOk = await exists(tentative);
+        if (isOk) {
+            enginePath = tentative;
+        }
+    }
+    if(!enginePath){
+        // select the first engine found
+        const engines = await listAppData(await join(appDataDirPath, ENGINES_FOLDER));
+        if(engines.length > 0) {
+            enginePath = await join(appDataDirPath, ENGINES_FOLDER, engines[0].name);
+        }
+    }
+    return enginePath;
 }
 
 export async function getAvailableEngines() {
-    const enginesPath = await getEngineFolder("");
+    const enginesPath = await join(await appLocalDataDir(), ENGINES_FOLDER);
     return (await listAppData(enginesPath)).map((entry) => entry.name);
 }
 

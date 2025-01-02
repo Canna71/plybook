@@ -20,6 +20,7 @@ import { MenuItemOptions } from "@tauri-apps/api/menu";
 import { ContentContext } from "../common/ContentContext";
 import FileBrowserItem from "./FileBrowserItem";
 import { set } from "es-toolkit/compat";
+import { sep } from "@tauri-apps/api/path";
 
 type FileBrowserProps = {
     rootFolder: FileBrowserFile;
@@ -41,7 +42,7 @@ async function directoryToNodes(path: string) {
         .filter((de) => de.isFile || de.isDirectory)
         .filter((de) => !de.name.startsWith("."))
         .map((file) => {
-            const fullPath = `${path}/${file.name}`;
+            const fullPath = `${path}${sep()}${file.name}`;
             return {
                 id: fullPath,
                 label: file.isDirectory

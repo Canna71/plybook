@@ -6,7 +6,7 @@ import { Chess, NormalMove, Piece } from "chessops";
 import { makeMove } from "../../components/common/utils";
 import { makeFen } from "chessops/fen";
 import { IChessEngine, IEngineEventEmitter } from "../../engine/engineinterfaces";
-import { getEngineFolder } from "../../storage/fs";
+import { getEnginePath } from "../../storage/fs";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
 import { UCIEngine } from "../../engine/uciengine";
 
@@ -68,9 +68,11 @@ const PlayEngineTest = () => {
     };
 
     onMount(async () => {
-        const enginePath = await getEngineFolder(
-            "stockfish-aarch64-apple-darwin",
-        );
+        const enginePath = await getEnginePath();
+        if(!enginePath) {
+            console.error("no engine found");
+            return;
+        }
         const uciInterface = new ExecutableUCIInterface(enginePath);
         const engine = new UCIEngine(uciInterface);
         // var engine = StockfishManager.GetEngine(onEngineEvent);

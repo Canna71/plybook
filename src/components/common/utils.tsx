@@ -21,9 +21,7 @@ import { DOMElement } from "solid-js/jsx-runtime";
 import { TooltipContext } from "../game/GameContext";
 
 export function lastMove(
-    data:
-        | import("/Users/gcannata/Projects/rechess/src/models/pgn").Initial
-        | import("/Users/gcannata/Projects/rechess/src/models/pgn").PlyData,
+    data: Initial | PlyData | undefined,
 ) {
     const lm = isPlyData(data) ? (data.move as NormalMove) : undefined;
     const lastMoveKey = lm && [makeSquare(lm.from), makeSquare(lm.to)];

@@ -34,7 +34,7 @@ import { PiecesPopup } from "./PiecesPopup";
 import { NormalMove, Position, squareRank } from "chessops";
 import "./GameManager.scss";
 import { EngineInfo, IChessEngine } from "../../engine/engineinterfaces";
-import { getEngineFolder } from "../../storage/fs";
+import { getEnginePath } from "../../storage/fs";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
 import { UCIEngine } from "../../engine/uciengine";
 import { createStore } from "solid-js/store";
@@ -88,7 +88,7 @@ const GameManager: Component<GameManagerOptions> = ({
     //     undefined,
     // );
     const [engineFolder, _others] = createResource(() =>
-        getEngineFolder("stockfish-aarch64-apple-darwin"),
+        getEnginePath(),
     );
     const [engine, setEngine] = createSignal<IChessEngine | undefined>(
         undefined,

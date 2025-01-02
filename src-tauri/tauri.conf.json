@@ -39,7 +39,7 @@
       "testdata/*"
     ],
     "externalBin": [
-      "./binaries/stockfish"
+      
     ]
   }
 }

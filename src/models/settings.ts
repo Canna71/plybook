@@ -41,6 +41,7 @@ async function loadSettings() {
     
 
     setSettings(mergedSettings);
+    saveSettings();
     setSettingsLoaded(true);
     return newSettings;
 }

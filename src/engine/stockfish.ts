@@ -1,5 +1,5 @@
 import { Child, Command } from '@tauri-apps/plugin-shell';
-import { getEngineFolder } from '../storage/fs';
+import { getEnginePath } from '../storage/fs';
 import { EngineInfo } from './engineinterfaces';
 
 
@@ -56,7 +56,7 @@ export class StockfishManager {
         // this.command = await Command.create('stockfish', []);
         console.log("creating command");
 
-        const enginePath = await getEngineFolder("stockfish-aarch64-apple-darwin");
+        const enginePath = await getEnginePath();
         console.log("engine path", enginePath);
 
         // this.command = await Command.create('exec-sh', ["-c", "/Users/gcannata/Library/Application\\ Support/rechess/Binaries/stockfish-aarch64-apple-darwin"]);
