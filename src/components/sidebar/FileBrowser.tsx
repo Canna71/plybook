@@ -63,6 +63,8 @@ async function directoryToNodes(path: string) {
 
 const FileBrowser = (props: FileBrowserProps) => {
     const { refreshTrigger, renaming } = useContext(ContentContext)!;
+    const [selectedNode, setSelectedNode] = createSignal<TreeNode<FileBrowserFile> | null>(null);
+    const [expandedNodes, setExpandedNodes] = createSignal<Set<string>>(new Set());
 
     const root = {
         id: props.rootFolder.path,
@@ -99,12 +101,14 @@ const FileBrowser = (props: FileBrowserProps) => {
 
     return (
         <TreeView
+            selectedNodeSignal={[selectedNode, setSelectedNode]}
+            expandedNodesSignal={[expandedNodes, setExpandedNodes]}
             indentSize={8}
             root={rootNode}
-            onSelectedChanged={onSelectedChangedInternal}
+            
             onNodeClick={onNodeClickInternal}
             renderNode={(node, isRenaming) => (
-                <FileBrowserItem node={node}  />
+                <FileBrowserItem node={node} expandedNodesSignal={[expandedNodes, setExpandedNodes]} />
             )}
             renderExpandedIndicator={(isExpanded, _node) =>
                 isExpanded ? <IconChevronDown /> : <IconChevronRight />

@@ -230,3 +230,7 @@ export function baseName(name: string) {
 export function basePath(name: string) {
     return name.split(sep()).slice(0, -1).join(sep());
 }
+
+export function getDefaultStudyContent() {
+    return "[]";
+}

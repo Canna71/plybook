@@ -7,6 +7,7 @@ import {
     JSX,
     Setter,
     Show,
+    Signal,
 } from "solid-js";
 import styles from "./TreeView.module.scss"; // Create and import your custom styles
 
@@ -29,13 +30,14 @@ type TreeViewProps<T> = {
     onSelectedChanged?: (node: TreeNode<T> | null) => void;
     indentSize?: number;
     renaming?: Accessor<string | undefined>;
+    selectedNodeSignal: Signal<TreeNode<T> | null>;
+    expandedNodesSignal: Signal<Set<string>>; 
 };
 
 type TreeViewNodeProps<T> = {
     node: Accessor<TreeNode<T>>;
     onNodeClick?: (node: TreeNode<T>) => void;
-    expandedNodes: Accessor<Set<string>>;
-    setExpandedNodes: Setter<Set<string>>;
+    expandedNodesSignal: Signal<Set<string>>;
     selectedNode: Accessor<TreeNode<T> | null>;
     renderNode?: (node: TreeNode<T>, isRenaming: boolean) => JSX.Element;
     renderExpandedIndicator?: (
@@ -52,8 +54,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
     const {
         node,
         onNodeClick,
-        expandedNodes,
-        setExpandedNodes,
+        expandedNodesSignal,
         renderNode,
         renderExpandedIndicator,
         selectedNode,
@@ -63,6 +64,8 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
     const [children, setChildren] = createSignal<TreeNode<T>[] | undefined>(
         node().children,
     );
+    const [expandedNodes, setExpandedNodes] = expandedNodesSignal;
+    
     const refreshNode = async () => {
         if (node().loadChildren) {
             node().children = await node().loadChildren?.();
@@ -150,8 +153,8 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
                             indentSize={props.indentSize??20}
                             node={()=>child}
                             onNodeClick={onNodeClick}
-                            expandedNodes={expandedNodes}
-                            setExpandedNodes={setExpandedNodes}
+                            
+                            expandedNodesSignal={expandedNodesSignal}
                             renderNode={renderNode}
                             renderExpandedIndicator={renderExpandedIndicator}
                             selectedNode={selectedNode}
@@ -166,18 +169,9 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
 };
 
 const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
-    const [expandedNodes, setExpandedNodes] = createSignal<Set<string>>(
-        new Set(),
-    );
-    const [selectedNode, setSelectedNode] = createSignal<TreeNode<T> | null>(
-        null,
-    );
-
-    createEffect(() => {
-        if (props.onSelectedChanged) {
-            props.onSelectedChanged(selectedNode());
-        }
-    });
+    const [expandedNodes, setExpandedNodes] = props.expandedNodesSignal;
+    const [selectedNode, setSelectedNode] = props.selectedNodeSignal;
+    
 
     const handleNodeClick = (node: TreeNode<T>) => {
         setSelectedNode(node);
@@ -192,8 +186,7 @@ const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
                 indentSize={props.indentSize??20}
                 node={props.root}
                 onNodeClick={handleNodeClick}
-                expandedNodes={expandedNodes}
-                setExpandedNodes={setExpandedNodes}
+                expandedNodesSignal={props.expandedNodesSignal}
                 renderNode={props.renderNode}
                 renderExpandedIndicator={props.renderExpandedIndicator}
                 selectedNode={selectedNode}

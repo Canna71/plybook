@@ -2,7 +2,14 @@ import { batch, createEffect, createSignal } from "solid-js";
 import { save } from "@tauri-apps/plugin-dialog";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
-import { baseName, NameWithoutExtension, readDataFile, renameOrCreateDataFile, writeDataFile } from "../storage/fs";
+import {
+    baseName,
+    getDefaultStudyContent,
+    NameWithoutExtension,
+    readDataFile,
+    renameOrCreateDataFile,
+    writeDataFile,
+} from "../storage/fs";
 import { useLocation, useSearchParams } from "@solidjs/router";
 import { IconDeviceFloppy } from "@tabler/icons-solidjs";
 import "./GameView.scss";
@@ -30,14 +37,13 @@ const GameView = () => {
             return searchParams.path;
         }
         return undefined;
-    }
+    };
 
     createEffect(async () => {
-        let pgnText = "[]";
+        let pgnText = getDefaultStudyContent();
         if (typeof searchParams.path === "string") {
             pgnText = await readDataFile(searchParams.path);
         } else {
-            // setOriginalPgn("[]");
         }
         batch(() => {
             setOriginalPgn(pgnText);
@@ -93,7 +99,11 @@ const GameView = () => {
     };
 
     const onRename = (text: string) => {
-        renameOrCreateDataFile(filePath(), text, newPgn()||"[]");
+        renameOrCreateDataFile(
+            filePath(),
+            text,
+            newPgn() || getDefaultStudyContent(),
+        );
     };
 
     return (

@@ -5,6 +5,7 @@ import {
     createSignal,
     Setter,
     Show,
+    Signal,
     useContext,
 } from "solid-js";
 import { ContentContext } from "../common/ContentContext";
@@ -14,6 +15,7 @@ import {
     createNewDataFile,
     createNewDataFolder,
     deleteDataFileOrFolder,
+    getDefaultStudyContent,
     renameOrCreateDataFile,
 } from "../../storage/fs";
 import { useContextMenu } from "../common/contextmenu";
@@ -21,23 +23,33 @@ import Editable from "../common/Editable";
 
 type FileBrowserItemProps = {
     node: TreeNode<FileBrowserFile>;
+    expandedNodesSignal: Signal<Set<string>>;
 };
 
-const FileBrowserItem: Component<FileBrowserItemProps> = ({ node }) => {
+const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesSignal }) => {
     const { renaming, setRenaming, refresh } = useContext(ContentContext)!;
+    const [expandedNodes, setExpandedNodes] = expandedNodesSignal;
 
     const onNewStudy = async (id: string, node: TreeNode<FileBrowserFile>) => {
         const newPath = await createNewDataFile(
             node.data!.path,
             "Untitled.pgn",
-            "[]",
+            getDefaultStudyContent(),
         );
-        refresh();
+        batch(() => {
+            setExpandedNodes(new Set(expandedNodes()).add(node.id));
+            setRenaming(newPath);
+            refresh();
+        });
     };
 
     const onNewFolder = async (id: string, node: TreeNode<FileBrowserFile>) => {
         const newPath = await createNewDataFolder(node.data!.path, "Untitled");
-        refresh();
+        batch(() => {
+            setExpandedNodes(new Set(expandedNodes()).add(node.id));
+            setRenaming(newPath);
+            refresh();
+        });
     };
 
     const onDeleteStudy = async (
@@ -66,9 +78,9 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node }) => {
         setRenaming(node.id);
     };
 
-    const onRename = (value: string) => {
+    const onRename = async (value: string) => {
         console.log("rename: ", node, value);
-        renameOrCreateDataFile(node.data!.path, value);
+        await renameOrCreateDataFile(node.data!.path, value);
         batch(() => {
             setRenaming(undefined);
             refresh();

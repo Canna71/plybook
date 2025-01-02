@@ -34,7 +34,7 @@ import { PiecesPopup } from "./PiecesPopup";
 import { NormalMove, Position, squareRank } from "chessops";
 import "./GameManager.scss";
 import { EngineInfo, IChessEngine } from "../../engine/engineinterfaces";
-import { getEnginePath } from "../../storage/fs";
+import { getDefaultStudyContent, getEnginePath } from "../../storage/fs";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
 import { UCIEngine } from "../../engine/uciengine";
 import { createStore } from "solid-js/store";
@@ -106,7 +106,7 @@ const GameManager: Component<GameManagerOptions> = ({
         // const cg = api();
         let pgnString = pgn?.();
         if (!pgnString) {
-            pgnString = "[]";
+            pgnString = getDefaultStudyContent();
         }
         // const gameModel = makeGame(pgnString);
         // batch(() => {
