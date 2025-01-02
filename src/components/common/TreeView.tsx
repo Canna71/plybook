@@ -27,6 +27,7 @@ type TreeViewProps<T> = {
         expanded: boolean,
         node: TreeNode<T>,
     ) => JSX.Element;
+    renderItemIcon?: (node: TreeNode<T>) => JSX.Element;
     onSelectedChanged?: (node: TreeNode<T> | null) => void;
     indentSize?: number;
     renaming?: Accessor<string | undefined>;
@@ -44,6 +45,7 @@ type TreeViewNodeProps<T> = {
         expanded: boolean,
         node: TreeNode<T>,
     ) => JSX.Element;
+    renderItemIcon?: (node: TreeNode<T>) => JSX.Element;
     level: number;
     indentSize: number;
     renaming?: Accessor<string | undefined>;
@@ -136,7 +138,9 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
                     {renderExpandedIndicator?.(isExpanded(), node()) ||
                         (isExpanded() ? "-" : "+")}
                 </Show>
-
+                <Show when={props.renderItemIcon}>
+                    {props.renderItemIcon!(node())}
+                </Show>
                 <div class={styles.nodeContent}>
                     <Show
                         when={renderNode}
@@ -153,9 +157,9 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
                             indentSize={props.indentSize??20}
                             node={()=>child}
                             onNodeClick={onNodeClick}
-                            
                             expandedNodesSignal={expandedNodesSignal}
                             renderNode={renderNode}
+                            renderItemIcon={props.renderItemIcon}
                             renderExpandedIndicator={renderExpandedIndicator}
                             selectedNode={selectedNode}
                             level={level + 1}
@@ -188,6 +192,7 @@ const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
                 onNodeClick={handleNodeClick}
                 expandedNodesSignal={props.expandedNodesSignal}
                 renderNode={props.renderNode}
+                renderItemIcon={props.renderItemIcon}
                 renderExpandedIndicator={props.renderExpandedIndicator}
                 selectedNode={selectedNode}
                 level={0}

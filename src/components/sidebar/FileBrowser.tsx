@@ -14,7 +14,7 @@ import {
     listAppData,
     NameWithoutExtension,
 } from "../../storage/fs";
-import { IconChevronDown, IconChevronRight } from "@tabler/icons-solidjs";
+import { IconBook2, IconChevronDown, IconChevronRight } from "@tabler/icons-solidjs";
 import { useContextMenu } from "../common/contextmenu";
 import { MenuItemOptions } from "@tauri-apps/api/menu";
 import { ContentContext } from "../common/ContentContext";
@@ -109,6 +109,9 @@ const FileBrowser = (props: FileBrowserProps) => {
             onNodeClick={onNodeClickInternal}
             renderNode={(node, isRenaming) => (
                 <FileBrowserItem node={node} expandedNodesSignal={[expandedNodes, setExpandedNodes]} />
+            )}
+            renderItemIcon={(node) =>(
+                node.data!.isDirectory ? null : <IconBook2 />
             )}
             renderExpandedIndicator={(isExpanded, _node) =>
                 isExpanded ? <IconChevronDown /> : <IconChevronRight />
