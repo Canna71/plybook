@@ -11,7 +11,7 @@ import {
     Signal,
     Switch,
 } from "solid-js";
-import { makeGame, Path, PlyData } from "../../models/pgn";
+import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
@@ -35,13 +35,14 @@ import { NormalMove, Position } from "chessops";
 import "./GameManager.scss";
 import { getDefaultStudyContent } from "../../storage/fs";
 import EngineInfoViewer from "./EngineInfoViewer";
-import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "../common/Tooltip";
 import PgnEditBar, { ViewMode } from "./PgnEditBar";
 import PgnTextArea from "./PgnTextArea";
 import App from "../../App";
 import { useChessEngine } from "./useChessEngine";
 import { playSoundForMove } from "./playSoundForMove";
+import { useTooltip } from "./useTooltip";
+
 
 export type GameManagerOptions = {
     pgn?: Accessor<string | undefined>;
@@ -296,18 +297,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // #endregion
 
     // #region tooltip
-    const [reference, setReference] = createSignal<
-        ReferenceElement | null | undefined
-    >(undefined);
-    const [ply, setPly] = createSignal<PlyData>();
-
-    const showTooltip = (
-        anchor: Element | undefined,
-        plyData: PlyData | undefined,
-    ) => {
-        setPly(plyData);
-        setReference(anchor);
-    };
+    const { reference, ply, showTooltip } = useTooltip();
 
     // #endregion
 
