@@ -198,6 +198,8 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const turn = createMemo(() => position().turn as Color);
 
+    const editablePgn = () => game()?.pgn() || pgn?.() || getDefaultStudyContent();
+
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered)();
 
@@ -483,7 +485,7 @@ const GameManager: Component<GameManagerOptions> = ({
                                     
                                 />
                                 <PgnTextArea
-                                    initialPgn={pgn?.() || ""}
+                                    initialPgn={editablePgn()}
                                     setPgn={updateGameFromPgnString}   
                                 />
                             </Show>

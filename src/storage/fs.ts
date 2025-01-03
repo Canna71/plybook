@@ -226,7 +226,9 @@ export async function deleteDataFileOrFolder(path: string) {
 }
 
 export function NameWithoutExtension(name: string) {
-    return name.replace(/\.[^/.]+$/, "");
+    const dotIndex = name.lastIndexOf('.');
+    const ret = dotIndex !== -1 ? name.substring(0, dotIndex) : name;
+    return ret;
 }
 
 export function baseName(name: string) {
@@ -240,7 +242,7 @@ export function basePath(name: string) {
 export function fileOrFolderExtension(name: string) {
     const base = baseName(name);
     const dotIndex = base.lastIndexOf('.');
-    return dotIndex !== -1 ? base.substring(dotIndex) : "";
+    return dotIndex !== -1 ? base.substring(dotIndex+1) : "";
 }
 
 export function getDefaultStudyContent() {
