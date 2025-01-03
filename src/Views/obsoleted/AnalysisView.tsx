@@ -18,9 +18,9 @@ const AnalysisView = () => {
     });
 
     return (
-        // <div>
-            <GameManager pgn={pgn} defaultEngineOn={true} />
-        // </div>
+        <div>
+            {/* // <GameManager pgnSignal={[pgn, ()=>void]} defaultEngineOn={true} /> */}
+         </div>
     );
 }
 

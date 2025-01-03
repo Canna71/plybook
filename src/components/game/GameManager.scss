@@ -227,3 +227,9 @@
         color: var(--bulma-strong-color);
     }
 }
+
+.buttons-bar {
+    padding: 4px;
+    display: flex;
+    justify-content: right;
+}

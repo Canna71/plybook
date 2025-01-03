@@ -10,19 +10,19 @@ import {
     squareFile,
     squareRank,
 } from "chessops";
-import { Initial, isPlyData, Path, PlyData } from "../../models/pgn";
+import { Initial, isPlyData, makeGame, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
-import { Accessor, useContext } from "solid-js";
+import { Accessor, batch, useContext } from "solid-js";
 import { Key } from "chessground/types";
 import { Config } from "chessground/config";
 import { parseSquare, squareFromCoords } from "chessops/util";
 import Split from "split-grid";
 import { DOMElement } from "solid-js/jsx-runtime";
-import { TooltipContext } from "../game/GameContext";
+import { GameContextType, TooltipContext } from "../game/GameContext";
+import { makeFen, parseFen } from "chessops/fen";
+import { ViewMode } from "../game/PgnEditBar";
 
-export function lastMove(
-    data: Initial | PlyData | undefined,
-) {
+export function lastMove(data: Initial | PlyData | undefined) {
     const lm = isPlyData(data) ? (data.move as NormalMove) : undefined;
     const lastMoveKey = lm && [makeSquare(lm.from), makeSquare(lm.to)];
     return lastMoveKey;
@@ -149,8 +149,7 @@ export function getPosition(
     return pos;
 }
 export function getPositionFromData(data: Initial | PlyData | undefined) {
-    
-	const pos = data?.pos;
+    const pos = data?.pos;
     return pos;
 }
 
@@ -193,7 +192,7 @@ export function useSplitter(saveLayout?: (layout: string) => void) {
         });
     };
 }
- export function makeMove(orig: string, dest: string): NormalMove {
+export function makeMove(orig: string, dest: string): NormalMove {
     const sq1 = parseSquare(orig);
     const sq2 = parseSquare(dest);
     const move = {
@@ -216,9 +215,11 @@ export function isPromotion(move: NormalMove, position: Chess) {
     }
 }
 
-export function useFenTooltip(tooltipEnabled: boolean, plyData: PlyData | undefined) {
-	
-	const { showTooltip } = useContext(TooltipContext)!;
+export function useFenTooltip(
+    tooltipEnabled: boolean,
+    plyData: PlyData | undefined,
+) {
+    const { showTooltip } = useContext(TooltipContext)!;
     const innerShowTooltip = (
         e:
             | (MouseEvent & {
@@ -234,5 +235,21 @@ export function useFenTooltip(tooltipEnabled: boolean, plyData: PlyData | undefi
             showTooltip(undefined, undefined);
         }
     };
-	return innerShowTooltip;
+    return innerShowTooltip;
 }
+
+export const updateGameFromPgnString = (pgnString: string, context: GameContextType) => {
+    console.log("Updating game from pgn string", pgnString);
+    const gameModel = makeGame(pgnString);
+    batch(() => {
+        context.gameSignal[1](gameModel);
+        if (gameModel.headers.get("FEN")) {
+            const setup = parseFen(gameModel.headers.get("FEN") || "");
+            if (setup.isOk) {
+                context.startingPositionSignal[1](makeFen(setup.value));
+            }
+        }
+        context.currentPathSignal[1](gameModel.pathAtMainlinePly(0));
+        context.viewModeSignal[1](ViewMode.MOVES);
+    });
+};

@@ -1,7 +1,7 @@
 import { Accessor, createContext, Setter, Signal } from "solid-js";
 import { GameModel } from "../../models/GameModel";
 import { Path, PlyData } from "../../models/pgn";
-import { ViewMode } from "./SetPositionSwitch";
+import { ViewMode } from "./PgnEditBar";
 
 
 
@@ -10,6 +10,7 @@ export interface GameContextType {
 	currentPathSignal: Signal<Path | undefined>;
 	startingPositionSignal: Signal<string | undefined>;
 	viewModeSignal: Signal<ViewMode>;
+	editPgnSignal: Signal<string | undefined>;
 	setSquareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
 }

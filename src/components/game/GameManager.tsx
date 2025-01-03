@@ -10,6 +10,7 @@ import {
     Match,
     onCleanup,
     Show,
+    Signal,
     Switch,
 } from "solid-js";
 import { isPlyData, makeGame, Path, PlyData } from "../../models/pgn";
@@ -21,13 +22,14 @@ import {
     isPromotion,
     makeConfig,
     makeMove,
+    updateGameFromPgnString,
     useSplitter,
 } from "../common/utils";
 import { Color, Key, Piece, Role } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
 import BoardEditor from "../boardeditor/BoardEditor";
 import { makeFen, parseFen } from "chessops/fen";
-import { GameContext, TooltipContext } from "./GameContext";
+import { GameContext, GameContextType, TooltipContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
@@ -41,7 +43,7 @@ import { createStore } from "solid-js/store";
 import EngineInfoViewer from "./EngineInfoViewer";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "../common/Tooltip";
-import SetPositionSwitch, { ViewMode } from "./SetPositionSwitch";
+import PgnEditBar, { ViewMode } from "./PgnEditBar";
 import { PlayAudioForMove } from "../audio";
 import PgnTextArea from "./PgnTextArea";
 
@@ -50,6 +52,7 @@ export type GameManagerOptions = {
     setPgn?: (pgn: string) => void;
     engineColor?: Accessor<Color | undefined>;
     defaultEngineOn?: boolean;
+    editable?: Accessor<boolean>;
 };
 
 type PromotionData = {
@@ -61,6 +64,7 @@ const GameManager: Component<GameManagerOptions> = ({
     pgn,
     setPgn,
     engineColor,
+    editable,
     defaultEngineOn = false,
 }) => {
     // #region Game State
@@ -77,6 +81,8 @@ const GameManager: Component<GameManagerOptions> = ({
     const [promotionData, setPromotionData] = createSignal<
         PromotionData | undefined
     >(undefined);
+
+    const [editPgn, setEditPgn] = createSignal<string | undefined>(undefined);
     // #endregion
 
     // #region view mode state
@@ -88,14 +94,26 @@ const GameManager: Component<GameManagerOptions> = ({
     // const [engineColor, setEngineColor] = createSignal<Color | undefined>(
     //     undefined,
     // );
-    const [engineFolder, _others] = createResource(() =>
-        getEnginePath(),
-    );
+    const [engineFolder, _others] = createResource(() => getEnginePath());
     const [engine, setEngine] = createSignal<IChessEngine | undefined>(
         undefined,
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
     // #endregion
+    const isEditable = () => {
+        return editable?.() || false;
+    };
+    // #region Game Context
+
+    const gameContext = {
+        gameSignal: [game, setGame],
+        currentPathSignal: [currentPath, setCurrentPath],
+        startingPositionSignal: [startingPosition, setStartingPosition],
+        viewModeSignal: [viewMode, setViewMode],
+        editPgnSignal: [editPgn, setEditPgn],
+        setSquareHovered: setSquareHovered,
+        editable: isEditable,
+    } as GameContextType;
 
     // #region Layout
     let chessBoardDiv: HTMLDivElement | null = null;
@@ -109,25 +127,9 @@ const GameManager: Component<GameManagerOptions> = ({
         if (!pgnString) {
             pgnString = getDefaultStudyContent();
         }
-        
-        updateGameFromPgnString(pgnString);
-    });
 
-    const updateGameFromPgnString = (pgnString: string) => {
-        console.log("Updating game from pgn string", pgnString);
-        const gameModel = makeGame(pgnString);
-        batch(() => {
-            setGame(gameModel);
-            if (gameModel.headers.get("FEN")) {
-                const setup = parseFen(gameModel.headers.get("FEN") || "");
-                if (setup.isOk) {
-                    setStartingPosition(makeFen(setup.value));
-                }
-            }
-            setCurrentPath(gameModel.pathAtMainlinePly(0));
-            setViewMode(ViewMode.MOVES);
-        });
-    }
+        updateGameFromPgnString(pgnString, gameContext);
+    });
 
     // #endregion
 
@@ -198,7 +200,8 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const turn = createMemo(() => position().turn as Color);
 
-    const editablePgn = () => game()?.pgn() || pgn?.() || getDefaultStudyContent();
+    const editablePgn = () =>
+        game()?.pgn() || pgn?.() || getDefaultStudyContent();
 
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered)();
@@ -246,18 +249,9 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const blackPlayer = () => game()?.players.black.name || "Black";
 
-    const isEditable = () => {
-        if (!setPgn) return false;
-
-        return true;
-    };
-
     // #endregion
 
     // #region Starting Position Editing
-    
-
-    
 
     // #endregion
 
@@ -290,7 +284,7 @@ const GameManager: Component<GameManagerOptions> = ({
     createEffect(() => {
         // play sound when path changes
         const path = currentPath();
-        if((path?.size() || 0) === 0) return;
+        if ((path?.size() || 0) === 0) return;
         if (path) {
             const ply = game()?.dataAt(path);
             if (isPlyData(ply)) {
@@ -303,9 +297,20 @@ const GameManager: Component<GameManagerOptions> = ({
                 const previous = path.previous();
                 const previousPly = game()?.dataAt(previous);
                 const role = pos.board.get(lastMove.to)?.role;
-                const isCastling = role === "king" && Math.abs(squareRank(lastMove.to)-squareRank(lastMove.from)) === 2;
-                const isCapture = previousPly?.pos.board.has(lastMove.to) || false;
-                const flags = { isCapture, isCheck, isCheckmate, isSelf, isCastling };
+                const isCastling =
+                    role === "king" &&
+                    Math.abs(
+                        squareRank(lastMove.to) - squareRank(lastMove.from),
+                    ) === 2;
+                const isCapture =
+                    previousPly?.pos.board.has(lastMove.to) || false;
+                const flags = {
+                    isCapture,
+                    isCheck,
+                    isCheckmate,
+                    isSelf,
+                    isCastling,
+                };
                 PlayAudioForMove(flags);
             }
         }
@@ -337,7 +342,6 @@ const GameManager: Component<GameManagerOptions> = ({
                 setEngineOn(true);
             });
         } else {
-            
         }
     });
 
@@ -409,68 +413,61 @@ const GameManager: Component<GameManagerOptions> = ({
 
     return (
         <>
-            <GameContext.Provider
-                value={{
-                    gameSignal: [game, setGame],
-                    currentPathSignal: [currentPath, setCurrentPath],
-                    startingPositionSignal: [startingPosition, setStartingPosition],
-                    viewModeSignal: [viewMode, setViewMode],
-                    setSquareHovered: setSquareHovered,
-                    editable: isEditable,
-                }}
-            >
+            <GameContext.Provider value={gameContext}>
                 <TooltipContext.Provider value={{ showTooltip }}>
                     <div class="pgnviewer-container">
                         <div class="pgnviewer-content">
-                            <Switch>
-                                <Match when={viewMode() === ViewMode.MOVES}>
-                                    <PlayerName
-                                        name={blackPlayer}
-                                        setName={setBlackPlayer}
-                                        color="black"
-                                    />
-                                    <div
-                                        ref={chessBoardDiv!}
-                                        class="pgnviewer-chessboard"
-                                    >
-                                        <Chessboard config={config} />
-                                        <Show when={!!promotionData()}>
-                                            <PiecesPopup
-                                                chessBoardDiv={chessBoardDiv}
-                                                promotingCell={() =>
-                                                    promotionData()
-                                                        ?.promotionCell
-                                                }
-                                                onSelected={onPromotionSelected}
-                                                color={turn}
-                                            />
-                                        </Show>
-                                    </div>
-                                    <PlayerName
-                                        name={whitePlayer}
-                                        setName={setWhitePlayer}
-                                        color="white"
-                                    />
-                                </Match>
-                                <Match
-                                    when={
-                                        viewMode() ===
-                                        ViewMode.STARTING_POSITION
-                                    }
+                            <Show
+                                when={
+                                    viewMode() === ViewMode.MOVES ||
+                                    viewMode() === ViewMode.PGN
+                                }
+                            >
+                                <PlayerName
+                                    name={blackPlayer}
+                                    setName={setBlackPlayer}
+                                    color="black"
+                                />
+                                <div
+                                    ref={chessBoardDiv!}
+                                    class="pgnviewer-chessboard"
                                 >
-                                    <BoardEditor
-                                        fen={startingPosition}
-                                        setFen={setStartingPosition}
-                                    />
-                                </Match>
-                            </Switch>
+                                    <Chessboard config={config} />
+                                    <Show when={!!promotionData()}>
+                                        <PiecesPopup
+                                            chessBoardDiv={chessBoardDiv}
+                                            promotingCell={() =>
+                                                promotionData()?.promotionCell
+                                            }
+                                            onSelected={onPromotionSelected}
+                                            color={turn}
+                                        />
+                                    </Show>
+                                </div>
+                                <PlayerName
+                                    name={whitePlayer}
+                                    setName={setWhitePlayer}
+                                    color="white"
+                                />
+                            </Show>
+                            <Show
+                                when={viewMode() === ViewMode.STARTING_POSITION}
+                            >
+                                <BoardEditor
+                                    fen={startingPosition}
+                                    setFen={setStartingPosition}
+                                />
+                            </Show>
                         </div>
                         <VDivider ref={divider!} />
                         <div class="pgnviewer-sidebar">
+                            <Show when={isEditable()}>
+                                <PgnEditBar />
+                            </Show>
                             <Show when={engineCallable() && !engineColor?.()}>
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
-                            <Show when={hasMoves()}>
+                            <Show when={hasMoves() && viewMode() === ViewMode.MOVES}>
                                 <div class="pgnviewer-moves-wrapper">
                                     <Moves />
                                 </div>
@@ -480,13 +477,10 @@ const GameManager: Component<GameManagerOptions> = ({
                                     setCurrentPath={setCurrentPath}
                                 />
                             </Show>
-                            <Show when={!hasMoves()}>
-                                <SetPositionSwitch
-                                    
-                                />
+
+                            <Show when={viewMode() === ViewMode.PGN}>
                                 <PgnTextArea
-                                    initialPgn={editablePgn()}
-                                    setPgn={updateGameFromPgnString}   
+                                    pgnSignal={[editPgn, setEditPgn]}
                                 />
                             </Show>
                         </div>

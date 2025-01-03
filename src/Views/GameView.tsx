@@ -131,6 +131,7 @@ const GameView = () => {
             <GameManager
                 pgn={originalPgn}
                 setPgn={setNewPgn}
+                editable={isEditable}
                 defaultEngineOn={isEngineOn()}
             />
         </>
