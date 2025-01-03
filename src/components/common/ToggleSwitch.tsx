@@ -1,13 +1,12 @@
-import { Accessor, Component, Setter, Show } from "solid-js";
+import { Accessor, Component, Setter, Show, Signal } from "solid-js";
 import "./ToggleSwitch.scss"; // Import the custom SASS file
 
 export type ToggleSwitchProps = {
-  isToggled: Accessor<boolean>;
-  setIsToggled: Setter<boolean>;
+  toggleSignal: Signal<boolean>;
   labels?: [string, string];
 };
 
-const ToggleSwitch: Component<ToggleSwitchProps> = ({ isToggled, setIsToggled, labels }) => {
+const ToggleSwitch: Component<ToggleSwitchProps> = ({ toggleSignal:[isToggled, setIsToggled], labels }) => {
 
 
   const toggle = () => setIsToggled(!isToggled());

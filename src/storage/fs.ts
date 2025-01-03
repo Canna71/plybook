@@ -8,7 +8,7 @@ import {
     rename,
     writeFile,
 } from "@tauri-apps/plugin-fs";
-import { appDataDir, appLocalDataDir, join, sep } from "@tauri-apps/api/path";
+import { appLocalDataDir, join, sep } from "@tauri-apps/api/path";
 // import { path } from "@tauri-apps/api";
 
 const LIBRARY_FOLDER = "Library";

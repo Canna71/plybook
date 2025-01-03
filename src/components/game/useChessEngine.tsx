@@ -1,5 +1,5 @@
 import { NormalMove } from "chessops";
-import { createSignal, createResource, createEffect, batch, onCleanup, Accessor } from "solid-js";
+import { createSignal, createResource, createEffect, batch, onCleanup, Accessor, Signal } from "solid-js";
 import { createStore } from "solid-js/store";
 import { IChessEngine, EngineInfo } from "../../engine/engineinterfaces";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
@@ -92,7 +92,8 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     return {
         engineInfo,
-        engineCallable
+        engineCallable,
+        engineOnSignal: [engineOn, setEngineOn] as Signal<boolean>,
     };
 }export type ChessEngineOptions = {
     defaultEngineOn: boolean;

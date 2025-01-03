@@ -56,7 +56,7 @@ const GameView = () => {
     });
 
     const isEngineOn = () => {
-        return location.pathname === "/analysis" || true;
+        return location.pathname === "/analysis";
     };
 
     const isEditable = () => {

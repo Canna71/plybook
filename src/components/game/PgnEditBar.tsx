@@ -10,6 +10,7 @@ import {
 import Button from "../common/Button";
 import { GameContext } from "./GameContext";
 import { updateGameFromPgnString } from "../common/utils";
+import ToggleSwitch from "../common/ToggleSwitch";
 
 export enum ViewMode {
     STARTING_POSITION,
@@ -31,6 +32,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = (props) => {
         startingPositionSignal: [startingPosition],
         gameSignal: [game, setGame],
         editPgnSignal: [editPgn, setEditPgn],
+        engineOnSignal,
     } = gameContext;
 
     const onEditStartingPosition = () => {
@@ -71,6 +73,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = (props) => {
 
     return (
         <div class="buttons-bar buttons are-small">
+            <ToggleSwitch toggleSignal={engineOnSignal} />
             <Show when={viewMode() === ViewMode.MOVES}>
                 <Button onClick={onEditStartingPosition} title="Change Starting Position" >S</Button>
             </Show>

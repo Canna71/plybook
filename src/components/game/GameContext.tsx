@@ -11,6 +11,7 @@ export interface GameContextType {
 	startingPositionSignal: Signal<string | undefined>;
 	viewModeSignal: Signal<ViewMode>;
 	editPgnSignal: Signal<string | undefined>;
+	engineOnSignal: Signal<boolean>;
 	setSquareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
 }

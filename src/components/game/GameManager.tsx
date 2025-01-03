@@ -6,12 +6,9 @@ import {
     createEffect,
     createMemo,
     createSignal,
-    Match,
     Show,
-    Signal,
-    Switch,
 } from "solid-js";
-import { makeGame, Path } from "../../models/pgn";
+import { Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
@@ -26,19 +23,18 @@ import {
 import { Color, Key, Piece, Role } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
 import BoardEditor from "../boardeditor/BoardEditor";
-import { makeFen, parseFen } from "chessops/fen";
+import { makeFen } from "chessops/fen";
 import { GameContext, GameContextType, TooltipContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
-import { NormalMove, Position } from "chessops";
+import { NormalMove } from "chessops";
 import "./GameManager.scss";
 import { getDefaultStudyContent } from "../../storage/fs";
 import EngineInfoViewer from "./EngineInfoViewer";
 import { Tooltip } from "../common/Tooltip";
 import PgnEditBar, { ViewMode } from "./PgnEditBar";
 import PgnTextArea from "./PgnTextArea";
-import App from "../../App";
 import { useChessEngine } from "./useChessEngine";
 import { playSoundForMove } from "./playSoundForMove";
 import { useTooltip } from "./useTooltip";
@@ -95,15 +91,7 @@ const GameManager: Component<GameManagerOptions> = ({
     };
     // #region Game Context
 
-    const gameContext = {
-        gameSignal: [game, setGame],
-        currentPathSignal: [currentPath, setCurrentPath],
-        startingPositionSignal: [startingPosition, setStartingPosition],
-        viewModeSignal: [viewMode, setViewMode],
-        editPgnSignal: [editPgn, setEditPgn],
-        setSquareHovered: setSquareHovered,
-        editable: isEditable,
-    } as GameContextType;
+    
 
     // #region Layout
     let chessBoardDiv: HTMLDivElement | null = null;
@@ -189,9 +177,6 @@ const GameManager: Component<GameManagerOptions> = ({
     const fen = createMemo(() => makeFen(position().toSetup()));
 
     const turn = createMemo(() => position().turn as Color);
-
-    const editablePgn = () =>
-        game()?.pgn() || pgn?.() || getDefaultStudyContent();
 
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered)();
@@ -285,7 +270,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region Engine
 
-    const { engineInfo, engineCallable } = useChessEngine({
+    const { engineInfo, engineCallable, engineOnSignal } = useChessEngine({
         defaultEngineOn,
         engineColor,
         game,
@@ -294,6 +279,16 @@ const GameManager: Component<GameManagerOptions> = ({
         fen
     });
 
+    const gameContext = {
+        gameSignal: [game, setGame],
+        currentPathSignal: [currentPath, setCurrentPath],
+        startingPositionSignal: [startingPosition, setStartingPosition],
+        viewModeSignal: [viewMode, setViewMode],
+        editPgnSignal: [editPgn, setEditPgn],
+        engineOnSignal,
+        setSquareHovered: setSquareHovered,
+        editable: isEditable,
+    } as GameContextType;
     // #endregion
 
     // #region tooltip
