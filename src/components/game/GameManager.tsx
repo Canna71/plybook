@@ -5,15 +5,13 @@ import {
     Component,
     createEffect,
     createMemo,
-    createResource,
     createSignal,
     Match,
-    onCleanup,
     Show,
     Signal,
     Switch,
 } from "solid-js";
-import { isPlyData, makeGame, Path, PlyData } from "../../models/pgn";
+import { makeGame, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
@@ -33,19 +31,17 @@ import { GameContext, GameContextType, TooltipContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
-import { NormalMove, Position, squareRank } from "chessops";
+import { NormalMove, Position } from "chessops";
 import "./GameManager.scss";
-import { EngineInfo, IChessEngine } from "../../engine/engineinterfaces";
-import { getDefaultStudyContent, getEnginePath } from "../../storage/fs";
-import { ExecutableUCIInterface } from "../../engine/executableuci";
-import { UCIEngine } from "../../engine/uciengine";
-import { createStore } from "solid-js/store";
+import { getDefaultStudyContent } from "../../storage/fs";
 import EngineInfoViewer from "./EngineInfoViewer";
 import { ReferenceElement } from "@floating-ui/dom";
 import { Tooltip } from "../common/Tooltip";
 import PgnEditBar, { ViewMode } from "./PgnEditBar";
-import { PlayAudioForMove } from "../audio";
 import PgnTextArea from "./PgnTextArea";
+import App from "../../App";
+import { useChessEngine } from "./useChessEngine";
+import { playSoundForMove } from "./playSoundForMove";
 
 export type GameManagerOptions = {
     pgn?: Accessor<string | undefined>;
@@ -89,16 +85,9 @@ const GameManager: Component<GameManagerOptions> = ({
     const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
     // #endregion
 
-    // #region Engine state
-    const [engineOn, setEngineOn] = createSignal<boolean>(defaultEngineOn);
     // const [engineColor, setEngineColor] = createSignal<Color | undefined>(
     //     undefined,
     // );
-    const [engineFolder, _others] = createResource(() => getEnginePath());
-    const [engine, setEngine] = createSignal<IChessEngine | undefined>(
-        undefined,
-    );
-    const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
     // #endregion
     const isEditable = () => {
         return editable?.() || false;
@@ -287,32 +276,7 @@ const GameManager: Component<GameManagerOptions> = ({
         if ((path?.size() || 0) === 0) return;
         if (path) {
             const ply = game()?.dataAt(path);
-            if (isPlyData(ply)) {
-                const pos = ply.pos;
-                const isCheck = pos.isCheck();
-                const isCheckmate = pos.isCheckmate();
-                const isSelf = pos.turn === "black"; // self is white
-                // determine if move is a capture
-                const lastMove = ply.move as NormalMove;
-                const previous = path.previous();
-                const previousPly = game()?.dataAt(previous);
-                const role = pos.board.get(lastMove.to)?.role;
-                const isCastling =
-                    role === "king" &&
-                    Math.abs(
-                        squareRank(lastMove.to) - squareRank(lastMove.from),
-                    ) === 2;
-                const isCapture =
-                    previousPly?.pos.board.has(lastMove.to) || false;
-                const flags = {
-                    isCapture,
-                    isCheck,
-                    isCheckmate,
-                    isSelf,
-                    isCastling,
-                };
-                PlayAudioForMove(flags);
-            }
+            playSoundForMove(ply, path, game()!);
         }
     });
 
@@ -320,77 +284,13 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region Engine
 
-    const engineCallable = () => engine() && engineOn() && engineFolder();
-
-    const shouldInitEngine = () => {
-        return (engineOn() || engineColor?.()) && engineFolder() && !engine();
-    };
-
-    createEffect(async () => {
-        if (shouldInitEngine()) {
-            const engine = new UCIEngine(
-                new ExecutableUCIInterface(engineFolder()!),
-            );
-
-            await engine.init();
-
-            engine.on("bestmove", onEngineBestMove);
-            engine.on("info", onEngineInfo);
-            engine.newGame();
-            batch(() => {
-                setEngine(engine);
-                setEngineOn(true);
-            });
-        } else {
-        }
-    });
-
-    // cleanup engine when engineOn is false
-    createEffect(() => {
-        if (!engineOn()) {
-            const eng = engine();
-            if (eng) {
-                eng.quit();
-                eng.off("bestmove", onEngineBestMove);
-            }
-        }
-    });
-
-    onCleanup(() => {
-        const eng = engine();
-        if (eng) {
-            eng.quit();
-            eng.off("bestmove", onEngineBestMove);
-        }
-    });
-
-    const onEngineBestMove = (bestMove: string, _ponder: string) => {
-        const g = game();
-        if (!g) {
-            return;
-        }
-        if (!engineColor?.() || engineColor?.() != turn()) {
-            return;
-        }
-        const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
-        const move: NormalMove = makeMove(m.from, m.to);
-        applyMove(move);
-    };
-
-    const onEngineInfo = (info: EngineInfo) => {
-        if (info.multipv) {
-            setEngineInfo(info.multipv - 1, info);
-        }
-    };
-
-    // handles engine processing
-    createEffect(() => {
-        if (engineCallable()) {
-            const fenStr = fen();
-            setEngineInfo([]);
-            // console.log("Analyzing position", fenStr);
-            engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 3 });
-        }
+    const { engineInfo, engineCallable } = useChessEngine({
+        defaultEngineOn,
+        engineColor,
+        game,
+        turn,
+        applyMove,
+        fen
     });
 
     // #endregion
@@ -467,7 +367,11 @@ const GameManager: Component<GameManagerOptions> = ({
                             <Show when={engineCallable() && !engineColor?.()}>
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
-                            <Show when={hasMoves() && viewMode() === ViewMode.MOVES}>
+                            <Show
+                                when={
+                                    hasMoves() && viewMode() === ViewMode.MOVES
+                                }
+                            >
                                 <div class="pgnviewer-moves-wrapper">
                                     <Moves />
                                 </div>
@@ -496,3 +400,4 @@ const GameManager: Component<GameManagerOptions> = ({
 };
 
 export default GameManager;
+
