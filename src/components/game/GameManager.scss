@@ -207,12 +207,14 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: auto;
+    
 
     .pgn-text {
         flex: 1;
         overflow-y: auto;
-        margin: 4px 0;
-        padding: 8px;
+        margin: 4px;
+        // padding: 8px;
         border: 1px solid var(--bulma-border);
         // border-radius: 2px;
         font-family: monospace;
@@ -220,5 +222,8 @@
         white-space: pre-wrap;
         word-wrap: break-word;
         line-height: 1.5;
+        background-color: var(--bulma-background);
+        resize: none;
+        color: var(--bulma-strong-color);
     }
 }

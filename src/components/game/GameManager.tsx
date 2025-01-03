@@ -109,21 +109,12 @@ const GameManager: Component<GameManagerOptions> = ({
         if (!pgnString) {
             pgnString = getDefaultStudyContent();
         }
-        // const gameModel = makeGame(pgnString);
-        // batch(() => {
-        //     setGame(gameModel);
-        //     if (gameModel.headers.get("FEN")) {
-        //         const setup = parseFen(gameModel.headers.get("FEN") || "");
-        //         if (setup.isOk) {
-        //             setStartingPosition(makeFen(setup.value));
-        //         }
-        //     }
-        //     setCurrentPath(gameModel.pathAtMainlinePly(0));
-        // });
+        
         updateGameFromPgnString(pgnString);
     });
 
     const updateGameFromPgnString = (pgnString: string) => {
+        console.log("Updating game from pgn string", pgnString);
         const gameModel = makeGame(pgnString);
         batch(() => {
             setGame(gameModel);
@@ -134,6 +125,7 @@ const GameManager: Component<GameManagerOptions> = ({
                 }
             }
             setCurrentPath(gameModel.pathAtMainlinePly(0));
+            setViewMode(ViewMode.MOVES);
         });
     }
 

@@ -95,9 +95,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
     };
 
     const handleNodeClick = (e: MouseEvent) => {
-        console.log("click", isRenaming(), renaming?.(), node().id);
         if(isRenaming()) {
-            console.log("click while renaming");
             e.preventDefault();
             return;
         }
