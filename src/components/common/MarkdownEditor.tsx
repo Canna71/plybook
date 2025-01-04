@@ -6,18 +6,22 @@ import {
     onMount,
     Signal,
     Switch,
+    useContext,
 } from "solid-js";
 import showdown from "showdown";
+import { GameContext } from "../game/GameContext";
 
 type MarkdownEditorProps = {
     valueSignal: Signal<string>;
+    isEditingSignal: Signal<boolean>;
 };
 
 const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
     const [value, setValue] = props.valueSignal;
-    const [isEditing, setIsEditing] = createSignal(false);
+    const [isEditing, setIsEditing] = props.isEditingSignal;
     let div: HTMLDivElement | null = null;
     let textarea: HTMLDivElement | null = null;
+    const { gameSignal:[game, setGame] } = useContext(GameContext)!;
 
     onMount(() => {
         console.log("onMount", textarea);
@@ -29,7 +33,15 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
 
     const onBlur = () => {
         let value = textarea!.innerText;
+
+        const newGame = game()?.updateHeaders(
+            new Map([
+                ["Description", value || ""],
+            ]),
+        );
+
         batch(() => {
+            setGame(newGame);
             setValue(value);
             setIsEditing(false);
         });

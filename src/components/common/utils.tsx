@@ -251,5 +251,6 @@ export const updateGameFromPgnString = (pgnString: string, context: GameContextT
         }
         context.currentPathSignal[1](gameModel.pathAtMainlinePly(0));
         context.viewModeSignal[1](ViewMode.MOVES);
+        context.descriptionSignal[1](gameModel.headers.get("Description")||"");
     });
 };

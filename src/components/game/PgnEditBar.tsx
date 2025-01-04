@@ -8,6 +8,8 @@ import Button from "../common/Button";
 import { GameContext } from "./GameContext";
 import { updateGameFromPgnString } from "../common/utils";
 import ToggleSwitch from "../common/ToggleSwitch";
+import { StartingPositionIcon } from "../common/Icons";
+import { IconBrackets, IconCheck, IconTextPlus } from "@tabler/icons-solidjs";
 
 export enum ViewMode {
     STARTING_POSITION,
@@ -29,6 +31,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
         startingPositionSignal: [startingPosition],
         gameSignal: [game, setGame],
         editPgnSignal: [editPgn, setEditPgn],
+        isEditingDescriptionSignal: [isEditingDescription, setIsEditingDescription],
         engineOnSignal,
     } = gameContext;
 
@@ -68,14 +71,40 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
         });
     }
 
+    const onEditDescription = () => {
+        setIsEditingDescription(true);
+    };
+
+    const onFinishEditDescription = () => {
+        setIsEditingDescription(false);
+    };
+
     return (
         <div class="buttons-bar buttons are-small">
             <ToggleSwitch toggleSignal={engineOnSignal} />
+
+            <Show when={isEditingDescription()}>
+                <Button onClick={onFinishEditDescription} title="Finish Editing Description">
+                    <IconCheck />
+                </Button>
+            </Show>
+
+            <Show when={!isEditingDescription()}>
+                <Button onClick={onEditDescription} title="Edit Description">
+                    <IconTextPlus />
+                </Button>
+            </Show>
+
+
             <Show when={viewMode() === ViewMode.MOVES}>
-                <Button onClick={onEditStartingPosition} title="Change Starting Position" >S</Button>
+                <Button onClick={onEditStartingPosition} title="Change Starting Position" >
+                    <StartingPositionIcon />
+                </Button>
             </Show>
             <Show when={viewMode() === ViewMode.MOVES}>
-                <Button onClick={onEditPgn} title="Edit PGN" >E</Button>
+                <Button onClick={onEditPgn} title="Edit PGN" >
+                    <IconBrackets />
+                </Button>
             </Show>
             <Show when={viewMode() === ViewMode.STARTING_POSITION}>
                 <div class="is-flex is-flex-direction-row is-gap-1">

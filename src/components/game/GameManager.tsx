@@ -77,6 +77,9 @@ const GameManager: Component<GameManagerOptions> = ({
     >(undefined);
 
     const [editPgn, setEditPgn] = createSignal<string | undefined>(undefined);
+    
+    const [description, setDescription] = createSignal<string>("");
+    const [isEditingDescription, setIsEditingDescription] = createSignal(false);
     // #endregion
 
     // #region view mode state
@@ -227,9 +230,6 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #endregion
 
-    // #region Starting Position Editing
-
-    // #endregion
 
     // #region Game Manipulation
 
@@ -280,6 +280,10 @@ const GameManager: Component<GameManagerOptions> = ({
         fen
     });
 
+
+
+
+
     const gameContext = {
         gameSignal: [game, setGame],
         currentPathSignal: [currentPath, setCurrentPath],
@@ -287,6 +291,8 @@ const GameManager: Component<GameManagerOptions> = ({
         viewModeSignal: [viewMode, setViewMode],
         editPgnSignal: [editPgn, setEditPgn],
         engineOnSignal,
+        descriptionSignal: [description, setDescription],
+        isEditingDescriptionSignal: [isEditingDescription, setIsEditingDescription],
         setSquareHovered: setSquareHovered,
         editable: isEditable,
     } as GameContextType;
@@ -297,18 +303,13 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #endregion
 
-    const [description, setDescription] = createSignal<string>("# title\r\n## subtitle\r\n\r\nSome text");
 
     return (
         <>
             <GameContext.Provider value={gameContext}>
                 <TooltipContext.Provider value={{ showTooltip }}>
                     <div class="pgnviewer-container">
-                        <div class="game-description">
-                            <MarkdownEditor
-                                valueSignal={[description, setDescription]}
-                            />
-                        </div>
+                        
                         <div class="pgnviewer-content">
                             <Show
                                 when={
@@ -380,6 +381,13 @@ const GameManager: Component<GameManagerOptions> = ({
                                     pgnSignal={[editPgn, setEditPgn]}
                                 />
                             </Show>
+                        </div>
+
+                        <div class="game-description">
+                            <MarkdownEditor
+                                isEditingSignal={[isEditingDescription, setIsEditingDescription]}
+                                valueSignal={[description, setDescription]}
+                            />
                         </div>
                     </div>
                     <div class="pgn-viewer-bottom"></div>
