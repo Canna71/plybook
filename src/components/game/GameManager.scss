@@ -9,11 +9,13 @@
     display: grid;
     flex: 1;
 
-    grid-template-areas: "board divider sidebar";
+    grid-template-areas: 
+    "description description description"
+    "board divider sidebar";
     // grid-template-columns: minmax(200px, calc(100vh)) 10px minmax(50%, 1fr);
 
     grid-template-columns: 400px 5px 1fr;
-    grid-template-rows: minmax(0, 1fr, 0);
+    grid-template-rows: auto 1fr;
 
     .pgnviewer-comments {
         grid-area: comments;
@@ -23,6 +25,22 @@
         // max-height: 100%;
         p {
             margin: 0.1em;
+        }
+    }
+
+    .game-description {
+        grid-area: description;
+        
+
+        .markdown-text {
+            width: 100%;
+            overflow-x: auto;
+            margin: 4px;
+            border: 1px solid var(--bulma-border);
+            font-size: var(--bulma-body-font-size);
+            background-color: var(--bulma-background);
+            resize: none;
+            color: var(--bulma-strong-color);
         }
     }
 

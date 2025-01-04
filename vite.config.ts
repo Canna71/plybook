@@ -11,7 +11,8 @@ export default defineConfig(async () => ({
   optimizeDeps: {
     esbuildOptions: {
       target: 'esnext'
-    }
+    },
+    include: ["micromark", "unified"]
   },
   build: {
     target: 'esnext'

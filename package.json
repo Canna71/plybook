@@ -28,6 +28,7 @@
     "chessops": "^0.14.1",
     "es-toolkit": "^1.27.0",
     "loadcss": "^0.0.2",
+    "showdown": "^2.1.0",
     "solid-collapse": "^1.1.0",
     "solid-contextmenu": "^0.0.2",
     "solid-floating-ui": "^0.3.1",
@@ -45,6 +46,7 @@
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.18.2",
     "vite": "^5.3.1",
-    "vite-plugin-solid": "^2.8.0"
+    "vite-plugin-solid": "^2.8.0",
+    "@types/showdown": "^2.0.6"
   }
 }

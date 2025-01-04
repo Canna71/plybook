@@ -38,6 +38,7 @@ import PgnTextArea from "./PgnTextArea";
 import { useChessEngine } from "./useChessEngine";
 import { playSoundForMove } from "./playSoundForMove";
 import { useTooltip } from "./useTooltip";
+import MarkdownEditor from "../common/MarkdownEditor";
 
 
 export type GameManagerOptions = {
@@ -296,11 +297,18 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #endregion
 
+    const [description, setDescription] = createSignal<string>("# title\r\n## subtitle\r\n\r\nSome text");
+
     return (
         <>
             <GameContext.Provider value={gameContext}>
                 <TooltipContext.Provider value={{ showTooltip }}>
                     <div class="pgnviewer-container">
+                        <div class="game-description">
+                            <MarkdownEditor
+                                valueSignal={[description, setDescription]}
+                            />
+                        </div>
                         <div class="pgnviewer-content">
                             <Show
                                 when={
