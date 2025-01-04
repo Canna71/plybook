@@ -40,7 +40,6 @@ import { playSoundForMove } from "./playSoundForMove";
 import { useTooltip } from "./useTooltip";
 import MarkdownEditor from "../common/MarkdownEditor";
 
-
 export type GameManagerOptions = {
     pgn?: Accessor<string | undefined>;
     setPgn?: (pgn: string) => void;
@@ -77,7 +76,7 @@ const GameManager: Component<GameManagerOptions> = ({
     >(undefined);
 
     const [editPgn, setEditPgn] = createSignal<string | undefined>(undefined);
-    
+
     const [description, setDescription] = createSignal<string>("");
     const [isEditingDescription, setIsEditingDescription] = createSignal(false);
     // #endregion
@@ -94,8 +93,6 @@ const GameManager: Component<GameManagerOptions> = ({
         return editable?.() || false;
     };
     // #region Game Context
-
-    
 
     // #region Layout
     let chessBoardDiv: HTMLDivElement | null = null;
@@ -228,8 +225,21 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const blackPlayer = () => game()?.players.black.name || "Black";
 
-    // #endregion
+    const memoPath = createMemo(() => currentPath(), undefined, {
+        equals: (a, b) => {
+            return !!(a && b && a.equals(b));
+        },
+    });
 
+    const memoDataAtPath = createMemo(
+        () => game()?.dataAt(currentPath() || new Path("")),
+        undefined,
+        {
+            equals: (a, b) => {
+                return !!(a && b && a.fen === b.fen);
+            },
+        },
+    );
 
     // #region Game Manipulation
 
@@ -259,11 +269,13 @@ const GameManager: Component<GameManagerOptions> = ({
 
     createEffect(() => {
         // play sound when path changes
-        const path = currentPath();
+        const path = memoPath();
         if ((path?.size() || 0) === 0) return;
         if (path) {
-            const ply = game()?.dataAt(path);
-            playSoundForMove(ply, path, game()!);
+            const ply = memoDataAtPath();
+            setTimeout(() => {
+                playSoundForMove(ply, path, game()!);
+            }, 1);
         }
     });
 
@@ -277,12 +289,8 @@ const GameManager: Component<GameManagerOptions> = ({
         game,
         turn,
         applyMove,
-        fen
+        fen,
     });
-
-
-
-
 
     const gameContext = {
         gameSignal: [game, setGame],
@@ -292,7 +300,10 @@ const GameManager: Component<GameManagerOptions> = ({
         editPgnSignal: [editPgn, setEditPgn],
         engineOnSignal,
         descriptionSignal: [description, setDescription],
-        isEditingDescriptionSignal: [isEditingDescription, setIsEditingDescription],
+        isEditingDescriptionSignal: [
+            isEditingDescription,
+            setIsEditingDescription,
+        ],
         setSquareHovered: setSquareHovered,
         editable: isEditable,
     } as GameContextType;
@@ -303,13 +314,11 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #endregion
 
-
     return (
         <>
             <GameContext.Provider value={gameContext}>
                 <TooltipContext.Provider value={{ showTooltip }}>
                     <div class="pgnviewer-container">
-                        
                         <div class="pgnviewer-content">
                             <Show
                                 when={
@@ -385,7 +394,10 @@ const GameManager: Component<GameManagerOptions> = ({
 
                         <div class="game-description">
                             <MarkdownEditor
-                                isEditingSignal={[isEditingDescription, setIsEditingDescription]}
+                                isEditingSignal={[
+                                    isEditingDescription,
+                                    setIsEditingDescription,
+                                ]}
                                 valueSignal={[description, setDescription]}
                             />
                         </div>
@@ -401,4 +413,3 @@ const GameManager: Component<GameManagerOptions> = ({
 };
 
 export default GameManager;
-
