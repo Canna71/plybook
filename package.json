@@ -34,10 +34,12 @@
     "solid-floating-ui": "^0.3.1",
     "solid-js": "^1.7.8",
     "split-grid": "^1.0.11",
-    "stockfish.wasm": "^0.10.0"
+    "stockfish.wasm": "^0.10.0",
+    "vite-plugin-solid-svg": "^0.8.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
+    "@types/showdown": "^2.0.6",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
@@ -46,7 +48,6 @@
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.18.2",
     "vite": "^5.3.1",
-    "vite-plugin-solid": "^2.8.0",
-    "@types/showdown": "^2.0.6"
+    "vite-plugin-solid": "^2.8.0"
   }
 }
