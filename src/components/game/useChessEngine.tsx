@@ -8,6 +8,7 @@ import { getEnginePath } from "../../storage/fs";
 import { makeMove } from "../common/utils";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
+import { set } from "es-toolkit/compat";
 
 export function useChessEngine(options: ChessEngineOptions) {
     // #region Engine state
@@ -22,7 +23,14 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     const shouldInitEngine = () => {
         const shouldInit = (engineOn() || options.engineColor?.()) && engineFolder() && (!engine() || !engineOn());
-        console.log("shouldInitEngine", shouldInit);
+        console.log("shouldInitEngine flags:", {
+            engineOn: engineOn(),
+            engineColor: options.engineColor?.(),
+            engineFolder: engineFolder(),
+            engineExists: !!engine(),
+            engineNotOn: !engineOn()
+        });
+        console.log("shouldInitEngine result:", shouldInit);
         return shouldInit;
     };
 
@@ -46,22 +54,24 @@ export function useChessEngine(options: ChessEngineOptions) {
     });
 
     // cleanup engine when engineOn is false
-    createEffect(() => {
-        if (!engineOn()) {
-            const eng = engine();
-            if (eng) {
-                eng.quit();
-                eng.off("bestmove", onEngineBestMove);
-            }
-        }
-    });
-
-    onCleanup(() => {
+    
+    const cleanup = () => {
         const eng = engine();
         if (eng) {
             eng.quit();
             eng.off("bestmove", onEngineBestMove);
+            setEngine(undefined);
         }
+    }
+    
+    createEffect(() => {
+        if (!engineOn()) {
+            cleanup();
+        }
+    });
+
+    onCleanup(() => {
+        cleanup();
     });
 
     const onEngineBestMove = (bestMove: string, _ponder: string) => {
