@@ -2,8 +2,6 @@ import { MenuItemOptions } from "@tauri-apps/api/menu";
 import {
     batch,
     Component,
-    createSignal,
-    Setter,
     Show,
     Signal,
     useContext,
@@ -30,7 +28,7 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
     const { renaming, setRenaming, refresh } = useContext(ContentContext)!;
     const [expandedNodes, setExpandedNodes] = expandedNodesSignal;
 
-    const onNewStudy = async (id: string, node: TreeNode<FileBrowserFile>) => {
+    const onNewStudy = async (_id: string, node: TreeNode<FileBrowserFile>) => {
         const newPath = await createNewDataFile(
             node.data!.path,
             "Untitled.pgn",
@@ -43,7 +41,7 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
         });
     };
 
-    const onNewFolder = async (id: string, node: TreeNode<FileBrowserFile>) => {
+    const onNewFolder = async (_id: string, node: TreeNode<FileBrowserFile>) => {
         const newPath = await createNewDataFolder(node.data!.path, "Untitled");
         batch(() => {
             setExpandedNodes(new Set(expandedNodes()).add(node.id));
@@ -53,7 +51,7 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
     };
 
     const onDeleteStudy = async (
-        id: string,
+        _id: string,
         node: TreeNode<FileBrowserFile>,
     ) => {
         await deleteDataFileOrFolder(node.data!.path);
@@ -62,18 +60,18 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
 
     const onDeleteFolder = async (
         node: TreeNode<FileBrowserFile>,
-        id: string,
+        _id: string,
     ) => {
         await deleteDataFileOrFolder(node.data!.path);
         refresh();
     };
 
-    const onRenameFolder = (node: TreeNode<FileBrowserFile>, id: string) => {
+    const onRenameFolder = (node: TreeNode<FileBrowserFile>, _id: string) => {
         console.log("rename folder: ", node);
         setRenaming(node.id);
     };
 
-    const onRenameStudy = (node: TreeNode<FileBrowserFile>, id: string) => {
+    const onRenameStudy = (node: TreeNode<FileBrowserFile>, _id: string) => {
         console.log("rename study: ", node);
         setRenaming(node.id);
     };

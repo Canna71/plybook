@@ -1,25 +1,17 @@
 import {
-    Accessor,
     batch,
-    Component,
     createEffect,
     createSignal,
     useContext,
 } from "solid-js";
 import TreeView, { TreeNode } from "../common/TreeView";
 import {
-    createNewDataFile,
-    createNewDataFolder,
-    deleteDataFileOrFolder,
     listAppData,
     NameWithoutExtension,
 } from "../../storage/fs";
-import { IconBook2, IconChevronDown, IconChevronRight, IconFile } from "@tabler/icons-solidjs";
-import { useContextMenu } from "../common/contextmenu";
-import { MenuItemOptions } from "@tauri-apps/api/menu";
+import { IconChevronDown, IconChevronRight, IconFile } from "@tabler/icons-solidjs";
 import { ContentContext } from "../common/ContentContext";
 import FileBrowserItem from "./FileBrowserItem";
-import { set } from "es-toolkit/compat";
 import { sep } from "@tauri-apps/api/path";
 
 type FileBrowserProps = {
@@ -83,11 +75,11 @@ const FileBrowser = (props: FileBrowserProps) => {
         props.onNodeClick?.(node.data!);
     };
 
-    const onSelectedChangedInternal = (
-        node: TreeNode<FileBrowserFile> | null,
-    ) => {
-        props.onSelectedFileChanged?.(node?.data!);
-    };
+    // const onSelectedChangedInternal = (
+    //     node: TreeNode<FileBrowserFile> | null,
+    // ) => {
+    //     props.onSelectedFileChanged?.(node?.data!);
+    // };
 
     createEffect(() => {
         const trigger = refreshTrigger();

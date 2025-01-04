@@ -21,7 +21,9 @@ export function useChessEngine(options: ChessEngineOptions) {
     const engineCallable = () => engine() && engineOn() && engineFolder();
 
     const shouldInitEngine = () => {
-        return (engineOn() || options.engineColor?.()) && engineFolder() && !engine();
+        const shouldInit = (engineOn() || options.engineColor?.()) && engineFolder() && (!engine() || !engineOn());
+        console.log("shouldInitEngine", shouldInit);
+        return shouldInit;
     };
 
     createEffect(async () => {

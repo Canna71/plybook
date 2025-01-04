@@ -1,4 +1,4 @@
-import { Accessor, Component, Setter, Show, Signal } from "solid-js";
+import { Component, Show, Signal } from "solid-js";
 import "./ToggleSwitch.scss"; // Import the custom SASS file
 
 export type ToggleSwitchProps = {

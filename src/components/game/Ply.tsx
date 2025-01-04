@@ -449,7 +449,7 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
     const turn = color;
     const plyData = color && line[color];
     let ref: HTMLDivElement | undefined;
-    const { currentPathSignal: [currentPath, setCurrentPath], editable, gameSignal:[game, setGame] } = useContext(GameContext)!;
+    const { currentPathSignal: [currentPath, _setCurrentPath], editable, gameSignal:[game, setGame] } = useContext(GameContext)!;
     // const { showTooltip } = useContext(TooltipContext)!;
 
     const onAddComment = (before: boolean) => {

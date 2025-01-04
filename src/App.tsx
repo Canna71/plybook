@@ -7,7 +7,6 @@ import DBTest from "./Views/DBTest";
 import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
-import { createSignal } from "solid-js";
 import { ContentContext, useContentContext } from "./components/common/ContentContext";
 
 

@@ -1,10 +1,6 @@
 // implement a solidjs component that renders a contenteditable div to hold the pgn text
 
-import { Component, createSignal, onCleanup, Signal, useContext } from "solid-js";
-import { GameModel } from "../../models/GameModel";
-import { Path } from "../../models/pgn";
-import { GameContext } from "./GameContext";
-import { ViewMode } from "./PgnEditBar";
+import { Component, Signal } from "solid-js";
 
 type PgnTextAreaProps = {
     pgnSignal: Signal<string | undefined>;
@@ -16,7 +12,7 @@ const PgnTextArea: Component<PgnTextAreaProps> = (props) => {
     // const { viewModeSignal: [viewMode, setViewMode] } = useContext(GameContext)!;
     let div: HTMLTextAreaElement | null = null;
 
-    const onInput = (e: Event) => {
+    const onInput = (_e: Event) => {
         let value = div!.value;
         value = value.replace(/[“”]/g, "\"");
         setPgn(value);

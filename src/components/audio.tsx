@@ -1,4 +1,3 @@
-import moveAudio  from '/src/assets/sound/Move.mp3';
 import captureAudio from '/src/assets/sound/Capture.mp3';
 import checkAudio from '/src/assets/sound/Check.mp3';
 import checkmateAudio from '/src/assets/sound/game-end.mp3';
@@ -17,8 +16,8 @@ export async function PlayAudio(audio: string) {
 
 
 export async function PlayAudioForMove(flags: MoveFlags) {
-    console.log("PlayAudioForMove", flags);
     const { isCapture, isCheck, isCheckmate, isSelf } = flags;
+    
     // console.log("PlayAudioForMove", isCapture, isCheck, isCheckmate, isSelf);
     if(isCheckmate) {
         PlayAudio(checkmateAudio);

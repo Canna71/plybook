@@ -1,8 +1,5 @@
 import {
-    Accessor,
     Component,
-    Switch,
-    Match,
     useContext,
     batch,
     Show,
@@ -25,7 +22,7 @@ type SetPositionSwitchProps = {
     // onCancelStartingPosition: () => void;
 };
 
-const PgnEditBar: Component<SetPositionSwitchProps> = (props) => {
+const PgnEditBar: Component<SetPositionSwitchProps> = () => {
     const gameContext = useContext(GameContext)!;
     const {
         viewModeSignal: [viewMode, setViewMode],

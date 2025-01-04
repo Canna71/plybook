@@ -1,4 +1,4 @@
-import { Accessor, createContext, Setter, Signal } from "solid-js";
+import { Accessor, createContext, Signal } from "solid-js";
 import { GameModel } from "../../models/GameModel";
 import { Path, PlyData } from "../../models/pgn";
 import { ViewMode } from "./PgnEditBar";

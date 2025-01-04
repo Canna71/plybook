@@ -3,10 +3,8 @@ import {
     batch,
     createEffect,
     createSignal,
-    For,
     Index,
     JSX,
-    Setter,
     Show,
     Signal,
 } from "solid-js";
@@ -172,7 +170,6 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
 };
 
 const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
-    const [expandedNodes, setExpandedNodes] = props.expandedNodesSignal;
     const [selectedNode, setSelectedNode] = props.selectedNodeSignal;
     
 

@@ -87,16 +87,16 @@ const GameView = () => {
         }
     };
 
-    const onTitleKeyDown = (e: KeyboardEvent) => {
-        const target = e.target as HTMLElement;
-        const text = target.innerText;
-        if (e.key === "Enter") {
-            e.preventDefault(); // This stops the default <br> insertion
-            // Optionally blur the element or trigger save
+    // const onTitleKeyDown = (e: KeyboardEvent) => {
+    //     const target = e.target as HTMLElement;
+    //     const _text = target.innerText;
+    //     if (e.key === "Enter") {
+    //         e.preventDefault(); // This stops the default <br> insertion
+    //         // Optionally blur the element or trigger save
 
-            target.blur();
-        }
-    };
+    //         target.blur();
+    //     }
+    // };
 
     const onRename = (text: string) => {
         renameOrCreateDataFile(
