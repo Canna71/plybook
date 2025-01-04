@@ -8,7 +8,7 @@ import {
     createSignal,
     Show,
 } from "solid-js";
-import { Path } from "../../models/pgn";
+import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
@@ -39,6 +39,8 @@ import { useChessEngine } from "./useChessEngine";
 import { playSoundForMove } from "./playSoundForMove";
 import { useTooltip } from "./useTooltip";
 import MarkdownEditor from "../common/MarkdownEditor";
+import { makePgn, parsePgn } from "chessops/pgn";
+import Button from "../common/Button";
 
 export type GameManagerOptions = {
     pgn?: Accessor<string | undefined>;
@@ -83,6 +85,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region view mode state
     const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
+    const [gameIndex, setGameIndex] = createSignal(0);
     // #endregion
 
     // const [engineColor, setEngineColor] = createSignal<Color | undefined>(
@@ -97,19 +100,6 @@ const GameManager: Component<GameManagerOptions> = ({
     // #region Layout
     let chessBoardDiv: HTMLDivElement | null = null;
     const divider = useSplitter();
-    // #endregion
-
-    // #region Game Setup
-    createEffect(() => {
-        // const cg = api();
-        let pgnString = pgn?.();
-        if (!pgnString) {
-            pgnString = getDefaultStudyContent();
-        }
-
-        updateGameFromPgnString(pgnString, gameContext);
-    });
-
     // #endregion
 
     // #region Event Handlers
@@ -261,8 +251,25 @@ const GameManager: Component<GameManagerOptions> = ({
     // #region Effects
 
     createEffect(() => {
-        const newPgn = game()?.pgn();
+        let pgnString = pgn?.();
+        if (!pgnString) {
+            pgnString = getDefaultStudyContent();
+        }
+
+        updateGameFromPgnString(pgnString, gameContext);
+    });
+
+    createEffect(() => {
+        const updPgn = game()?.pgn();
+
+        const games = parsePgn(pgn?.() || "");
+        games[gameIndex()] = game()?.game!;
+        const newPgn = games
+            .map((g, i) => makePgn(g))
+            .join("\n");
+
         if (newPgn && newPgn !== pgn?.()) {
+            console.log("newPgn", newPgn);
             setPgn?.(newPgn);
         }
     });
@@ -304,6 +311,7 @@ const GameManager: Component<GameManagerOptions> = ({
             isEditingDescription,
             setIsEditingDescription,
         ],
+        gameIndexSignal: [gameIndex, setGameIndex],
         setSquareHovered: setSquareHovered,
         editable: isEditable,
     } as GameContextType;
@@ -313,6 +321,14 @@ const GameManager: Component<GameManagerOptions> = ({
     const { reference, ply, showTooltip } = useTooltip();
 
     // #endregion
+
+    const onNewPage = () => {
+        batch(() => {
+            setGameIndex(gameIndex() + 1);
+            setCurrentPath(undefined);
+            setGame(makeGame(getDefaultStudyContent()));
+        });
+    };
 
     return (
         <>
@@ -402,7 +418,9 @@ const GameManager: Component<GameManagerOptions> = ({
                             />
                         </div>
                     </div>
-                    <div class="pgn-viewer-bottom"></div>
+                    <div class="pgn-viewer-bottom">
+                        <Button onClick={onNewPage}>Add Page</Button>
+                    </div>
                 </TooltipContext.Provider>
             </GameContext.Provider>
             <Show when={reference()}>

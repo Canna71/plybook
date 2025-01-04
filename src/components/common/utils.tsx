@@ -240,7 +240,7 @@ export function useFenTooltip(
 
 export const updateGameFromPgnString = (pgnString: string, context: GameContextType) => {
     console.log("Updating game from pgn string", pgnString);
-    const gameModel = makeGame(pgnString);
+    const gameModel = makeGame(pgnString, context.gameIndexSignal[0]());
     batch(() => {
         context.gameSignal[1](gameModel);
         if (gameModel.headers.get("FEN")) {

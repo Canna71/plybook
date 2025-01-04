@@ -14,6 +14,7 @@ export interface GameContextType {
 	engineOnSignal: Signal<boolean>;
 	descriptionSignal: Signal<string | undefined>;
 	isEditingDescriptionSignal: Signal<boolean>;
+	gameIndexSignal: Signal<number>;
 	setSquareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
 }

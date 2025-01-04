@@ -24,7 +24,6 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
     const { gameSignal:[game, setGame] } = useContext(GameContext)!;
 
     onMount(() => {
-        console.log("onMount", textarea);
         // textarea!.style.height = "";
         // textarea!.style.height = textarea!.scrollHeight + "px"
     });

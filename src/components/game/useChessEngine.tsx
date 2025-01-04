@@ -23,14 +23,14 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     const shouldInitEngine = () => {
         const shouldInit = (engineOn() || options.engineColor?.()) && engineFolder() && (!engine() || !engineOn());
-        console.log("shouldInitEngine flags:", {
-            engineOn: engineOn(),
-            engineColor: options.engineColor?.(),
-            engineFolder: engineFolder(),
-            engineExists: !!engine(),
-            engineNotOn: !engineOn()
-        });
-        console.log("shouldInitEngine result:", shouldInit);
+        // console.log("shouldInitEngine flags:", {
+        //     engineOn: engineOn(),
+        //     engineColor: options.engineColor?.(),
+        //     engineFolder: engineFolder(),
+        //     engineExists: !!engine(),
+        //     engineNotOn: !engineOn()
+        // });
+        // console.log("shouldInitEngine result:", shouldInit);
         return shouldInit;
     };
 

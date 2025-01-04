@@ -82,8 +82,7 @@ const FileBrowser = (props: FileBrowserProps) => {
     // };
 
     createEffect(() => {
-        const trigger = refreshTrigger();
-        console.log("refreshing file browser: ", trigger);
+        refreshTrigger();
         batch(() => {
             setRootNode({
                 ...root,
