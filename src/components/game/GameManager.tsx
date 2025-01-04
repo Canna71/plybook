@@ -6,7 +6,9 @@ import {
     createEffect,
     createMemo,
     createSignal,
+    Setter,
     Show,
+    Signal,
 } from "solid-js";
 import { makeGame, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
@@ -41,6 +43,9 @@ import { useTooltip } from "./useTooltip";
 import MarkdownEditor from "../common/MarkdownEditor";
 import { makePgn, parsePgn } from "chessops/pgn";
 import Button from "../common/Button";
+import { set } from "es-toolkit/compat";
+import { IconArrowLeftSquare, IconArrowRightSquare } from "@tabler/icons-solidjs";
+import PageNavigator from "./MultiPage";
 
 export type GameManagerOptions = {
     pgn?: Accessor<string | undefined>;
@@ -231,6 +236,8 @@ const GameManager: Component<GameManagerOptions> = ({
         },
     );
 
+    
+
     // #region Game Manipulation
 
     const applyMove = (move: NormalMove) => {
@@ -259,19 +266,25 @@ const GameManager: Component<GameManagerOptions> = ({
         updateGameFromPgnString(pgnString, gameContext);
     });
 
+    // this is a  effect triggered when the game changes
     createEffect(() => {
-        const updPgn = game()?.pgn();
+        const g = game();
+        if (!g) return;
+        const path = currentPath();
+        const data = path && g.dataAt(path);
+
+        const updPgn = g.pgn();
 
         const games = parsePgn(pgn?.() || "");
-        games[gameIndex()] = game()?.game!;
-        const newPgn = games
-            .map((g, i) => makePgn(g))
-            .join("\n");
-
-        if (newPgn && newPgn !== pgn?.()) {
-            console.log("newPgn", newPgn);
-            setPgn?.(newPgn);
-        }
+        games[gameIndex()] = g.game!;
+        const newPgn = games.map((g, i) => makePgn(g)).join("\n");
+        batch(() => {
+            if (newPgn && newPgn !== pgn?.()) {
+                console.log("newPgn", newPgn);
+                setPgn?.(newPgn);
+            }
+            if(!data) setCurrentPath(undefined);
+        });
     });
 
     createEffect(() => {
@@ -300,6 +313,7 @@ const GameManager: Component<GameManagerOptions> = ({
     });
 
     const gameContext = {
+        pgn: pgn,
         gameSignal: [game, setGame],
         currentPathSignal: [currentPath, setCurrentPath],
         startingPositionSignal: [startingPosition, setStartingPosition],
@@ -322,13 +336,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #endregion
 
-    const onNewPage = () => {
-        batch(() => {
-            setGameIndex(gameIndex() + 1);
-            setCurrentPath(undefined);
-            setGame(makeGame(getDefaultStudyContent()));
-        });
-    };
+    
 
     return (
         <>
@@ -419,7 +427,7 @@ const GameManager: Component<GameManagerOptions> = ({
                         </div>
                     </div>
                     <div class="pgn-viewer-bottom">
-                        <Button onClick={onNewPage}>Add Page</Button>
+                        <PageNavigator />
                     </div>
                 </TooltipContext.Provider>
             </GameContext.Provider>

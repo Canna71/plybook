@@ -6,6 +6,7 @@ import { ViewMode } from "./PgnEditBar";
 
 
 export interface GameContextType {
+	pgn?: Accessor<string | undefined>;
 	gameSignal: Signal<GameModel | undefined>;
 	currentPathSignal: Signal<Path | undefined>;
 	startingPositionSignal: Signal<string | undefined>;
