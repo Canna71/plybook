@@ -259,13 +259,13 @@ const GameManager: Component<GameManagerOptions> = ({
         if (!pgnString) {
             pgnString = getDefaultStudyContent();
         }
-        const games = parsePgn(pgnString);
-        const gameModel = makeGameInternal(games[0]);
+        // const games = parsePgn(pgnString);
+        // const gameModel = makeGameInternal(games[0]);
 
         batch(() => {
-            setGameIndex(0);
+            // setGameIndex(0);
             setFullPgn(pgnString);
-            initFromGameModel(gameContext, gameModel);
+            // initFromGameModel(gameContext, gameModel);
             // updateGameFromPgnString(pgnString, gameContext);
         });
     });
@@ -306,6 +306,17 @@ const GameManager: Component<GameManagerOptions> = ({
             setTimeout(() => {
                 playSoundForMove(ply, path, game()!);
             }, 1);
+        }
+    });
+
+    // page changes when game index changes
+    createEffect(() => {
+        const gIdx = gameIndex();
+        const fPgn = fullPgn();
+        const games = parsePgn(fPgn || "");
+        if (gIdx >= 0 && gIdx < games.length) {
+            const gameModel = makeGameInternal(games[gIdx]);
+            initFromGameModel(gameContext, gameModel);
         }
     });
 
