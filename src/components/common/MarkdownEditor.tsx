@@ -9,18 +9,26 @@ import {
 } from "solid-js";
 import showdown from "showdown";
 import { GameContext } from "../game/GameContext";
+import { initFromGameModel } from "./utils";
+
+const SEPARATOR = "§§§";
 
 type MarkdownEditorProps = {
     valueSignal: Signal<string>;
     isEditingSignal: Signal<boolean>;
 };
 
+function convertNewLines(text: string) {
+
+}
+
 const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
     const [value, setValue] = props.valueSignal;
     const [isEditing, setIsEditing] = props.isEditingSignal;
     // let div: HTMLDivElement | null = null;
     let textarea: HTMLDivElement | null = null;
-    const { gameSignal:[game, setGame] } = useContext(GameContext)!;
+    const gameContext = useContext(GameContext)!;
+    const { gameSignal:[game, setGame] } = gameContext;
 
     onMount(() => {
         // textarea!.style.height = "";
@@ -29,9 +37,26 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
 
     const onInput = (_e: InputEvent) => {};
 
+    const cleanText = () => {
+        let text = value();
+        text = text.replaceAll(SEPARATOR, "\n");
+        console.log("cleaned value", text);
+        return text;
+    }
+
+    const encodeText = (text: string) => {
+        text = text.replace(/\r\n/g, SEPARATOR);
+        text = text.replace(/\n/g, SEPARATOR);
+        console.log("encoded value", text);
+        return text;
+    }
+
     const onBlur = () => {
+        console.log("onBlur", textarea!.innerText);
         let value = textarea!.innerText;
-        // TODO: convert newlines to some placeholder
+        value = encodeText(value);
+        
+        
         const newGame = game()?.updateHeaders(
             new Map([
                 ["Description", value || ""],
@@ -39,7 +64,7 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
         );
 
         batch(() => {
-            setGame(newGame);
+            initFromGameModel(gameContext, newGame!);
             setValue(value);
             setIsEditing(false);
         });
@@ -47,7 +72,12 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
 
     const html = () => {
         const converter = new showdown.Converter();
-        return converter.makeHtml(value()) as string;
+        let val = value();
+        if (!val) {
+            return "";
+        }
+        val = val.replaceAll(SEPARATOR, "\n");
+        return converter.makeHtml(val) as string;
     };
 
     return (
@@ -56,7 +86,7 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
                 <div
                     class="markdown-text"
                     ref={textarea!}
-                    innerText={value()}
+                    innerText={cleanText()}
                     contentEditable={true}
                     onInput={onInput}
                     onBlur={onBlur}

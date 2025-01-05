@@ -22,9 +22,9 @@ const Sidebar = () => {
                 <ul class="menu-list">
                     <li><a href="/">Home</a></li>
                     <li><a href="/boardeditor">Board Editor</a></li>
-                    <li><a href="/game">Pgn Edit</a></li>
+                    {/* <li><a href="/game">Pgn Edit</a></li> */}
                     <li><a href="/play">Play</a></li>
-                    <li><a href="/analysis">Analysis</a></li>
+                    {/* <li><a href="/analysis">Analysis</a></li> */}
                     <li><a href="/db">DB Test</a></li>
                 </ul>
                 <p class="menu-label">Library</p>
