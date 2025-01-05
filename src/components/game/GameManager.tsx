@@ -256,7 +256,6 @@ const GameManager: Component<GameManagerOptions> = ({
 
     createEffect(() => {
         let pgnString = initialPgn?.();
-        console.log("external pgn updated", pgnString);
         if (!pgnString) {
             pgnString = getDefaultStudyContent();
         }
@@ -276,7 +275,6 @@ const GameManager: Component<GameManagerOptions> = ({
         const gIdx = untrack(gameIndex);
         const fPgn = untrack(fullPgn);
 
-        console.log("game changed", game(), gIdx, fPgn, currentPath());
         const g = game();
         if (!g) return;
         let path = currentPath();
@@ -285,12 +283,10 @@ const GameManager: Component<GameManagerOptions> = ({
         // const _updPgn = g.pgn();
 
         const games = parsePgn(fPgn || "");
-        console.log("fullPgn contains", games);
         games[gIdx] = g.game!;
         const newPgn = games.map((g) => makePgn(g)).join("\n");
         batch(() => {
             if (newPgn && newPgn !== fPgn) {
-                console.log("Setting fullPgn", newPgn);
                 setFullPgn?.(newPgn);
             }
             while (!data && (path?.size() || 0) > 0) {
@@ -314,7 +310,7 @@ const GameManager: Component<GameManagerOptions> = ({
         }
     });
 
-    // page changes when game index changes
+    // page changes when game index or full pgn changes
     createEffect(() => {
         const gIdx = gameIndex();
         const fPgn = fullPgn();
@@ -329,7 +325,6 @@ const GameManager: Component<GameManagerOptions> = ({
     createEffect(() => {
         const pgnString = fullPgn();
         if (pgnString) {
-            console.log("Setting extarnal pgn", pgnString);
             setPgn?.(pgnString);
         }
     });

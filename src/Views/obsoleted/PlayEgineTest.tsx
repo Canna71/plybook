@@ -44,22 +44,16 @@ const PlayEngineTest = () => {
                 status += ", " + moveColor + " is in check";
             }
         }
-        console.log(status);
-        // $status.html(status)
-        // $fen.html(game.fen())
-        // $pgn.html(game.pgn())
+
     };
 
     const onBestMove = (bestMove: string, ponder: string) => {
-        console.log(event, bestMove, ponder);
 
         // var bestMove = args[0];
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
-        console.log("best move", m);
         const move: NormalMove = makeMove(m.from, m.to);
         game().play(move);
         const newFen = makeFen(game().toSetup());
-        console.log("new fen", newFen);
         api()?.set({
             fen: newFen,
             lastMove: [m.from as Key, m.to as Key],
@@ -76,7 +70,6 @@ const PlayEngineTest = () => {
         const uciInterface = new ExecutableUCIInterface(enginePath);
         const engine = new UCIEngine(uciInterface);
         // var engine = StockfishManager.GetEngine(onEngineEvent);
-        console.log("waiting for engine to init");
         await engine.init();
         // console.log("engine initialized");
         // setStockfish(engine);

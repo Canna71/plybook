@@ -242,7 +242,6 @@ export const updateGameFromPgnString = (
     pgnString: string,
     context: GameContextType,
 ) => {
-    console.log("Updating current game from pgn string", pgnString);
     const gameModel = makeGame(pgnString);
     initFromGameModel(context, gameModel);
 };

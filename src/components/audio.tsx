@@ -17,8 +17,6 @@ export async function PlayAudio(audio: string) {
 
 export async function PlayAudioForMove(flags: MoveFlags) {
     const { isCapture, isCheck, isCheckmate, isSelf } = flags;
-    
-    // console.log("PlayAudioForMove", isCapture, isCheck, isCheckmate, isSelf);
     if(isCheckmate) {
         PlayAudio(checkmateAudio);
     } else if(isCheck) {

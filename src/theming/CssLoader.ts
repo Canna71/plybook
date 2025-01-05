@@ -67,21 +67,3 @@ interface LoadCSSOptions {
       }
     }
   }
-  /*
-  // Usage example:
-  const cssLoader = new CSSLoader();
-  
-  // Load a CSS file
-  try {
-    await cssLoader.loadCSS('https://cdn.example.com/style.css', {
-      id: 'dynamic-style',
-      media: 'screen'
-    });
-    console.log('CSS loaded successfully');
-  } catch (error) {
-    console.error('Failed to load CSS:', error);
-  }
-  
-  // Unload when no longer needed
-  cssLoader.unloadCSS('https://cdn.example.com/style.css');
-  */

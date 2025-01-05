@@ -55,7 +55,6 @@ const DBTest = () => {
 
     const listGames = async () => {
         const games = await invoke("list_games");
-        console.log(games);
     }
 
     const uploadPgn = async (_e: MouseEvent) => {

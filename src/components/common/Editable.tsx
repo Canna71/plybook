@@ -26,7 +26,6 @@ const Editable: Component<EditableProps> = (props) => {
 
     createEffect(() => {
         if (props.editable() && props.focus) {
-            // console.log("focus", ref, ref!.focus);
             ref!.focus();
             // select all content
             const range = document.createRange();

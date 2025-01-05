@@ -44,7 +44,6 @@ export class ExecutableUCIInterface implements IUCIInterface {
         });
 
         this.command.on('close', (code) => {
-            console.log(`child process exited with code `, code);
             this.isReady = false;
             this.exited = true;
         });

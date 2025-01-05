@@ -69,7 +69,6 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
 
     const onAcceptPgn = () => {
         batch(() => {
-            console.log("editPgn", editPgn());
             updateGameFromPgnString(editPgn()!, gameContext);
             setViewMode(ViewMode.MOVES);
         });

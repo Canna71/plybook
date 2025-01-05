@@ -179,9 +179,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
                 free: true, // Allow pieces to be placed freely
                 color: "both", // Both sides can move pieces
                 events: {
-                    after: (orig, dest, metadata) => {
-                        console.log("after", orig, dest, metadata);
-                    },
+                    
                 },
             },
             selectable: {
@@ -199,7 +197,6 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
 
     const onFenChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
-        console.log(target.value);
         setBaseFen(target.value);
     };
 

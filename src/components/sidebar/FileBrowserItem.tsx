@@ -67,17 +67,14 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
     };
 
     const onRenameFolder = (node: TreeNode<FileBrowserFile>, _id: string) => {
-        console.log("rename folder: ", node);
         setRenaming(node.id);
     };
 
     const onRenameStudy = (node: TreeNode<FileBrowserFile>, _id: string) => {
-        console.log("rename study: ", node);
         setRenaming(node.id);
     };
 
     const onRename = async (value: string) => {
-        console.log("rename: ", node, value);
         await renameOrCreateDataFile(node.data!.path, value);
         batch(() => {
             setRenaming(undefined);

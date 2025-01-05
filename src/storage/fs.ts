@@ -140,7 +140,6 @@ export async function renameOrCreateDataFile(
     const path = basePath(oldName || newName);
     const oldExt =  oldName ? fileOrFolderExtension(oldName) : "";
     const newExt = fileOrFolderExtension(newName);
-    console.log("oldExt: ", oldExt, "newExt: ", newExt);
     if (oldExt && !newExt) {
         newName = `${newName}.${oldExt}`;
     }

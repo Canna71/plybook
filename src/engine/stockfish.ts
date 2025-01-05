@@ -54,21 +54,17 @@ export class StockfishManager {
 
 
         // this.command = await Command.create('stockfish', []);
-        console.log("creating command");
 
         const enginePath = await getEnginePath();
-        console.log("engine path", enginePath);
 
         // this.command = await Command.create('exec-sh', ["-c", "/Users/gcannata/Library/Application\\ Support/rechess/Binaries/stockfish-aarch64-apple-darwin"]);
         this.command = await Command.create('exec-sh', ["-c", `"${enginePath}"`]);
 
-        console.log("command", this.command);
 
         this.command.stderr.on('data', (line: string) => this.processError(line));
         this.command.stdout.on('data', (line: string) => this.processEngineOutput(line));
 
         this.command.on('close', (code) => {
-            console.log(`child process exited with code `, code);
             this.isReady = false;
             this.exited = true;
         });
@@ -77,12 +73,10 @@ export class StockfishManager {
             console.error(`error: ${err}`);
         });
 
-        console.log("spawning child");
 
         this.child = await this.command.spawn();
 
 
-        console.log("child", this.child);
 
         this.sendCommand('uci');
 
@@ -180,7 +174,6 @@ export class StockfishManager {
      * Send a raw command to the engine
      */
     private sendCommand(command: string): void {
-        console.log("sending command", command);
         this.child?.write(command + '\n');
     }
 
@@ -188,7 +181,6 @@ export class StockfishManager {
      * Process engine output
      */
     private processEngineOutput(line: string): void {
-        // console.log("line", line);
         const tokens = line.trim().split(' ');
 
         switch (tokens[0]) {
@@ -279,35 +271,3 @@ export class StockfishManager {
     }
 }
 
-// // Usage example:
-// const stockfish = new StockfishManager((event, ...args) => {
-//     console.log(`Event: ${event}`, ...args);
-// }
-
-// // Initialize the engine
-// await stockfish.init();
-
-// // Listen for analysis results
-// stockfish.on('info', (info) => {
-//     if (info.score) {
-//         console.log(`Evaluation: ${info.score.value} ${info.score.type}`);
-//     }
-//     if (info.pv) {
-//         console.log(`Best line: ${info.pv.join(' ')}`);
-//     }
-// });
-
-// stockfish.on('bestmove', (bestmove, ponder) => {
-//     console.log(`Best move: ${bestmove}${ponder ? `, ponder: ${ponder}` : ''}`);
-// });
-
-// // Start analysis
-// stockfish.analyzePosition('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', {
-//     depth: 20,
-//     multipv: 3
-// });
-
-// // Stop analysis after 5 seconds
-// setTimeout(() => {
-//     stockfish.stop();
-// }, 5000);

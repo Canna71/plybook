@@ -22,14 +22,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     const shouldInitEngine = () => {
         const shouldInit = (engineOn() || options.engineColor?.()) && engineFolder() && (!engine() || !engineOn());
-        // console.log("shouldInitEngine flags:", {
-        //     engineOn: engineOn(),
-        //     engineColor: options.engineColor?.(),
-        //     engineFolder: engineFolder(),
-        //     engineExists: !!engine(),
-        //     engineNotOn: !engineOn()
-        // });
-        // console.log("shouldInitEngine result:", shouldInit);
+       
         return shouldInit;
     };
 
@@ -96,7 +89,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         if (engineCallable()) {
             const fenStr = options.fen();
             setEngineInfo([]);
-            // console.log("Analyzing position", fenStr);
             engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 3 });
         }
     });
