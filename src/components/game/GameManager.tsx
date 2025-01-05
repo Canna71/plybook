@@ -80,7 +80,9 @@ const GameManager: Component<GameManagerOptions> = ({
     >(undefined);
 
     const [editPgn, setEditPgn] = createSignal<string | undefined>(undefined);
-    const [fullPgn, setFullPgn] = createSignal<string | undefined>(initialPgn?.());
+    const [fullPgn, setFullPgn] = createSignal<string | undefined>(
+        initialPgn?.(),
+    );
 
     const [description, setDescription] = createSignal<string>("");
     const [isEditingDescription, setIsEditingDescription] = createSignal(false);
@@ -272,15 +274,14 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // this is a  effect triggered when the game changes
     createEffect(() => {
-
         const gIdx = untrack(gameIndex);
         const fPgn = untrack(fullPgn);
 
         console.log("game changed", game(), gIdx, fPgn, currentPath());
         const g = game();
         if (!g) return;
-        const path = currentPath();
-        const data = path && g.dataAt(path);
+        let path = currentPath();
+        let data = path && g.dataAt(path);
 
         // const _updPgn = g.pgn();
 
@@ -293,10 +294,17 @@ const GameManager: Component<GameManagerOptions> = ({
                 console.log("Setting fullPgn", newPgn);
                 setFullPgn?.(newPgn);
             }
-            if (!data) {
-                console.log("Setting current path to root", data);
-                setCurrentPath(new Path(""));
+            while (!data && (path?.size() || 0) > 0) {
+                path = path?.previous();
+                // console.log("No data at path, trying previous", path?..path);
+                // if (!path || path?.path.length === 0) {
+                //     console.log("Setting current path to ", data);
+                //     setCurrentPath(path);
+                //     break;
+                // }
+                data = path && g.dataAt(path);
             }
+            setCurrentPath(path);
         });
     });
 
