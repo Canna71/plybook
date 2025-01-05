@@ -47,13 +47,15 @@ const PageNavigator: Component = () => {
     }
 
     return (
-        <div class="buttons-bar">
+        <div class="buttons-bar page-navigation">
             <Show when={gameIndex() > 0}>
                 <Button onClick={() => onChangePage(gameIndex() - 1)}>
                     <IconCaretLeftFilled />
                 </Button>
             </Show>
-            {gameIndex() + 1}/{numOfPages()}
+            <div class="current-page">
+                {gameIndex() + 1} / {numOfPages()}
+            </div>      
             <Show when={numOfPages() > gameIndex() + 1}>
                 <Button onClick={() => onChangePage(gameIndex() + 1)}>
                     <IconCaretRightFilled />

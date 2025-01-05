@@ -17,7 +17,7 @@
     // grid-template-columns: minmax(200px, calc(100vh)) 10px minmax(50%, 1fr);
 
     grid-template-columns: 400px 5px 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows:  1fr auto;
 
     .pgnviewer-comments {
         grid-area: comments;
@@ -252,8 +252,17 @@
     padding: 4px;
     display: flex;
     justify-content: right;
+    
 
     button {
         padding: 4px;
+    }
+}
+
+.page-navigation {
+    align-items: center;
+    .current-page {
+        font-weight: 800;
+        margin: 0 8px;
     }
 }
