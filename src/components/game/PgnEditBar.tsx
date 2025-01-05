@@ -1,20 +1,20 @@
-import {
-    Component,
-    useContext,
-    batch,
-    Show,
-} from "solid-js";
+import { Component, useContext, batch, Show } from "solid-js";
 import Button from "../common/Button";
 import { GameContext } from "./GameContext";
 import { updateGameFromPgnString } from "../common/utils";
 import ToggleSwitch from "../common/ToggleSwitch";
 import { StartingPositionIcon } from "../common/Icons";
-import { IconBrackets, IconCheck, IconTextPlus } from "@tabler/icons-solidjs";
+import {
+    IconBrackets,
+    IconCheck,
+    IconCpu,
+    IconTextPlus,
+} from "@tabler/icons-solidjs";
 
 export enum ViewMode {
     STARTING_POSITION,
     MOVES,
-    PGN
+    PGN,
 }
 
 type SetPositionSwitchProps = {
@@ -31,8 +31,12 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
         startingPositionSignal: [startingPosition],
         gameSignal: [game, setGame],
         editPgnSignal: [editPgn, setEditPgn],
-        isEditingDescriptionSignal: [isEditingDescription, setIsEditingDescription],
+        isEditingDescriptionSignal: [
+            isEditingDescription,
+            setIsEditingDescription,
+        ],
         engineOnSignal,
+        engineColor,
     } = gameContext;
 
     const onEditStartingPosition = () => {
@@ -69,7 +73,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
             updateGameFromPgnString(editPgn()!, gameContext);
             setViewMode(ViewMode.MOVES);
         });
-    }
+    };
 
     const onEditDescription = () => {
         setIsEditingDescription(true);
@@ -79,12 +83,28 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
         setIsEditingDescription(false);
     };
 
+    const canEnableEngine = () => {
+        return (
+            viewMode() === ViewMode.MOVES &&
+            !isEditingDescription() &&
+            !engineColor?.()
+        );
+    };
+
     return (
         <div class="buttons-bar buttons are-small">
-            <ToggleSwitch toggleSignal={engineOnSignal} />
+            <Show when={canEnableEngine}>
+                <div title="Enable Engine" class="is-flex is-flex-direction-row">
+                    <IconCpu />
+                    <ToggleSwitch toggleSignal={engineOnSignal} />
+                </div>
+            </Show>
 
             <Show when={isEditingDescription()}>
-                <Button onClick={onFinishEditDescription} title="Finish Editing Description">
+                <Button
+                    onClick={onFinishEditDescription}
+                    title="Finish Editing Description"
+                >
                     <IconCheck />
                 </Button>
             </Show>
@@ -95,27 +115,36 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
                 </Button>
             </Show>
 
-
             <Show when={viewMode() === ViewMode.MOVES}>
-                <Button onClick={onEditStartingPosition} title="Change Starting Position" >
+                <Button
+                    onClick={onEditStartingPosition}
+                    title="Change Starting Position"
+                >
                     <StartingPositionIcon />
                 </Button>
             </Show>
             <Show when={viewMode() === ViewMode.MOVES}>
-                <Button onClick={onEditPgn} title="Edit PGN" >
+                <Button onClick={onEditPgn} title="Edit PGN">
                     <IconBrackets />
                 </Button>
             </Show>
             <Show when={viewMode() === ViewMode.STARTING_POSITION}>
                 <div class="is-flex is-flex-direction-row is-gap-1">
                     <Button onClick={onCancelStartingPosition}>Cancel</Button>
-                    <Button class="is-primary" onClick={onAcceptStartingPosition}>Accept</Button>
+                    <Button
+                        class="is-primary"
+                        onClick={onAcceptStartingPosition}
+                    >
+                        Accept
+                    </Button>
                 </div>
             </Show>
             <Show when={viewMode() === ViewMode.PGN}>
                 <div class="is-flex is-flex-direction-row is-gap-1">
                     <Button onClick={onCancelStartingPosition}>Cancel</Button>
-                    <Button class="is-primary" onClick={onAcceptPgn}>Accept</Button>
+                    <Button class="is-primary" onClick={onAcceptPgn}>
+                        Accept
+                    </Button>
                 </div>
             </Show>
         </div>

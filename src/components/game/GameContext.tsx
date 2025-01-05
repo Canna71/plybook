@@ -2,6 +2,7 @@ import { Accessor, createContext, Signal } from "solid-js";
 import { GameModel } from "../../models/GameModel";
 import { Path, PlyData } from "../../models/pgn";
 import { ViewMode } from "./PgnEditBar";
+import { Color } from "chessops";
 
 
 
@@ -17,6 +18,7 @@ export interface GameContextType {
 	descriptionSignal: Signal<string | undefined>;
 	isEditingDescriptionSignal: Signal<boolean>;
 	gameIndexSignal: Signal<number>;
+	engineColor?: Accessor<Color | undefined>;
 	setSquareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
 }
