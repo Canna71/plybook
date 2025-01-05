@@ -16,7 +16,7 @@
     ;
     // grid-template-columns: minmax(200px, calc(100vh)) 10px minmax(50%, 1fr);
 
-    grid-template-columns: 400px 5px 1fr;
+    grid-template-columns: minmax(250px, 1fr) 5px minmax(230px, 1fr);
     grid-template-rows:  1fr auto;
 
     .pgnviewer-comments {
