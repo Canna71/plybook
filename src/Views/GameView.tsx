@@ -129,7 +129,7 @@ const GameView = () => {
                 </div>
             </nav>
             <GameManager
-                pgn={originalPgn}
+                initalPgn={originalPgn}
                 setPgn={setNewPgn}
                 editable={isEditable}
                 defaultEngineOn={isEngineOn()}

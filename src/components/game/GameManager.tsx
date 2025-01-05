@@ -7,13 +7,15 @@ import {
     createMemo,
     createSignal,
     Show,
+    untrack,
 } from "solid-js";
-import { Path } from "../../models/pgn";
+import { makeGame, makeGameInternal, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
 import {
     getPosition,
+    initFromGameModel,
     isPromotion,
     makeConfig,
     makeMove,
@@ -43,7 +45,7 @@ import { makePgn, parsePgn } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
 
 export type GameManagerOptions = {
-    pgn?: Accessor<string | undefined>;
+    initalPgn?: Accessor<string | undefined>;
     setPgn?: (pgn: string) => void;
     engineColor?: Accessor<Color | undefined>;
     defaultEngineOn?: boolean;
@@ -56,7 +58,7 @@ type PromotionData = {
 };
 
 const GameManager: Component<GameManagerOptions> = ({
-    pgn,
+    initalPgn: initialPgn,
     setPgn,
     engineColor,
     editable,
@@ -78,6 +80,7 @@ const GameManager: Component<GameManagerOptions> = ({
     >(undefined);
 
     const [editPgn, setEditPgn] = createSignal<string | undefined>(undefined);
+    const [fullPgn, setFullPgn] = createSignal<string | undefined>(initialPgn?.());
 
     const [description, setDescription] = createSignal<string>("");
     const [isEditingDescription, setIsEditingDescription] = createSignal(false);
@@ -251,16 +254,29 @@ const GameManager: Component<GameManagerOptions> = ({
     // #region Effects
 
     createEffect(() => {
-        let pgnString = pgn?.();
+        let pgnString = initialPgn?.();
+        console.log("external pgn updated", pgnString);
         if (!pgnString) {
             pgnString = getDefaultStudyContent();
         }
+        const games = parsePgn(pgnString);
+        const gameModel = makeGameInternal(games[0]);
 
-        updateGameFromPgnString(pgnString, gameContext);
+        batch(() => {
+            setGameIndex(0);
+            setFullPgn(pgnString);
+            initFromGameModel(gameContext, gameModel);
+            // updateGameFromPgnString(pgnString, gameContext);
+        });
     });
 
     // this is a  effect triggered when the game changes
     createEffect(() => {
+
+        const gIdx = untrack(gameIndex);
+        const fPgn = untrack(fullPgn);
+
+        console.log("game changed", game(), gIdx, fPgn);
         const g = game();
         if (!g) return;
         const path = currentPath();
@@ -268,13 +284,14 @@ const GameManager: Component<GameManagerOptions> = ({
 
         // const _updPgn = g.pgn();
 
-        const games = parsePgn(pgn?.() || "");
-        games[gameIndex()] = g.game!;
+        const games = parsePgn(fPgn || "");
+        console.log("fullPgn contains", games);
+        games[gIdx] = g.game!;
         const newPgn = games.map((g) => makePgn(g)).join("\n");
         batch(() => {
-            if (newPgn && newPgn !== pgn?.()) {
-                console.log("newPgn", newPgn);
-                setPgn?.(newPgn);
+            if (newPgn && newPgn !== fPgn) {
+                console.log("Setting fullPgn", newPgn);
+                setFullPgn?.(newPgn);
             }
             if (!data) setCurrentPath(undefined);
         });
@@ -292,6 +309,15 @@ const GameManager: Component<GameManagerOptions> = ({
         }
     });
 
+    // updates external pgn when internal fullPgn changes
+    createEffect(() => {
+        const pgnString = fullPgn();
+        if (pgnString) {
+            console.log("Setting extarnal pgn", pgnString);
+            setPgn?.(pgnString);
+        }
+    });
+
     // #endregion
 
     // #region Engine
@@ -306,7 +332,8 @@ const GameManager: Component<GameManagerOptions> = ({
     });
 
     const gameContext = {
-        pgn: pgn,
+        // pgn: pgn,
+        fullPgnSignal: [fullPgn, setFullPgn],
         gameSignal: [game, setGame],
         currentPathSignal: [currentPath, setCurrentPath],
         startingPositionSignal: [startingPosition, setStartingPosition],

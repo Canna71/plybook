@@ -32,7 +32,7 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
 
     const onBlur = () => {
         let value = textarea!.innerText;
-
+        // TODO: convert newlines to some placeholder
         const newGame = game()?.updateHeaders(
             new Map([
                 ["Description", value || ""],

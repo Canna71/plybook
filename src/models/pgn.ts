@@ -290,8 +290,8 @@ export function toMove(move: NormalMove): [SquareName, SquareName] {
     return move && [makeSquare(move.from), makeSquare(move.to)]
 }
 
-export function makeGame(pgnString: string, gameIndex: number=0): GameModel {
-    const game = parsePgn(pgnString)[gameIndex] || parsePgn("[]")[0];
+export function makeGame(pgnString: string): GameModel {
+    const game = parsePgn(pgnString)[0];
 
     return makeGameInternal(game);
 }

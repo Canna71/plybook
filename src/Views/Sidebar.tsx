@@ -7,7 +7,6 @@ const Sidebar = () => {
     const navigate = useNavigate();
 
     const onNodeClick = (file: FileBrowserFile) => {
-        console.log("onNodeClick: ", file);
         if(file && !file.isDirectory) {
             if(file.name.endsWith('.pgn')) {
                 navigate(`/game?path=${file.path}&source=library`);

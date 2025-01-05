@@ -239,8 +239,12 @@ export function useFenTooltip(
 }
 
 export const updateGameFromPgnString = (pgnString: string, context: GameContextType) => {
-    console.log("Updating game from pgn string", pgnString);
-    const gameModel = makeGame(pgnString, context.gameIndexSignal[0]());
+    console.log("Updating current game from pgn string", pgnString);
+    const gameModel = makeGame(pgnString);
+    initFromGameModel(context, gameModel);
+};
+
+export function initFromGameModel(context: GameContextType, gameModel: GameModel) {
     batch(() => {
         context.gameSignal[1](gameModel);
         if (gameModel.headers.get("FEN")) {
@@ -251,6 +255,7 @@ export const updateGameFromPgnString = (pgnString: string, context: GameContextT
         }
         context.currentPathSignal[1](gameModel.pathAtMainlinePly(0));
         context.viewModeSignal[1](ViewMode.MOVES);
-        context.descriptionSignal[1](gameModel.headers.get("Description")||"");
+        context.descriptionSignal[1](gameModel.headers.get("Description") || "");
     });
-};
+}
+

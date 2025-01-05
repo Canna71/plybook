@@ -14,12 +14,12 @@ const PageNavigator: Component = () => {
     const {
         gameSignal: [_game, setGame],
         gameIndexSignal: [gameIndex, setGameIndex],
-        pgn,
+        fullPgnSignal: [fullPgn],
         currentPathSignal: [_currentPath, setCurrentPath],
     } = useContext(GameContext)!;
 
     const numOfPages = createMemo(() => {
-        const pgnString = pgn?.();
+        const pgnString = fullPgn?.();
         if (!pgnString) {
             return 1;
         }
@@ -28,6 +28,7 @@ const PageNavigator: Component = () => {
     });
 
     const onNewPage = () => {
+        
         batch(() => {
             setGameIndex(gameIndex() + 1);
             setCurrentPath(undefined);
@@ -35,13 +36,23 @@ const PageNavigator: Component = () => {
         });
     };
 
+    const onChangePage = (index: number) => {
+        if (index < 0 || index >= numOfPages()) {
+            return;
+        }
+        batch(() => {
+            setGameIndex(index);
+            setCurrentPath(undefined);
+        });
+    }
+
     return (
         <div>
             <Button onClick={onNewPage}>Add Page</Button>
-            <Button onClick={() => setGameIndex(gameIndex() - 1)}>
+            <Button onClick={() => onChangePage(gameIndex() - 1)}>
                 <IconArrowLeftSquare />
             </Button>
-            <Button onClick={() => setGameIndex(gameIndex() + 1)}>
+            <Button onClick={() => onChangePage(gameIndex() + 1)}>
                 <IconArrowRightSquare />
             </Button>
             {gameIndex() + 1}/{numOfPages()}
