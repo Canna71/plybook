@@ -18,6 +18,8 @@ export interface GameContextType {
 	descriptionSignal: Signal<string | undefined>;
 	isEditingDescriptionSignal: Signal<boolean>;
 	gameIndexSignal: Signal<number>;
+	orientation: Accessor<Color>;
+	// orientationSignal: Signal<Color>;
 	engineColor?: Accessor<Color | undefined>;
 	setSquareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;

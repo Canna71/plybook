@@ -68,10 +68,12 @@ export function makeConfig(
     game: Accessor<GameModel | undefined>,
     currentPath: Accessor<Path | undefined>,
     squareHovered: Accessor<string | undefined>,
+    orientation: Accessor<Color>,
 ): () => Config {
     return () => {
         const baseConfig: Config = {
             fen: "",
+            orientation: orientation(),
             lastMove: undefined,
             // viewOnly: true,
             highlight: {

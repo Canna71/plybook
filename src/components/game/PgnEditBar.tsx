@@ -1,13 +1,14 @@
 import { Component, useContext, batch, Show } from "solid-js";
 import Button from "../common/Button";
 import { GameContext } from "./GameContext";
-import { updateGameFromPgnString } from "../common/utils";
+import { initFromGameModel, updateGameFromPgnString } from "../common/utils";
 import ToggleSwitch from "../common/ToggleSwitch";
 import { StartingPositionIcon } from "../common/Icons";
 import {
     IconBrackets,
     IconCheck,
     IconCpu,
+    IconSwitchVertical,
     IconTextPlus,
 } from "@tabler/icons-solidjs";
 
@@ -35,6 +36,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
             isEditingDescription,
             setIsEditingDescription,
         ],
+        orientation,
         engineOnSignal,
         engineColor,
     } = gameContext;
@@ -90,8 +92,21 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
         );
     };
 
+    const onFLipBoard = () => {
+        const newOrientation = orientation() === "white" ? "black" : "white";
+        const newGame = game()?.updateHeaders(new Map([["Orientation", newOrientation]]));
+        // initFromGameModel(gameContext, newGame!);
+        setGame(newGame);
+    }
+
     return (
         <div class="buttons-bar buttons are-small">
+                <Button
+                    onClick={onFLipBoard}
+                    title="Flip Board"
+                >
+                    <IconSwitchVertical />
+                </Button>
             <Show when={canEnableEngine}>
                 <div title="Enable Engine" class="is-flex is-flex-direction-row">
                     <IconCpu />

@@ -19,11 +19,14 @@ export type PgnViewerOptions = {
 }
 
 
-
+/**
+ * @deprecated Use GameManager component instead
+ */
 const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	const [currentPath, setCurrentPath] = createSignal<Path | undefined>(undefined);
 	const [game, setGame] = createSignal<GameModel | undefined>(undefined);
 	const [squareHovered] = createSignal<string | undefined>(undefined);
+
 	// const currentData = useCurrentData(game, currentPath)
 
 
@@ -42,7 +45,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 	});
 
 
-	const config = makeConfig(game, currentPath, squareHovered);
+	const config = makeConfig(game, currentPath, squareHovered, ()=>"white");
 
 
 	

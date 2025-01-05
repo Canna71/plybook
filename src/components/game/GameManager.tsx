@@ -173,8 +173,20 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const turn = createMemo(() => position().turn as Color);
 
+    const orientation = createMemo(() => {
+        const g = game();
+        if (!g) {
+            return "white";
+        }
+        const orientationHeader = g.headers.get("Orientation");
+        if (orientationHeader) {
+            return orientationHeader === "white" ? "white" : "black";
+        }
+        return "white";
+    });
+
     const config = () => {
-        const baseConfig = makeConfig(game, currentPath, squareHovered)();
+        const baseConfig = makeConfig(game, currentPath, squareHovered, orientation)();
 
         const pos = position();
         const isCheck = pos.isCheck();
@@ -357,6 +369,7 @@ const GameManager: Component<GameManagerOptions> = ({
             setIsEditingDescription,
         ],
         gameIndexSignal: [gameIndex, setGameIndex],
+        orientation: orientation,
         setSquareHovered: setSquareHovered,
         editable: isEditable,
     } as GameContextType;
