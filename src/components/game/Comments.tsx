@@ -1,7 +1,7 @@
 import { Accessor, Component, createEffect, For, useContext } from "solid-js";
 
 import { GameModel } from "../../models/GameModel";
-import { useCurrentData } from "../common/utils";
+import { useCurrentData, safePaste } from "../common/utils";
 import { useContextMenu } from "../common/contextmenu";
 import { isPlyData, Path } from "../../models/pgn";
 import { GameContext } from "./GameContext";
@@ -10,133 +10,153 @@ import { GameContext } from "./GameContext";
 export const squareRegex = /([a-h][1-8])/g;
 
 type CommentsProps = {
-	game: Accessor<GameModel | undefined>;
-	currentPath: Accessor<Path | undefined>;
-	squareHovered?: (square: string | undefined) => void;
-	commentType?: "initial" | "starting" | "move";
+    game: Accessor<GameModel | undefined>;
+    currentPath: Accessor<Path | undefined>;
+    squareHovered?: (square: string | undefined) => void;
+    commentType?: "initial" | "starting" | "move";
 };
 
+export const Comments2: Component<CommentsProps> = ({
+    game,
+    currentPath,
+    commentType,
+}) => {
+    const currentData = useCurrentData(game, currentPath);
 
-export const Comments2: Component<CommentsProps> = ({ game, currentPath, commentType }) => {
+    const path = currentPath() || Path.root;
 
-	const currentData = useCurrentData(game, currentPath);
+    const comments = () => {
+        const data = currentData();
+        if (commentType === "initial") {
+            return game()?.initial.comments || [];
+        } else if (commentType === "starting") {
+            return (isPlyData(data) && data.startingComments) || [];
+        }
 
-	const path = currentPath() || Path.root;
+        return (isPlyData(data) && data?.comments) || [];
+    };
 
-	
-
-	const comments = () => {
-		const data = currentData();
-		if (commentType === "initial") {
-			return game()?.initial.comments || [];
-		} else if (commentType === "starting") {
-			return isPlyData(data) && data.startingComments || [];
-		}
-
-		return isPlyData(data) && data?.comments || [];
-
-	};
-
-	return <For each={comments()}>
-		{(comment, index) => <CommentsView comments={() => comment}  path={path} index={index()} />}
-	</For>;
-
-
-	
+    return (
+        <For each={comments()}>
+            {(comment, index) => (
+                <CommentsView
+                    comments={() => comment}
+                    path={path}
+                    index={index()}
+                />
+            )}
+        </For>
+    );
 };
 
 export type CommentsViewProps = {
-	comments: Accessor<string>;
-	// squareHovered?: (square: string | undefined) => void;
-	path: Path;
-	index: number;
-	starting?: boolean;
+    comments: Accessor<string>;
+    // squareHovered?: (square: string | undefined) => void;
+    path: Path;
+    index: number;
+    starting?: boolean;
 };
 
-export const CommentsView:Component<CommentsViewProps> = ({comments, path, index, starting
-
+export const CommentsView: Component<CommentsViewProps> = ({
+    comments,
+    path,
+    index,
+    starting,
 }) => {
-	
-	// take editable from context
+    // take editable from context
 
-	const { editable, gameSignal: [game, setGame], setSquareHovered } = useContext(GameContext)!;
-	let ref: HTMLDivElement | undefined;
-	
-	const paragraph = () =>  {
-		let line = comments() || "";
-		const matches = line.match(squareRegex);
+    const {
+        editable,
+        gameSignal: [game, setGame],
+        setSquareHovered,
+    } = useContext(GameContext)!;
+    let ref: HTMLDivElement | undefined;
 
-		if (matches) {
-			matches.forEach((match) => {
-				line = line.replace(match, `<span class="square" data-square="${match}">${match}</span>`);
-			});
-		}
+    const paragraph = () => {
+        let line = comments() || "";
+        const matches = line.match(squareRegex);
 
-		return line;
-	};
+        if (matches) {
+            matches.forEach((match) => {
+                line = line.replace(
+                    match,
+                    `<span class="square" data-square="${match}">${match}</span>`,
+                );
+            });
+        }
 
-	const onMouseOver = (e: MouseEvent) => {
-		const target = e.target as HTMLElement;
-		if (target.dataset.square) {
-			setSquareHovered?.(target.dataset.square);
-		}
-	};
+        return line;
+    };
 
-	const onMouseLeave = () => {
-		setSquareHovered?.(undefined);
-	};
+    const onMouseOver = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        if (target.dataset.square) {
+            setSquareHovered?.(target.dataset.square);
+        }
+    };
 
+    const onMouseLeave = () => {
+        setSquareHovered?.(undefined);
+    };
 
+    const onBlur = (e: Event) => {
+        const target = e.target as HTMLElement;
+        const text = target.textContent || "";
+        const ng = game()?.updateComment(path, index, text, starting);
+        setGame(ng);
+    };
 
-	const onBlur = (e: Event) => {
-		const target = e.target as HTMLElement;
-		const text = target.textContent || "";
-		const ng = game()?.updateComment(path, index, text, starting);
-		setGame(ng);
-	}
+    const onKeyDown = (e: KeyboardEvent) => {
+        // newline should exit the contenteditable
+        if (e.key === "Enter") {
+            e.preventDefault();
+            ref?.blur();
+        }
+    };
 
-	const onKeyDown = (e: KeyboardEvent) => {
-		// newline should exit the contenteditable
-		if (e.key === "Enter") {
-			e.preventDefault();
-			ref?.blur();
-		}
-	}
+    // focuses the element if it's empty and editable
+    createEffect(() => {
+        if (editable() && !comments()) {
+            ref?.focus();
+        }
+    });
 
-	// focuses the element if it's empty and editable
-	createEffect(() => {
-		if (editable() && !comments()) {
-			ref?.focus();
-		}
-	});
+    const onDelete = () => {
+        const ng = game()?.deleteComment(path, index, starting);
+        setGame(ng);
+    };
 
-	const onDelete = () => {
-		const ng = game()?.deleteComment(path, index, starting);
-		setGame(ng);
-	}
-	
-	const onContextMenuInternal = useContextMenu({
-		items: [
-			{ id: "moves_comment_delete", text: "Delete Comment", action: onDelete },
-		],
-	});
+    const onContextMenuInternal = useContextMenu({
+        items: [
+            {
+                id: "moves_comment_delete",
+                text: "Delete Comment",
+                action: onDelete,
+            },
+        ],
+    });
 
-	const onContextMenu = (e: MouseEvent) => {
-		if(editable()) {
-			onContextMenuInternal(e);
-		}
-	}
+    const onContextMenu = (e: MouseEvent) => {
+        if (editable()) {
+            onContextMenuInternal(e);
+        }
+    };
 
-	return <div
-		ref={ref}
-		data-placeholder="Add a comment"
-		contentEditable={editable()}
-		onMouseOver={onMouseOver}
-		onKeyDown={onKeyDown}
-		onMouseLeave={onMouseLeave}
-		onBlur={onBlur}
-		class="pgnviewer-comments"
-		innerHTML={paragraph()}
-		onContextMenu={onContextMenu}
-		></div>;
-}
+    const onPaste = (e:ClipboardEvent) => safePaste(ref!, e);
+
+    return (
+        <div
+            ref={ref}
+            data-placeholder="Add a comment"
+            contentEditable={editable()}
+            onMouseOver={onMouseOver}
+            onKeyDown={onKeyDown}
+            onMouseLeave={onMouseLeave}
+            onBlur={onBlur}
+            class="pgnviewer-comments"
+            innerHTML={paragraph()}
+            onContextMenu={onContextMenu}
+            onPaste={onPaste}
+        ></div>
+    );
+};

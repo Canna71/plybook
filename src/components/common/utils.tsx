@@ -238,13 +238,19 @@ export function useFenTooltip(
     return innerShowTooltip;
 }
 
-export const updateGameFromPgnString = (pgnString: string, context: GameContextType) => {
+export const updateGameFromPgnString = (
+    pgnString: string,
+    context: GameContextType,
+) => {
     console.log("Updating current game from pgn string", pgnString);
     const gameModel = makeGame(pgnString);
     initFromGameModel(context, gameModel);
 };
 
-export function initFromGameModel(context: GameContextType, gameModel: GameModel) {
+export function initFromGameModel(
+    context: GameContextType,
+    gameModel: GameModel,
+) {
     batch(() => {
         context.gameSignal[1](gameModel);
         if (gameModel.headers.get("FEN")) {
@@ -255,7 +261,52 @@ export function initFromGameModel(context: GameContextType, gameModel: GameModel
         }
         // context.currentPathSignal[1](gameModel.pathAtMainlinePly(0));
         context.viewModeSignal[1](ViewMode.MOVES);
-        context.descriptionSignal[1](gameModel.headers.get("Description") || "");
+        context.descriptionSignal[1](
+            gameModel.headers.get("Description") || "",
+        );
     });
 }
 
+function sanitizeText(text: string) {
+    // Add any text sanitization rules you need
+    return text.trim();
+}
+
+// Helper function to check if selection is inside the editable div
+function isSelectionInEditableDiv(div: HTMLDivElement, selection: Selection) {
+    if (!selection.rangeCount) return false;
+    const range = selection.getRangeAt(0);
+    return div.contains(range.commonAncestorContainer);
+}
+
+export async function safePaste(
+    editableDiv: HTMLDivElement,
+    e: ClipboardEvent,
+) {
+    e.preventDefault();
+    // Get plain text from clipboard
+    const selection = window.getSelection();
+    if (!selection) return;
+    if (!isSelectionInEditableDiv(editableDiv, selection)) return;
+    try {
+        let text = await navigator.clipboard.readText();
+        text = sanitizeText(text);
+
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+
+        const textNode = document.createTextNode(text);
+        range.insertNode(textNode);
+
+        // Update selection
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.setStartAfter(textNode);
+        newRange.setEndAfter(textNode);
+        selection.addRange(newRange);
+
+        editableDiv.normalize();
+    } catch (err) {
+        console.error("Paste operation failed:", err);
+    }
+}
