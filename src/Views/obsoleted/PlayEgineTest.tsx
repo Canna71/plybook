@@ -71,7 +71,6 @@ const PlayEngineTest = () => {
         const engine = new UCIEngine(uciInterface);
         // var engine = StockfishManager.GetEngine(onEngineEvent);
         await engine.init();
-        // console.log("engine initialized");
         // setStockfish(engine);
         engine.on("bestmove", onBestMove);
         setEngine(engine);
@@ -97,9 +96,7 @@ const PlayEngineTest = () => {
         // }).map(move => move.lan);
         // const moves:string[] = [];
         const fen = makeFen(game().toSetup());
-        // TODO: use gamemodel to keep track of moves
 
-        console.log("fen submitted to engine: ", fen);
 
         engine()?.analyzeFromFenOrMoves(fen, {
             depth: 15,

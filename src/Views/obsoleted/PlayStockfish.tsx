@@ -40,19 +40,13 @@ const Play = () => {
                 status += ', ' + moveColor + ' is in check'
             }
         }
-        console.log(status);
-        // $status.html(status)
-        // $fen.html(game.fen())
-        // $pgn.html(game.pgn())
     }
 
     onMount(() => {
-        // console.log(Stockfish);
         Stockfish().then(async (sf) => {
             setStockfish(sf);
             sf.addMessageListener((line: any) => {
                 // var line = event.data;
-                console.log("line", line);
                 if (line.startsWith('bestmove')) {
                     var bestMove = line.split(' ')[1];
                     game().move({ from: bestMove.slice(0, 2), to: bestMove.slice(2, 4), promotion: 'q' });
