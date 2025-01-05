@@ -253,7 +253,7 @@ export function initFromGameModel(context: GameContextType, gameModel: GameModel
                 context.startingPositionSignal[1](makeFen(setup.value));
             }
         }
-        context.currentPathSignal[1](gameModel.pathAtMainlinePly(0));
+        // context.currentPathSignal[1](gameModel.pathAtMainlinePly(0));
         context.viewModeSignal[1](ViewMode.MOVES);
         context.descriptionSignal[1](gameModel.headers.get("Description") || "");
     });

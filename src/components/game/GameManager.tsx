@@ -276,7 +276,7 @@ const GameManager: Component<GameManagerOptions> = ({
         const gIdx = untrack(gameIndex);
         const fPgn = untrack(fullPgn);
 
-        console.log("game changed", game(), gIdx, fPgn);
+        console.log("game changed", game(), gIdx, fPgn, currentPath());
         const g = game();
         if (!g) return;
         const path = currentPath();
@@ -293,7 +293,10 @@ const GameManager: Component<GameManagerOptions> = ({
                 console.log("Setting fullPgn", newPgn);
                 setFullPgn?.(newPgn);
             }
-            if (!data) setCurrentPath(undefined);
+            if (!data) {
+                console.log("Setting current path to root", data);
+                setCurrentPath(new Path(""));
+            }
         });
     });
 
