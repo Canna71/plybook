@@ -8,7 +8,6 @@ import { getEnginePath } from "../../storage/fs";
 import { makeMove } from "../common/utils";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
-import { set } from "es-toolkit/compat";
 
 export function useChessEngine(options: ChessEngineOptions) {
     // #region Engine state

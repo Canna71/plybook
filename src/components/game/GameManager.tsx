@@ -9,7 +9,7 @@ import {
     Show,
     untrack,
 } from "solid-js";
-import { makeGame, makeGameInternal, Path } from "../../models/pgn";
+import { makeGameInternal, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
@@ -19,7 +19,6 @@ import {
     isPromotion,
     makeConfig,
     makeMove,
-    updateGameFromPgnString,
     useSplitter,
 } from "../common/utils";
 import { Color, Key, Piece, Role } from "chessground/types";

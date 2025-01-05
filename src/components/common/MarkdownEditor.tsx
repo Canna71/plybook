@@ -1,7 +1,6 @@
 import {
     batch,
     Component,
-    createSignal,
     Match,
     onMount,
     Signal,
@@ -19,7 +18,7 @@ type MarkdownEditorProps = {
 const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
     const [value, setValue] = props.valueSignal;
     const [isEditing, setIsEditing] = props.isEditingSignal;
-    let div: HTMLDivElement | null = null;
+    // let div: HTMLDivElement | null = null;
     let textarea: HTMLDivElement | null = null;
     const { gameSignal:[game, setGame] } = useContext(GameContext)!;
 
@@ -28,7 +27,7 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
         // textarea!.style.height = textarea!.scrollHeight + "px"
     });
 
-    const onInput = (e: InputEvent) => {};
+    const onInput = (_e: InputEvent) => {};
 
     const onBlur = () => {
         let value = textarea!.innerText;
