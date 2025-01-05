@@ -296,12 +296,7 @@ const GameManager: Component<GameManagerOptions> = ({
             }
             while (!data && (path?.size() || 0) > 0) {
                 path = path?.previous();
-                // console.log("No data at path, trying previous", path?..path);
-                // if (!path || path?.path.length === 0) {
-                //     console.log("Setting current path to ", data);
-                //     setCurrentPath(path);
-                //     break;
-                // }
+
                 data = path && g.dataAt(path);
             }
             setCurrentPath(path);
