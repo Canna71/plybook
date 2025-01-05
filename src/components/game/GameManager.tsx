@@ -6,11 +6,9 @@ import {
     createEffect,
     createMemo,
     createSignal,
-    Setter,
     Show,
-    Signal,
 } from "solid-js";
-import { makeGame, Path } from "../../models/pgn";
+import { Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
@@ -42,9 +40,6 @@ import { playSoundForMove } from "./playSoundForMove";
 import { useTooltip } from "./useTooltip";
 import MarkdownEditor from "../common/MarkdownEditor";
 import { makePgn, parsePgn } from "chessops/pgn";
-import Button from "../common/Button";
-import { set } from "es-toolkit/compat";
-import { IconArrowLeftSquare, IconArrowRightSquare } from "@tabler/icons-solidjs";
 import PageNavigator from "./MultiPage";
 
 export type GameManagerOptions = {
@@ -236,8 +231,6 @@ const GameManager: Component<GameManagerOptions> = ({
         },
     );
 
-    
-
     // #region Game Manipulation
 
     const applyMove = (move: NormalMove) => {
@@ -273,17 +266,17 @@ const GameManager: Component<GameManagerOptions> = ({
         const path = currentPath();
         const data = path && g.dataAt(path);
 
-        const updPgn = g.pgn();
+        // const _updPgn = g.pgn();
 
         const games = parsePgn(pgn?.() || "");
         games[gameIndex()] = g.game!;
-        const newPgn = games.map((g, i) => makePgn(g)).join("\n");
+        const newPgn = games.map((g) => makePgn(g)).join("\n");
         batch(() => {
             if (newPgn && newPgn !== pgn?.()) {
                 console.log("newPgn", newPgn);
                 setPgn?.(newPgn);
             }
-            if(!data) setCurrentPath(undefined);
+            if (!data) setCurrentPath(undefined);
         });
     });
 
@@ -335,8 +328,6 @@ const GameManager: Component<GameManagerOptions> = ({
     const { reference, ply, showTooltip } = useTooltip();
 
     // #endregion
-
-    
 
     return (
         <>
