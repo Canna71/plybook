@@ -1,11 +1,11 @@
-import { batch, Component, createMemo, useContext } from "solid-js";
+import { batch, Component, createMemo, Show, useContext } from "solid-js";
 import { GameContext } from "./GameContext";
 import {
-    IconArrowLeftSquare,
-    IconArrowRightSquare,
+    IconCaretLeftFilled,
+    IconCaretRightFilled,
+    IconPlus,
 } from "@tabler/icons-solidjs";
 import Button from "../common/Button";
-import { pgn } from "chessops";
 import { parsePgn } from "chessops/pgn";
 import { makeGame } from "../../models/pgn";
 import { getDefaultStudyContent } from "../../storage/fs";
@@ -47,15 +47,23 @@ const PageNavigator: Component = () => {
     }
 
     return (
-        <div>
-            <Button onClick={onNewPage}>Add Page</Button>
-            <Button onClick={() => onChangePage(gameIndex() - 1)}>
-                <IconArrowLeftSquare />
-            </Button>
-            <Button onClick={() => onChangePage(gameIndex() + 1)}>
-                <IconArrowRightSquare />
-            </Button>
+        <div class="buttons-bar">
+            <Show when={gameIndex() > 0}>
+                <Button onClick={() => onChangePage(gameIndex() - 1)}>
+                    <IconCaretLeftFilled />
+                </Button>
+            </Show>
             {gameIndex() + 1}/{numOfPages()}
+            <Show when={numOfPages() > gameIndex() + 1}>
+                <Button onClick={() => onChangePage(gameIndex() + 1)}>
+                    <IconCaretRightFilled />
+                </Button>
+            </Show>
+            <Show when={numOfPages() === gameIndex() + 1}>
+                <Button onClick={onNewPage}>
+                    <IconPlus />
+                </Button>
+            </Show>
         </div>
     );
 };
