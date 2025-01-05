@@ -34,6 +34,12 @@ pnpm install
 pnpm tauri dev
 ```
 
+### To build icons:
+
+```bash
+pnpm tauri icon ./tools/Logo.png
+```
+
 ## Dependencies
 
 LLVM 
