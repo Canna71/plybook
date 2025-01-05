@@ -65,7 +65,7 @@ const GameManager: Component<GameManagerOptions> = ({
 }) => {
     // #region Game State
     const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
-        undefined,
+        new Path(""),
     );
     const [game, setGame] = createSignal<GameModel | undefined>(undefined);
     const [squareHovered, setSquareHovered] = createSignal<string | undefined>(

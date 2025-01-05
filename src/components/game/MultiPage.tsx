@@ -8,7 +8,7 @@ import {
 } from "@tabler/icons-solidjs";
 import Button from "../common/Button";
 import { makePgn, parsePgn } from "chessops/pgn";
-import { makeGame } from "../../models/pgn";
+import { makeGame, Path } from "../../models/pgn";
 import { getDefaultStudyContent } from "../../storage/fs";
 
 const PageNavigator: Component = () => {
@@ -32,7 +32,7 @@ const PageNavigator: Component = () => {
         
         batch(() => {
             setGameIndex(gameIndex() + 1);
-            setCurrentPath(undefined);
+            setCurrentPath(new Path(""));
             setGame(makeGame(getDefaultStudyContent()));
         });
     };
@@ -43,7 +43,7 @@ const PageNavigator: Component = () => {
         }
         batch(() => {
             setGameIndex(index);
-            setCurrentPath(undefined);
+            setCurrentPath(new Path(""));
         });
     }
 
@@ -58,7 +58,7 @@ const PageNavigator: Component = () => {
         batch(() => {
             setFullPgn(newPgn);
             setGameIndex(newIndex);
-            setCurrentPath(undefined);
+            setCurrentPath(new Path(""));
             // setGame(makeGame(newPgn));
         });
     }
