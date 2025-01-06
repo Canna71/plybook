@@ -1,6 +1,6 @@
 import { FEN } from "chessground/types";
 import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game } from "chessops/pgn";
-import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName } from "chessops";
+import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName, Material } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
 import { makeFen } from "chessops/fen";
@@ -328,6 +328,18 @@ export function makeGameInternal(game: Game<PgnNodeData>): GameModel {
 
     return gameModel;
 }
+
+export function getMaterial(position: Position) {
+    // Parse the FEN position
+    const setup = position.toSetup();
+    const board = setup.board;
+    
+    // Initialize material counters for both sides
+    const material = Material.fromBoard(board);
+    
+    return material;
+}
+
 
 /*
 else if (token === '!') this.handleNag(1);

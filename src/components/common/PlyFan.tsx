@@ -4,19 +4,9 @@ import { Dynamic } from "solid-js/web";
 import { isPiece } from "../../models/pgn";
 
 import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight } from "@tabler/icons-solidjs";
+import { getFigurine } from "./utils";
 
-const figurineMap: Record<string, ()=>JSXElement> = {
-    K: ()=> <IconChessKingFilled />,
-    Q: ()=> <IconChessQueenFilled />,
-    R: ()=> <IconChessRookFilled />,
-    B: ()=> <IconChessBishopFilled />,
-    N: ()=> <IconChessKnightFilled />,
-    k: ()=> <IconChessKing />,
-    q: ()=> <IconChessQueen />,
-    r: ()=> <IconChessRook />,
-    b: ()=> <IconChessBishop />,
-    n: ()=> <IconChessKnight />,
-};
+
 
 export const PlyFan: Component<{ san: string; color: Color; }> = ({
     san, color,
@@ -40,14 +30,14 @@ export const PlyFan: Component<{ san: string; color: Color; }> = ({
         <>
             <Show when={piece}>
                 <span class="move-fan-figurine">
-                    <Dynamic component={figurineMap[piece!]} />
+                    <Dynamic component={getFigurine(piece!)!} />
                 </span>
             </Show>
             <span class="move-fan-content">{content}</span>
             <Show when={promotion}>
                 <span class="move-fan-figurine">
                     →
-                    <Dynamic component={figurineMap[promotion!]} />
+                    <Dynamic component={getFigurine(promotion!)} />
                 </span>
             </Show>
         </>

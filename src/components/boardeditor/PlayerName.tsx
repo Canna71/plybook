@@ -1,15 +1,19 @@
 import { IconUser, IconUserFilled } from "@tabler/icons-solidjs";
-import { Accessor, Component, Show, useContext } from "solid-js";
+import { Accessor, Component, createMemo, Show, useContext } from "solid-js";
 import { GameContext } from "../game/GameContext";
 import { Color } from "chessops";
 import Editable from "../common/Editable";
+import { getPosition } from "../common/utils";
+import MaterialWon from "../game/Material";
+import "./PlayerName.scss";
 
 const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) => void, color: Color }> = ({ name, setName, color }) => {
     
-    const { editable } = useContext(GameContext)!;
+    const { editable, gameSignal:[game], currentPathSignal:[currentPath] } = useContext(GameContext)!;
+    const position = createMemo(() => getPosition(game, currentPath));
     
     return (
-        <div class="is-flex is-flex-direction-row is-align-items-center pgnviewer-player-name is-fullwidth m-2">
+        <div class="player-name">
             <Show when={color === "white"}>
                 <IconUserFilled />
             </Show>
@@ -29,6 +33,7 @@ const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) =>
                 onSave={setName} 
                 focus={false} 
             />
+            <MaterialWon position={position} color={color} />
         </div>
 
     );

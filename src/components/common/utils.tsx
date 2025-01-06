@@ -12,7 +12,7 @@ import {
 } from "chessops";
 import { Initial, isPlyData, makeGame, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
-import { Accessor, batch, useContext } from "solid-js";
+import { Accessor, batch, JSXElement, useContext } from "solid-js";
 import { Key } from "chessground/types";
 import { Config } from "chessground/config";
 import { parseSquare, squareFromCoords } from "chessops/util";
@@ -21,6 +21,7 @@ import { DOMElement } from "solid-js/jsx-runtime";
 import { GameContextType, TooltipContext } from "../game/GameContext";
 import { makeFen, parseFen } from "chessops/fen";
 import { ViewMode } from "../game/PgnEditBar";
+import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight, IconChessFilled, IconChess } from "@tabler/icons-solidjs";
 
 export function lastMove(data: Initial | PlyData | undefined) {
     const lm = isPlyData(data) ? (data.move as NormalMove) : undefined;
@@ -310,4 +311,24 @@ export async function safePaste(
     } catch (err) {
         console.error("Paste operation failed:", err);
     }
+}
+
+const figurineMap: Record<string, ()=>JSXElement> = {
+    K: ()=> <IconChessKingFilled />,
+    Q: ()=> <IconChessQueenFilled />,
+    R: ()=> <IconChessRookFilled />,
+    B: ()=> <IconChessBishopFilled />,
+    N: ()=> <IconChessKnightFilled />,
+    P: ()=> <IconChessFilled />,
+    k: ()=> <IconChessKing />,
+    q: ()=> <IconChessQueen />,
+    r: ()=> <IconChessRook />,
+    b: ()=> <IconChessBishop />,
+    n: ()=> <IconChessKnight />,
+    p: ()=> <IconChess />,
+};
+
+export function getFigurine(piece: string) {
+    console.log("getFigurine", piece);
+    return figurineMap[piece];
 }

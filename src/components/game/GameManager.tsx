@@ -9,7 +9,7 @@ import {
     Show,
     untrack,
 } from "solid-js";
-import { makeGameInternal, Path } from "../../models/pgn";
+import { getMaterial, makeGameInternal, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
@@ -186,7 +186,7 @@ const GameManager: Component<GameManagerOptions> = ({
         return sp;
     });
 
-
+    
 
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered, orientation)();

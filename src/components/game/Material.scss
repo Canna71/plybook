@@ -1,0 +1,18 @@
+.chess-material {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    margin-top: auto;
+
+    .chess-material-items {
+        height: 100%;
+
+        .chess-material-icon {
+           
+            svg {
+            width: 14px;
+            height: 14px;
+            }
+        }
+    }
+}
