@@ -25,7 +25,6 @@ const MaterialWon: Component<MaterialProps> = ({ color, position }) => {
             white,
             black,
         }
-        console.log(ret);
         return ret;
     });
 
