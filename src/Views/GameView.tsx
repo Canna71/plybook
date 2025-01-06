@@ -14,6 +14,8 @@ import { useLocation, useSearchParams } from "@solidjs/router";
 import { IconDeviceFloppy } from "@tabler/icons-solidjs";
 import "./GameView.scss";
 import Editable from "../components/common/Editable";
+import { useContentContext } from "../components/common/ContentContext";
+import { message } from '@tauri-apps/plugin-dialog';
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -23,7 +25,7 @@ const GameView = () => {
     const [modified, setModified] = createSignal(false);
     const [searchParams, _setSearchParams] = useSearchParams();
     const location = useLocation();
-
+    const { refresh, onRefresh } = useContentContext();
     const displayedName = () => {
         const path = searchParams.path;
         if (path && typeof path === "string") {
@@ -40,9 +42,16 @@ const GameView = () => {
     };
 
     createEffect(async () => {
+        // onRefresh();
         let pgnText = getDefaultStudyContent();
         if (typeof searchParams.path === "string") {
-            pgnText = await readDataFile(searchParams.path);
+            try{
+                pgnText = await readDataFile(searchParams.path);
+            } catch (e) {
+                // Shows message
+                message('Error reading file: \n' + searchParams.path, { title: 'Re:Chess', kind: 'error' });
+                console.error(e);
+            }
         } else {
         }
         batch(() => {
@@ -72,6 +81,7 @@ const GameView = () => {
                 await writeDataFile(searchParams.path, pgnText);
                 // await writeDataFile("test.pgn", pgnText);
                 setModified(false);
+                refresh();
             } else {
                 const path = await save({
                     filters: [
@@ -98,12 +108,14 @@ const GameView = () => {
     //     }
     // };
 
-    const onRename = (text: string) => {
-        renameOrCreateDataFile(
+    const onRename = async (text: string) => {
+        await renameOrCreateDataFile(
             filePath(),
             text,
             newPgn() || getDefaultStudyContent(),
         );
+        console.log("Renamed to " + text);
+        refresh();
     };
 
     return (
@@ -111,7 +123,7 @@ const GameView = () => {
             <nav class="game-header buttons are-small" role="navigation">
                 <div class="game-name">
                     <Editable
-                        editable={isEditable}
+                        editable={()=>false}
                         initialValue={displayedName() || ""}
                         onSave={onRename}
                     ></Editable>
