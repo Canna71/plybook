@@ -11,7 +11,12 @@ import { Api } from "chessground/api";
 import { PiecesToolbar } from "./PiecesToolbar";
 import { Piece, Role } from "chessground/types";
 import ToggleSwitch from "../common/ToggleSwitch";
-import { INITIAL_BOARD_FEN, INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
+import {
+    INITIAL_BOARD_FEN,
+    INITIAL_FEN,
+    makeFen,
+    parseFen,
+} from "chessops/fen";
 import { SquareSet } from "chessops";
 import { makeSquare, parseSquare, squareFromCoords } from "chessops/util";
 import Select from "../common/Select";
@@ -23,7 +28,6 @@ import Button from "../common/Button";
 import { IconCopy, IconRestore } from "@tabler/icons-solidjs";
 import Collapsible from "../common/Collapsible";
 import { makeToast } from "../common/Toast";
-
 
 export type BoardEditorProps = {
     fen: Accessor<string | undefined>;
@@ -92,50 +96,61 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         props.setFen(fen);
     };
 
-    const whiteKingside = () => {
-        const setup = position();
-        if (setup) {
-            return setup.castlingRights.has(squareFromCoords(7, 0)!);
-        }
-        return false;
-    }
+    const createCastlingRightsGetter =
+        (row: number, col: number): Accessor<boolean> =>
+        () => {
+            const setup = position();
+            if (!setup) return false;
+            const square = squareFromCoords(row, col)!;
+            return setup.castlingRights.has(square);
+        };
 
-    const whiteQueenside = () => {
-        const setup = position();
-        if (setup) {
-            return setup.castlingRights.has(squareFromCoords(0, 0)!);
-        }
-        return false;
-    }
+    const whiteKingside = createCastlingRightsGetter(7, 0);
+    const whiteQueenside = createCastlingRightsGetter(0, 0);
+    const blackKingside = createCastlingRightsGetter(7, 7);
+    const blackQueenside = createCastlingRightsGetter(0, 7);
 
-    const blackKingside = () => {
-        const setup = position();
-        if (setup) {
-            return setup.castlingRights.has(squareFromCoords(7, 7)!);
-        }
-        return false;
-    }
+    // New helper function
+    const createCastlingRightsSetter =
+        (
+            row: number,
+            col: number,
+            getter: Accessor<boolean>,
+        ): Setter<boolean> =>
+        (value) => {
+            const setup = position();
+            if (!setup) return false;
 
-    const blackQueenside = () => {
-        const setup = position();
-        if (setup) {
-            return setup.castlingRights.has(squareFromCoords(0, 7)!);
-        }
-        return false;
-    }
+            const v = typeof value === "function" ? value(getter()) : value;
+            const square = squareFromCoords(row, col)!;
+
+            setup.castlingRights = v
+                ? setup.castlingRights.with(square)
+                : setup.castlingRights.without(square);
+
+            const newFen = makeFen(setup);
+            console.log("newFen", newFen);
+            props.setFen(newFen);
+            return v;
+        };
+
+    // Replace individual setters with:
+    const setWhiteKingside = createCastlingRightsSetter(7, 0, whiteKingside);
+    const setWhiteQueenside = createCastlingRightsSetter(0, 0, whiteQueenside);
+    const setBlackKingside = createCastlingRightsSetter(7, 7, blackKingside);
+    const setBlackQueenside = createCastlingRightsSetter(0, 7, blackQueenside);
 
     const enPassant = () => {
         const setup = position();
         if (setup && setup.epSquare) {
-            
             return makeSquare(setup.epSquare);
         }
         return "";
-    }
+    };
 
     const setEnPassant: Setter<string> = (value) => {
-        const v = typeof value === 'function' ? value(enPassant()) : value;
-        
+        const v = typeof value === "function" ? value(enPassant()) : value;
+
         const setup = position();
         if (setup) {
             setup.epSquare = parseSquare(v);
@@ -143,7 +158,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
             props.setFen(makeFen(setup));
         }
         return value;
-    }
+    };
 
     // const fen = () => {
     //     let fen = props.fen();
@@ -213,7 +228,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         if (parsed.isOk) {
             return parsed.value;
         }
-    }
+    };
 
     const whitesTurn = () => {
         const setup = position();
@@ -224,7 +239,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     };
 
     const setWhitesTurn: Setter<boolean> = (value) => {
-        const v = typeof value === 'function' ? value(whitesTurn()) : value;
+        const v = typeof value === "function" ? value(whitesTurn()) : value;
         const setup = position();
         if (setup) {
             setup.turn = v ? "white" : "black";
@@ -258,9 +273,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
             movable: {
                 free: true, // Allow pieces to be placed freely
                 color: "both", // Both sides can move pieces
-                events: {
-                    
-                },
+                events: {},
             },
             selectable: {
                 enabled: true, // Allow pieces to be selectable
@@ -281,45 +294,22 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     };
 
     const onCopy = async () => {
-       // copy to clipboard
-       const text = props.fen();
-       if(!text) return;
+        // copy to clipboard
+        const text = props.fen();
+        if (!text) return;
         try {
             await navigator.clipboard.writeText(text);
             makeToast("FEN copied to clipboard");
         } catch (err) {
-            console.error('Failed to copy text: ', err);
+            console.error("Failed to copy text: ", err);
         }
     };
-
 
     const onClick = (e: Event) => {
         const target = e.target as HTMLInputElement;
         // select all text
         target.select();
     };
-
-    // New helper function
-    const createCastlingRightsSetter = (row: number, col: number, getter:Accessor<boolean>): Setter<boolean> => (value) => {
-        const setup = position();
-        if (!setup) return false;
-        
-        const v = typeof value === 'function' ? value(getter()) : value;
-        const square = squareFromCoords(row, col)!;
-        
-        setup.castlingRights = v 
-            ? setup.castlingRights.with(square)
-            : setup.castlingRights.without(square);
-        
-        props.setFen(makeFen(setup));
-        return v;
-    }
-
-    // Replace individual setters with:
-    const setBlackQueenside = createCastlingRightsSetter(0, 7, blackQueenside);
-    const setBlackKingside = createCastlingRightsSetter(0, 0, blackKingside);
-    const setWhiteQueenside = createCastlingRightsSetter(7, 7, whiteQueenside);
-    const setWhiteKingside = createCastlingRightsSetter(7, 0, whiteKingside);
 
     return (
         <div class="board-editor-container">
@@ -395,7 +385,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
                     onChange={onFenChange}
                     onClick={onClick}
                 />
-                <Button  onClick={onCopy}>
+                <Button onClick={onCopy}>
                     <IconCopy />
                 </Button>
             </div>
