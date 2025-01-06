@@ -24,7 +24,7 @@ import {
 import { Color, Key, Piece, Role } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
 import BoardEditor from "../boardeditor/BoardEditor";
-import { makeFen } from "chessops/fen";
+import { INITIAL_FEN, makeFen } from "chessops/fen";
 import { GameContext, GameContextType, TooltipContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
@@ -73,7 +73,7 @@ const GameManager: Component<GameManagerOptions> = ({
     );
     const [startingPosition, setStartingPosition] = createSignal<
         string | undefined
-    >(undefined);
+    >(INITIAL_FEN);
     const [promotionData, setPromotionData] = createSignal<
         PromotionData | undefined
     >(undefined);

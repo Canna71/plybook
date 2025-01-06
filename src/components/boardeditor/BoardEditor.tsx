@@ -11,7 +11,7 @@ import { Api } from "chessground/api";
 import { PiecesToolbar } from "./PiecesToolbar";
 import { Piece, Role } from "chessground/types";
 import ToggleSwitch from "../common/ToggleSwitch";
-import { INITIAL_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
+import { INITIAL_BOARD_FEN, INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
 import { SquareSet } from "chessops";
 import { makeSquare, parseSquare, squareFromCoords } from "chessops/util";
 import Select from "../common/Select";
@@ -100,48 +100,12 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         return false;
     }
 
-    const setWhiteKingside: Setter<boolean> = (value) => {
-        const v = typeof value === 'function' ? value(whiteKingside()) : value;
-        const setup = position();
-        if (setup) {
-            if (v) {
-                setup.castlingRights = setup.castlingRights.with(
-                    squareFromCoords(7, 0)!,
-                );
-            } else {
-                setup.castlingRights = setup.castlingRights.without(
-                    squareFromCoords(7, 0)!,
-                );
-            }
-            props.setFen(makeFen(setup));
-        }
-        return v;
-    }
-
     const whiteQueenside = () => {
         const setup = position();
         if (setup) {
             return setup.castlingRights.has(squareFromCoords(0, 0)!);
         }
         return false;
-    }
-
-    const setWhiteQueenside: Setter<boolean> = (value) => {
-        const v = typeof value === 'function' ? value(whiteQueenside()) : value;
-        const setup = position();
-        if (setup) {
-            if (v) {
-                setup.castlingRights = setup.castlingRights.with(
-                    squareFromCoords(0, 0)!,
-                );
-            } else {
-                setup.castlingRights = setup.castlingRights.without(
-                    squareFromCoords(0, 0)!,
-                );
-            }
-            props.setFen(makeFen(setup));
-        }
-        return v;
     }
 
     const blackKingside = () => {
@@ -152,48 +116,12 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         return false;
     }
 
-    const setBlackKingside: Setter<boolean> = (value) => {
-        const v = typeof value === 'function' ? value(blackKingside()) : value;
-        const setup = position();
-        if (setup) {
-            if (v) {
-                setup.castlingRights = setup.castlingRights.with(
-                    squareFromCoords(7, 7)!,
-                );
-            } else {
-                setup.castlingRights = setup.castlingRights.without(
-                    squareFromCoords(7, 7)!,
-                );
-            }
-            props.setFen(makeFen(setup));
-        }
-        return v;
-    }
-
     const blackQueenside = () => {
         const setup = position();
         if (setup) {
             return setup.castlingRights.has(squareFromCoords(0, 7)!);
         }
         return false;
-    }
-
-    const setBlackQueenside: Setter<boolean> = (value) => {
-        const v = typeof value === 'function' ? value(blackQueenside()) : value;
-        const setup = position();
-        if (setup) {
-            if (v) {
-                setup.castlingRights = setup.castlingRights.with(
-                    squareFromCoords(0, 7)!,
-                );
-            } else {
-                setup.castlingRights = setup.castlingRights.without(
-                    squareFromCoords(0, 7)!,
-                );
-            }
-            props.setFen(makeFen(setup));
-        }
-        return v;
     }
 
     const enPassant = () => {
@@ -273,7 +201,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     };
 
     const onStartingPosition = () => {
-        props.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        props.setFen(INITIAL_FEN);
     };
 
     const position = () => {
@@ -370,6 +298,28 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         // select all text
         target.select();
     };
+
+    // New helper function
+    const createCastlingRightsSetter = (row: number, col: number, getter:Accessor<boolean>): Setter<boolean> => (value) => {
+        const setup = position();
+        if (!setup) return false;
+        
+        const v = typeof value === 'function' ? value(getter()) : value;
+        const square = squareFromCoords(row, col)!;
+        
+        setup.castlingRights = v 
+            ? setup.castlingRights.with(square)
+            : setup.castlingRights.without(square);
+        
+        props.setFen(makeFen(setup));
+        return v;
+    }
+
+    // Replace individual setters with:
+    const setBlackQueenside = createCastlingRightsSetter(0, 7, blackQueenside);
+    const setBlackKingside = createCastlingRightsSetter(0, 0, blackKingside);
+    const setWhiteQueenside = createCastlingRightsSetter(7, 7, whiteQueenside);
+    const setWhiteKingside = createCastlingRightsSetter(7, 0, whiteKingside);
 
     return (
         <div class="board-editor-container">
