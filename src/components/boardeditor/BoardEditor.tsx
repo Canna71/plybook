@@ -15,7 +15,7 @@ import { INITIAL_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
 import { SquareSet } from "chessops";
 import { squareFromCoords } from "chessops/util";
 import Select from "../common/Select";
-import { getEnPassantSquares } from "../common/utils";
+import { getEnPassantSquares, selectAll } from "../common/utils";
 // see: https://lichess.org/editor/1nbqkbn1/p3pppp/1bp2n2/3r3r/8/8/PPPPPPPP/RNBQKBNR_w_KQha_-_0_1?color=white
 
 import "./BoardEditor.scss";
@@ -94,6 +94,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
 
     const fen = () => {
         let fen = baseFen();
+        console.log("fen changed", fen);
         if (fen) {
             const parsed = parseFen(fen);
             if (parsed.isOk) {
@@ -214,6 +215,13 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         }
     };
 
+
+    const onClick = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        // select all text
+        target.select();
+    };
+
     return (
         <div class="board-editor-container">
             <div class="is-flex is-flex-direction-row is-align-items-center is-gap-1 is-flex-wrap-wrap">
@@ -286,6 +294,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
                     type="text"
                     value={props.fen()}
                     onChange={onFenChange}
+                    onClick={onClick}
                 />
                 <Button  onClick={onCopy}>
                     <IconCopy />
