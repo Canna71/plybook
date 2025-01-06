@@ -41,228 +41,6 @@ const CODE_TO_PIECE: { [key: number]: string } = {
     14: "k", // black king
 };
 
-export class ChessPositionEncoder {
-    // We'll use additional bits to store castling rights and other FEN components
-    static encodeFEN(fen: string): Uint8Array {
-        const [position, activeColor, castling, enPassant, halfmove, fullmove] =
-            fen.split(" ");
-
-        // We'll use 33 bytes:
-        // - 32 bytes for position (256 bits)
-        // - 1 byte for additional data:
-        //   - bit 7: active color (0 for white, 1 for black)
-        //   - bits 6-3: castling rights (KQkq)
-        //   - bits 2-0: reserved for future use
-        const buffer = new Uint8Array(33);
-
-        // Encode position (same as before)
-        let currentByte = 0;
-        let currentBit = 0;
-
-        // Encode board position
-        const ranks = position.split("/");
-        for (const rank of ranks) {
-            for (let i = 0; i < rank.length; i++) {
-                const char = rank[i];
-                if (/\d/.test(char)) {
-                    const emptyCount = parseInt(char);
-                    for (let j = 0; j < emptyCount; j++) {
-                        currentBit += 4;
-                        if (currentBit === 8) {
-                            currentBit = 0;
-                            currentByte++;
-                        }
-                    }
-                } else {
-                    const pieceCode = PIECE_TO_CODE[char];
-                    if (currentBit === 0) {
-                        buffer[currentByte] = pieceCode << 4;
-                        currentBit = 4;
-                    } else {
-                        buffer[currentByte] |= pieceCode;
-                        currentByte++;
-                        currentBit = 0;
-                    }
-                }
-            }
-        }
-
-        // Encode additional data in byte 32
-        let metadataByte = 0;
-
-        // Active color (bit 7)
-        if (activeColor === "b") {
-            metadataByte |= 0b10000000;
-        }
-
-        // Castling rights (bits 6-3)
-        if (castling.includes("K")) metadataByte |= 0b01000000;
-        if (castling.includes("Q")) metadataByte |= 0b00100000;
-        if (castling.includes("k")) metadataByte |= 0b00010000;
-        if (castling.includes("q")) metadataByte |= 0b00001000;
-
-        buffer[32] = metadataByte;
-
-        return buffer;
-    }
-
-    static decodeFEN(buffer: Uint8Array): string {
-        let fen = "";
-        let currentByte = 0;
-        let currentBit = 0;
-        let emptyCount = 0;
-
-        // Decode position
-        for (let rank = 0; rank < 8; rank++) {
-            if (rank > 0) fen += "/";
-            emptyCount = 0;
-
-            for (let file = 0; file < 8; file++) {
-                let pieceCode;
-                if (currentBit === 0) {
-                    pieceCode = buffer[currentByte] >> 4;
-                } else {
-                    pieceCode = buffer[currentByte] & 0x0f;
-                    currentByte++;
-                }
-                currentBit = (currentBit + 4) % 8;
-
-                if (pieceCode === 0) {
-                    emptyCount++;
-                } else {
-                    if (emptyCount > 0) {
-                        fen += emptyCount.toString();
-                        emptyCount = 0;
-                    }
-                    fen += CODE_TO_PIECE[pieceCode];
-                }
-            }
-
-            if (emptyCount > 0) {
-                fen += emptyCount.toString();
-            }
-        }
-
-        // Decode metadata from byte 32
-        const metadataByte = buffer[32];
-
-        // Active color
-        const activeColor = metadataByte & 0b10000000 ? "b" : "w";
-
-        // Castling rights
-        let castling = "";
-        if (metadataByte & 0b01000000) castling += "K";
-        if (metadataByte & 0b00100000) castling += "Q";
-        if (metadataByte & 0b00010000) castling += "k";
-        if (metadataByte & 0b00001000) castling += "q";
-        if (castling === "") castling = "-";
-
-        // Add remaining components
-        // Note: For simplicity, we're using default values for en passant, halfmove, and fullmove
-        return `${fen} ${activeColor} ${castling} - 0 1`;
-    }
-}
-
-// Test function
-function testFENEncoding(fen: string) {
-    console.log("Original:", fen);
-    const encoded = ChessPositionEncoder.encodeFEN(fen);
-    const decoded = ChessPositionEncoder.decodeFEN(encoded);
-    console.log("Decoded: ", decoded);
-    console.log("Match:   ", fen === decoded);
-    return fen === decoded;
-}
-
-// Test cases
-const testPositions = [
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
-    "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2",
-    "8/8/8/8/8/8/8/8 w - - 0 1",
-];
-
-// Encodes a FEN string to a compressed binary format
-export function encodeFEN(fen: string): Uint8Array {
-    const [position] = fen.split(" "); // We'll only encode the position part
-    const ranks = position.split("/");
-    const buffer = new Uint8Array(32); // 256 bits = 32 bytes
-    let currentByte = 0;
-    let currentBit = 0;
-
-    for (const rank of ranks) {
-        for (let i = 0; i < rank.length; i++) {
-            const char = rank[i];
-            if (/\d/.test(char)) {
-                // Handle empty squares
-                const emptyCount = parseInt(char);
-                for (let j = 0; j < emptyCount; j++) {
-                    // Write 4 bits of 0 for each empty square
-                    currentBit += 4;
-                    if (currentBit === 8) {
-                        currentBit = 0;
-                        currentByte++;
-                    }
-                }
-            } else {
-                const pieceCode = PIECE_TO_CODE[char];
-                if (currentBit === 0) {
-                    buffer[currentByte] = pieceCode << 4;
-                    currentBit = 4;
-                } else {
-                    buffer[currentByte] |= pieceCode;
-                    currentByte++;
-                    currentBit = 0;
-                }
-            }
-        }
-    }
-
-    return buffer;
-}
-
-// Decodes a compressed binary format back to FEN string
-export function decodeFEN(buffer: Uint8Array): string {
-    let fen = "";
-    let currentByte = 0;
-    let currentBit = 0;
-    let emptyCount = 0;
-
-    for (let rank = 0; rank < 8; rank++) {
-        if (rank > 0) fen += "/";
-        emptyCount = 0;
-
-        for (let file = 0; file < 8; file++) {
-            let pieceCode;
-            if (currentBit === 0) {
-                pieceCode = buffer[currentByte] >> 4;
-            } else {
-                pieceCode = buffer[currentByte] & 0x0f;
-                currentByte++;
-            }
-            currentBit = (currentBit + 4) % 8;
-
-            if (pieceCode === 0) {
-                emptyCount++;
-            } else {
-                if (emptyCount > 0) {
-                    fen += emptyCount.toString();
-                    emptyCount = 0;
-                }
-                fen += CODE_TO_PIECE[pieceCode];
-            }
-        }
-
-        if (emptyCount > 0) {
-            fen += emptyCount.toString();
-        }
-    }
-
-    // Add the remaining FEN components for a complete FEN string
-    const [, ...remainingParts] =
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".split(" ");
-    return fen + " " + remainingParts.join(" ");
-}
-
 // turns a UInt8Array into a string of characters in order to be stored in a database
 
 export function encodeUint8Array(array: Uint8Array): string {
@@ -278,3 +56,216 @@ export function decodeString(string: string): Uint8Array {
     }
     return array;
 }
+
+export class ChessPositionEncoder {
+    private static readonly FILE_CHARS = "abcdefgh";
+    private static readonly PIECE_CHARS = "PNBRQKpnbrqk";
+
+    static encodeFEN(fen: string): Uint8Array {
+        // Split FEN string into its 6 mandatory fields
+        const parts = fen.split(" ");
+        if (parts.length !== 6) {
+            throw new Error("Invalid FEN: must contain 6 fields");
+        }
+
+        const [position, activeColor, castling, enPassant, halfmove, fullmove] =
+            parts;
+
+        // Create a 36-byte buffer (32 for position + 4 for metadata)
+        const buffer = new Uint8Array(36);
+
+        // Encode position (first 32 bytes, 4 bits per square)
+        let byteIndex = 0;
+        let currentByte = 0;
+        let isFirstNibble = true;
+
+        const ranks = position.split("/");
+        if (ranks.length !== 8) {
+            throw new Error("Invalid FEN: position must have 8 ranks");
+        }
+
+        for (const rank of ranks) {
+            let fileIndex = 0;
+            for (let i = 0; i < rank.length; i++) {
+                const char = rank[i];
+                let pieceValue: number;
+
+                if (/[1-8]/.test(char)) {
+                    // Empty squares
+                    const emptyCount = parseInt(char);
+                    for (let j = 0; j < emptyCount; j++) {
+                        if (isFirstNibble) {
+                            currentByte = 0 << 4;
+                            isFirstNibble = false;
+                        } else {
+                            buffer[byteIndex++] = currentByte;
+                            currentByte = 0;
+                            isFirstNibble = true;
+                        }
+                        fileIndex++;
+                    }
+                } else {
+                    // Piece squares
+                    pieceValue = this.PIECE_CHARS.indexOf(char) + 1;
+                    if (pieceValue === 0) {
+                        throw new Error(`Invalid piece character: ${char}`);
+                    }
+
+                    if (isFirstNibble) {
+                        currentByte = pieceValue << 4;
+                        isFirstNibble = false;
+                    } else {
+                        buffer[byteIndex++] = currentByte | pieceValue;
+                        currentByte = 0;
+                        isFirstNibble = true;
+                    }
+                    fileIndex++;
+                }
+
+                if (fileIndex > 8) {
+                    throw new Error(
+                        "Invalid FEN: rank has more than 8 squares",
+                    );
+                }
+            }
+
+            if (fileIndex !== 8) {
+                throw new Error("Invalid FEN: rank has fewer than 8 squares");
+            }
+        }
+
+        // Complete last byte if necessary
+        if (!isFirstNibble) {
+            buffer[byteIndex++] = currentByte;
+        }
+
+        // Encode metadata (bytes 32-35)
+
+        // Byte 32: Active color (1 bit) + Castling rights (4 bits)
+        let metadataByte = 0;
+        if (activeColor === "b") metadataByte |= 0b10000000;
+        if (castling.includes("K")) metadataByte |= 0b01000000;
+        if (castling.includes("Q")) metadataByte |= 0b00100000;
+        if (castling.includes("k")) metadataByte |= 0b00010000;
+        if (castling.includes("q")) metadataByte |= 0b00001000;
+        buffer[32] = metadataByte;
+
+        // Byte 33: En passant square
+        if (enPassant !== "-") {
+            const file = this.FILE_CHARS.indexOf(enPassant[0]);
+            const rank = parseInt(enPassant[1]) - 1;
+            if (file === -1 || rank < 0 || rank > 7) {
+                throw new Error("Invalid en passant square");
+            }
+            buffer[33] = file | (rank << 3);
+        } else {
+            buffer[33] = 0xff; // No en passant
+        }
+
+        // Byte 34: Halfmove clock
+        const halfmoveNum = parseInt(halfmove);
+        if (isNaN(halfmoveNum) || halfmoveNum < 0 || halfmoveNum > 255) {
+            throw new Error("Invalid halfmove clock value");
+        }
+        buffer[34] = halfmoveNum;
+
+        // Byte 35: Fullmove number
+        const fullmoveNum = parseInt(fullmove);
+        if (isNaN(fullmoveNum) || fullmoveNum < 1 || fullmoveNum > 255) {
+            throw new Error("Invalid fullmove number");
+        }
+        buffer[35] = fullmoveNum;
+
+        return buffer;
+    }
+
+    static decodeFEN(buffer: Uint8Array): string {
+        if (buffer.length !== 36) {
+            throw new Error("Invalid buffer length");
+        }
+
+        // Decode position
+        let position = "";
+        let emptyCount = 0;
+
+        for (let square = 0; square < 64; square++) {
+            if (square > 0 && square % 8 === 0) {
+                if (emptyCount > 0) {
+                    position += emptyCount;
+                    emptyCount = 0;
+                }
+                position += "/";
+            }
+
+            const byteIndex = Math.floor(square / 2);
+            const isUpperNibble = square % 2 === 0;
+            const value = isUpperNibble
+                ? buffer[byteIndex] >> 4
+                : buffer[byteIndex] & 0x0f;
+
+            if (value === 0) {
+                emptyCount++;
+            } else {
+                if (emptyCount > 0) {
+                    position += emptyCount;
+                    emptyCount = 0;
+                }
+                position += this.PIECE_CHARS[value - 1];
+            }
+        }
+
+        if (emptyCount > 0) {
+            position += emptyCount;
+        }
+
+        // Decode metadata
+        const metadataByte = buffer[32];
+        const activeColor = metadataByte & 0b10000000 ? "b" : "w";
+
+        let castling = "";
+        if (metadataByte & 0b01000000) castling += "K";
+        if (metadataByte & 0b00100000) castling += "Q";
+        if (metadataByte & 0b00010000) castling += "k";
+        if (metadataByte & 0b00001000) castling += "q";
+        if (castling === "") castling = "-";
+
+        // Decode en passant
+        let enPassant = "-";
+        if (buffer[33] !== 0xff) {
+            const file = this.FILE_CHARS[buffer[33] & 0b111];
+            const rank = ((buffer[33] >> 3) & 0b111) + 1;
+            enPassant = `${file}${rank}`;
+        }
+
+        // Decode move counters
+        const halfmove = buffer[34];
+        const fullmove = buffer[35];
+
+        return `${position} ${activeColor} ${castling} ${enPassant} ${halfmove} ${fullmove}`;
+    }
+}
+
+// Test cases
+const testCases = [
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 2 5",
+    "4k3/8/4K3/8/8/8/8/8 w - - 0 1",
+    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 5 7",
+];
+
+function test() {
+    testCases.forEach((fen) => {
+        try {
+            console.log("Original:", fen);
+            const encoded = ChessPositionEncoder.encodeFEN(fen);
+            const decoded = ChessPositionEncoder.decodeFEN(encoded);
+            console.log("Decoded:", decoded);
+            console.log("Match:", fen === decoded);
+            console.log("---");
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    });
+}
+
+

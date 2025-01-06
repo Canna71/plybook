@@ -10,7 +10,6 @@ import Play from "./Views/Play";
 import { ContentContext, useContentContext } from "./components/common/ContentContext";
 import { Toaster } from "solid-toast";
 
-
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
     // const [name, setName] = createSignal("");
