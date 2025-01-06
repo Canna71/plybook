@@ -13,7 +13,7 @@ import { Piece, Role } from "chessground/types";
 import ToggleSwitch from "../common/ToggleSwitch";
 import { INITIAL_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
 import { SquareSet } from "chessops";
-import { squareFromCoords } from "chessops/util";
+import { makeSquare, parseSquare, squareFromCoords } from "chessops/util";
 import Select from "../common/Select";
 import { getEnPassantSquares, selectAll } from "../common/utils";
 // see: https://lichess.org/editor/1nbqkbn1/p3pppp/1bp2n2/3r3r/8/8/PPPPPPPP/RNBQKBNR_w_KQha_-_0_1?color=white
@@ -34,14 +34,14 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     const [selectedPiece, _setSelectedPiece] = createSignal<Piece | null>(null);
     const [deleteMode, _setDeleteMode] = createSignal(false);
     const [api, setApi] = createSignal<Api | undefined>(undefined);
-    const [whitesTurn, setWhitesTurn] = createSignal(true);
-    const [baseFen, setBaseFen] = createSignal<string | undefined>(undefined);
+    // const [whitesTurn, setWhitesTurn] = createSignal(true);
+    // const [baseFen, setBaseFen] = createSignal<string | undefined>(undefined);
     const [flip, setFlip] = createSignal(false);
-    const [whiteKingside, setWhiteKingside] = createSignal(true);
-    const [whiteQueenside, setWhiteQueenside] = createSignal(true);
-    const [blackKingside, setBlackKingside] = createSignal(true);
-    const [blackQueenside, setBlackQueenside] = createSignal(true);
-    const [enPassant, setEnPassant] = createSignal<string>("");
+    // const [whiteKingside, setWhiteKingside] = createSignal(true);
+    // const [whiteQueenside, setWhiteQueenside] = createSignal(true);
+    // const [blackKingside, setBlackKingside] = createSignal(true);
+    // const [blackQueenside, setBlackQueenside] = createSignal(true);
+    // const [enPassant, setEnPassant] = createSignal<string>("");
 
     createEffect(() => {
         // loadDataFromBlock(app, ctx);
@@ -49,7 +49,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         if (!cg) {
             return;
         }
-        setBaseFen(props.fen() || INITIAL_BOARD_FEN);
+        // setBaseFen(props.fen() || INITIAL_BOARD_FEN);
     });
 
     // const onSave = () => {
@@ -89,78 +89,227 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
 
     const onChange = () => {
         let fen = api()?.getFen();
-        setBaseFen(fen);
+        props.setFen(fen);
     };
 
-    const fen = () => {
-        let fen = baseFen();
-        console.log("fen changed", fen);
-        if (fen) {
-            const parsed = parseFen(fen);
-            if (parsed.isOk) {
-                const setup = parsed.value;
-                setup.turn = whitesTurn() ? "white" : "black";
-                let castlingRights = SquareSet.empty();
-                if (whiteKingside()) {
-                    castlingRights = castlingRights.with(
-                        squareFromCoords(7, 0)!,
-                    );
-                }
-                if (whiteQueenside()) {
-                    castlingRights = castlingRights.with(
-                        squareFromCoords(0, 0)!,
-                    );
-                }
-                if (blackKingside()) {
-                    castlingRights = castlingRights.with(
-                        squareFromCoords(7, 7)!,
-                    );
-                }
-                if (blackQueenside()) {
-                    castlingRights = castlingRights.with(
-                        squareFromCoords(0, 7)!,
-                    );
-                }
+    const whiteKingside = () => {
+        const setup = position();
+        if (setup) {
+            return setup.castlingRights.has(squareFromCoords(7, 0)!);
+        }
+        return false;
+    }
 
-                if (enPassant() !== "") {
-                    setup.epSquare = squareFromCoords(
-                        enPassant().charCodeAt(0) - "a".charCodeAt(0),
-                        enPassant().charCodeAt(1) - "1".charCodeAt(0),
-                    );
-                }
-
-                setup.castlingRights = castlingRights;
-                fen = makeFen(setup, { epd: true });
+    const setWhiteKingside: Setter<boolean> = (value) => {
+        const v = typeof value === 'function' ? value(whiteKingside()) : value;
+        const setup = position();
+        if (setup) {
+            if (v) {
+                setup.castlingRights = setup.castlingRights.with(
+                    squareFromCoords(7, 0)!,
+                );
+            } else {
+                setup.castlingRights = setup.castlingRights.without(
+                    squareFromCoords(7, 0)!,
+                );
             }
+            props.setFen(makeFen(setup));
         }
-        return fen;
-    };
+        return v;
+    }
 
-    createEffect(() => {
-        const newFen = fen();
-        if (newFen) {
-            props.setFen(fen());
+    const whiteQueenside = () => {
+        const setup = position();
+        if (setup) {
+            return setup.castlingRights.has(squareFromCoords(0, 0)!);
         }
-    });
+        return false;
+    }
+
+    const setWhiteQueenside: Setter<boolean> = (value) => {
+        const v = typeof value === 'function' ? value(whiteQueenside()) : value;
+        const setup = position();
+        if (setup) {
+            if (v) {
+                setup.castlingRights = setup.castlingRights.with(
+                    squareFromCoords(0, 0)!,
+                );
+            } else {
+                setup.castlingRights = setup.castlingRights.without(
+                    squareFromCoords(0, 0)!,
+                );
+            }
+            props.setFen(makeFen(setup));
+        }
+        return v;
+    }
+
+    const blackKingside = () => {
+        const setup = position();
+        if (setup) {
+            return setup.castlingRights.has(squareFromCoords(7, 7)!);
+        }
+        return false;
+    }
+
+    const setBlackKingside: Setter<boolean> = (value) => {
+        const v = typeof value === 'function' ? value(blackKingside()) : value;
+        const setup = position();
+        if (setup) {
+            if (v) {
+                setup.castlingRights = setup.castlingRights.with(
+                    squareFromCoords(7, 7)!,
+                );
+            } else {
+                setup.castlingRights = setup.castlingRights.without(
+                    squareFromCoords(7, 7)!,
+                );
+            }
+            props.setFen(makeFen(setup));
+        }
+        return v;
+    }
+
+    const blackQueenside = () => {
+        const setup = position();
+        if (setup) {
+            return setup.castlingRights.has(squareFromCoords(0, 7)!);
+        }
+        return false;
+    }
+
+    const setBlackQueenside: Setter<boolean> = (value) => {
+        const v = typeof value === 'function' ? value(blackQueenside()) : value;
+        const setup = position();
+        if (setup) {
+            if (v) {
+                setup.castlingRights = setup.castlingRights.with(
+                    squareFromCoords(0, 7)!,
+                );
+            } else {
+                setup.castlingRights = setup.castlingRights.without(
+                    squareFromCoords(0, 7)!,
+                );
+            }
+            props.setFen(makeFen(setup));
+        }
+        return v;
+    }
+
+    const enPassant = () => {
+        const setup = position();
+        if (setup && setup.epSquare) {
+            
+            return makeSquare(setup.epSquare);
+        }
+        return "";
+    }
+
+    const setEnPassant: Setter<string> = (value) => {
+        const v = typeof value === 'function' ? value(enPassant()) : value;
+        
+        const setup = position();
+        if (setup) {
+            setup.epSquare = parseSquare(v);
+            console.log("epSquare", setup.epSquare);
+            props.setFen(makeFen(setup));
+        }
+        return value;
+    }
+
+    // const fen = () => {
+    //     let fen = props.fen();
+    //     console.log("fen changed", fen);
+    //     if (fen) {
+    //         const parsed = parseFen(fen);
+    //         if (parsed.isOk) {
+    //             const setup = parsed.value;
+    //             setup.turn = whitesTurn() ? "white" : "black";
+    //             let castlingRights = SquareSet.empty();
+    //             if (whiteKingside()) {
+    //                 castlingRights = castlingRights.with(
+    //                     squareFromCoords(7, 0)!,
+    //                 );
+    //             }
+    //             if (whiteQueenside()) {
+    //                 castlingRights = castlingRights.with(
+    //                     squareFromCoords(0, 0)!,
+    //                 );
+    //             }
+    //             if (blackKingside()) {
+    //                 castlingRights = castlingRights.with(
+    //                     squareFromCoords(7, 7)!,
+    //                 );
+    //             }
+    //             if (blackQueenside()) {
+    //                 castlingRights = castlingRights.with(
+    //                     squareFromCoords(0, 7)!,
+    //                 );
+    //             }
+
+    //             if (enPassant() !== "") {
+    //                 setup.epSquare = squareFromCoords(
+    //                     enPassant().charCodeAt(0) - "a".charCodeAt(0),
+    //                     enPassant().charCodeAt(1) - "1".charCodeAt(0),
+    //                 );
+    //             }
+
+    //             setup.castlingRights = castlingRights;
+    //             fen = makeFen(setup, { epd: true });
+    //         }
+    //     }
+    //     return fen;
+    // };
+
+    // createEffect(() => {
+    //     const newFen = fen();
+    //     if (newFen) {
+    //         props.setFen(fen());
+    //     }
+    // });
 
     const onClear = () => {
-        setBaseFen("8/8/8/8/8/8/8/8");
+        props.setFen("8/8/8/8/8/8/8/8");
     };
 
     const onStartingPosition = () => {
-        setBaseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        props.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    };
+
+    const position = () => {
+        const fen = props.fen();
+        if (!fen) {
+            return;
+        }
+        const parsed = parseFen(fen);
+        if (parsed.isOk) {
+            return parsed.value;
+        }
+    }
+
+    const whitesTurn = () => {
+        const setup = position();
+        if (setup) {
+            return setup.turn === "white";
+        }
+        return true;
+    };
+
+    const setWhitesTurn: Setter<boolean> = (value) => {
+        const v = typeof value === 'function' ? value(whitesTurn()) : value;
+        const setup = position();
+        if (setup) {
+            setup.turn = v ? "white" : "black";
+            props.setFen(makeFen(setup));
+        }
+        return v;
     };
 
     const availableEnPassant = () => {
-        const fen = baseFen();
-        if (!fen) {
-            return [];
-        }
-
-        const parsed = parseFen(fen);
+        const setup = position();
         let squares: string[] = [];
-        if (parsed.isOk) {
-            squares = getEnPassantSquares(parsed.value, whitesTurn());
+        if (setup) {
+            squares = getEnPassantSquares(setup, whitesTurn());
         }
         //  squares = ["a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3"];
         const options = [{ key: "", value: "None" }].concat(
@@ -200,12 +349,12 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
 
     const onFenChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
-        setBaseFen(target.value);
+        props.setFen(target.value);
     };
 
     const onCopy = async () => {
        // copy to clipboard
-       const text = fen();
+       const text = props.fen();
        if(!text) return;
         try {
             await navigator.clipboard.writeText(text);
