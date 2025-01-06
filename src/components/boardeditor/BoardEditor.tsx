@@ -22,6 +22,7 @@ import "./BoardEditor.scss";
 import Button from "../common/Button";
 import { IconCopy, IconRestore } from "@tabler/icons-solidjs";
 import Collapsible from "../common/Collapsible";
+import toast from "solid-toast";
 
 export type BoardEditorProps = {
     fen: Accessor<string | undefined>;
@@ -206,7 +207,18 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
        if(!text) return;
         try {
             await navigator.clipboard.writeText(text);
-            alert('FEN copied to clipboard');
+            // TODO: style better
+            toast('FEN copied to clipboard',
+                {
+                    duration: 2000,
+                    
+                    position: 'top-right',
+                    style:{
+                        "background-color": "hsl(171, 100%, 41%)",
+                        color: 'black',
+                    }
+                }
+            );
         } catch (err) {
             console.error('Failed to copy text: ', err);
         }

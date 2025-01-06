@@ -117,3 +117,11 @@ body {
     padding: 4px;
 }
 
+.toaster-container {
+    .sldt-active {
+        div {
+            background-color: var(--bulma-scheme-hsl);
+
+        }
+    }
+}

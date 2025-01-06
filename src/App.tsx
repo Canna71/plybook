@@ -8,7 +8,7 @@ import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
 import { ContentContext, useContentContext } from "./components/common/ContentContext";
-
+import { Toaster } from "solid-toast";
 
 
 function App() {
@@ -44,6 +44,9 @@ function App() {
                     info={{ engine: true }}
                 />
             </Router>
+            <Toaster 
+                containerClassName='toaster-container'
+            />
         </ContentContext.Provider>
     );
 }

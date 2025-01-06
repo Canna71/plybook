@@ -71,6 +71,9 @@ importers:
       solid-js:
         specifier: ^1.7.8
         version: 1.9.2
+      solid-toast:
+        specifier: ^0.5.0
+        version: 0.5.0(solid-js@1.9.2)
       split-grid:
         specifier: ^1.0.11
         version: 1.0.11
@@ -1416,6 +1419,11 @@ packages:
     resolution: {integrity: sha512-F3aPsX6hVw9ttm5LYlth8Q15x6MlI/J3Dn+o3EQyRTtTxidepSTwAYdozt01/YA+7ObcciagGEyXIopGZzQtbA==}
     peerDependencies:
       solid-js: ^1.3
+
+  solid-toast@0.5.0:
+    resolution: {integrity: sha512-t770JakjyS2P9b8Qa1zMLOD51KYKWXbTAyJePVUoYex5c5FH5S/HtUBUbZAWFcqRCKmAE8KhyIiCvDZA8bOnxQ==}
+    peerDependencies:
+      solid-js: ^1.5.4
 
   solid-transition-group@0.0.10:
     resolution: {integrity: sha512-b3O9z6BUP60CG1WnTdqFuvHms0reDNYwQF+eAEEaSaoDEmiOu9+Lu7zQgWGySJjaAdSAClhmFCmx/eAjQgfIoA==}
@@ -2784,6 +2792,10 @@ snapshots:
       solid-js: 1.9.2
     transitivePeerDependencies:
       - supports-color
+
+  solid-toast@0.5.0(solid-js@1.9.2):
+    dependencies:
+      solid-js: 1.9.2
 
   solid-transition-group@0.0.10(solid-js@1.9.2):
     dependencies:
