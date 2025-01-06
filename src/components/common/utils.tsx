@@ -331,3 +331,10 @@ const figurineMap: Record<string, ()=>JSXElement> = {
 export function getFigurine(piece: string) {
     return figurineMap[piece];
 }
+export function selectAll(el: HTMLElement) {
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(el);
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+}

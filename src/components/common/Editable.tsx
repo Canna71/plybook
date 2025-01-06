@@ -1,5 +1,6 @@
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
 import "./Editable.scss";
+import { selectAll } from "./utils";
 
 export type EditableProps = {
     initialValue: string;
@@ -28,12 +29,12 @@ const Editable: Component<EditableProps> = (props) => {
         if (props.editable() && props.focus) {
             ref!.focus();
             // select all content
-            const range = document.createRange();
-            const sel = window.getSelection();
-            range.selectNodeContents(ref!);
-            sel?.removeAllRanges();
-            sel?.addRange(range);
-            
+            // const range = document.createRange();
+            // const sel = window.getSelection();
+            // range.selectNodeContents(ref!);
+            // sel?.removeAllRanges();
+            // sel?.addRange(range);
+            selectAll(ref!);
         }
     });
 
