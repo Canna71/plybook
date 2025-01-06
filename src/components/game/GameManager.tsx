@@ -182,8 +182,11 @@ const GameManager: Component<GameManagerOptions> = ({
         if (orientationHeader) {
             return orientationHeader === "white" ? "white" : "black";
         }
-        return "white";
+        const sp = g.initial.pos.turn;
+        return sp;
     });
+
+
 
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered, orientation)();
