@@ -148,9 +148,14 @@ const MovesTree: Component<MovesTreeProps> = ({
 };
 
 const Moves: Component<MovesProps> = () => {
-    const { currentPathSignal:[_, setCurrentPath], gameSignal:[game] } = useContext(GameContext)!;
+    const {
+        currentPathSignal: [_, setCurrentPath],
+        gameSignal: [game],
+        platingEngine,
+    } = useContext(GameContext)!;
 
     const onClick = (e: Event) => {
+        if (platingEngine()) return;
         const target = e.target as HTMLElement;
 
         // find the closest anchestor with data-path attribute
@@ -174,9 +179,15 @@ const Moves: Component<MovesProps> = () => {
         return game()?.initial.comments || [];
     };
 
+    const classList = {
+        "pgnviewer-moves-panel": true,
+        "readonly": platingEngine(),
+        "editable": !platingEngine(),
+    };
+
     return (
         <>
-            <div class="pgnviewer-moves-panel" onClick={onClick}>
+            <div classList={classList} onClick={onClick}>
                 <MovesTree
                     movesTree={movesTree}
                     initialComments={initialComments}

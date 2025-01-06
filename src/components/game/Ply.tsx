@@ -4,7 +4,7 @@ import {
     useContext,
     createEffect,
     Show,
-    ValidComponent
+    ValidComponent,
 } from "solid-js";
 import { HierarchicalMoveData } from "../../models/tree";
 import { useContextMenu } from "../common/contextmenu";
@@ -437,8 +437,6 @@ function getChessDescription(nag: number) {
     return descriptions[nag] || "Invalid number";
 }
 
-
-
 type PlyProps = {
     line: HierarchicalMoveData;
     color?: Color;
@@ -449,7 +447,12 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
     const turn = color;
     const plyData = color && line[color];
     let ref: HTMLDivElement | undefined;
-    const { currentPathSignal: [currentPath, _setCurrentPath], editable, gameSignal:[game, setGame] } = useContext(GameContext)!;
+    const {
+        currentPathSignal: [currentPath, _setCurrentPath],
+        editable,
+        gameSignal: [game, setGame],
+        platingEngine
+    } = useContext(GameContext)!;
     // const { showTooltip } = useContext(TooltipContext)!;
 
     const onAddComment = (before: boolean) => {
@@ -528,8 +531,7 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
             "move-cell": true,
             "pgnviewer-move": isValid(),
             [turn + `-move`]: !!turn,
-            "current-move": isCurrent()
-            
+            "current-move": isCurrent(),
         };
         const nag = mainNag();
         if (nag) {

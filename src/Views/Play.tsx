@@ -22,7 +22,7 @@ const PlayView = () => {
     return (
         <>
             <GameManager 
-                engineColor={()=>'black'}
+                engineColor={()=>'white'}
             />
         </>
     );

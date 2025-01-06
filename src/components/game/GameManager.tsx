@@ -174,6 +174,14 @@ const GameManager: Component<GameManagerOptions> = ({
     const turn = createMemo(() => position().turn as Color);
 
     const orientation = createMemo(() => {
+        const engCol = engineColor?.();
+        if(engCol) {
+            if(engCol === "white") {
+                return "black";
+            } else {
+                return "white";
+            }
+        }
         const g = game();
         if (!g) {
             return "white";
@@ -186,11 +194,11 @@ const GameManager: Component<GameManagerOptions> = ({
         return sp;
     });
 
-    
+    const playingEngine = () => !!engineColor?.();
 
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered, orientation)();
-
+        console.log("baseConfig", baseConfig, orientation());
         const pos = position();
         const isCheck = pos.isCheck();
         const allDests = chessgroundDests(pos);
@@ -372,6 +380,7 @@ const GameManager: Component<GameManagerOptions> = ({
             setIsEditingDescription,
         ],
         gameIndexSignal: [gameIndex, setGameIndex],
+        platingEngine: playingEngine,
         orientation: orientation,
         setSquareHovered: setSquareHovered,
         editable: isEditable,
