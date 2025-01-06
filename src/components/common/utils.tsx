@@ -180,6 +180,7 @@ export function useSplitter(saveLayout?: (layout: string) => void) {
     // let dividerEl: HTMLDivElement | null = null;
 
     return (divider: HTMLDivElement) => {
+        console.log("useSplitter", divider);
         divider = divider;
         Split({
             columnGutters: [
@@ -329,6 +330,5 @@ const figurineMap: Record<string, ()=>JSXElement> = {
 };
 
 export function getFigurine(piece: string) {
-    console.log("getFigurine", piece);
     return figurineMap[piece];
 }
