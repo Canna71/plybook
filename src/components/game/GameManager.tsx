@@ -154,13 +154,13 @@ const GameManager: Component<GameManagerOptions> = ({
     };
 
     const setWhitePlayer = (name: string) => {
-        game()!.players.white.name = name;
-        setGame(game()?.clone());
+        const newGame = game()!.updateHeaders(new Map([["White", name]]));
+        setGame(newGame);
     };
 
     const setBlackPlayer = (name: string) => {
-        game()!.players.black.name = name;
-        setGame(game()?.clone());
+        const newGame = game()!.updateHeaders(new Map([["Black", name]]));
+        setGame(newGame);
     };
 
     // #endregion

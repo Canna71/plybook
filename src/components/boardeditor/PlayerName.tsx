@@ -2,6 +2,7 @@ import { IconUser, IconUserFilled } from "@tabler/icons-solidjs";
 import { Accessor, Component, Show, useContext } from "solid-js";
 import { GameContext } from "../game/GameContext";
 import { Color } from "chessops";
+import Editable from "../common/Editable";
 
 const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) => void, color: Color }> = ({ name, setName, color }) => {
     
@@ -18,10 +19,16 @@ const PlayerName: Component<{ name: Accessor<string>, setName: (name: string) =>
             </Show>
 
 
-            <div class="is-size-6 p-1 is-flex-grow-1"
+            {/* <div class="is-size-6 p-1 is-flex-grow-1"
                 contentEditable={editable()}
-                onChange={(e) => setName(e.currentTarget.textContent || "")}
-            >{name()}</div>
+                onChange={(e) => {console.log("fdfd"); setName(e.currentTarget.textContent || "")}}
+            >{name()}</div> */}
+            <Editable 
+                initialValue={name()} 
+                editable={editable} 
+                onSave={setName} 
+                focus={false} 
+            />
         </div>
 
     );

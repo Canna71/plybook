@@ -1,4 +1,4 @@
-import { batch, createEffect, createSignal } from "solid-js";
+import { batch, createEffect, createMemo, createSignal } from "solid-js";
 import { save } from "@tauri-apps/plugin-dialog";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
@@ -55,13 +55,21 @@ const GameView = () => {
         } else {
         }
         batch(() => {
+            setNewPgn(pgnText); // this is to avoid detecting changes on the new pgn
             setOriginalPgn(pgnText);
-            setModified(false);
         });
+        setModified(false);
+    });
+
+    const memoNewPgn = createMemo(newPgn, undefined, {
+        equals: (a, b) => {
+            return a === b;
+        }
     });
 
     createEffect(() => {
-        setModified(!!newPgn());
+        const pgnText = memoNewPgn();
+        setModified(!!pgnText);
     });
 
     const isEngineOn = () => {
