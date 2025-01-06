@@ -1,4 +1,4 @@
-.treeView {
+.treeview {
     white-space: nowrap;
 
     .nodeList {
@@ -6,7 +6,7 @@
 
     }
 
-    .treeRow {
+    .treeview-row {
         display: flex;
         flex-wrap: nowrap;
 
@@ -19,7 +19,7 @@
         }
     }
 
-    .nodeContent {
+    .treeview-nodecontent {
         flex: 1;
         cursor: pointer;
         overflow: hidden;

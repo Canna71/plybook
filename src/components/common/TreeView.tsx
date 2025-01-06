@@ -8,7 +8,8 @@ import {
     Show,
     Signal,
 } from "solid-js";
-import styles from "./TreeView.module.scss"; // Create and import your custom styles
+
+import "./TreeView.scss"; // Create and import your custom styles
 
 export type TreeNode<T> = {
     id: string;
@@ -119,10 +120,9 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
 
     const classList = () => {
         const classes = {
-            [styles.treeRow]: true,
-            [styles.selected]: isSelected(),
-            selected: isSelected(),
-        };
+            ["treeview-row"]: true,
+            ["selected"]: isSelected(),
+        }; 
         return classes;
     };
 
@@ -138,7 +138,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
                 <Show when={props.renderItemIcon}>
                     {props.renderItemIcon!(node())}
                 </Show>
-                <div class={styles.nodeContent}>
+                <div class="treeview-nodecontent">
                     <Show
                         when={renderNode}
                         fallback={<span>{node().label}</span>}
@@ -181,7 +181,7 @@ const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
     };
 
     return (
-        <div class={styles.treeView}>
+        <div class="treeview">
             <Node
                 indentSize={props.indentSize??20}
                 node={props.root}

@@ -46,7 +46,7 @@ const Editable: Component<EditableProps> = (props) => {
             onInput={handleInput}
             onKeyDown={handleKeyDown}
             onBlur={() => props.onSave?.(value())}
-            style={{ "white-space": "nowrap" }}
+            style={{ "white-space": "nowrap", "overflow-x": "scroll" }}
         >
             {props.initialValue}
         </span>
