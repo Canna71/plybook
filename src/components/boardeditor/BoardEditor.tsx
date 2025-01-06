@@ -20,7 +20,7 @@ import { getEnPassantSquares } from "../common/utils";
 
 import "./BoardEditor.scss";
 import Button from "../common/Button";
-import { IconRestore } from "@tabler/icons-solidjs";
+import { IconCopy, IconRestore } from "@tabler/icons-solidjs";
 import Collapsible from "../common/Collapsible";
 
 export type BoardEditorProps = {
@@ -200,6 +200,19 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         setBaseFen(target.value);
     };
 
+    const onCopy = async () => {
+       // copy to clipboard
+       const text = fen();
+       if(!text) return;
+        try {
+            await navigator.clipboard.writeText(text);
+            alert('FEN copied to clipboard');
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+        }
+   
+    };
+
     return (
         <div class="board-editor-container">
             <div class="is-flex is-flex-direction-row is-align-items-center is-gap-1 is-flex-wrap-wrap">
@@ -273,6 +286,9 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
                     value={props.fen()}
                     onChange={onFenChange}
                 />
+                <Button  onClick={onCopy}>
+                    <IconCopy />
+                </Button>
             </div>
         </div>
     );
