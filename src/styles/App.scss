@@ -125,3 +125,9 @@ body {
         }
     }
 }
+
+.file-browser-item-content {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

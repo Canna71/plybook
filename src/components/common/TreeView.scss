@@ -23,8 +23,13 @@
         flex: 1;
         cursor: pointer;
         overflow: hidden;
-        text-overflow: ellipsis;
+        // overflow-x: auto;
+        // text-overflow: ellipsis;
         // line-height: 24px;
+        // :not([contentEditable="true"]) {
+        //     text-overflow: ellipsis;
+        //     overflow: hidden;
+        // }
     }
 
 

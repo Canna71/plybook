@@ -132,9 +132,11 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
     return (
         <>
             <Show when={!isRenaming()}>
+                <div class="file-browser-item-content">
                 <span onContextMenu={(e) => onContextMenuInternal(e, node)}>
                     {node.label}
                 </span>
+                </div>
             </Show>
             <Show when={isRenaming()}>
                 <Editable
