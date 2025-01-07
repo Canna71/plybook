@@ -151,11 +151,13 @@ const Moves: Component<MovesProps> = () => {
     const {
         currentPathSignal: [_, setCurrentPath],
         gameSignal: [game],
-        playingEngine: platingEngine,
+        playingEngine,
     } = useContext(GameContext)!;
 
+    console.log("Moves", (playingEngine()));
+
     const onClick = (e: Event) => {
-        if (platingEngine()) return;
+        if (playingEngine()) return;
         const target = e.target as HTMLElement;
 
         // find the closest anchestor with data-path attribute
@@ -181,8 +183,8 @@ const Moves: Component<MovesProps> = () => {
 
     const classList = {
         "pgnviewer-moves-panel": true,
-        "readonly": platingEngine(),
-        "editable": !platingEngine(),
+        "readonly": playingEngine(),
+        "editable": !playingEngine(),
     };
 
     return (

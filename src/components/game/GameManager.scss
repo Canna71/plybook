@@ -10,14 +10,13 @@
     display: grid;
     flex: 1;
 
-    grid-template-areas: 
-    "board divider sidebar"
-    "description description description"
-    ;
+    grid-template-areas:
+        "board divider sidebar"
+        "description description description";
     // grid-template-columns: minmax(200px, calc(100vh)) 10px minmax(50%, 1fr);
     // note: splitter won't work with minmax
     grid-template-columns: 400px 5px 1fr;
-    grid-template-rows:  1fr auto;
+    grid-template-rows: 1fr auto;
 
     .pgnviewer-comments {
         grid-area: comments;
@@ -86,6 +85,14 @@
 
             .pgnviewer-moves-panel {
                 padding: 0.5em;
+                cursor: default;
+                
+                &.editable {
+                    .pgnviewer-move {
+                        cursor: pointer;
+                    }
+                    
+                }
 
                 table.pgnviewer-moves {
                     width: 100%;
@@ -114,10 +121,6 @@
                     }
 
                     .pgnviewer-move {
-
-                        &.editable {
-                            cursor: pointer;
-                        }
                         // padding: 4px 8px;
                         border-radius: 4px;
                         transition: background-color 0.2s;
@@ -166,7 +169,6 @@
                         white-space: nowrap;
 
                         .move-fan-figurine {
-                            
                             svg {
                                 vertical-align: text-bottom;
                                 height: 18px;
@@ -202,8 +204,6 @@
             gap: 4px;
             // overflow: hidden;
             white-space: nowrap;
-
-            
         }
     }
 
@@ -230,13 +230,11 @@
     overflow: hidden;
 }
 
-
 .pgn-text-area {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: auto;
-    
 
     .pgn-text {
         flex: 1;
@@ -260,7 +258,6 @@
     padding: 4px;
     display: flex;
     justify-content: right;
-    
 
     button {
         padding: 4px;

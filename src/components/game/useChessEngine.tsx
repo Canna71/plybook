@@ -21,7 +21,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     const engineCallable = () => engine() && engineOn() && engineFolder();
 
     const shouldInitEngine = () => {
-        const shouldInit = (engineOn() || options.engineColor?.()) && engineFolder() && (!engine() || !engineOn());
+        const shouldInit = (engineOn() || options.playingEngine?.()) && engineFolder() && (!engine() || !engineOn());
        
         return shouldInit;
     };
@@ -101,6 +101,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 }export type ChessEngineOptions = {
     defaultEngineOn: boolean;
     engineColor?: Accessor<Color | undefined>;
+    playingEngine: Accessor<boolean>;
     game: Accessor<GameModel | undefined>;
     turn: Accessor<Color>;
     applyMove: (move: NormalMove) => void;

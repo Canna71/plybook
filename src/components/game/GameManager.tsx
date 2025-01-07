@@ -46,7 +46,8 @@ import PageNavigator from "./MultiPage";
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
     setPgn?: (pgn: string) => void;
-    engineColor?: Accessor<Color | undefined>;
+    // engineColor?: Accessor<Color | undefined>;
+    playingEngine?: boolean;
     defaultEngineOn?: boolean;
     editable?: Accessor<boolean>;
 };
@@ -59,7 +60,8 @@ type PromotionData = {
 const GameManager: Component<GameManagerOptions> = ({
     initalPgn: initialPgn,
     setPgn,
-    engineColor,
+    playingEngine,
+    // engineColor,
     editable,
     defaultEngineOn = false,
 }) => {
@@ -92,9 +94,9 @@ const GameManager: Component<GameManagerOptions> = ({
     const [gameIndex, setGameIndex] = createSignal(0);
     // #endregion
 
-    // const [engineColor, setEngineColor] = createSignal<Color | undefined>(
-    //     undefined,
-    // );
+    const [engineColor, setEngineColor] = createSignal<Color | undefined>(
+        "white",
+    );
     // #endregion
     const isEditable = () => {
         return editable?.() || false;
@@ -175,7 +177,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const orientation = createMemo(() => {
         const engCol = engineColor?.();
-        if(engCol) {
+        if(playingEngine) {
             if(engCol === "white") {
                 return "black";
             } else {
@@ -194,7 +196,7 @@ const GameManager: Component<GameManagerOptions> = ({
         return sp;
     });
 
-    const playingEngine = () => !!engineColor?.();
+    // const playingEngine = () => !!engineColor?.();
 
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered, orientation)();
@@ -205,7 +207,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
         // movable color is current color if not playing against engine
         const movableColor =
-            engineColor?.() && pos.turn === engineColor?.()
+            !!playingEngine && pos.turn === engineColor?.()
                 ? undefined
                 : pos.turn;
 
@@ -363,6 +365,7 @@ const GameManager: Component<GameManagerOptions> = ({
         turn,
         applyMove,
         fen,
+        playingEngine: ()=>!!playingEngine,
     });
 
     const gameContext = {
@@ -380,7 +383,7 @@ const GameManager: Component<GameManagerOptions> = ({
             setIsEditingDescription,
         ],
         gameIndexSignal: [gameIndex, setGameIndex],
-        playingEngine: playingEngine,
+        playingEngine: ()=>!!playingEngine,
         orientation: orientation,
         setSquareHovered: setSquareHovered,
         editable: isEditable,
@@ -445,7 +448,7 @@ const GameManager: Component<GameManagerOptions> = ({
                             <Show when={isEditable()}>
                                 <PgnEditBar />
                             </Show>
-                            <Show when={engineCallable() && !engineColor?.()}>
+                            <Show when={engineCallable() && !playingEngine}>
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
                             <Show

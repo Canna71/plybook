@@ -39,6 +39,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
         orientation,
         engineOnSignal,
         engineColor,
+        playingEngine
     } = gameContext;
 
     const onEditStartingPosition = () => {
@@ -88,7 +89,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
         return (
             viewMode() === ViewMode.MOVES &&
             !isEditingDescription() &&
-            !engineColor?.()
+            !playingEngine()
         );
     };
 
