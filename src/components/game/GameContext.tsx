@@ -21,7 +21,7 @@ export interface GameContextType {
 	orientation: Accessor<Color>;
 	// orientationSignal: Signal<Color>;
 	engineColor?: Accessor<Color | undefined>;
-	platingEngine: Accessor<boolean>;
+	playingEngine: Accessor<boolean>;
 	setSquareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
 }

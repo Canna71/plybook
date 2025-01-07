@@ -380,7 +380,7 @@ const GameManager: Component<GameManagerOptions> = ({
             setIsEditingDescription,
         ],
         gameIndexSignal: [gameIndex, setGameIndex],
-        platingEngine: playingEngine,
+        playingEngine: playingEngine,
         orientation: orientation,
         setSquareHovered: setSquareHovered,
         editable: isEditable,

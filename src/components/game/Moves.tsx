@@ -151,7 +151,7 @@ const Moves: Component<MovesProps> = () => {
     const {
         currentPathSignal: [_, setCurrentPath],
         gameSignal: [game],
-        platingEngine,
+        playingEngine: platingEngine,
     } = useContext(GameContext)!;
 
     const onClick = (e: Event) => {

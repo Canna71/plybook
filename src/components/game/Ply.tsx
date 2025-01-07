@@ -451,7 +451,7 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
         currentPathSignal: [currentPath, _setCurrentPath],
         editable,
         gameSignal: [game, setGame],
-        platingEngine
+        playingEngine: platingEngine
     } = useContext(GameContext)!;
     // const { showTooltip } = useContext(TooltipContext)!;
 
