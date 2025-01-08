@@ -7,7 +7,7 @@ import ToggleSwitch from "../common/ToggleSwitch";
 import { ViewMode } from "./PgnEditBar";
 
 const EngineControl = () => {
-    const { playingEngine, engineOnSignal, viewModeSignal: [viewMode], isEditingDescriptionSignal: [isEditingDescription] } = useContext(GameContext)!;
+    const { playingEngine, engineAnalysisOnSignal, viewModeSignal: [viewMode], isEditingDescriptionSignal: [isEditingDescription] } = useContext(GameContext)!;
 
     const handleEngineChange = () => {
         
@@ -23,10 +23,10 @@ const EngineControl = () => {
 
     return (
         <div>
-            <Show when={canEnableEngine}>
-                <div title="Enable Engine" class="is-flex is-flex-direction-row">
+            <Show when={canEnableEngine()}>
+                <div title="Enable Engine Analysis" class="is-flex is-flex-direction-row">
                     <IconCpu />
-                    <ToggleSwitch toggleSignal={engineOnSignal} />
+                    <ToggleSwitch toggleSignal={engineAnalysisOnSignal} />
                 </div>
             </Show>
         </div>

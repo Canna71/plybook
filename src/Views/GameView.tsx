@@ -72,12 +72,12 @@ const GameView = () => {
         setModified(!!pgnText);
     });
 
-    const isEngineOn = () => {
+    const isEngineAnalysisOn = () => {
         return location.pathname === "/analysis";
     };
 
     const isEditable = () => {
-        return !isEngineOn();
+        return true; // TODO: Check if the source is writable
     };
 
     const canSave = () => modified();
@@ -152,7 +152,7 @@ const GameView = () => {
                 initalPgn={originalPgn}
                 setPgn={setNewPgn}
                 editable={isEditable}
-                defaultEngineOn={isEngineOn()}
+                defaultEngineAnalysisOn={isEngineAnalysisOn()}
             />
         </>
     );

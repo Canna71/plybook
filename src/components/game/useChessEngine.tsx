@@ -11,18 +11,18 @@ import { GameModel } from "../../models/GameModel";
 
 export function useChessEngine(options: ChessEngineOptions) {
     // #region Engine state
-    const [engineOn, setEngineOn] = createSignal<boolean>(options.defaultEngineOn);
+    const [engineAnalysisOn, setEngineAnalysisOn] = createSignal<boolean>(options.defaultEngineAnalysisOn);
     const [engineFolder, _others] = createResource(() => getEnginePath());
     const [engine, setEngine] = createSignal<IChessEngine | undefined>(
         undefined
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
 
-    const engineCallable = () => engine() && engineOn() && engineFolder();
+    const engineCallable = () => engine() && engineAnalysisOn() && engineFolder();
 
     const shouldInitEngine = () => {
-        const shouldInit = (engineOn() || options.playingEngine?.()) && engineFolder() && (!engine() || !engineOn());
-       
+        const shouldInit = (engineAnalysisOn() || options.playingEngine?.()) && engineFolder() && !engine();
+        console.log("shouldInitEngine", shouldInit);
         return shouldInit;
     };
 
@@ -39,17 +39,17 @@ export function useChessEngine(options: ChessEngineOptions) {
             engine.newGame();
             batch(() => {
                 setEngine(engine);
-                setEngineOn(true);
+                // setEngineAnalysisOn(true);
             });
         } else {
         }
     });
 
-    // cleanup engine when engineOn is false
     
     const cleanup = () => {
         const eng = engine();
         if (eng) {
+            console.log("Cleaning up engine");
             eng.quit();
             eng.off("bestmove", onEngineBestMove);
             setEngine(undefined);
@@ -57,7 +57,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     }
     
     createEffect(() => {
-        if (!engineOn()) {
+        if (!engineAnalysisOn() && !options.playingEngine?.()) {
             cleanup();
         }
     });
@@ -96,10 +96,10 @@ export function useChessEngine(options: ChessEngineOptions) {
     return {
         engineInfo,
         engineCallable,
-        engineOnSignal: [engineOn, setEngineOn] as Signal<boolean>,
+        engineAnalysisOnSignal: [engineAnalysisOn, setEngineAnalysisOn] as Signal<boolean>,
     };
 }export type ChessEngineOptions = {
-    defaultEngineOn: boolean;
+    defaultEngineAnalysisOn: boolean;
     engineColor?: Accessor<Color | undefined>;
     playingEngine: Accessor<boolean>;
     game: Accessor<GameModel | undefined>;

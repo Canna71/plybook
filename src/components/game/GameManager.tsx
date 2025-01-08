@@ -49,7 +49,7 @@ export type GameManagerOptions = {
     setPgn?: (pgn: string) => void;
     // engineColor?: Accessor<Color | undefined>;
     playingEngine?: boolean;
-    defaultEngineOn?: boolean;
+    defaultEngineAnalysisOn?: boolean;
     editable?: Accessor<boolean>;
 };
 
@@ -64,7 +64,7 @@ const GameManager: Component<GameManagerOptions> = ({
     playingEngine,
     // engineColor,
     editable,
-    defaultEngineOn = false,
+    defaultEngineAnalysisOn = false,
 }) => {
     // #region Game State
     const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
@@ -359,8 +359,8 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region Engine
 
-    const { engineInfo, engineCallable, engineOnSignal } = useChessEngine({
-        defaultEngineOn,
+    const { engineInfo, engineCallable, engineAnalysisOnSignal } = useChessEngine({
+        defaultEngineAnalysisOn,
         engineColor,
         game,
         turn,
@@ -377,7 +377,7 @@ const GameManager: Component<GameManagerOptions> = ({
         startingPositionSignal: [startingPosition, setStartingPosition],
         viewModeSignal: [viewMode, setViewMode],
         editPgnSignal: [editPgn, setEditPgn],
-        engineOnSignal,
+        engineAnalysisOnSignal,
         descriptionSignal: [description, setDescription],
         isEditingDescriptionSignal: [
             isEditingDescription,

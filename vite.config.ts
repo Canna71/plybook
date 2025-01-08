@@ -43,4 +43,11 @@ export default defineConfig(async () => ({
       "Cross-Origin-Embedder-Policy": "require-corp"
     }
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler' // or "modern"
+      }
+    }
+  }
 }));

@@ -14,7 +14,7 @@ export interface GameContextType {
 	startingPositionSignal: Signal<string | undefined>;
 	viewModeSignal: Signal<ViewMode>;
 	editPgnSignal: Signal<string | undefined>;
-	engineOnSignal: Signal<boolean>;
+	engineAnalysisOnSignal: Signal<boolean>;
 	descriptionSignal: Signal<string | undefined>;
 	isEditingDescriptionSignal: Signal<boolean>;
 	gameIndexSignal: Signal<number>;
