@@ -85,13 +85,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
         setIsEditingDescription(false);
     };
 
-    const canEnableEngine = () => {
-        return (
-            viewMode() === ViewMode.MOVES &&
-            !isEditingDescription() &&
-            !playingEngine()
-        );
-    };
+    
 
     const onFLipBoard = () => {
         const newOrientation = orientation() === "white" ? "black" : "white";
@@ -108,12 +102,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
                 >
                     <IconSwitchVertical />
                 </Button>
-            <Show when={canEnableEngine}>
-                <div title="Enable Engine" class="is-flex is-flex-direction-row">
-                    <IconCpu />
-                    <ToggleSwitch toggleSignal={engineOnSignal} />
-                </div>
-            </Show>
+            
 
             <Show when={isEditingDescription()}>
                 <Button

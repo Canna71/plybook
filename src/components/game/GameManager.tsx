@@ -42,6 +42,7 @@ import { useTooltip } from "./useTooltip";
 import MarkdownEditor from "../common/MarkdownEditor";
 import { makePgn, parsePgn } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
+import EngineControl from "./EngineControl";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -95,7 +96,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // #endregion
 
     const [engineColor, setEngineColor] = createSignal<Color | undefined>(
-        "white",
+        undefined
     );
     // #endregion
     const isEditable = () => {
@@ -447,6 +448,9 @@ const GameManager: Component<GameManagerOptions> = ({
                         <div class="pgnviewer-sidebar">
                             <Show when={isEditable()}>
                                 <PgnEditBar />
+                            </Show>
+                            <Show when={true}>
+                                <EngineControl />
                             </Show>
                             <Show when={engineCallable() && !playingEngine}>
                                 <EngineInfoViewer engineInfo={engineInfo} />
