@@ -18,11 +18,12 @@ export function useChessEngine(options: ChessEngineOptions) {
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
 
-    const engineCallable = () => engine() && engineAnalysisOn() && engineFolder();
+    const shouldCallEngineAnalysis = () => engine() && engineAnalysisOn();
+    const shouldCallEngineMove = () => engine() && options.playingEngine() && options.engineColor?.() == options.turn();
+    
 
     const shouldInitEngine = () => {
         const shouldInit = (engineAnalysisOn() || options.playingEngine?.()) && engineFolder() && !engine();
-        console.log("shouldInitEngine", shouldInit);
         return shouldInit;
     };
 
@@ -86,16 +87,23 @@ export function useChessEngine(options: ChessEngineOptions) {
     };
 
     createEffect(() => {
-        if (engineCallable()) {
+        console.log("useChessEngine effect");
+        if (shouldCallEngineAnalysis()) {
+            console.log("Calling engine analysis");
             const fenStr = options.fen();
             setEngineInfo([]);
+            // TODO: Add a setting for depth and multipv (distinguish between analysis and playing)
             engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 3 });
+        } else if (shouldCallEngineMove()) {
+            console.log("Calling engine move");
+            const fenStr = options.fen();
+            engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 1 });
         }
     });
 
     return {
         engineInfo,
-        engineCallable,
+        engineCallable: shouldCallEngineAnalysis,
         engineAnalysisOnSignal: [engineAnalysisOn, setEngineAnalysisOn] as Signal<boolean>,
     };
 }export type ChessEngineOptions = {
