@@ -388,6 +388,7 @@ const GameManager: Component<GameManagerOptions> = ({
         orientation: orientation,
         setSquareHovered: setSquareHovered,
         editable: isEditable,
+        engineColorSignal: [engineColor, setEngineColor],
     } as GameContextType;
     // #endregion
 

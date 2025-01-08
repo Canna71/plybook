@@ -20,7 +20,7 @@ export interface GameContextType {
 	gameIndexSignal: Signal<number>;
 	orientation: Accessor<Color>;
 	// orientationSignal: Signal<Color>;
-	engineColor?: Accessor<Color | undefined>;
+	engineColorSignal: Signal<Color | undefined>;
 	playingEngine: Accessor<boolean>;
 	setSquareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
