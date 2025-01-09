@@ -38,6 +38,7 @@ export interface IChessEngine extends IEngineEventEmitter {
     quit(): void;
     newGame(): void;
     setOption(name: string, value: any): void;
+    getElos?(): [{ level: number; elo: number }];
 }
 
 // IEngineEventEmitter.ts

@@ -28,6 +28,8 @@ export function useChessEngine(options: ChessEngineOptions) {
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
 
+    const [engineLevel, setEngineLevel] = createSignal<number>(10);
+
     const shouldCallEngineAnalysis = () => engine() && engineAnalysisOn();
     const shouldCallEngineMove = () => engine() && options.playingEngine() && options.engineColor?.() == options.turn();
     
@@ -39,6 +41,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     createEffect(async () => {
         if (shouldInitEngine()) {
+            console.log("Initializing engine");
             const engine = new UCIEngine(
                 new ExecutableUCIInterface(engineFolder()!)
             );
@@ -103,8 +106,14 @@ export function useChessEngine(options: ChessEngineOptions) {
             const fenStr = options.fen();
             setEngineInfo([]);
             // TODO: Add a setting for depth and multipv (distinguish between analysis and playing)
+            engine()!.setOption("UCI_AnalyseMode", 1);
+            // engine()!.setOption("MultiPV", 3);
             engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 3 });
         } else if (shouldCallEngineMove()) {
+            // TODO: set game specific options
+            engine()!.setOption("UCI_AnalyseMode", 0);
+            engine()!.setOption("UCI_LimitStrength", 1);
+            engine()!.setOption("UCI_Elo", engineLevel());
             console.log("Calling engine move");
             const fenStr = options.fen();
             engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 1 });
@@ -113,6 +122,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     return {
         engineInfo,
+        engineLevelSignal: [engineLevel, setEngineLevel] as Signal<number>,
         engineCallable: shouldCallEngineAnalysis,
         engineAnalysisOnSignal: [engineAnalysisOn, setEngineAnalysisOn] as Signal<boolean>,
     };

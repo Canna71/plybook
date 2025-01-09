@@ -2,18 +2,24 @@ import { batch, createSignal, Setter, Show, useContext } from "solid-js";
 import { GameContext } from "./GameContext";
 
 import "./EngineControl.scss";
-import { IconCpu, IconPlayerPlayFilled, IconPlayerStopFilled } from "@tabler/icons-solidjs";
+import {
+    IconCpu,
+    IconPlayerPlayFilled,
+    IconPlayerStopFilled,
+} from "@tabler/icons-solidjs";
 import ToggleSwitch from "../common/ToggleSwitch";
 import { ViewMode } from "./PgnEditBar";
 import Select from "../common/Select";
 import { Color } from "chessops";
 import Button from "../common/Button";
 import { getDefaultStudyContent } from "../../storage/fs";
+import { range } from "es-toolkit";
 
 const EngineControl = () => {
     const {
         playingEngine,
         engineAnalysisOnSignal,
+        engineLevelSignal: [engineLevel, setEngineLevel],
         engineColorSignal: [engineColor, setEngineColor],
         viewModeSignal: [viewMode],
         isEditingDescriptionSignal: [isEditingDescription],
@@ -50,6 +56,19 @@ const EngineControl = () => {
         ];
     };
 
+    const engineSkillLevels = () => {
+        // return all stockfish levels
+
+        const elos = range(1000, 3000, 100).map((elo) => {
+            return {
+                key: elo.toString(),
+                value: elo.toString(),
+            };
+        });
+
+        return elos;
+    };
+
     const toggleGame = () => {
         if (engineColor()) {
             setEngineColor(undefined);
@@ -67,6 +86,15 @@ const EngineControl = () => {
         }
     };
 
+    const engineLevelSelected = (level: string) => {
+        setEngineLevel(parseInt(level));
+    };
+
+    const engineLevelString = () => {
+        const level = engineLevel();
+        return "" + level;
+    };
+
     return (
         <div class="engine-control">
             <Show when={canEnableEngine()}>
@@ -79,7 +107,7 @@ const EngineControl = () => {
                 </div>
             </Show>
             <Show when={playingEngine()}>
-                <div title="Engine Color" >
+                <div title="Engine Color">
                     <IconCpu />
                     <Select
                         selectedValue={internalColor}
@@ -87,8 +115,6 @@ const EngineControl = () => {
                         options={engineColors}
                     />
                 </div>
-            </Show>
-            <Show when={playingEngine()}>
                 <Show when={!!engineColor()}>
                     <Button onClick={toggleGame} title="Stop Game">
                         <IconPlayerStopFilled />
@@ -99,6 +125,11 @@ const EngineControl = () => {
                         <IconPlayerPlayFilled />
                     </Button>
                 </Show>
+                <Select
+                    selectedValue={engineLevelString}
+                    setSelectedValue={engineLevelSelected as Setter<string>}
+                    options={engineSkillLevels}
+                />
             </Show>
         </div>
     );

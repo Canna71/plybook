@@ -201,7 +201,6 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const config = () => {
         const baseConfig = makeConfig(game, currentPath, squareHovered, orientation)();
-        console.log("baseConfig", baseConfig, orientation());
         const pos = position();
         const isCheck = pos.isCheck();
         const allDests = chessgroundDests(pos);
@@ -359,7 +358,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region Engine
 
-    const { engineInfo, engineCallable, engineAnalysisOnSignal } = useChessEngine({
+    const { engineInfo, engineCallable, engineAnalysisOnSignal, engineLevelSignal } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
         game,
@@ -389,6 +388,7 @@ const GameManager: Component<GameManagerOptions> = ({
         setSquareHovered: setSquareHovered,
         editable: isEditable,
         engineColorSignal: [engineColor, setEngineColor],
+        engineLevelSignal
     } as GameContextType;
     // #endregion
 
