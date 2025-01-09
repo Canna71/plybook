@@ -9,6 +9,16 @@ import { makeMove } from "../common/utils";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 
+export type ChessEngineOptions = {
+    defaultEngineAnalysisOn: boolean;
+    engineColor?: Accessor<Color | undefined>;
+    playingEngine: Accessor<boolean>;
+    game: Accessor<GameModel | undefined>;
+    turn: Accessor<Color>;
+    applyMove: (move: NormalMove) => void;
+    fen: Accessor<string>;
+};
+
 export function useChessEngine(options: ChessEngineOptions) {
     // #region Engine state
     const [engineAnalysisOn, setEngineAnalysisOn] = createSignal<boolean>(options.defaultEngineAnalysisOn);
@@ -106,13 +116,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         engineCallable: shouldCallEngineAnalysis,
         engineAnalysisOnSignal: [engineAnalysisOn, setEngineAnalysisOn] as Signal<boolean>,
     };
-}export type ChessEngineOptions = {
-    defaultEngineAnalysisOn: boolean;
-    engineColor?: Accessor<Color | undefined>;
-    playingEngine: Accessor<boolean>;
-    game: Accessor<GameModel | undefined>;
-    turn: Accessor<Color>;
-    applyMove: (move: NormalMove) => void;
-    fen: Accessor<string>;
-};
+}
+
+
 
