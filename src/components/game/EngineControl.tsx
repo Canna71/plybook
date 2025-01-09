@@ -2,7 +2,7 @@ import { batch, createSignal, Setter, Show, useContext } from "solid-js";
 import { GameContext } from "./GameContext";
 
 import "./EngineControl.scss";
-import { IconCpu } from "@tabler/icons-solidjs";
+import { IconCpu, IconPlayerPlayFilled, IconPlayerStopFilled } from "@tabler/icons-solidjs";
 import ToggleSwitch from "../common/ToggleSwitch";
 import { ViewMode } from "./PgnEditBar";
 import Select from "../common/Select";
@@ -67,20 +67,8 @@ const EngineControl = () => {
         }
     };
 
-    // const onSelectEngineColor : Setter<string> = (color) => {
-    //     const v = typeof color === "function" ? color(engineColor()||"random") : color;
-
-    //         setInternalColor(v);
-
-    // }
-
-    // const selectedEngineColor = () => {
-
-    //     return engineColor() || "disabled";
-    // }
-
     return (
-        <div>
+        <div class="engine-control">
             <Show when={canEnableEngine()}>
                 <div
                     title="Enable Engine Analysis"
@@ -91,7 +79,8 @@ const EngineControl = () => {
                 </div>
             </Show>
             <Show when={playingEngine()}>
-                <div>
+                <div title="Engine Color" >
+                    <IconCpu />
                     <Select
                         selectedValue={internalColor}
                         setSelectedValue={setInternalColor as Setter<string>}
@@ -101,10 +90,14 @@ const EngineControl = () => {
             </Show>
             <Show when={playingEngine()}>
                 <Show when={!!engineColor()}>
-                    <Button onClick={toggleGame}>Stop Game</Button>
+                    <Button onClick={toggleGame} title="Stop Game">
+                        <IconPlayerStopFilled />
+                    </Button>
                 </Show>
                 <Show when={!engineColor()}>
-                    <Button onClick={toggleGame}>New Game</Button>
+                    <Button onClick={toggleGame} title="New Game">
+                        <IconPlayerPlayFilled />
+                    </Button>
                 </Show>
             </Show>
         </div>
