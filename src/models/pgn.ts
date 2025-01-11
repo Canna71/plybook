@@ -297,7 +297,7 @@ export function makeGame(pgnString: string): GameModel {
 }
 
 export function makeGameInternal(game: Game<PgnNodeData>): GameModel {
-    const start = startingPosition(game.headers).unwrap();
+    const start = startingPosition(game.headers || []).unwrap();
     const setup = start.toSetup();
     const fen = makeFen(setup);
     // const moves = pgn.moves;

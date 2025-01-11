@@ -339,3 +339,7 @@ export function selectAll(el: HTMLElement) {
     sel?.removeAllRanges();
     sel?.addRange(range);
 }
+
+export function otherColor(color: Color | undefined) {
+    return color === "white" ? "black" : "white";
+}

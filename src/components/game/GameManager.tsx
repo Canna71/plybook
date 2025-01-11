@@ -6,7 +6,11 @@ import {
     createEffect,
     createMemo,
     createSignal,
+    Match,
+    Setter,
     Show,
+    Signal,
+    Switch,
     untrack,
 } from "solid-js";
 import { getMaterial, makeGameInternal, Path } from "../../models/pgn";
@@ -19,6 +23,7 @@ import {
     isPromotion,
     makeConfig,
     makeMove,
+    otherColor,
     useSplitter,
 } from "../common/utils";
 import { Color, Key, Piece, Role } from "chessground/types";
@@ -56,6 +61,39 @@ export type GameManagerOptions = {
 type PromotionData = {
     promotionCell: Key;
     move: NormalMove;
+};
+
+// render the right <PlayerName />  component depending if the board is flipped or not
+
+type PlayerNameSelectorProps = {
+    color: Color;
+    orientation: Accessor<Color>;
+    whitePlayerSignal: Signal<string>;
+    blackPlayerSignal: Signal<string>;
+};
+
+const PlayerNameSelector: Component<PlayerNameSelectorProps> = (props) => {
+    console.log("PlayerNameSelector", props.orientation());
+    return (
+        <Switch>
+            <Match when={props.color === props.orientation()}>
+                <PlayerName
+                    name={props.whitePlayerSignal[0]}
+                    setName={props.whitePlayerSignal[1]}
+                    color={"white"}
+                />
+            </Match>
+            <Match when={true}>
+                <PlayerName
+                    name={props.blackPlayerSignal[0]}
+                    setName={props.blackPlayerSignal[1]}
+                    color={"black"}
+                />
+            </Match>
+        </Switch>
+    )
+   
+
 };
 
 const GameManager: Component<GameManagerOptions> = ({
@@ -96,7 +134,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // #endregion
 
     const [engineColor, setEngineColor] = createSignal<Color | undefined>(
-        undefined
+        undefined,
     );
     // #endregion
     const isEditable = () => {
@@ -178,12 +216,13 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const orientation = createMemo(() => {
         const engCol = engineColor?.();
-        if(playingEngine) {
-            if(engCol === "white") {
-                return "black";
-            } else {
-                return "white";
-            }
+        if (playingEngine) {
+            // if(engCol === "white") {
+            //     return "black";
+            // } else {
+            //     return "white";
+            // }
+            return otherColor(engCol);
         }
         const g = game();
         if (!g) {
@@ -200,7 +239,12 @@ const GameManager: Component<GameManagerOptions> = ({
     // const playingEngine = () => !!engineColor?.();
 
     const config = () => {
-        const baseConfig = makeConfig(game, currentPath, squareHovered, orientation)();
+        const baseConfig = makeConfig(
+            game,
+            currentPath,
+            squareHovered,
+            orientation,
+        )();
         const pos = position();
         const isCheck = pos.isCheck();
         const allDests = chessgroundDests(pos);
@@ -358,14 +402,19 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region Engine
 
-    const { engineInfo, engineCallable, engineAnalysisOnSignal, engineLevelSignal } = useChessEngine({
+    const {
+        engineInfo,
+        engineCallable,
+        engineAnalysisOnSignal,
+        engineLevelSignal,
+    } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
         game,
         turn,
         applyMove,
         fen,
-        playingEngine: ()=>!!playingEngine,
+        playingEngine: () => !!playingEngine,
     });
 
     const gameContext = {
@@ -383,12 +432,12 @@ const GameManager: Component<GameManagerOptions> = ({
             setIsEditingDescription,
         ],
         gameIndexSignal: [gameIndex, setGameIndex],
-        playingEngine: ()=>!!playingEngine,
+        playingEngine: () => !!playingEngine,
         orientation: orientation,
         setSquareHovered: setSquareHovered,
         editable: isEditable,
         engineColorSignal: [engineColor, setEngineColor],
-        engineLevelSignal
+        engineLevelSignal,
     } as GameContextType;
     // #endregion
 
@@ -409,10 +458,17 @@ const GameManager: Component<GameManagerOptions> = ({
                                     viewMode() === ViewMode.PGN
                                 }
                             >
-                                <PlayerName
-                                    name={blackPlayer}
-                                    setName={setBlackPlayer}
-                                    color="black"
+                                <PlayerNameSelector
+                                    color={"black"}
+                                    orientation={orientation}
+                                    whitePlayerSignal={[
+                                        whitePlayer,
+                                        setWhitePlayer as Setter<string>,
+                                    ]}
+                                    blackPlayerSignal={[
+                                        blackPlayer,
+                                        setBlackPlayer as Setter<string>,
+                                    ]}
                                 />
                                 <div
                                     ref={chessBoardDiv!}
@@ -430,10 +486,17 @@ const GameManager: Component<GameManagerOptions> = ({
                                         />
                                     </Show>
                                 </div>
-                                <PlayerName
-                                    name={whitePlayer}
-                                    setName={setWhitePlayer}
-                                    color="white"
+                                <PlayerNameSelector
+                                    color={"white"}
+                                    orientation={orientation}
+                                    whitePlayerSignal={[
+                                        whitePlayer,
+                                        setWhitePlayer as Setter<string>,
+                                    ]}
+                                    blackPlayerSignal={[
+                                        blackPlayer,
+                                        setBlackPlayer as Setter<string>,
+                                    ]}
                                 />
                             </Show>
                             <Show

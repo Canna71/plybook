@@ -14,6 +14,7 @@ import { Color } from "chessops";
 import Button from "../common/Button";
 import { getDefaultStudyContent } from "../../storage/fs";
 import { range } from "es-toolkit";
+import { makeGame } from "../../models/pgn";
 
 const EngineControl = () => {
     const {
@@ -72,7 +73,10 @@ const EngineControl = () => {
 
     const toggleGame = () => {
         if (engineColor()) {
-            setEngineColor(undefined);
+            batch(() => {
+                setEngineColor(undefined);
+                setGame(makeGame("[]"));
+            });
         } else {
             let c = internalColor();
             if (c === "random") {
@@ -81,23 +85,21 @@ const EngineControl = () => {
             }
             batch(() => {
                 const engineColorTitleCase =
-                    c.charAt(0).toUpperCase() +
-                    c.slice(1);
+                    c.charAt(0).toUpperCase() + c.slice(1);
 
-                const playerColor =
-                    c === "white" ? "Black" : "White";
+                const playerColor = c === "white" ? "Black" : "White";
 
-                const newGame = game()!.updateHeaders(
+                const newGame = makeGame("[]").updateHeaders(
                     new Map([
                         [engineColorTitleCase, "Engine"],
                         [playerColor, "Player"],
                     ]),
                 );
-                console.log("New game", newGame);
+                // console.log("New game", newGame);
                 setGame(newGame);
                 setEngineColor(c);
                 setInternalColor(c);
-                setFullPgn(getDefaultStudyContent());
+                // setFullPgn(getDefaultStudyContent());
             });
         }
     };
