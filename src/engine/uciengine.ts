@@ -1,10 +1,23 @@
 import {
     AnalysisOptions,
+    EngineId,
     EngineInfo,
     IChessEngine,
     IEngineEventEmitter,
 } from "./engineinterfaces";
 import { IUCIInterface } from "./iuciinterface";
+
+
+
+interface EngineOption {
+    name: string;
+    type: "check" | "spin" | "combo" | "string" | "button";
+    default: any;
+    min?: number;
+    max?: number;
+    var?: string;
+    options?: string[];
+}
 
 // UCIEngine.ts
 export class UCIEngine implements IChessEngine, IEngineEventEmitter {
@@ -12,9 +25,18 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     private isReady = false;
     private callbacks: Map<string, Function[]> = new Map();
 
+    private engineId?: EngineId;
+    private options: EngineOption[] = [];
+
     constructor(uciInterface: IUCIInterface) {
         this.uciInterface = uciInterface;
         this.uciInterface.onResponse((line) => this.processEngineOutput(line));
+    }
+    getElos?(): [{ level: number; elo: number; }] {
+        throw new Error("Method not implemented.");
+    }
+    getId(): EngineId | undefined {
+        return this.engineId;
     }
     analyzePosition(fen: string, options: AnalysisOptions): void {
         // throw new Error("Method not implemented.");
@@ -121,13 +143,30 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
                     this.emit("info", info);
                 }
                 break;
-
+            case "id":
+                this.parseId(tokens);
+                break;
             default:
                 if (line.startsWith("error")) {
                     this.emit("error", new Error(line));
                 }
         }
     }
+
+    private parseId(tokens: string[]): void {
+        if (tokens[1] === "name") {
+            this.engineId = {  
+                ...this.engineId || {},
+                name: tokens.slice(2).join(" "),
+            };
+        } else if (tokens[1] === "author") {
+            this.engineId = {
+                ...this.engineId || {},
+                author: tokens.slice(2).join(" "),
+            };
+        }
+    }
+                
 
     /**
      * Parse info string from engine

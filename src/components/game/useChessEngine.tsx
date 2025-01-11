@@ -122,6 +122,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     return {
         engineInfo,
+        
         engineLevelSignal: [engineLevel, setEngineLevel] as Signal<number>,
         engineCallable: shouldCallEngineAnalysis,
         engineAnalysisOnSignal: [engineAnalysisOn, setEngineAnalysisOn] as Signal<boolean>,

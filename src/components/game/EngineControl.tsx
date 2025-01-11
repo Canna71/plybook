@@ -18,6 +18,7 @@ import { range } from "es-toolkit";
 const EngineControl = () => {
     const {
         playingEngine,
+        gameSignal: [game, setGame],
         engineAnalysisOnSignal,
         engineLevelSignal: [engineLevel, setEngineLevel],
         engineColorSignal: [engineColor, setEngineColor],
@@ -79,6 +80,21 @@ const EngineControl = () => {
                 c = Math.random() > 0.5 ? "white" : "black";
             }
             batch(() => {
+                const engineColorTitleCase =
+                    c.charAt(0).toUpperCase() +
+                    c.slice(1);
+
+                const playerColor =
+                    c === "white" ? "Black" : "White";
+
+                const newGame = game()!.updateHeaders(
+                    new Map([
+                        [engineColorTitleCase, "Engine"],
+                        [playerColor, "Player"],
+                    ]),
+                );
+                console.log("New game", newGame);
+                setGame(newGame);
                 setEngineColor(c);
                 setInternalColor(c);
                 setFullPgn(getDefaultStudyContent());

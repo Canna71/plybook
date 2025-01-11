@@ -26,6 +26,11 @@ export type EngineInfo = {
     seldepth?: number; // Selective search depth
 };
 
+export interface EngineId {
+    author?: string;
+    name?: string;
+}
+
 // IChessEngine.ts
 export interface IChessEngine extends IEngineEventEmitter {
     init(): Promise<void>;
@@ -39,6 +44,7 @@ export interface IChessEngine extends IEngineEventEmitter {
     newGame(): void;
     setOption(name: string, value: any): void;
     getElos?(): [{ level: number; elo: number }];
+    getId(): EngineId | undefined;
 }
 
 // IEngineEventEmitter.ts
