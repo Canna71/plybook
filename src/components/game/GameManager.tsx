@@ -231,6 +231,7 @@ const GameManager: Component<GameManagerOptions> = ({
             return orientationHeader === "white" ? "white" : "black";
         }
         const sp = g.initial.pos.turn;
+        console.log("Orientation", sp);
         return sp;
     });
 
@@ -532,11 +533,14 @@ const GameManager: Component<GameManagerOptions> = ({
                                 <div class="pgnviewer-moves-wrapper">
                                     <Moves />
                                 </div>
-                                <ButtonBar
-                                    game={game}
-                                    currentPath={currentPath}
-                                    setCurrentPath={setCurrentPath}
-                                />
+                                <Show when={!playingEngine}>
+                                    <ButtonBar
+                                        game={game}
+                                        currentPath={currentPath}
+                                        setCurrentPath={setCurrentPath}
+                                    />
+                                </Show>
+                               
                             </Show>
 
                             <Show when={viewMode() === ViewMode.PGN}>

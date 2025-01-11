@@ -17,10 +17,11 @@ import { makeMove } from "../common/utils";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue, setSettingValue } from "../../models/settings";
+import { create } from "@tauri-apps/plugin-fs";
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
-    engineColor?: Accessor<Color | undefined>;
+    engineColor: Accessor<Color | undefined>;
     playingEngine: Accessor<boolean>;
     game: Accessor<GameModel | undefined>;
     turn: Accessor<Color>;
@@ -79,6 +80,12 @@ export function useChessEngine(options: ChessEngineOptions) {
                 // setEngineAnalysisOn(true);
             });
         } else {
+        }
+    });
+
+    createEffect(() => {
+        if(engine() && !options.engineColor()) {
+            engine()!.stop();
         }
     });
 
