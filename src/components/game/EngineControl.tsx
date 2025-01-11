@@ -23,6 +23,7 @@ import { getDefaultStudyContent } from "../../storage/fs";
 import { range } from "es-toolkit";
 import { makeGame } from "../../models/pgn";
 import { getSettingValue, setSettingValue } from "../../models/settings";
+import { startingPosition } from "chessops/pgn";
 
 const EngineControl = () => {
     const {
@@ -34,6 +35,7 @@ const EngineControl = () => {
         viewModeSignal: [viewMode],
         isEditingDescriptionSignal: [isEditingDescription],
         fullPgnSignal: [fullPgn, setFullPgn],
+        startingPositionSignal: [startingPosition],
     } = useContext(GameContext)!;
 
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
@@ -97,12 +99,13 @@ const EngineControl = () => {
 
                 const playerColor = c === "white" ? "Black" : "White";
 
-                const newGame = makeGame("[]").updateHeaders(
+                let newGame = makeGame("[]").updateHeaders(
                     new Map([
                         [engineColorTitleCase, "Engine"],
                         [playerColor, "Player"],
                     ]),
                 );
+                newGame = newGame.withStartingPosition(startingPosition() || "");
                 setGame(newGame);
                 setEngineColor(c);
                 setInternalColor(c);

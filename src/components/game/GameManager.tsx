@@ -512,7 +512,7 @@ const GameManager: Component<GameManagerOptions> = ({
                         </div>
                         <VDivider ref={divider!} />
                         <div class="pgnviewer-sidebar">
-                            <Show when={isEditable()}>
+                            <Show when={isEditable() || playingEngine}>
                                 <PgnEditBar />
                             </Show>
                             <Show when={true}>

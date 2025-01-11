@@ -44,12 +44,13 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
     };
 
     const onAcceptStartingPosition = () => {
-        const newGame = game()?.updateHeaders(
-            new Map([
-                ["FEN", startingPosition() || ""],
-                ["Setup", "1"],
-            ]),
-        );
+        // const newGame = game()?.updateHeaders(
+        //     new Map([
+        //         ["FEN", startingPosition() || ""],
+        //         ["Setup", "1"],
+        //     ]),
+        // );
+        const newGame = game()?.withStartingPosition(startingPosition() || "");
         batch(() => {
             setGame(newGame);
             setViewMode(ViewMode.MOVES);

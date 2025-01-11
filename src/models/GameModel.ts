@@ -303,6 +303,16 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
+    public withStartingPosition(fen: string) {
+        const newGame = this.updateHeaders(
+            new Map([
+                ["FEN", fen || ""],
+                ["Setup", "1"],
+            ]),
+        );
+        return newGame;
+    }
+
     pgn() {
         return makePgn(this.game);
     }
