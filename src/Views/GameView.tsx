@@ -122,7 +122,6 @@ const GameView = () => {
             text,
             newPgn() || getDefaultStudyContent(),
         );
-        console.log("Renamed to " + text);
         refresh();
     };
 

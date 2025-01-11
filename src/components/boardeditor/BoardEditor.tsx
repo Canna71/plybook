@@ -129,7 +129,6 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
                 : setup.castlingRights.without(square);
 
             const newFen = makeFen(setup);
-            console.log("newFen", newFen);
             props.setFen(newFen);
             return v;
         };
@@ -154,62 +153,10 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         const setup = position();
         if (setup) {
             setup.epSquare = parseSquare(v);
-            console.log("epSquare", setup.epSquare);
             props.setFen(makeFen(setup));
         }
         return value;
     };
-
-    // const fen = () => {
-    //     let fen = props.fen();
-    //     console.log("fen changed", fen);
-    //     if (fen) {
-    //         const parsed = parseFen(fen);
-    //         if (parsed.isOk) {
-    //             const setup = parsed.value;
-    //             setup.turn = whitesTurn() ? "white" : "black";
-    //             let castlingRights = SquareSet.empty();
-    //             if (whiteKingside()) {
-    //                 castlingRights = castlingRights.with(
-    //                     squareFromCoords(7, 0)!,
-    //                 );
-    //             }
-    //             if (whiteQueenside()) {
-    //                 castlingRights = castlingRights.with(
-    //                     squareFromCoords(0, 0)!,
-    //                 );
-    //             }
-    //             if (blackKingside()) {
-    //                 castlingRights = castlingRights.with(
-    //                     squareFromCoords(7, 7)!,
-    //                 );
-    //             }
-    //             if (blackQueenside()) {
-    //                 castlingRights = castlingRights.with(
-    //                     squareFromCoords(0, 7)!,
-    //                 );
-    //             }
-
-    //             if (enPassant() !== "") {
-    //                 setup.epSquare = squareFromCoords(
-    //                     enPassant().charCodeAt(0) - "a".charCodeAt(0),
-    //                     enPassant().charCodeAt(1) - "1".charCodeAt(0),
-    //                 );
-    //             }
-
-    //             setup.castlingRights = castlingRights;
-    //             fen = makeFen(setup, { epd: true });
-    //         }
-    //     }
-    //     return fen;
-    // };
-
-    // createEffect(() => {
-    //     const newFen = fen();
-    //     if (newFen) {
-    //         props.setFen(fen());
-    //     }
-    // });
 
     const onClear = () => {
         props.setFen("8/8/8/8/8/8/8/8");

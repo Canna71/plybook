@@ -40,19 +40,16 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
     const cleanText = () => {
         let text = value();
         text = text.replaceAll(SEPARATOR, "\n");
-        console.log("cleaned value", text);
         return text;
     }
 
     const encodeText = (text: string) => {
         text = text.replace(/\r\n/g, SEPARATOR);
         text = text.replace(/\n/g, SEPARATOR);
-        console.log("encoded value", text);
         return text;
     }
 
     const onBlur = () => {
-        console.log("onBlur", textarea!.innerText);
         let value = textarea!.innerText;
         value = encodeText(value);
         

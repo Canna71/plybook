@@ -103,7 +103,6 @@ const EngineControl = () => {
                         [playerColor, "Player"],
                     ]),
                 );
-                // console.log("New game", newGame);
                 setGame(newGame);
                 setEngineColor(c);
                 setInternalColor(c);
@@ -111,21 +110,6 @@ const EngineControl = () => {
             });
         }
     };
-
-    // const engineLevelSelected = (level: string) => {
-    //     setEngineLevel(parseInt(level));
-    // };
-
-    // const engineLevelString = () => {
-    //     const level = engineLevel();
-    //     return "" + level;
-    // };
-
-    // const onEngineLevelChange = (e: Event) => {
-    //     const target = e.target as HTMLInputElement;
-    //     const level = parseInt(target.value);
-    //     setEngineLevel(level);
-    // }
 
     return (
         <div class="engine-control">
@@ -192,7 +176,6 @@ const EngineLevel = (props: {
     const onEngineLevelChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
         const level = parseInt(target.value);
-        console.log("Level", level);
         props.setEngineLevel(level);
     };
 
@@ -217,7 +200,6 @@ const DepthLevel = (props: {
     const onDepthLevelChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
         const level = parseInt(target.value);
-        console.log("Level", level);
         setSettingValue("engine.playing.depth", level);
     };
 

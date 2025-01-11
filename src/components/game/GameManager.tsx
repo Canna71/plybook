@@ -73,7 +73,6 @@ type PlayerNameSelectorProps = {
 };
 
 const PlayerNameSelector: Component<PlayerNameSelectorProps> = (props) => {
-    console.log("PlayerNameSelector", props.orientation());
     return (
         <Switch>
             <Match when={props.color === props.orientation()}>
@@ -231,7 +230,6 @@ const GameManager: Component<GameManagerOptions> = ({
             return orientationHeader === "white" ? "white" : "black";
         }
         const sp = g.initial.pos.turn;
-        console.log("Orientation", sp);
         return sp;
     });
 
@@ -252,14 +250,12 @@ const GameManager: Component<GameManagerOptions> = ({
         let movableColor = undefined;
 
         if (!!playingEngine) {
-            console.log("Playing engine", pos.turn, engineColor?.());
             if (engineColor?.() && pos.turn !== engineColor?.()) {
                 movableColor = pos.turn;
             }
         } else {
             movableColor = pos.turn;
         }
-        console.log("Movable color", movableColor);
 
         const config = {
             ...baseConfig,

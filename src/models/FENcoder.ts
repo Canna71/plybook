@@ -256,12 +256,8 @@ const testCases = [
 function test() {
     testCases.forEach((fen) => {
         try {
-            console.log("Original:", fen);
             const encoded = ChessPositionEncoder.encodeFEN(fen);
             const decoded = ChessPositionEncoder.decodeFEN(encoded);
-            console.log("Decoded:", decoded);
-            console.log("Match:", fen === decoded);
-            console.log("---");
         } catch (error) {
             console.error("Error:", error);
         }

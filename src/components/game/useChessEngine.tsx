@@ -65,7 +65,6 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     createEffect(async () => {
         if (shouldInitEngine()) {
-            console.log("Initializing engine");
             const engine = new UCIEngine(
                 new ExecutableUCIInterface(engineFolder()!),
             );
@@ -92,7 +91,6 @@ export function useChessEngine(options: ChessEngineOptions) {
     const cleanup = () => {
         const eng = engine();
         if (eng) {
-            console.log("Cleaning up engine");
             eng.quit();
             eng.off("bestmove", onEngineBestMove);
             setEngine(undefined);
@@ -132,9 +130,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     };
 
     createEffect(() => {
-        console.log("useChessEngine effect");
         if (shouldCallEngineAnalysis()) {
-            console.log("Calling engine analysis");
             const fenStr = options.fen();
             setEngineInfo([]);
             // TODO: Add a setting for depth and multipv (distinguish between analysis and playing)
@@ -154,7 +150,6 @@ export function useChessEngine(options: ChessEngineOptions) {
             engine()!.setOption("UCI_AnalyseMode", 0);
             engine()!.setOption("UCI_LimitStrength", "true");
             engine()!.setOption("UCI_Elo", engineLevel());
-            console.log("Calling engine move");
             const fenStr = options.fen();
 
             const playingOptions = {

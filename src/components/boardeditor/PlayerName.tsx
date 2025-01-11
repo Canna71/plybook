@@ -36,10 +36,6 @@ const PlayerName: Component<{
                 </Show>
             </Show>
 
-            {/* <div class="is-size-6 p-1 is-flex-grow-1"
-                contentEditable={editable()}
-                onChange={(e) => {console.log("fdfd"); setName(e.currentTarget.textContent || "")}}
-            >{name()}</div> */}
             <Editable
                 initialValue={name()}
                 editable={editable}

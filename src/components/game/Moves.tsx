@@ -154,7 +154,6 @@ const Moves: Component<MovesProps> = () => {
         playingEngine,
     } = useContext(GameContext)!;
 
-    console.log("Moves", (playingEngine()));
 
     const onClick = (e: Event) => {
         if (playingEngine()) return;
