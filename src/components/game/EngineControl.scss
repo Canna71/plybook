@@ -1,13 +1,15 @@
 .engine-control {
-    display: flex;
-    flex-direction: row;
-    line-height: 40px;
-    white-space: nowrap;
+    .engine-control-row {
+        display: flex;
+        flex-direction: row;
+        line-height: 40px;
+        white-space: nowrap;
 
-    svg {
-        vertical-align: middle;
-        // vertical-align: -webkit-baseline-middle;
-        // margin-top: auto;
-        // margin-bottom: auto;
+        svg {
+            vertical-align: middle;
+            // vertical-align: -webkit-baseline-middle;
+            // margin-top: auto;
+            // margin-bottom: auto;
+        }
     }
 }
