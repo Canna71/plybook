@@ -91,9 +91,7 @@ const PlayerNameSelector: Component<PlayerNameSelectorProps> = (props) => {
                 />
             </Match>
         </Switch>
-    )
-   
-
+    );
 };
 
 const GameManager: Component<GameManagerOptions> = ({
@@ -250,10 +248,17 @@ const GameManager: Component<GameManagerOptions> = ({
         const allDests = chessgroundDests(pos);
 
         // movable color is current color if not playing against engine
-        const movableColor =
-            !!playingEngine && pos.turn === engineColor?.()
-                ? undefined
-                : pos.turn;
+        let movableColor = undefined;
+
+        if (!!playingEngine) {
+            console.log("Playing engine", pos.turn, engineColor?.());
+            if (engineColor?.() && pos.turn !== engineColor?.()) {
+                movableColor = pos.turn;
+            }
+        } else {
+            movableColor = pos.turn;
+        }
+        console.log("Movable color", movableColor);
 
         const config = {
             ...baseConfig,
