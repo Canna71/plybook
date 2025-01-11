@@ -132,7 +132,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             setEngineInfo([]);
             // TODO: Add a setting for depth and multipv (distinguish between analysis and playing)
             engine()!.setOption("UCI_AnalyseMode", 1);
-            engine()!.setOption("UCI_LimitStrength", 0);
+            engine()!.setOption("UCI_LimitStrength", "false");
             engine()!.setOption("UCI_Elo", 3200);
             // engine()!.setOption("MultiPV", 3);
 
@@ -145,7 +145,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         } else if (shouldCallEngineMove()) {
             // TODO: set game specific options
             engine()!.setOption("UCI_AnalyseMode", 0);
-            engine()!.setOption("UCI_LimitStrength", 1);
+            engine()!.setOption("UCI_LimitStrength", "true");
             engine()!.setOption("UCI_Elo", engineLevel());
             console.log("Calling engine move");
             const fenStr = options.fen();
