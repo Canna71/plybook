@@ -135,7 +135,13 @@ export function useChessEngine(options: ChessEngineOptions) {
             engine()!.setOption("UCI_LimitStrength", 0);
             engine()!.setOption("UCI_Elo", 3200);
             // engine()!.setOption("MultiPV", 3);
-            engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 3 });
+
+            const analysisOptions = {
+                depth: getSettingValue("engine.analysis.depth", 15),
+                multipv: getSettingValue("engine.analysis.multipv", 3),
+            };
+
+            engine()!.analyzeFromFenOrMoves(fenStr, analysisOptions);
         } else if (shouldCallEngineMove()) {
             // TODO: set game specific options
             engine()!.setOption("UCI_AnalyseMode", 0);
@@ -143,7 +149,13 @@ export function useChessEngine(options: ChessEngineOptions) {
             engine()!.setOption("UCI_Elo", engineLevel());
             console.log("Calling engine move");
             const fenStr = options.fen();
-            engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 1 });
+
+            const playingOptions = {
+                depth: getSettingValue("engine.playing.depth", 15),
+                multipv: 1,
+            };
+
+            engine()!.analyzeFromFenOrMoves(fenStr, playingOptions);
         }
     });
 
