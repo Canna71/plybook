@@ -1,5 +1,13 @@
 import { NormalMove } from "chessops";
-import { createSignal, createResource, createEffect, batch, onCleanup, Accessor, Signal } from "solid-js";
+import {
+    createSignal,
+    createResource,
+    createEffect,
+    batch,
+    onCleanup,
+    Accessor,
+    Signal,
+} from "solid-js";
 import { createStore } from "solid-js/store";
 import { IChessEngine, EngineInfo } from "../../engine/engineinterfaces";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
@@ -8,6 +16,7 @@ import { getEnginePath } from "../../storage/fs";
 import { makeMove } from "../common/utils";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
+import { getSettingValue, setSettingValue } from "../../models/settings";
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
@@ -21,21 +30,35 @@ export type ChessEngineOptions = {
 
 export function useChessEngine(options: ChessEngineOptions) {
     // #region Engine state
-    const [engineAnalysisOn, setEngineAnalysisOn] = createSignal<boolean>(options.defaultEngineAnalysisOn);
+    const [engineAnalysisOn, setEngineAnalysisOn] = createSignal<boolean>(
+        options.defaultEngineAnalysisOn,
+    );
     const [engineFolder, _others] = createResource(() => getEnginePath());
     const [engine, setEngine] = createSignal<IChessEngine | undefined>(
-        undefined
+        undefined,
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
 
-    const [engineLevel, setEngineLevel] = createSignal<number>(10);
+    const [engineLevel, setEngineLevel] =
+        //createSignal<number>(1000);
+        [
+            () => getSettingValue("engine.playing.elo", 1000),
+            (v: number) => {
+                setSettingValue("engine.playing.elo", v);
+            },
+        ];
 
     const shouldCallEngineAnalysis = () => engine() && engineAnalysisOn();
-    const shouldCallEngineMove = () => engine() && options.playingEngine() && options.engineColor?.() == options.turn();
-    
+    const shouldCallEngineMove = () =>
+        engine() &&
+        options.playingEngine() &&
+        options.engineColor?.() == options.turn();
 
     const shouldInitEngine = () => {
-        const shouldInit = (engineAnalysisOn() || options.playingEngine?.()) && engineFolder() && !engine();
+        const shouldInit =
+            (engineAnalysisOn() || options.playingEngine?.()) &&
+            engineFolder() &&
+            !engine();
         return shouldInit;
     };
 
@@ -43,7 +66,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         if (shouldInitEngine()) {
             console.log("Initializing engine");
             const engine = new UCIEngine(
-                new ExecutableUCIInterface(engineFolder()!)
+                new ExecutableUCIInterface(engineFolder()!),
             );
 
             await engine.init();
@@ -59,7 +82,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         }
     });
 
-    
     const cleanup = () => {
         const eng = engine();
         if (eng) {
@@ -68,8 +90,8 @@ export function useChessEngine(options: ChessEngineOptions) {
             eng.off("bestmove", onEngineBestMove);
             setEngine(undefined);
         }
-    }
-    
+    };
+
     createEffect(() => {
         if (!engineAnalysisOn() && !options.playingEngine?.()) {
             cleanup();
@@ -85,7 +107,10 @@ export function useChessEngine(options: ChessEngineOptions) {
         if (!g) {
             return;
         }
-        if (!options.engineColor?.() || options.engineColor?.() != options.turn()) {
+        if (
+            !options.engineColor?.() ||
+            options.engineColor?.() != options.turn()
+        ) {
             return;
         }
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
@@ -107,6 +132,8 @@ export function useChessEngine(options: ChessEngineOptions) {
             setEngineInfo([]);
             // TODO: Add a setting for depth and multipv (distinguish between analysis and playing)
             engine()!.setOption("UCI_AnalyseMode", 1);
+            engine()!.setOption("UCI_LimitStrength", 0);
+            engine()!.setOption("UCI_Elo", 3200);
             // engine()!.setOption("MultiPV", 3);
             engine()!.analyzeFromFenOrMoves(fenStr, { depth: 15, multipv: 3 });
         } else if (shouldCallEngineMove()) {
@@ -122,12 +149,12 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     return {
         engineInfo,
-        
+
         engineLevelSignal: [engineLevel, setEngineLevel] as Signal<number>,
         engineCallable: shouldCallEngineAnalysis,
-        engineAnalysisOnSignal: [engineAnalysisOn, setEngineAnalysisOn] as Signal<boolean>,
+        engineAnalysisOnSignal: [
+            engineAnalysisOn,
+            setEngineAnalysisOn,
+        ] as Signal<boolean>,
     };
 }
-
-
-

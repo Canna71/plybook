@@ -1,5 +1,5 @@
 import { ensureConfigFileExists, readConfigFileAsJson, writeConfigFile } from "../storage/fs";
-import { get } from "es-toolkit/compat";
+import { get, toMerged } from "es-toolkit/compat";
 import { createStore } from "solid-js/store";
 import { createSignal } from "solid-js";
 export interface AppSettings {
@@ -9,9 +9,15 @@ export interface AppSettings {
     }
     engine?: {
         lastUsed?: string;
-        depth?: number;
-        elo?: number;
-        lines?: number;
+        analysis: {
+            depth?: number;
+            lines?: number;
+        },
+        playing: {
+            depth?: number;
+            elo?: number;
+        }
+        
     },
     _timestamp?: number;
 }
@@ -20,13 +26,24 @@ const DEFAULT : AppSettings = {
     themes: {
         board: "bluish",
         pieces: "merida"
+    }, 
+    engine: {
+        lastUsed: "",
+        analysis: {
+            depth: 30,
+            lines: 3
+        },
+        playing: {
+            depth: 30,
+            elo: 1000
+        }
     }
 }
 
 // TODO: have a look at here https://github.com/solidjs-community/solid-primitives/tree/main/packages/storage#readme
 
 // let theSettings: AppSettings;
-const [settings, setSettings] = createStore<AppSettings>(DEFAULT); //= [undefined, undefined ];
+const [settings, setSettings] = createStore<AppSettings>({...DEFAULT}); //= [undefined, undefined ];
 const [settingsLoaded, setSettingsLoaded] = createSignal(false);
 // createStore(undefined as AppSettings | undefined);
 // export async function initSettings() {
@@ -37,7 +54,7 @@ async function loadSettings() {
     await ensureConfigFileExists("settings.json");
     const newSettings = await readConfigFileAsJson<AppSettings>("settings.json") || {} as AppSettings;
     
-    const mergedSettings = {...DEFAULT, ...newSettings};
+    const mergedSettings = toMerged(DEFAULT, newSettings)// {...DEFAULT, ...newSettings};
     
 
     setSettings(mergedSettings);
