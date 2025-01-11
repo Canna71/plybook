@@ -512,8 +512,8 @@ const GameManager: Component<GameManagerOptions> = ({
                         </div>
                         <VDivider ref={divider!} />
                         <div class="pgnviewer-sidebar">
-                            <Show when={isEditable() || playingEngine}>
-                                <PgnEditBar />
+                            <Show when={true}>
+                                <PgnEditBar isEditable={isEditable} />
                             </Show>
                             <Show when={true}>
                                 <EngineControl />
@@ -536,7 +536,6 @@ const GameManager: Component<GameManagerOptions> = ({
                                         setCurrentPath={setCurrentPath}
                                     />
                                 </Show>
-                               
                             </Show>
 
                             <Show when={viewMode() === ViewMode.PGN}>

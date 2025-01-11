@@ -1,4 +1,4 @@
-import { Component, useContext, batch, Show } from "solid-js";
+import { Component, useContext, batch, Show, Accessor } from "solid-js";
 import Button from "../common/Button";
 import { GameContext } from "./GameContext";
 import { initFromGameModel, updateGameFromPgnString } from "../common/utils";
@@ -18,14 +18,11 @@ export enum ViewMode {
     PGN,
 }
 
-type SetPositionSwitchProps = {
-    // viewMode: Accessor<ViewMode>;
-    // onEditStartingPosition: () => void;
-    // onAcceptStartingPosition: () => void;
-    // onCancelStartingPosition: () => void;
+type PgnEditBarProps = {
+    isEditable: Accessor<boolean>;
 };
 
-const PgnEditBar: Component<SetPositionSwitchProps> = () => {
+const PgnEditBar: Component<PgnEditBarProps> = (props) => {
     const gameContext = useContext(GameContext)!;
     const {
         viewModeSignal: [viewMode, setViewMode],
@@ -36,7 +33,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
             isEditingDescription,
             setIsEditingDescription,
         ],
-        orientation
+        orientation,
     } = gameContext;
 
     const onEditStartingPosition = () => {
@@ -83,38 +80,44 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
         setIsEditingDescription(false);
     };
 
-    
-
     const onFLipBoard = () => {
         const newOrientation = orientation() === "white" ? "black" : "white";
-        const newGame = game()?.updateHeaders(new Map([["Orientation", newOrientation]]));
+        const newGame = game()?.updateHeaders(
+            new Map([["Orientation", newOrientation]]),
+        );
         // initFromGameModel(gameContext, newGame!);
         setGame(newGame);
-    }
+    };
 
     return (
-        <div class="buttons-bar buttons are-small">
-                <Button
-                    onClick={onFLipBoard}
-                    title="Flip Board"
-                >
+        <div class="buttons-bar are-small">
+            <Show when={props.isEditable()}>
+                <Button onClick={onFLipBoard} title="Flip Board">
                     <IconSwitchVertical />
                 </Button>
-            
 
-            <Show when={isEditingDescription()}>
-                <Button
-                    onClick={onFinishEditDescription}
-                    title="Finish Editing Description"
-                >
-                    <IconCheck />
-                </Button>
-            </Show>
+                <Show when={isEditingDescription()}>
+                    <Button
+                        onClick={onFinishEditDescription}
+                        title="Finish Editing Description"
+                    >
+                        <IconCheck />
+                    </Button>
+                </Show>
 
-            <Show when={!isEditingDescription()}>
-                <Button onClick={onEditDescription} title="Edit Description">
-                    <IconTextPlus />
-                </Button>
+                <Show when={!isEditingDescription()}>
+                    <Button
+                        onClick={onEditDescription}
+                        title="Edit Description"
+                    >
+                        <IconTextPlus />
+                    </Button>
+                </Show>
+                <Show when={viewMode() === ViewMode.MOVES}>
+                    <Button onClick={onEditPgn} title="Edit PGN">
+                        <IconBrackets />
+                    </Button>
+                </Show>
             </Show>
 
             <Show when={viewMode() === ViewMode.MOVES}>
@@ -125,11 +128,7 @@ const PgnEditBar: Component<SetPositionSwitchProps> = () => {
                     <StartingPositionIcon />
                 </Button>
             </Show>
-            <Show when={viewMode() === ViewMode.MOVES}>
-                <Button onClick={onEditPgn} title="Edit PGN">
-                    <IconBrackets />
-                </Button>
-            </Show>
+
             <Show when={viewMode() === ViewMode.STARTING_POSITION}>
                 <div class="is-flex is-flex-direction-row is-gap-1">
                     <Button onClick={onCancelStartingPosition}>Cancel</Button>

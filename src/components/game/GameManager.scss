@@ -257,7 +257,9 @@
 .buttons-bar {
     padding: 4px;
     display: flex;
-    justify-content: right;
+    justify-content: left;
+    gap: 8px;
+    margin-bottom: 8px;
 
     button {
         padding: 4px;
