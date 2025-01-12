@@ -9,7 +9,6 @@ const Layout : ParentComponent = (props) => {
 
     const divider = useSplitter(
         (layout) => {
-                    console.log("layout", layout);
                     setSettingValue("layout.columnsTemplate", layout);
                 }
     );

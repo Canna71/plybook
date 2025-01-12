@@ -146,7 +146,6 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const divider = useSplitter(
         (layout) => {
-            console.log("layout", layout);
             setSettingValue("layout.playing.columnsTemplate", layout);
         },
     );
