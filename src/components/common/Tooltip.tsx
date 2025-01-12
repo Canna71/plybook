@@ -1,5 +1,5 @@
 import { ReferenceElement } from "@floating-ui/dom";
-import { NormalMove } from "chessops";
+import { Color, NormalMove } from "chessops";
 import { useFloating } from "solid-floating-ui";
 import { Accessor, Component, createSignal } from "solid-js";
 import { PlyData, toMove } from "../../models/pgn";
@@ -9,9 +9,10 @@ import { Chessboard } from "./chessboard";
 type TooltipProps = {
 	plyData: Accessor<PlyData | undefined>;
 	reference: Accessor<ReferenceElement | null | undefined>;
+	orientation?: Accessor<Color>;
 };
 
-export const Tooltip: Component<TooltipProps> = ({ plyData, reference }) => {
+export const Tooltip: Component<TooltipProps> = ({ plyData, reference, orientation }) => {
 	const [floating, setFloating] = createSignal<HTMLElement>();
 	// See: https://github.com/lxsmnsyc/solid-floating-ui
 	// And: https://floating-ui.com/docs/tutorial
@@ -22,6 +23,7 @@ export const Tooltip: Component<TooltipProps> = ({ plyData, reference }) => {
 			viewOnly: true,
 			fen: plyData()?.fen,
 			lastMove: toMove(plyData()?.move as NormalMove),
+			orientation: orientation?.(),
 		};
 	}
 
