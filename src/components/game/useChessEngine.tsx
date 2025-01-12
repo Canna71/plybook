@@ -69,12 +69,9 @@ export function useChessEngine(options: ChessEngineOptions) {
         // TODO: check if the current position is the last one
         if(!tmp) return false;
         const node = options.game()?.nodeAt(options.path() || Path.root);
-        console.log("Node", node);
         if(node && node.children.length > 0) {
-            console.log("Node has children", node.children);
             return false;
         }
-        console.log("Should call engine move", tmp);
         return tmp;
     })
 
@@ -142,7 +139,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         ) {
             return;
         }
-        console.log("Engine best move", options.engineColor?.(), options.turn());
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
         const move: NormalMove = makeMove(m.from, m.to);
         options.applyMove(move);
@@ -167,7 +163,6 @@ export function useChessEngine(options: ChessEngineOptions) {
                 depth: getSettingValue("engine.analysis.depth", 15),
                 multipv: getSettingValue("engine.analysis.multipv", 3),
             };
-            console.log("Analysis options", analysisOptions);
 
             engine()!.analyzeFromFenOrMoves(fenStr, analysisOptions);
         } else if (shouldCallEngineMove()) {
