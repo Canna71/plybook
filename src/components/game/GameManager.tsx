@@ -26,15 +26,15 @@ import {
     otherColor,
     useSplitter,
 } from "../common/utils";
-import { Color, Key, Piece, Role } from "chessground/types";
+import { Color, Key, Piece, Role, SquareClasses } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
 import BoardEditor from "../boardeditor/BoardEditor";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
-import { GameContext, GameContextType, TooltipContext } from "./GameContext";
+import { GameContext, GameContextType, HintType, TooltipContext } from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
-import { NormalMove } from "chessops";
+import { makeSquare, NormalMove, parseUci } from "chessops";
 import "./GameManager.scss";
 import { getDefaultStudyContent } from "../../storage/fs";
 import EngineInfoViewer from "./EngineInfoViewer";
@@ -49,6 +49,7 @@ import { makePgn, parsePgn } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
 import EngineControl from "./EngineControl";
 import { getSettingValue, setSettingValue } from "../../models/settings";
+import { Config } from "chessground/config";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -134,6 +135,7 @@ const GameManager: Component<GameManagerOptions> = ({
     const [engineColor, setEngineColor] = createSignal<Color | undefined>(
         undefined,
     );
+    const [hintType, setHintType] = createSignal(HintType.None);
     // #endregion
     const isEditable = () => {
         return editable?.() || false;
@@ -240,7 +242,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // const playingEngine = () => !!engineColor?.();
 
     const config = () => {
-        const baseConfig = makeConfig(
+        const baseConfig : Config = makeConfig(
             game,
             currentPath,
             squareHovered,
@@ -261,8 +263,26 @@ const GameManager: Component<GameManagerOptions> = ({
             movableColor = pos.turn;
         }
 
+        const hints:SquareClasses = new Map();
+        const hintMove = moveHintSignal[0]();
+        if (hintMove ) {
+            const move = parseUci(hintMove) as NormalMove;
+            const from = makeSquare(move.from);
+            const to = makeSquare(move.to);
+            if(hintType() === HintType.Piece) {
+                hints.set(from, "selected");
+            } else if (hintType() === HintType.Move) {
+                hints.set(from, "selected");
+                hints.set(to, "selected");
+            }
+        }
+
         const config = {
             ...baseConfig,
+            highlight: {
+                ...baseConfig.highlight,
+                custom: hints
+            },
             draggable: {
                 enabled: true,
             },
@@ -320,6 +340,7 @@ const GameManager: Component<GameManagerOptions> = ({
         const path = currentPath() || Path.root;
         const [newGameModel, newPath] = g.applyMoves(path, [move]);
         batch(() => {
+            setHintType(HintType.None);
             setGame(newGameModel);
             setCurrentPath(newPath);
         });
@@ -447,6 +468,7 @@ const GameManager: Component<GameManagerOptions> = ({
         engineColorSignal: [engineColor, setEngineColor],
         engineLevelSignal,
         moveHintSignal,
+        hintTypeSignal: [hintType, setHintType],
     } as GameContextType;
     // #endregion
 

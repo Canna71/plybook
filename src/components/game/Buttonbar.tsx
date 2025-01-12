@@ -1,15 +1,24 @@
 import {
+    IconBulbFilled,
     IconPlayerSkipBackFilled,
     IconPlayerSkipForwardFilled,
     IconPlayerTrackNextFilled,
     IconPlayerTrackPrevFilled,
 } from "@tabler/icons-solidjs";
-import { Accessor, Component, createMemo, createSignal, Setter, Show, useContext } from "solid-js";
+import {
+    Accessor,
+    Component,
+    createMemo,
+    createSignal,
+    Setter,
+    Show,
+    useContext,
+} from "solid-js";
 import { Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Button from "../common/Button";
 import Modal from "../common/Modal";
-import { GameContext } from "./GameContext";
+import { GameContext, HintType } from "./GameContext";
 
 export type ButtonBarProps = {
     // game: Accessor<GameModel | undefined>;
@@ -17,15 +26,15 @@ export type ButtonBarProps = {
     // setCurrentPath: Setter<Path | undefined>;
 };
 
-const ButtonBar: Component<ButtonBarProps> = ({
-  
-}) => {
+const ButtonBar: Component<ButtonBarProps> = ({}) => {
     const [modalVisible, setModalVisible] = createSignal(false);
-    const { gameSignal: [game],
+    const {
+        gameSignal: [game],
         currentPathSignal: [currentPath, setCurrentPath],
         moveHintSignal: [moveHint],
-        playingEngine
-     } = useContext(GameContext)!;
+        playingEngine,
+        hintTypeSignal: [hintType, setHintType],
+    } = useContext(GameContext)!;
 
     const nextNode = () => {
         const path = currentPath();
@@ -92,16 +101,21 @@ const ButtonBar: Component<ButtonBarProps> = ({
         );
     };
 
-     const hasMoves = createMemo(() => game()?.mainline?.length ?? 0 > 0);
-    
-    const onHint = () => {
-        setModalVisible(!modalVisible());
+    const hasMoves = createMemo(() => game()?.mainline?.length ?? 0 > 0);
+
+    const onHintPiece = () => {
+        // setModalVisible(!modalVisible());
+        setHintType(HintType.Piece);
+    };
+
+    const onHintMove = () => {
+        setHintType(HintType.Move);
     };
 
     return (
         <>
             <Show when={game() && currentPath() && hasMoves()}>
-                <div class="pgnviewer-buttonbar buttons are-small">
+                <div class="pgnviewer-buttonbar are-small">
                     <Button onClick={onRewind} disabled={!canRewind()}>
                         <IconPlayerTrackPrevFilled />
                     </Button>
@@ -118,14 +132,16 @@ const ButtonBar: Component<ButtonBarProps> = ({
                         <IconPlayerTrackNextFilled />
                     </Button>
                 </div>
-
-                
             </Show>
-            <Show when={playingEngine() && moveHint()}> 
-                <Button onClick={onHint}>Hint?</Button>
-                <Modal isOpen={[modalVisible, setModalVisible]}>
-                    <div>{moveHint()}</div>
-                </Modal>
+            <Show when={playingEngine() && moveHint()}>
+                <div class="pgnviewer-buttonbar are-small">
+                    <Button onClick={onHintPiece} title="Suggest Piece">
+                        <IconBulbFilled /><span>Piece</span>
+                    </Button>
+                    <Button onClick={onHintMove} title="Suggest Move">
+                        <IconBulbFilled /><span>Move</span>
+                    </Button>
+                </div>
             </Show>
         </>
     );

@@ -4,7 +4,11 @@ import { Path, PlyData } from "../../models/pgn";
 import { ViewMode } from "./PgnEditBar";
 import { Color } from "chessops";
 
-
+export enum HintType {
+	None,
+	Piece,
+	Move,
+}
 
 export interface GameContextType {
 	// fi?: Accessor<string | undefined>;
@@ -26,6 +30,7 @@ export interface GameContextType {
 	playingEngine: Accessor<boolean>;
 	setSquareHovered?: (square: string | undefined) => void;
 	editable: Accessor<boolean>;
+	hintTypeSignal: Signal<HintType>;
 }
 
 export const GameContext = createContext<GameContextType>();
