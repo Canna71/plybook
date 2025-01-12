@@ -1,41 +1,45 @@
-import { ParentComponent, Signal } from "solid-js";
+import { Accessor, ParentComponent, Show, Signal } from "solid-js";
 import { Portal } from "solid-js/web";
 
 type ModalProps = {
     isOpen: Signal<boolean>;
     onClose?: () => void;
+    title?: Accessor<string>;
 };
 
 const Modal: ParentComponent<ModalProps> = (props) => {
-
     const onClose = () => {
         props.onClose?.();
-        props.isOpen[1](false);
-    }
+        // props.isOpen[1](false);
+    };
 
     const classList = () => {
         return {
-            "modal": true,
+            modal: true,
             "is-active": props.isOpen[0](),
             "is-clipped": true,
-        }
-    }
+        };
+    };
 
     return (
         <Portal>
             <div classList={classList()}>
                 <div class="modal-background"></div>
 
-                <div class="modal-content">
-                    <div class="box">
-                        
-                        {props.children}
-                        <button 
+                <div class="modal-card">
+                    <Show when={props.title}>
+                        <header class="modal-card-head">{props.title!()}</header>
+                    </Show>
+                    <div class="modal-card-body">{props.children}</div>
+                    <footer class="modal-card-foot">
+                        <button
                             onClick={onClose}
-                            class="button" aria-label="close">
+                            class="button"
+                            aria-label="close"
+                        >
                             Close
                         </button>
-                    </div>
+                    </footer>
                 </div>
             </div>
         </Portal>

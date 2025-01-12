@@ -11,7 +11,7 @@ export interface AppSettings {
         lastUsed?: string;
         analysis: {
             depth?: number;
-            lines?: number;
+            multipv?: number;
         },
         playing: {
             depth?: number;
@@ -37,7 +37,7 @@ const DEFAULT : AppSettings = {
         lastUsed: "",
         analysis: {
             depth: 30,
-            lines: 3
+            multipv: 3
         },
         playing: {
             depth: 30,

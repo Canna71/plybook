@@ -24,6 +24,7 @@ import { range } from "es-toolkit";
 import { makeGame } from "../../models/pgn";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { startingPosition } from "chessops/pgn";
+import Modal from "../common/Modal";
 
 const EngineControl = () => {
     const {
@@ -41,6 +42,7 @@ const EngineControl = () => {
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
         engineColor() || "random",
     );
+    const [settingsModalVisible, setSettingsModalVisible] = createSignal(false);
     const handleEngineChange = () => {};
 
     const canEnableEngine = () => {
@@ -105,7 +107,9 @@ const EngineControl = () => {
                         [playerColor, "Player"],
                     ]),
                 );
-                newGame = newGame.withStartingPosition(startingPosition() || "");
+                newGame = newGame.withStartingPosition(
+                    startingPosition() || "",
+                );
                 setGame(newGame);
                 setEngineColor(c);
                 setInternalColor(c);
@@ -114,61 +118,90 @@ const EngineControl = () => {
         }
     };
 
+    const onShowSettingsModal = () => {
+        setSettingsModalVisible(true);
+    }
+
+    const analysysDepth = () => {
+        return getSettingValue("engine.analysis.depth");
+    }
+
     return (
-        <div class="engine-control">
-            <div class="engine-control-row">
-                <Show when={canEnableEngine()}>
-                    <div
-                        title="Enable Engine Analysis"
-                        class="is-flex is-flex-direction-row"
-                    >
-                        <IconCpu />
-                        <ToggleSwitch toggleSignal={engineAnalysisOnSignal} />
-                    </div>
-                </Show>
-                <Show when={playingEngine()}>
-                    <div title="Engine Color">
-                        <IconCpu />
-                        <Select
-                            selectedValue={internalColor}
-                            setSelectedValue={
-                                setInternalColor as Setter<string>
-                            }
-                            options={engineColors}
-                        />
-                    </div>
-                    <Show when={!!engineColor()}>
-                        <Button onClick={toggleGame} title="Stop Game">
-                            <IconPlayerStopFilled />
-                        </Button>
+        <>
+            <div class="engine-control">
+                <div class="engine-control-row">
+                    <Show when={canEnableEngine()}>
+                        <div
+                            title="Enable Engine Analysis"
+                            class="is-flex is-flex-direction-row"
+                        >
+                            <IconCpu />
+                            <ToggleSwitch
+                                toggleSignal={engineAnalysisOnSignal}
+                            />
+                            <Button onClick={onShowSettingsModal} title="Analysis Settings"
+                            >Settings</Button>
+                        </div>
                     </Show>
-                    <Show when={!engineColor()}>
-                        <Button onClick={toggleGame} title="New Game">
-                            <IconPlayerPlayFilled />
-                        </Button>
-                    </Show>
-                    {/* <Select
+                    <Show when={playingEngine()}>
+                        <div title="Engine Color">
+                            <IconCpu />
+                            <Select
+                                selectedValue={internalColor}
+                                setSelectedValue={
+                                    setInternalColor as Setter<string>
+                                }
+                                options={engineColors}
+                            />
+                        </div>
+                        <Show when={!!engineColor()}>
+                            <Button onClick={toggleGame} title="Stop Game">
+                                <IconPlayerStopFilled />
+                            </Button>
+                        </Show>
+                        <Show when={!engineColor()}>
+                            <Button onClick={toggleGame} title="New Game">
+                                <IconPlayerPlayFilled />
+                            </Button>
+                        </Show>
+                        {/* <Select
                     selectedValue={engineLevelString}
                     setSelectedValue={engineLevelSelected as Setter<string>}
                     options={engineSkillLevels}
                 /> */}
+                    </Show>
+                </div>
+
+                <Show when={playingEngine()}>
+                    <div class="engine-control-row">
+                        ELO:{" "}
+                        <EngineLevel
+                            engineLevel={engineLevel}
+                            setEngineLevel={setEngineLevel}
+                        />
+                    </div>
+                    <div class="engine-control-row">
+                        Depth: <DepthLevel />
+                    </div>
                 </Show>
             </div>
-
-            <Show when={playingEngine()}>
-                <div class="engine-control-row">
-                    ELO: <EngineLevel
-                        engineLevel={engineLevel}
-                        setEngineLevel={setEngineLevel}
-                    />
+            <Modal
+                isOpen={[settingsModalVisible, setSettingsModalVisible]}
+                onClose={() => setSettingsModalVisible(false)}
+                title={()=>"Analysis Settings"}
+            >
+                <div>
+                    <div>
+                        <label>Depth</label>
+                        <AnalysisDepthLevel />
+                    </div>
+                    <div>
+                        <label>MultiPV</label>
+                        <MultiPVLevel />
+                    </div>
                 </div>
-                <div class="engine-control-row">
-                    Depth: <DepthLevel
-                        
-                    />
-                </div>
-            </Show>
-        </div>
+            </Modal>
+        </>
     );
 };
 
@@ -197,9 +230,7 @@ const EngineLevel = (props: {
     );
 };
 
-const DepthLevel = (props: {
-   
-}) => {
+const DepthLevel = (props: {}) => {
     const onDepthLevelChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
         const level = parseInt(target.value);
@@ -208,14 +239,14 @@ const DepthLevel = (props: {
 
     const depth = () => {
         return getSettingValue("engine.playing.depth", 20);
-    }
+    };
 
     return (
         <div class="slide-container">
             <input
                 type="range"
                 min={1}
-                max={100}
+                max={50}
                 step={1}
                 onchange={onDepthLevelChange}
                 value={depth()}
@@ -224,5 +255,57 @@ const DepthLevel = (props: {
         </div>
     );
 };
+
+const AnalysisDepthLevel = (props: {}) => {
+    const onDepthLevelChange = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const level = parseInt(target.value);
+        setSettingValue("engine.analysis.depth", level);
+    };
+
+    const depth = () => {
+        return getSettingValue("engine.analysis.depth", 20);
+    };
+
+    return (
+        <div class="slide-container">
+            <input
+                type="range"
+                min={1}
+                max={50}
+                step={1}
+                onchange={onDepthLevelChange}
+                value={depth()}
+            />
+            <span class="slide-value">{depth()}</span>
+        </div>
+    );
+};
+
+const MultiPVLevel = (props: {}) => {
+    const onMultiPVLevelChange = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const level = parseInt(target.value);
+        setSettingValue("engine.analysis.multipv", level);
+    };
+
+    const level = () => {
+        return getSettingValue("engine.analysis.multipv", 1);
+    };
+
+    return (
+        <div class="slide-container">
+            <input
+                type="range"
+                min={1}
+                max={10}
+                step={1}
+                onchange={onMultiPVLevelChange}
+                value={level()}
+            />
+            <span class="slide-value">{level()}</span>
+        </div>
+    );
+}
 
 export default EngineControl;
