@@ -46,7 +46,9 @@ const GameView = () => {
         let pgnText = getDefaultStudyContent();
         if (typeof searchParams.path === "string") {
             try{
+                console.log("Reading file: " + searchParams.path);
                 pgnText = await readDataFile(searchParams.path);
+                console.log("Read file: " + searchParams.path);
             } catch (e) {
                 // Shows message
                 message('Error reading file: \n' + searchParams.path, { title: 'Re:Chess', kind: 'error' });

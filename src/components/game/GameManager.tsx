@@ -448,6 +448,11 @@ const GameManager: Component<GameManagerOptions> = ({
         const games = parsePgn(fPgn || "");
         if (gIdx >= 0 && gIdx < games.length) {
             const gameModel = makeGameInternal(games[gIdx]);
+            console.log("Setting game", gameModel);
+            initFromGameModel(gameContext, gameModel);
+        } else if (initialFen) {
+            const gameModel = makeGameInternal(parsePgn("[]]")[0])
+            .withStartingPosition(initialFen);
             initFromGameModel(gameContext, gameModel);
         }
     });
