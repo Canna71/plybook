@@ -143,12 +143,9 @@ const GameManager: Component<GameManagerOptions> = ({
     // #region Layout
     let chessBoardDiv: HTMLDivElement | null = null;
 
-
-    const divider = useSplitter(
-        (layout) => {
-            setSettingValue("layout.playing.columnsTemplate", layout);
-        },
-    );
+    const divider = useSplitter((layout) => {
+        setSettingValue("layout.playing.columnsTemplate", layout);
+    });
     // #endregion
 
     // #region Event Handlers
@@ -416,6 +413,7 @@ const GameManager: Component<GameManagerOptions> = ({
         engineCallable,
         engineAnalysisOnSignal,
         engineLevelSignal,
+        moveHintSignal,
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -448,6 +446,7 @@ const GameManager: Component<GameManagerOptions> = ({
         editable: isEditable,
         engineColorSignal: [engineColor, setEngineColor],
         engineLevelSignal,
+        moveHintSignal,
     } as GameContextType;
     // #endregion
 
@@ -460,9 +459,13 @@ const GameManager: Component<GameManagerOptions> = ({
         <>
             <GameContext.Provider value={gameContext}>
                 <TooltipContext.Provider value={{ showTooltip }}>
-                    <div class="pgnviewer-container"
+                    <div
+                        class="pgnviewer-container"
                         style={{
-                            "grid-template-columns": getSettingValue("layout.playing.columnsTemplate", "400px 5px 1fr")
+                            "grid-template-columns": getSettingValue(
+                                "layout.playing.columnsTemplate",
+                                "400px 5px 1fr",
+                            ),
                         }}
                     >
                         <div class="pgnviewer-content">
@@ -533,21 +536,18 @@ const GameManager: Component<GameManagerOptions> = ({
                             <Show when={engineCallable() && !playingEngine}>
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
-                            <Show
-                                when={
-                                    hasMoves() && viewMode() === ViewMode.MOVES
-                                }
-                            >
-                                <div class="pgnviewer-moves-wrapper">
+                            <div class="pgnviewer-moves-wrapper">
+                                <Show
+                                    when={
+                                        hasMoves() &&
+                                        viewMode() === ViewMode.MOVES
+                                    }
+                                >
                                     <Moves />
-                                </div>
-                                <Show when={!playingEngine || true}>
-                                    <ButtonBar
-                                        game={game}
-                                        currentPath={currentPath}
-                                        setCurrentPath={setCurrentPath}
-                                    />
                                 </Show>
+                            </div>
+                            <Show when={viewMode() === ViewMode.MOVES}>
+                                <ButtonBar />
                             </Show>
 
                             <Show when={viewMode() === ViewMode.PGN}>

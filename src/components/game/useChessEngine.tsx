@@ -20,6 +20,7 @@ import { GameModel } from "../../models/GameModel";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { create } from "@tauri-apps/plugin-fs";
 import { isPlyData, Path } from "../../models/pgn";
+import { set } from "es-toolkit/compat";
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
@@ -42,6 +43,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         undefined,
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
+    const [hintMove, setHintMove] = createSignal<string | undefined>(undefined);
 
     const [engineLevel, setEngineLevel] =
         //createSignal<number>(1000);
@@ -133,14 +135,18 @@ export function useChessEngine(options: ChessEngineOptions) {
         if (!g) {
             return;
         }
+        const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
+        const move: NormalMove = makeMove(m.from, m.to);
         if (
             !options.engineColor?.() ||
             options.engineColor?.() != options.turn()
         ) {
+            console.log("Best Player move: ", move);
+            setHintMove(bestMove);
             return;
         }
-        const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
-        const move: NormalMove = makeMove(m.from, m.to);
+        
+        
         options.applyMove(move);
     };
 
@@ -151,6 +157,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     };
 
     createEffect(() => {
+        setHintMove(undefined);
         if (shouldCallEngineAnalysis()) {
             const fenStr = options.fen();
             setEngineInfo([]);
@@ -182,7 +189,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     return {
         engineInfo,
-
+        moveHintSignal: [hintMove, setHintMove] as Signal<string | undefined>,
         engineLevelSignal: [engineLevel, setEngineLevel] as Signal<number>,
         engineCallable: shouldCallEngineAnalysis,
         engineAnalysisOnSignal: [

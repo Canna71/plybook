@@ -69,9 +69,7 @@ const PgnViewer: Component<PgnViewerOptions> = ({ pgn }) => {
 
 					</div>
 					<ButtonBar
-						game={game}
-						currentPath={currentPath}
-						setCurrentPath={setCurrentPath}
+						
 					/>
 				</div>
 

@@ -4,22 +4,29 @@ import {
     IconPlayerTrackNextFilled,
     IconPlayerTrackPrevFilled,
 } from "@tabler/icons-solidjs";
-import { Accessor, Component, Setter, Show } from "solid-js";
+import { Accessor, Component, createMemo, createSignal, Setter, Show, useContext } from "solid-js";
 import { Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Button from "../common/Button";
+import Modal from "../common/Modal";
+import { GameContext } from "./GameContext";
 
 export type ButtonBarProps = {
-    game: Accessor<GameModel | undefined>;
-    currentPath: Accessor<Path | undefined>;
-    setCurrentPath: Setter<Path | undefined>;
+    // game: Accessor<GameModel | undefined>;
+    // currentPath: Accessor<Path | undefined>;
+    // setCurrentPath: Setter<Path | undefined>;
 };
 
 const ButtonBar: Component<ButtonBarProps> = ({
-    game,
-    currentPath,
-    setCurrentPath,
+  
 }) => {
+    const [modalVisible, setModalVisible] = createSignal(false);
+    const { gameSignal: [game],
+        currentPathSignal: [currentPath, setCurrentPath],
+        moveHintSignal: [moveHint],
+        playingEngine
+     } = useContext(GameContext)!;
+
     const nextNode = () => {
         const path = currentPath();
         const nextNode = (path && game()?.nodeAt(path))?.children[0];
@@ -85,23 +92,42 @@ const ButtonBar: Component<ButtonBarProps> = ({
         );
     };
 
+     const hasMoves = createMemo(() => game()?.mainline?.length ?? 0 > 0);
+    
+    const onHint = () => {
+        setModalVisible(!modalVisible());
+    };
+
     return (
-        <Show when={game() && currentPath()}>
-            <div class="pgnviewer-buttonbar buttons are-small">
-                <Button onClick={onRewind} disabled={!canRewind()}>
-                    <IconPlayerTrackPrevFilled />
-                </Button>
-                <Button onClick={onPrev} disabled={!canGoBack()}>
-                    <IconPlayerSkipBackFilled />
-                </Button>
-                <Button onClick={onNext} disabled={!canMoveNext()}>
-                    <IconPlayerSkipForwardFilled />
-                </Button>
-                <Button onClick={onFastForward} disabled={!canFastForward()}>
-                    <IconPlayerTrackNextFilled />
-                </Button>
-            </div>
-        </Show>
+        <>
+            <Show when={game() && currentPath() && hasMoves()}>
+                <div class="pgnviewer-buttonbar buttons are-small">
+                    <Button onClick={onRewind} disabled={!canRewind()}>
+                        <IconPlayerTrackPrevFilled />
+                    </Button>
+                    <Button onClick={onPrev} disabled={!canGoBack()}>
+                        <IconPlayerSkipBackFilled />
+                    </Button>
+                    <Button onClick={onNext} disabled={!canMoveNext()}>
+                        <IconPlayerSkipForwardFilled />
+                    </Button>
+                    <Button
+                        onClick={onFastForward}
+                        disabled={!canFastForward()}
+                    >
+                        <IconPlayerTrackNextFilled />
+                    </Button>
+                </div>
+
+                
+            </Show>
+            <Show when={playingEngine() && moveHint()}> 
+                <Button onClick={onHint}>Hint?</Button>
+                <Modal isOpen={[modalVisible, setModalVisible]}>
+                    <div>{moveHint()}</div>
+                </Modal>
+            </Show>
+        </>
     );
 };
 
