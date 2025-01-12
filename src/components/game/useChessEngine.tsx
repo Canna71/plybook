@@ -53,7 +53,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         if(engine() && engineAnalysisOn()) {
             return true;
         }
-        if(options.playingEngine() && !shouldCallEngineMove()) {
+        if(options.playingEngine() && options.engineColor?.() && !shouldCallEngineMove()) {
             return true;
         }
         return false;
