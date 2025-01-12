@@ -445,17 +445,11 @@ const GameManager: Component<GameManagerOptions> = ({
     createEffect(() => {
         const gIdx = gameIndex();
         const fPgn = fullPgn();
-        let games:Game<PgnNodeData>[] =  parsePgn(fPgn || getDefaultStudyContent());
-        
-        console.log("Game Index: ", gIdx, games, initialFen);
+        const games = parsePgn(fPgn || "");
         if (gIdx >= 0 && gIdx < games.length) {
-            let gameModel = makeGameInternal(games[gIdx]);
-            if(!fPgn && initialFen) {
-                gameModel = gameModel.withStartingPosition(initialFen || INITIAL_FEN);
-            }
+            const gameModel = makeGameInternal(games[gIdx]);
             initFromGameModel(gameContext, gameModel);
         }
-        console.log("game", game())
     });
 
     // updates external pgn when internal fullPgn changes
