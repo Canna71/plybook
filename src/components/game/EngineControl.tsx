@@ -4,6 +4,7 @@ import {
     createSignal,
     Setter,
     Show,
+    Signal,
     useContext,
 } from "solid-js";
 import { GameContext } from "./GameContext";
@@ -120,11 +121,11 @@ const EngineControl = () => {
 
     const onShowSettingsModal = () => {
         setSettingsModalVisible(true);
-    }
+    };
 
     const analysysDepth = () => {
         return getSettingValue("engine.analysis.depth");
-    }
+    };
 
     return (
         <>
@@ -139,8 +140,12 @@ const EngineControl = () => {
                             <ToggleSwitch
                                 toggleSignal={engineAnalysisOnSignal}
                             />
-                            <Button onClick={onShowSettingsModal} title="Analysis Settings"
-                            >Settings</Button>
+                            <Button
+                                onClick={onShowSettingsModal}
+                                title="Analysis Settings"
+                            >
+                                Settings
+                            </Button>
                         </div>
                     </Show>
                     <Show when={playingEngine()}>
@@ -188,7 +193,7 @@ const EngineControl = () => {
             <Modal
                 isOpen={[settingsModalVisible, setSettingsModalVisible]}
                 onClose={() => setSettingsModalVisible(false)}
-                title={()=>"Analysis Settings"}
+                title={() => "Analysis Settings"}
             >
                 <div>
                     <div>
@@ -199,6 +204,10 @@ const EngineControl = () => {
                         <label>MultiPV</label>
                         <MultiPVLevel />
                     </div>
+                    <div>
+                        <label>Arrows</label>
+                        <ShowErrorToggle />
+                    </div>    
                 </div>
             </Modal>
         </>
@@ -306,6 +315,21 @@ const MultiPVLevel = (props: {}) => {
             <span class="slide-value">{level()}</span>
         </div>
     );
-}
+};
+
+const ShowErrorToggle = () => {
+    const showArrows = () => getSettingValue("engine.analysis.showArrows", false);
+
+    const setShowArrows = (value: boolean) => {
+        setSettingValue("engine.analysis.showArrows", value);
+    };
+
+    return (
+        <ToggleSwitch
+            toggleSignal={[showArrows, setShowArrows] as Signal<boolean>}
+            labels={["Show Arrows", "Don't Show Arrows"]}
+        />
+    );
+};
 
 export default EngineControl;
