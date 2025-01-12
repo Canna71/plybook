@@ -327,7 +327,7 @@ const ShowErrorToggle = () => {
     return (
         <ToggleSwitch
             toggleSignal={[showArrows, setShowArrows] as Signal<boolean>}
-            labels={["Show Arrows", "Don't Show Arrows"]}
+            labels={["Don't Show Arrows","Show Arrows"]}
         />
     );
 };

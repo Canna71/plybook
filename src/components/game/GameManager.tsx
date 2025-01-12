@@ -269,6 +269,7 @@ const GameManager: Component<GameManagerOptions> = ({
             movableColor = pos.turn;
         }
 
+        const showArrows = getSettingValue("engine.analysis.showArrows", false);
         const shapes = baseConfig.drawable?.shapes || [];
 
         const hints: SquareClasses = new Map();
@@ -283,11 +284,12 @@ const GameManager: Component<GameManagerOptions> = ({
                 hints.set(from, "selected");
                 hints.set(to, "selected");
             }
-            const arrow = makeArrowShape(from, to, "black");
-            console.log("Arrow", arrow);
-            shapes.push(arrow);
+            if(showArrows) {
+                const arrow = makeArrowShape(from, to, "black");
+                shapes.push(arrow);
+            }
         } else {
-            if (engineInfo.length > 0) {
+            if (engineInfo.length > 0 && showArrows) {
                 for (let info of engineInfo) {
                     if (info.pv) {
                         const move = parseUci(info.pv[0]) as NormalMove;
@@ -330,7 +332,6 @@ const GameManager: Component<GameManagerOptions> = ({
             },
         };
 
-        console.log("config", config);  
 
         return config;
     };
