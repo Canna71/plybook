@@ -21,6 +21,7 @@ import {
     getPosition,
     initFromGameModel,
     isPromotion,
+    makeArrowShape,
     makeConfig,
     makeMove,
     otherColor,
@@ -30,7 +31,12 @@ import { Color, Key, Piece, Role, SquareClasses } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
 import BoardEditor from "../boardeditor/BoardEditor";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
-import { GameContext, GameContextType, HintType, TooltipContext } from "./GameContext";
+import {
+    GameContext,
+    GameContextType,
+    HintType,
+    TooltipContext,
+} from "./GameContext";
 import { VDivider } from "../common/VDivider";
 import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
@@ -242,7 +248,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // const playingEngine = () => !!engineColor?.();
 
     const config = () => {
-        const baseConfig : Config = makeConfig(
+        const baseConfig: Config = makeConfig(
             game,
             currentPath,
             squareHovered,
@@ -263,17 +269,34 @@ const GameManager: Component<GameManagerOptions> = ({
             movableColor = pos.turn;
         }
 
-        const hints:SquareClasses = new Map();
+        const shapes = baseConfig.drawable?.shapes || [];
+
+        const hints: SquareClasses = new Map();
         const hintMove = moveHintSignal[0]();
-        if (hintMove ) {
+        if (hintMove) {
             const move = parseUci(hintMove) as NormalMove;
             const from = makeSquare(move.from);
             const to = makeSquare(move.to);
-            if(hintType() === HintType.Piece) {
+            if (hintType() === HintType.Piece) {
                 hints.set(from, "selected");
             } else if (hintType() === HintType.Move) {
                 hints.set(from, "selected");
                 hints.set(to, "selected");
+            }
+            const arrow = makeArrowShape(from, to, "green");
+            console.log("Arrow", arrow);
+            shapes.push(arrow);
+        } else {
+            if (engineInfo.length > 0) {
+                for (let info of engineInfo) {
+                    if (info.pv) {
+                        const move = parseUci(info.pv[0]) as NormalMove;
+                        const from = makeSquare(move.from);
+                        const to = makeSquare(move.to);
+                        const arrow = makeArrowShape(from, to, "yellow");
+                        shapes.push(arrow);
+                    }
+                }
             }
         }
 
@@ -281,7 +304,7 @@ const GameManager: Component<GameManagerOptions> = ({
             ...baseConfig,
             highlight: {
                 ...baseConfig.highlight,
-                custom: hints
+                custom: hints,
             },
             draggable: {
                 enabled: true,
@@ -301,6 +324,7 @@ const GameManager: Component<GameManagerOptions> = ({
             },
             drawable: {
                 ...baseConfig.drawable,
+                shapes: shapes,
                 eraseOnClick: false,
                 onChange: onDrawChange,
             },

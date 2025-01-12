@@ -23,6 +23,7 @@ import { makeFen, parseFen } from "chessops/fen";
 import { ViewMode } from "../game/PgnEditBar";
 import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight, IconChessFilled, IconChess } from "@tabler/icons-solidjs";
 import { debounce } from "es-toolkit";
+import { DrawShape } from "chessground/draw";
 
 export function lastMove(data: Initial | PlyData | undefined) {
     const lm = isPlyData(data) ? (data.move as NormalMove) : undefined;
@@ -66,6 +67,11 @@ export function toShapes(
     }
     return autoShapes;
 }
+
+export function makeArrowShape(orig: Key, dest: Key, brush: string):DrawShape {
+    return { orig, dest, brush };
+}
+
 export function makeConfig(
     game: Accessor<GameModel | undefined>,
     currentPath: Accessor<Path | undefined>,
