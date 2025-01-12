@@ -14,6 +14,7 @@ import {
     IconCpu,
     IconPlayerPlayFilled,
     IconPlayerStopFilled,
+    IconSettingsFilled,
 } from "@tabler/icons-solidjs";
 import ToggleSwitch from "../common/ToggleSwitch";
 import { ViewMode } from "./PgnEditBar";
@@ -144,7 +145,7 @@ const EngineControl = () => {
                                 onClick={onShowSettingsModal}
                                 title="Analysis Settings"
                             >
-                                Settings
+                                <IconSettingsFilled />
                             </Button>
                         </div>
                     </Show>

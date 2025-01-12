@@ -269,7 +269,7 @@ const GameManager: Component<GameManagerOptions> = ({
             movableColor = pos.turn;
         }
 
-        const showArrows = getSettingValue("engine.analysis.showArrows", false);
+        const showArrows = !playingEngine && getSettingValue("engine.analysis.showArrows", false);
         const shapes = baseConfig.drawable?.shapes || [];
 
         const hints: SquareClasses = new Map();
