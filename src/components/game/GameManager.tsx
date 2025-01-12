@@ -420,6 +420,7 @@ const GameManager: Component<GameManagerOptions> = ({
         defaultEngineAnalysisOn,
         engineColor,
         game,
+        path: currentPath,
         turn,
         applyMove,
         fen,
@@ -540,7 +541,7 @@ const GameManager: Component<GameManagerOptions> = ({
                                 <div class="pgnviewer-moves-wrapper">
                                     <Moves />
                                 </div>
-                                <Show when={!playingEngine}>
+                                <Show when={!playingEngine || true}>
                                     <ButtonBar
                                         game={game}
                                         currentPath={currentPath}

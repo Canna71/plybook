@@ -7,6 +7,7 @@ import {
     onCleanup,
     Accessor,
     Signal,
+    createMemo,
 } from "solid-js";
 import { createStore } from "solid-js/store";
 import { IChessEngine, EngineInfo } from "../../engine/engineinterfaces";
@@ -18,12 +19,14 @@ import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { create } from "@tauri-apps/plugin-fs";
+import { isPlyData, Path } from "../../models/pgn";
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
     engineColor: Accessor<Color | undefined>;
     playingEngine: Accessor<boolean>;
     game: Accessor<GameModel | undefined>;
+    path: Accessor<Path | undefined>;
     turn: Accessor<Color>;
     applyMove: (move: NormalMove) => void;
     fen: Accessor<string>;
@@ -49,19 +52,32 @@ export function useChessEngine(options: ChessEngineOptions) {
             },
         ];
 
-    const shouldCallEngineAnalysis = () => {
+    const shouldCallEngineAnalysis = createMemo(() => {
         if(engine() && engineAnalysisOn()) {
             return true;
         }
-        if(options.playingEngine() && options.engineColor?.() && !shouldCallEngineMove()) {
+        if(options.playingEngine() && options.engineColor?.() && options.engineColor?.() !== options.turn()) {
             return true;
         }
         return false;
-    }
-    const shouldCallEngineMove = () =>
-        engine() &&
+    });
+
+    const shouldCallEngineMove = createMemo(() => {
+        let tmp = engine() &&
         options.playingEngine() &&
         options.engineColor?.() == options.turn();
+        // TODO: check if the current position is the last one
+        if(!tmp) return false;
+        const node = options.game()?.nodeAt(options.path() || Path.root);
+        console.log("Node", node);
+        if(node && node.children.length > 0) {
+            console.log("Node has children", node.children);
+            return false;
+        }
+        console.log("Should call engine move", tmp);
+        return tmp;
+    })
+
 
     const shouldInitEngine = () => {
         const shouldInit =
@@ -126,6 +142,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         ) {
             return;
         }
+        console.log("Engine best move", options.engineColor?.(), options.turn());
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
         const move: NormalMove = makeMove(m.from, m.to);
         options.applyMove(move);
@@ -141,8 +158,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         if (shouldCallEngineAnalysis()) {
             const fenStr = options.fen();
             setEngineInfo([]);
-            // TODO: Add a setting for depth and multipv (distinguish between analysis and playing)
-            engine()!.setOption("UCI_AnalyseMode", 1);
+            // engine()!.setOption("UCI_AnalyseMode", 1);
             engine()!.setOption("UCI_LimitStrength", "false");
             engine()!.setOption("UCI_Elo", 3200);
             // engine()!.setOption("MultiPV", 3);
@@ -151,11 +167,11 @@ export function useChessEngine(options: ChessEngineOptions) {
                 depth: getSettingValue("engine.analysis.depth", 15),
                 multipv: getSettingValue("engine.analysis.multipv", 3),
             };
+            console.log("Analysis options", analysisOptions);
 
             engine()!.analyzeFromFenOrMoves(fenStr, analysisOptions);
         } else if (shouldCallEngineMove()) {
-            // TODO: set game specific options
-            engine()!.setOption("UCI_AnalyseMode", 0);
+            // engine()!.setOption("UCI_AnalyseMode", 0);
             engine()!.setOption("UCI_LimitStrength", "true");
             engine()!.setOption("UCI_Elo", engineLevel());
             const fenStr = options.fen();
