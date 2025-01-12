@@ -179,12 +179,20 @@ export class GameModel {
         const field = isStarting ? "startingComments" : "comments";
         if (isChildNode(pgnNode) && isChildNode(node)) {
             const comments = node.data[field].filter(t => t !== EMPTY_COMMENT) || [];
-            comments.splice(0, 0, comment);
+            if(before) {
+                comments.push(comment);
+            } else {
+                comments.splice(0, 0, comment);
+            }
             pgnNode.data[field] = this.mergeShapes(comments,shapes,true);
             // pgnNode.data.comments = this.insertCommentInternal(node.data.comments, comment, shapes);
         } else {    
             const comments = this.game.comments || [];
-            comments.splice(0, 0, comment);
+            if(before) {
+                comments.push(comment);
+            } else {
+                comments.splice(0, 0, comment);
+            }
             this.game.comments = this.mergeShapes(comments,shapes,true);
             // this.game.comments = this.insertCommentInternal(this.initial.comments, comment, shapes);
         }

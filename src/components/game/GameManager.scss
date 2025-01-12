@@ -20,6 +20,7 @@
 
     .pgnviewer-comments {
         grid-area: comments;
+        padding: 4px 0;
         // display: flex;
         // flex-direction: column;
         // overflow-y: auto;
@@ -217,6 +218,7 @@
 
     .square {
         font-family: monospace;
+        color: var(--bulma-strong-color);
         font-weight: 600;
         cursor: pointer;
     }
