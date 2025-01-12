@@ -283,7 +283,7 @@ const GameManager: Component<GameManagerOptions> = ({
                 hints.set(from, "selected");
                 hints.set(to, "selected");
             }
-            const arrow = makeArrowShape(from, to, "green");
+            const arrow = makeArrowShape(from, to, "black");
             console.log("Arrow", arrow);
             shapes.push(arrow);
         } else {
@@ -293,7 +293,7 @@ const GameManager: Component<GameManagerOptions> = ({
                         const move = parseUci(info.pv[0]) as NormalMove;
                         const from = makeSquare(move.from);
                         const to = makeSquare(move.to);
-                        const arrow = makeArrowShape(from, to, "yellow");
+                        const arrow = makeArrowShape(from, to, "gray");
                         shapes.push(arrow);
                     }
                 }
@@ -329,6 +329,9 @@ const GameManager: Component<GameManagerOptions> = ({
                 onChange: onDrawChange,
             },
         };
+
+        console.log("config", config);  
+
         return config;
     };
 

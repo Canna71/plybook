@@ -23,7 +23,7 @@ import { makeFen, parseFen } from "chessops/fen";
 import { ViewMode } from "../game/PgnEditBar";
 import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight, IconChessFilled, IconChess } from "@tabler/icons-solidjs";
 import { debounce } from "es-toolkit";
-import { DrawShape } from "chessground/draw";
+import { DrawBrush, DrawBrushes, DrawShape } from "chessground/draw";
 
 export function lastMove(data: Initial | PlyData | undefined) {
     const lm = isPlyData(data) ? (data.move as NormalMove) : undefined;
@@ -72,6 +72,19 @@ export function makeArrowShape(orig: Key, dest: Key, brush: string):DrawShape {
     return { orig, dest, brush };
 }
 
+const drawBrushes: DrawBrushes = {
+    yellow: { key: "yellow", color: "yellow", opacity: 1, lineWidth: 10 },
+    green: { key: "green", color: "green", opacity: 1, lineWidth: 10 },
+    red: { key: "red", color: "red", opacity: 1, lineWidth: 10 },
+    blue: { key: "blue", color: "blue", opacity: 1, lineWidth: 10 },
+    purple: { key: "purple", color: "purple", opacity: 1, lineWidth: 10 },
+    orange: { key: "orange", color: "orange", opacity: 1, lineWidth: 10 },
+    pink: { key: "pink", color: "pink", opacity: 1, lineWidth: 10 },
+    brown: { key: "brown", color: "brown", opacity: 1, lineWidth: 10 },
+    black: { key: "black", color: "black", opacity: 1, lineWidth: 10 },
+    gray: { key: "gray", color: "gray", opacity: 1, lineWidth: 10 },
+};
+
 export function makeConfig(
     game: Accessor<GameModel | undefined>,
     currentPath: Accessor<Path | undefined>,
@@ -91,6 +104,7 @@ export function makeConfig(
             drawable: {
                 enabled: true,
                 autoShapes: [],
+                brushes: drawBrushes,
             },
             movable: {
                 free: false,
@@ -116,7 +130,7 @@ export function makeConfig(
             fen: data.fen,
             lastMove: lastMoveKey,
             drawable: {
-                enabled: baseConfig.drawable?.enabled,
+                ...baseConfig.drawable,
                 shapes,
             },
         };
