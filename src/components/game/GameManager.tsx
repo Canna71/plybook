@@ -25,6 +25,8 @@ import {
     makeConfig,
     makeMove,
     otherColor,
+    useFen,
+    usePosition,
     useSplitter,
 } from "../common/utils";
 import { Color, Key, Piece, Role, SquareClasses } from "chessground/types";
@@ -51,7 +53,7 @@ import { useChessEngine } from "./useChessEngine";
 import { playSoundForMove } from "./playSoundForMove";
 import { useTooltip } from "./useTooltip";
 import MarkdownEditor from "../common/MarkdownEditor";
-import { makePgn, parsePgn } from "chessops/pgn";
+import { Game, makePgn, parsePgn, PgnNodeData } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
 import EngineControl from "./EngineControl";
 import { getSettingValue, setSettingValue } from "../../models/settings";
@@ -63,6 +65,7 @@ export type GameManagerOptions = {
     // engineColor?: Accessor<Color | undefined>;
     playingEngine?: boolean;
     defaultEngineAnalysisOn?: boolean;
+    initialFen?: string;
     editable?: Accessor<boolean>;
 };
 
@@ -105,7 +108,7 @@ const GameManager: Component<GameManagerOptions> = ({
     initalPgn: initialPgn,
     setPgn,
     playingEngine,
-    // engineColor,
+    initialFen,
     editable,
     defaultEngineAnalysisOn = false,
 }) => {
@@ -119,7 +122,7 @@ const GameManager: Component<GameManagerOptions> = ({
     );
     const [startingPosition, setStartingPosition] = createSignal<
         string | undefined
-    >(INITIAL_FEN);
+    >(initialFen || INITIAL_FEN);
     const [promotionData, setPromotionData] = createSignal<
         PromotionData | undefined
     >(undefined);
@@ -217,9 +220,13 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region Computed Properties
 
-    const position = createMemo(() => getPosition(game, currentPath));
+    // const position = createMemo(() => getPosition(game, currentPath));
 
-    const fen = createMemo(() => makeFen(position().toSetup()));
+    // const fen = createMemo(() => makeFen(position().toSetup()));
+
+    const position = usePosition(game, currentPath);
+
+    const fen = useFen(game, currentPath);
 
     const turn = createMemo(() => position().turn as Color);
 
@@ -380,9 +387,9 @@ const GameManager: Component<GameManagerOptions> = ({
 
     createEffect(() => {
         let pgnString = initialPgn?.();
-        if (!pgnString) {
-            pgnString = getDefaultStudyContent();
-        }
+        // if (!pgnString) {
+        //     pgnString = getDefaultStudyContent();
+        // }
         // const games = parsePgn(pgnString);
         // const gameModel = makeGameInternal(games[0]);
 
@@ -438,11 +445,17 @@ const GameManager: Component<GameManagerOptions> = ({
     createEffect(() => {
         const gIdx = gameIndex();
         const fPgn = fullPgn();
-        const games = parsePgn(fPgn || "");
+        let games:Game<PgnNodeData>[] =  parsePgn(fPgn || getDefaultStudyContent());
+        
+        console.log("Game Index: ", gIdx, games, initialFen);
         if (gIdx >= 0 && gIdx < games.length) {
-            const gameModel = makeGameInternal(games[gIdx]);
+            let gameModel = makeGameInternal(games[gIdx]);
+            if(!fPgn && initialFen) {
+                gameModel = gameModel.withStartingPosition(initialFen || INITIAL_FEN);
+            }
             initFromGameModel(gameContext, gameModel);
         }
+        console.log("game", game())
     });
 
     // updates external pgn when internal fullPgn changes

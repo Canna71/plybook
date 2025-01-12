@@ -1,7 +1,7 @@
-import { Component, useContext, batch, Show, Accessor } from "solid-js";
+import { Component, useContext, batch, Show, Accessor, createMemo } from "solid-js";
 import Button from "../common/Button";
 import { GameContext } from "./GameContext";
-import { initFromGameModel, updateGameFromPgnString } from "../common/utils";
+import { getPosition, initFromGameModel, updateGameFromPgnString, useFen } from "../common/utils";
 import ToggleSwitch from "../common/ToggleSwitch";
 import { StartingPositionIcon } from "../common/Icons";
 import {
@@ -11,6 +11,7 @@ import {
     IconSwitchVertical,
     IconTextPlus,
 } from "@tabler/icons-solidjs";
+import { useNavigate } from "@solidjs/router";
 
 export enum ViewMode {
     STARTING_POSITION,
@@ -34,7 +35,9 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
             setIsEditingDescription,
         ],
         orientation,
+        currentPathSignal: [currentPath],
     } = gameContext;
+    const navigate = useNavigate();
 
     const onEditStartingPosition = () => {
         setViewMode(ViewMode.STARTING_POSITION);
@@ -89,6 +92,16 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
         setGame(newGame);
     };
 
+    const fen = useFen(game, currentPath);
+    
+
+    const onPlayAgainstEngine = () => {
+        // setPlayingEngine(!playingEngine());
+        const fenStr = fen();
+        navigate(`/play?fen=${fenStr}`);
+        
+    }
+
     return (
         <div class="buttons-bar are-small">
             <Show when={props.isEditable()}>
@@ -117,6 +130,10 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
                     <Button onClick={onEditPgn} title="Edit PGN">
                         <IconBrackets />
                     </Button>
+                    <Button title="Play Against Engine" onClick={onPlayAgainstEngine}>
+                        <IconCpu />
+                    </Button>
+
                 </Show>
             </Show>
 

@@ -3,6 +3,7 @@ import { createEffect } from "solid-js";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
 import { useSearchParams } from "@solidjs/router";
+import { start } from "chessground/drag";
 
 const PlayView = () => {
 
@@ -10,6 +11,7 @@ const PlayView = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
     
     createEffect(async () => {
+        console.log(searchParams);
         if(typeof(searchParams.fen) === "string") {
             
         } else {
@@ -17,14 +19,22 @@ const PlayView = () => {
         }
     });
 
+    const initialFen = () => {
+        if(typeof(searchParams.fen) === "string") {
+            return searchParams.fen;
+        }
+        return undefined;
+    }
+
    
 
     return (
         <>
             <div class="playarea-header">
-                TODO:  | Time Control | Hint | ButtonBar | Resign  | Save Game | Load Game
+                TODO:  | Time Control  | Save Game | Load Game
             </div>
             <GameManager 
+                initialFen={initialFen()}
                 playingEngine={true}
             />
         </>

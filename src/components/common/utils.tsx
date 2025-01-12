@@ -12,7 +12,7 @@ import {
 } from "chessops";
 import { Initial, isPlyData, makeGame, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
-import { Accessor, batch, JSXElement, useContext } from "solid-js";
+import { Accessor, batch, createMemo, JSXElement, useContext } from "solid-js";
 import { Key } from "chessground/types";
 import { Config } from "chessground/config";
 import { parseSquare, squareFromCoords } from "chessops/util";
@@ -21,7 +21,20 @@ import { DOMElement } from "solid-js/jsx-runtime";
 import { GameContextType, TooltipContext } from "../game/GameContext";
 import { makeFen, parseFen } from "chessops/fen";
 import { ViewMode } from "../game/PgnEditBar";
-import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight, IconChessFilled, IconChess } from "@tabler/icons-solidjs";
+import {
+    IconChessKingFilled,
+    IconChessQueenFilled,
+    IconChessRookFilled,
+    IconChessBishopFilled,
+    IconChessKnightFilled,
+    IconChessKing,
+    IconChessQueen,
+    IconChessRook,
+    IconChessBishop,
+    IconChessKnight,
+    IconChessFilled,
+    IconChess,
+} from "@tabler/icons-solidjs";
 import { debounce } from "es-toolkit";
 import { DrawBrush, DrawBrushes, DrawShape } from "chessground/draw";
 
@@ -68,7 +81,7 @@ export function toShapes(
     return autoShapes;
 }
 
-export function makeArrowShape(orig: Key, dest: Key, brush: string):DrawShape {
+export function makeArrowShape(orig: Key, dest: Key, brush: string): DrawShape {
     return { orig, dest, brush };
 }
 
@@ -201,9 +214,8 @@ export function useSplitter(saveLayout?: (layout: string) => void) {
     // let dividerEl: HTMLDivElement | null = null;
 
     const doSave = debounce((value: string) => {
-            saveLayout?.(value);
-    },300);
-
+        saveLayout?.(value);
+    }, 300);
 
     return (divider: HTMLDivElement) => {
         // divider = divider;
@@ -289,7 +301,7 @@ export function initFromGameModel(
             if (setup.isOk) {
                 context.startingPositionSignal[1](makeFen(setup.value));
             }
-        }
+        } 
         // context.currentPathSignal[1](gameModel.pathAtMainlinePly(0));
         context.viewModeSignal[1](ViewMode.MOVES);
         context.descriptionSignal[1](
@@ -342,19 +354,19 @@ export async function safePaste(
     }
 }
 
-const figurineMap: Record<string, ()=>JSXElement> = {
-    K: ()=> <IconChessKingFilled />,
-    Q: ()=> <IconChessQueenFilled />,
-    R: ()=> <IconChessRookFilled />,
-    B: ()=> <IconChessBishopFilled />,
-    N: ()=> <IconChessKnightFilled />,
-    P: ()=> <IconChessFilled />,
-    k: ()=> <IconChessKing />,
-    q: ()=> <IconChessQueen />,
-    r: ()=> <IconChessRook />,
-    b: ()=> <IconChessBishop />,
-    n: ()=> <IconChessKnight />,
-    p: ()=> <IconChess />,
+const figurineMap: Record<string, () => JSXElement> = {
+    K: () => <IconChessKingFilled />,
+    Q: () => <IconChessQueenFilled />,
+    R: () => <IconChessRookFilled />,
+    B: () => <IconChessBishopFilled />,
+    N: () => <IconChessKnightFilled />,
+    P: () => <IconChessFilled />,
+    k: () => <IconChessKing />,
+    q: () => <IconChessQueen />,
+    r: () => <IconChessRook />,
+    b: () => <IconChessBishop />,
+    n: () => <IconChessKnight />,
+    p: () => <IconChess />,
 };
 
 export function getFigurine(piece: string) {
@@ -371,4 +383,21 @@ export function selectAll(el: HTMLElement) {
 
 export function otherColor(color: Color | undefined) {
     return color === "white" ? "black" : "white";
+}
+
+export function usePosition(
+    game: Accessor<GameModel | undefined>,
+    currentPath: Accessor<Path | undefined>,
+) {
+    const position = createMemo(() => getPosition(game, currentPath));
+    return position;
+}
+
+export function useFen(
+    game: Accessor<GameModel | undefined>,
+    currentPath: Accessor<Path | undefined>,
+) {
+    const position = usePosition(game, currentPath);
+    const fen = createMemo(() => makeFen(position().toSetup()))
+    return fen;
 }
