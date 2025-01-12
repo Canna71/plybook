@@ -503,7 +503,7 @@ const GameManager: Component<GameManagerOptions> = ({
         gameIndexSignal: [gameIndex, setGameIndex],
         playingEngine: () => !!playingEngine,
         orientation: orientation,
-        highlightedSquaresSignal: [highlightedSquares, setHighlightedSquares],
+        highlightedSquaresSignal: [createMemo(highlightedSquares), setHighlightedSquares],
         editable: isEditable,
         engineColorSignal: [engineColor, setEngineColor],
         engineLevelSignal,

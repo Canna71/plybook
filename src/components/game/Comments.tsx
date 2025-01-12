@@ -91,6 +91,8 @@ export const CommentsView: Component<CommentsViewProps> = ({
         const target = e.target as HTMLElement;
         if (target.dataset.square) {
             setHighlightedSquares?.([target.dataset.square]);
+        } else {
+            setHighlightedSquares?.([]);
         }
     };
 
