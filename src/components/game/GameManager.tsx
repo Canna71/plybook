@@ -261,6 +261,7 @@ const GameManager: Component<GameManagerOptions> = ({
             game,
             currentPath,
             highlightedSquares,
+            highlightedMoves,
             orientation,
         )();
         const pos = position();

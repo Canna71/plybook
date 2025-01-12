@@ -64,11 +64,20 @@ export function useCurrentData(
 }
 export function toShapes(
     highlightedSquares: Accessor<string[]>,
+    highlightedMoves: Accessor<string[]>,
     data: Initial | PlyData,
 ) {
     let autoShapes = highlightedSquares().length>0
         ? highlightedSquares().map(hs => ({ orig: hs as Key, brush: "green" }))
         : [];
+    // TODO: how can we display moves regardless of the position?
+    // autoShapes = autoShapes.concat(
+    //     highlightedMoves().map((hm) => {
+    //         const move = 
+    //         const [from, to] = hm.split("-");
+    //         return { orig: from as Key, dest: to as Key, brush: "green" };
+    //     }),
+    // );
     if (data?.shapes) {
         autoShapes = autoShapes.concat(
             data.shapes.map((s) => {
@@ -102,6 +111,7 @@ export function makeConfig(
     game: Accessor<GameModel | undefined>,
     currentPath: Accessor<Path | undefined>,
     highlightedSquares: Accessor<string[]>,
+    highlightedMoves: Accessor<string[]>,
     orientation: Accessor<Color>,
 ): () => Config {
     return () => {
@@ -136,7 +146,7 @@ export function makeConfig(
         }
 
         const lastMoveKey = lastMove(data);
-        let shapes = toShapes(highlightedSquares, data);
+        let shapes = toShapes(highlightedSquares, highlightedMoves, data);
 
         const config: Config = {
             ...baseConfig,

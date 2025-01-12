@@ -217,9 +217,12 @@
     }
 
     .square, .move {
+        
         font-family: monospace;
         color: var(--bulma-strong-color);
         font-weight: 600;
+    }
+    .square {
         cursor: pointer;
     }
 }
