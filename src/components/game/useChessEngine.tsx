@@ -49,7 +49,15 @@ export function useChessEngine(options: ChessEngineOptions) {
             },
         ];
 
-    const shouldCallEngineAnalysis = () => engine() && engineAnalysisOn();
+    const shouldCallEngineAnalysis = () => {
+        if(engine() && engineAnalysisOn()) {
+            return true;
+        }
+        if(options.playingEngine() && !shouldCallEngineMove()) {
+            return true;
+        }
+        return false;
+    }
     const shouldCallEngineMove = () =>
         engine() &&
         options.playingEngine() &&

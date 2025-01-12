@@ -22,7 +22,7 @@ const PlayView = () => {
     return (
         <>
             <div class="playarea-header">
-                TODO: ELO | DEPTH | Color | Time Control | Engine Name | Resign | Draw | New Game | Flip Board | Save Game | Load Game
+                TODO:  | Time Control | Hint | ButtonBar | Resign  | Save Game | Load Game
             </div>
             <GameManager 
                 playingEngine={true}
