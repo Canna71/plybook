@@ -55,28 +55,29 @@ export function useChessEngine(options: ChessEngineOptions) {
         ];
 
     const shouldCallEngineAnalysis = createMemo(() => {
-        if(engine() && engineAnalysisOn()) {
+        if (engine() && engineAnalysisOn()) {
             return true;
         }
-        if(options.playingEngine() && options.engineColor?.() && options.engineColor?.() !== options.turn()) {
-            return true;
-        }
+        // if(options.playingEngine() && options.engineColor?.() && options.engineColor?.() !== options.turn()) {
+        //     return true;
+        // }
         return false;
     });
 
     const shouldCallEngineMove = createMemo(() => {
-        let tmp = engine() &&
-        options.playingEngine() &&
-        options.engineColor?.() == options.turn();
-        // TODO: check if the current position is the last one
-        if(!tmp) return false;
+        let tmp =
+            engine() &&
+            options.playingEngine() &&
+            options.engineColor?.() == options.turn();
+        tmp ||= !!options.engineColor?.();
+        // check if the current position is the last one
+        if (!tmp) return false;
         const node = options.game()?.nodeAt(options.path() || Path.root);
-        if(node && node.children.length > 0) {
+        if (node && node.children.length > 0) {
             return false;
         }
         return tmp;
-    })
-
+    });
 
     const shouldInitEngine = () => {
         const shouldInit =
@@ -106,7 +107,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     });
 
     createEffect(() => {
-        if(engine() && !options.engineColor()) {
+        if (engine() && !options.engineColor()) {
             engine()!.stop();
         }
     });
@@ -141,12 +142,10 @@ export function useChessEngine(options: ChessEngineOptions) {
             !options.engineColor?.() ||
             options.engineColor?.() != options.turn()
         ) {
-            console.log("Best Player move: ", move);
             setHintMove(bestMove);
             return;
         }
-        
-        
+
         options.applyMove(move);
     };
 
@@ -158,32 +157,31 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     createEffect(() => {
         setHintMove(undefined);
+        const fenStr = options.fen();
+        setEngineInfo([]);
+        let opts = undefined;
+
         if (shouldCallEngineAnalysis()) {
-            const fenStr = options.fen();
-            setEngineInfo([]);
-            // engine()!.setOption("UCI_AnalyseMode", 1);
             engine()!.setOption("UCI_LimitStrength", "false");
             engine()!.setOption("UCI_Elo", 3200);
-            // engine()!.setOption("MultiPV", 3);
 
-            const analysisOptions = {
+            opts = {
                 depth: getSettingValue("engine.analysis.depth", 15),
                 multipv: getSettingValue("engine.analysis.multipv", 3),
             };
-
-            engine()!.analyzeFromFenOrMoves(fenStr, analysisOptions);
         } else if (shouldCallEngineMove()) {
             // engine()!.setOption("UCI_AnalyseMode", 0);
             engine()!.setOption("UCI_LimitStrength", "true");
             engine()!.setOption("UCI_Elo", engineLevel());
-            const fenStr = options.fen();
 
-            const playingOptions = {
+            opts = {
                 depth: getSettingValue("engine.playing.depth", 15),
                 multipv: 1,
             };
-
-            engine()!.analyzeFromFenOrMoves(fenStr, playingOptions);
+        }
+        if(opts) {
+            console.log("Analyzing: ", fenStr, opts);
+            engine()!.analyzeFromFenOrMoves(fenStr, opts);
         }
     });
 
