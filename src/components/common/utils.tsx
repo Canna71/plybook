@@ -63,11 +63,11 @@ export function useCurrentData(
     };
 }
 export function toShapes(
-    squareHovered: Accessor<string | undefined>,
+    highlightedSquares: Accessor<string[]>,
     data: Initial | PlyData,
 ) {
-    let autoShapes = squareHovered()
-        ? [{ orig: squareHovered() as Key, brush: "green" }]
+    let autoShapes = highlightedSquares().length>0
+        ? highlightedSquares().map(hs => ({ orig: hs as Key, brush: "green" }))
         : [];
     if (data?.shapes) {
         autoShapes = autoShapes.concat(
@@ -101,7 +101,7 @@ const drawBrushes: DrawBrushes = {
 export function makeConfig(
     game: Accessor<GameModel | undefined>,
     currentPath: Accessor<Path | undefined>,
-    squareHovered: Accessor<string | undefined>,
+    highlightedSquares: Accessor<string[]>,
     orientation: Accessor<Color>,
 ): () => Config {
     return () => {
@@ -136,7 +136,7 @@ export function makeConfig(
         }
 
         const lastMoveKey = lastMove(data);
-        let shapes = toShapes(squareHovered, data);
+        let shapes = toShapes(highlightedSquares, data);
 
         const config: Config = {
             ...baseConfig,

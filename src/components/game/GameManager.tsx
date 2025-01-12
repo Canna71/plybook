@@ -117,9 +117,10 @@ const GameManager: Component<GameManagerOptions> = ({
         new Path(""),
     );
     const [game, setGame] = createSignal<GameModel | undefined>(undefined);
-    const [squareHovered, setSquareHovered] = createSignal<string | undefined>(
-        undefined,
-    );
+    // const [squareHovered, setSquareHovered] = createSignal<string | undefined>(
+    //     undefined,
+    // );
+    const [highlightedSquares, setHighlightedSquares] = createSignal<string[]>([]);
     const [startingPosition, setStartingPosition] = createSignal<
         string | undefined
     >(initialFen || INITIAL_FEN);
@@ -258,7 +259,7 @@ const GameManager: Component<GameManagerOptions> = ({
         const baseConfig: Config = makeConfig(
             game,
             currentPath,
-            squareHovered,
+            highlightedSquares,
             orientation,
         )();
         const pos = position();
@@ -502,7 +503,7 @@ const GameManager: Component<GameManagerOptions> = ({
         gameIndexSignal: [gameIndex, setGameIndex],
         playingEngine: () => !!playingEngine,
         orientation: orientation,
-        setSquareHovered: setSquareHovered,
+        highlightedSquaresSignal: [highlightedSquares, setHighlightedSquares],
         editable: isEditable,
         engineColorSignal: [engineColor, setEngineColor],
         engineLevelSignal,

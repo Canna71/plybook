@@ -28,7 +28,7 @@ export interface GameContextType {
 	engineLevelSignal: Signal<number>;
 	moveHintSignal: Signal<string | undefined>;
 	playingEngine: Accessor<boolean>;
-	setSquareHovered?: (square: string | undefined) => void;
+	highlightedSquaresSignal: Signal<string[]>;
 	editable: Accessor<boolean>;
 	hintTypeSignal: Signal<HintType>;
 }
