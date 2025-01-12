@@ -180,7 +180,6 @@ export function useChessEngine(options: ChessEngineOptions) {
             };
         }
         if(opts) {
-            console.log("Analyzing: ", fenStr, opts);
             engine()!.analyzeFromFenOrMoves(fenStr, opts);
         }
     });

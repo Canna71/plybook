@@ -14,10 +14,13 @@ import {
     createNewDataFolder,
     deleteDataFileOrFolder,
     getDefaultStudyContent,
+    openDataPath,
     renameOrCreateDataFile,
 } from "../../storage/fs";
 import { useContextMenu } from "../common/contextmenu";
 import Editable from "../common/Editable";
+import { menu } from "@tauri-apps/api";
+import { open } from "@tauri-apps/plugin-shell";
 
 type FileBrowserItemProps = {
     node: TreeNode<FileBrowserFile>;
@@ -82,6 +85,16 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
         });
     };
 
+    const onOpenInDesktop = async  (node: TreeNode<FileBrowserFile>) => {
+        try {
+            console.log("Opening in desktop: ", node.data!.path);
+            await openDataPath(node.data!.path);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    
+
     const onContextMenuInternal = (
         e: MouseEvent,
         node: TreeNode<FileBrowserFile>,
@@ -108,6 +121,16 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
                 id: "folder_rename",
                 text: "Rename Folder",
                 action: (id: string) => onRenameFolder(node, id),
+            });
+            menuItems.push({
+                id: "folder_refresh",
+                text: "Refresh",
+                action: () => refresh(),
+            });
+            menuItems.push({
+                id: "open_in_desktop",
+                text: "Open in Desktop",
+                action: () => onOpenInDesktop(node),
             });
         } else {
             menuItems.push({
@@ -151,3 +174,4 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
 };
 
 export default FileBrowserItem;
+

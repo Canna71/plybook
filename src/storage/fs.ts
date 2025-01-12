@@ -9,6 +9,7 @@ import {
     writeFile,
 } from "@tauri-apps/plugin-fs";
 import { appLocalDataDir, join, sep } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/plugin-shell";
 // import { path } from "@tauri-apps/api";
 
 const LIBRARY_FOLDER = "Library";
@@ -246,4 +247,9 @@ export function fileOrFolderExtension(name: string) {
 
 export function getDefaultStudyContent() {
     return "[]";
+}
+
+export async function openDataPath(path: string) {
+    const fullPath = await join(await appLocalDataDir(), path);
+    return await open(fullPath);
 }
