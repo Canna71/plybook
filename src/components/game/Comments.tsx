@@ -5,6 +5,7 @@ import { useCurrentData, safePaste } from "../common/utils";
 import { useContextMenu } from "../common/contextmenu";
 import { isPlyData, Path } from "../../models/pgn";
 import { GameContext } from "./GameContext";
+import { set } from "es-toolkit/compat";
 
 // regex for square names
 export const squareRegex = /(?<!<|")([a-h][1-8])(?!<|")/g;
@@ -14,49 +15,10 @@ const squareSubst = `<span class="square" data-square="$1">$1</span>`;
 export const moveRegex = /(\d+\.+\s*)([a-h][1-8][\+\#]?)/g;
 const moveSubst = `<span class="move" data-move="$2">$&</span>`;
 
-type CommentsProps = {
-    game: Accessor<GameModel | undefined>;
-    currentPath: Accessor<Path | undefined>;
-    squareHovered?: (square: string | undefined) => void;
-    commentType?: "initial" | "starting" | "move";
-};
 
-export const Comments2: Component<CommentsProps> = ({
-    game,
-    currentPath,
-    commentType,
-}) => {
-    const currentData = useCurrentData(game, currentPath);
-
-    const path = currentPath() || Path.root;
-
-    const comments = () => {
-        const data = currentData();
-        if (commentType === "initial") {
-            return game()?.initial.comments || [];
-        } else if (commentType === "starting") {
-            return (isPlyData(data) && data.startingComments) || [];
-        }
-
-        return (isPlyData(data) && data?.comments) || [];
-    };
-
-    return (
-        <For each={comments()}>
-            {(comment, index) => (
-                <CommentsView
-                    comments={() => comment}
-                    path={path}
-                    index={index()}
-                />
-            )}
-        </For>
-    );
-};
 
 export type CommentsViewProps = {
     comments: Accessor<string>;
-    // squareHovered?: (square: string | undefined) => void;
     path: Path;
     index: number;
     starting?: boolean;
@@ -74,6 +36,7 @@ export const CommentsView: Component<CommentsViewProps> = ({
         editable,
         gameSignal: [game, setGame],
         highlightedSquaresSignal: [highlightedSquares, setHighlightedSquares],
+        highlightedMovesSignal: [highlightedMoves, setHighlightedMoves],
     } = useContext(GameContext)!;
     let ref: HTMLDivElement | undefined;
 
@@ -93,6 +56,11 @@ export const CommentsView: Component<CommentsViewProps> = ({
             setHighlightedSquares?.([target.dataset.square]);
         } else {
             setHighlightedSquares?.([]);
+        }
+        if(target.dataset.move) {
+            setHighlightedMoves?.([target.dataset.move]);
+        } else {
+            setHighlightedMoves?.([]);
         }
     };
 

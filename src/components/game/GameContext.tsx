@@ -29,6 +29,7 @@ export interface GameContextType {
 	moveHintSignal: Signal<string | undefined>;
 	playingEngine: Accessor<boolean>;
 	highlightedSquaresSignal: Signal<string[]>;
+	highlightedMovesSignal: Signal<string[]>;
 	editable: Accessor<boolean>;
 	hintTypeSignal: Signal<HintType>;
 }

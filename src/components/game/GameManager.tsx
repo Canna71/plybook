@@ -121,6 +121,7 @@ const GameManager: Component<GameManagerOptions> = ({
     //     undefined,
     // );
     const [highlightedSquares, setHighlightedSquares] = createSignal<string[]>([]);
+    const [highlightedMoves, setHighlightedMoves] = createSignal<string[]>([]);
     const [startingPosition, setStartingPosition] = createSignal<
         string | undefined
     >(initialFen || INITIAL_FEN);
@@ -504,6 +505,7 @@ const GameManager: Component<GameManagerOptions> = ({
         playingEngine: () => !!playingEngine,
         orientation: orientation,
         highlightedSquaresSignal: [createMemo(highlightedSquares), setHighlightedSquares],
+        highlightedMovesSignal: [createMemo(highlightedMoves), setHighlightedMoves],
         editable: isEditable,
         engineColorSignal: [engineColor, setEngineColor],
         engineLevelSignal,
