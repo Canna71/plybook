@@ -48,6 +48,7 @@ import MarkdownEditor from "../common/MarkdownEditor";
 import { makePgn, parsePgn } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
 import EngineControl from "./EngineControl";
+import { getSettingValue, setSettingValue } from "../../models/settings";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -141,7 +142,14 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region Layout
     let chessBoardDiv: HTMLDivElement | null = null;
-    const divider = useSplitter();
+
+
+    const divider = useSplitter(
+        (layout) => {
+            console.log("layout", layout);
+            setSettingValue("layout.playing.columnsTemplate", layout);
+        },
+    );
     // #endregion
 
     // #region Event Handlers
@@ -452,7 +460,11 @@ const GameManager: Component<GameManagerOptions> = ({
         <>
             <GameContext.Provider value={gameContext}>
                 <TooltipContext.Provider value={{ showTooltip }}>
-                    <div class="pgnviewer-container">
+                    <div class="pgnviewer-container"
+                        style={{
+                            "grid-template-columns": getSettingValue("layout.playing.columnsTemplate", "400px 5px 1fr")
+                        }}
+                    >
                         <div class="pgnviewer-content">
                             <Show
                                 when={

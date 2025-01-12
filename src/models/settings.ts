@@ -19,6 +19,11 @@ export interface AppSettings {
         }
         
     },
+    layout: {
+        playing: {
+            columnsTemplate?: string;
+        }
+    }
     _timestamp?: number;
 }
 
@@ -36,6 +41,11 @@ const DEFAULT : AppSettings = {
         playing: {
             depth: 30,
             elo: 1000
+        }
+    },
+    layout: {
+        playing: {
+            columnsTemplate: "400px 5px 1fr"
         }
     }
 }

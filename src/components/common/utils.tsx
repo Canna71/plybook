@@ -22,6 +22,7 @@ import { GameContextType, TooltipContext } from "../game/GameContext";
 import { makeFen, parseFen } from "chessops/fen";
 import { ViewMode } from "../game/PgnEditBar";
 import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight, IconChessFilled, IconChess } from "@tabler/icons-solidjs";
+import { debounce } from "es-toolkit";
 
 export function lastMove(data: Initial | PlyData | undefined) {
     const lm = isPlyData(data) ? (data.move as NormalMove) : undefined;
@@ -179,8 +180,16 @@ export function getEnPassantSquares(setup: Setup, whitesTurn: boolean) {
 export function useSplitter(saveLayout?: (layout: string) => void) {
     // let dividerEl: HTMLDivElement | null = null;
 
+    const doSave = debounce((value: string) => {
+            saveLayout?.(value);
+    },300);
+
+
     return (divider: HTMLDivElement) => {
-        divider = divider;
+        // divider = divider;
+        // if(gridTemplateColumns){
+        //     divider.parentElement!.style.gridTemplateColumns = gridTemplateColumns ;
+        // }
         Split({
             columnGutters: [
                 {
@@ -190,7 +199,7 @@ export function useSplitter(saveLayout?: (layout: string) => void) {
             ],
             writeStyle: (grid, prop, value) => {
                 (grid.style as any)[prop] = value;
-                saveLayout?.(value);
+                doSave(value);
             },
         });
     };
