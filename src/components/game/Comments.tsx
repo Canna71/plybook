@@ -7,8 +7,12 @@ import { isPlyData, Path } from "../../models/pgn";
 import { GameContext } from "./GameContext";
 
 // regex for square names
-export const squareRegex = /([a-h][1-8])/g;
-const subst = `<span class="square" data-square="$1">$1</span>`;
+export const squareRegex = /(?<!<|")([a-h][1-8])(?!<|")/g;
+const squareSubst = `<span class="square" data-square="$1">$1</span>`;
+
+// regex for moves, like 1. e4 or 1... e5 or 12. Nf3+
+export const moveRegex = /(\d+\.+\s*)([a-h][1-8][\+\#]?)/g;
+const moveSubst = `<span class="move" data-move="$2">$&</span>`;
 
 type CommentsProps = {
     game: Accessor<GameModel | undefined>;
@@ -76,17 +80,9 @@ export const CommentsView: Component<CommentsViewProps> = ({
     const paragraph = () => {
         let line = comments() || "";
         // const matches = line.match(squareRegex);
-        line = line.replace(squareRegex, subst);
-        // if (matches) {
-        //     matches.forEach((match) => {
-        //         console.log(match, line);
-        //         line = line.replace(
-        //             match,
-        //             `<span class="square" data-square="${match}">${match}</span>`,
-        //         );
-        //         console.log(line);
-        //     });
-        // }
+        line = line.replace(moveRegex, moveSubst);
+        line = line.replace(squareRegex, squareSubst);
+        
 
         return line;
     };
