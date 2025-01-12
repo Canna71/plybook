@@ -20,6 +20,7 @@ export interface AppSettings {
         
     },
     layout: {
+        columnsTemplate?: string;
         playing: {
             columnsTemplate?: string;
         }
@@ -44,6 +45,7 @@ const DEFAULT : AppSettings = {
         }
     },
     layout: {
+        columnsTemplate: "180px 5px 1fr",
         playing: {
             columnsTemplate: "400px 5px 1fr"
         }
