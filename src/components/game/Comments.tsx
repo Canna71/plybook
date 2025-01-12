@@ -8,6 +8,7 @@ import { GameContext } from "./GameContext";
 
 // regex for square names
 export const squareRegex = /([a-h][1-8])/g;
+const subst = `<span class="square" data-square="$1">$1</span>`;
 
 type CommentsProps = {
     game: Accessor<GameModel | undefined>;
@@ -74,16 +75,18 @@ export const CommentsView: Component<CommentsViewProps> = ({
 
     const paragraph = () => {
         let line = comments() || "";
-        const matches = line.match(squareRegex);
-
-        if (matches) {
-            matches.forEach((match) => {
-                line = line.replace(
-                    match,
-                    `<span class="square" data-square="${match}">${match}</span>`,
-                );
-            });
-        }
+        // const matches = line.match(squareRegex);
+        line = line.replace(squareRegex, subst);
+        // if (matches) {
+        //     matches.forEach((match) => {
+        //         console.log(match, line);
+        //         line = line.replace(
+        //             match,
+        //             `<span class="square" data-square="${match}">${match}</span>`,
+        //         );
+        //         console.log(line);
+        //     });
+        // }
 
         return line;
     };
