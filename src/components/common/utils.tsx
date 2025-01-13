@@ -411,3 +411,7 @@ export function useFen(
     const fen = createMemo(() => makeFen(position().toSetup()))
     return fen;
 }
+
+export function moveEquals(a: NormalMove, b: NormalMove) {
+    return a.from === b.from && a.to === b.to;
+}

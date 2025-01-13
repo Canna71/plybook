@@ -23,6 +23,7 @@ import {
     makeArrowShape,
     makeConfig,
     makeMove,
+    moveEquals,
     otherColor,
     useFen,
     usePosition,
@@ -175,7 +176,7 @@ const GameManager: Component<GameManagerOptions> = ({
         if (isPuzzleMode()) {
             const node = g.nodeAt(currentPath()!)!;
 
-            const exists = !!node.children.find((n) => n.data.move === move);
+            const exists = !!node.children.find((n) => moveEquals(n.data.move as NormalMove, move));
             if (!exists) {
                 console.debug("Not a right move for puzzle");
                 setCurrentPath(new Path(currentPath()!.path));
