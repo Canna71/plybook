@@ -571,18 +571,20 @@ const GameManager: Component<GameManagerOptions> = ({
                                     viewMode() === ViewMode.PGN
                                 }
                             >
-                                <PlayerNameSelector
-                                    color={"black"}
-                                    orientation={orientation}
-                                    whitePlayerSignal={[
-                                        whitePlayer,
-                                        setWhitePlayer as Setter<string>,
-                                    ]}
-                                    blackPlayerSignal={[
-                                        blackPlayer,
-                                        setBlackPlayer as Setter<string>,
-                                    ]}
-                                />
+                                <Show when={!isPuzzleMode()}>
+                                    <PlayerNameSelector
+                                        color={"black"}
+                                        orientation={orientation}
+                                        whitePlayerSignal={[
+                                            whitePlayer,
+                                            setWhitePlayer as Setter<string>,
+                                        ]}
+                                        blackPlayerSignal={[
+                                            blackPlayer,
+                                            setBlackPlayer as Setter<string>,
+                                        ]}
+                                    />
+                                </Show>
                                 <div
                                     ref={chessBoardDiv!}
                                     class="pgnviewer-chessboard"
@@ -599,18 +601,20 @@ const GameManager: Component<GameManagerOptions> = ({
                                         />
                                     </Show>
                                 </div>
-                                <PlayerNameSelector
-                                    color={"white"}
-                                    orientation={orientation}
-                                    whitePlayerSignal={[
-                                        whitePlayer,
-                                        setWhitePlayer as Setter<string>,
-                                    ]}
-                                    blackPlayerSignal={[
-                                        blackPlayer,
-                                        setBlackPlayer as Setter<string>,
-                                    ]}
-                                />
+                                <Show when={!isPuzzleMode()}>
+                                    <PlayerNameSelector
+                                        color={"white"}
+                                        orientation={orientation}
+                                        whitePlayerSignal={[
+                                            whitePlayer,
+                                            setWhitePlayer as Setter<string>,
+                                        ]}
+                                        blackPlayerSignal={[
+                                            blackPlayer,
+                                            setBlackPlayer as Setter<string>,
+                                        ]}
+                                    />
+                                </Show>
                             </Show>
                             <Show
                                 when={viewMode() === ViewMode.STARTING_POSITION}
@@ -643,9 +647,12 @@ const GameManager: Component<GameManagerOptions> = ({
                                     <Moves />
                                 </Show>
                             </div>
-                            <Show when={viewMode() === ViewMode.MOVES
-                                && !isPuzzleMode()
-                            }>
+                            <Show
+                                when={
+                                    viewMode() === ViewMode.MOVES &&
+                                    !isPuzzleMode()
+                                }
+                            >
                                 <ButtonBar />
                             </Show>
 
