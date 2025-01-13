@@ -59,6 +59,7 @@ import { getSettingValue, setSettingValue } from "../../models/settings";
 import { Config } from "chessground/config";
 import { create } from "@tauri-apps/plugin-fs";
 import Button from "../common/Button";
+import { IconCircleXFilled } from "@tabler/icons-solidjs";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -660,6 +661,7 @@ const GameManager: Component<GameManagerOptions> = ({
                                         <Button class="is-danger is-outlined"
                                             onClick={onResetPuzzle}
                                         >
+                                            <IconCircleXFilled />
                                             Wrong move try again
                                         </Button>
                                     </div>
