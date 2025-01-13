@@ -657,7 +657,7 @@ const GameManager: Component<GameManagerOptions> = ({
                                     when={isPuzzleMode() && wrongPuzzleMove()}
                                 >
                                     <div class="pgnviewer-wrong-move">
-                                        <Button
+                                        <Button class="is-danger is-outlined"
                                             onClick={onResetPuzzle}
                                         >
                                             Wrong move try again

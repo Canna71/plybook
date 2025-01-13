@@ -279,3 +279,11 @@
         margin: 0 8px;
     }
 }
+
+.pgnviewer-wrong-move {
+    display: flex;
+    justify-content: center; /* Aligns items horizontally */
+    align-items: center; /* Aligns items vertically */
+    padding: 8px;
+    // height: 200px; /* Set a height for vertical centering */
+}
