@@ -481,7 +481,6 @@ const GameManager: Component<GameManagerOptions> = ({
     createEffect(() => {
         const path = memoPath();
         if (isPuzzleMode() && turn() !== orientation()) {
-            console.log("TODO: automaticly play next move");
             const node = game()?.nodeAt(path!);
             const next = node?.children[0];
             if (next) {
