@@ -1,4 +1,4 @@
-import { batch, createEffect, createMemo, createSignal } from "solid-js";
+import { batch, createEffect, createMemo, createSignal, Show } from "solid-js";
 import { save } from "@tauri-apps/plugin-dialog";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
@@ -15,7 +15,7 @@ import { IconDeviceFloppy } from "@tabler/icons-solidjs";
 import "./GameView.scss";
 import Editable from "../components/common/Editable";
 import { useContentContext } from "../components/common/ContentContext";
-import { message } from '@tauri-apps/plugin-dialog';
+import { message } from "@tauri-apps/plugin-dialog";
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -45,11 +45,14 @@ const GameView = () => {
         // onRefresh();
         let pgnText = getDefaultStudyContent();
         if (typeof searchParams.path === "string") {
-            try{
+            try {
                 pgnText = await readDataFile(searchParams.path);
             } catch (e) {
                 // Shows message
-                message('Error reading file: \n' + searchParams.path, { title: 'Re:Chess', kind: 'error' });
+                message("Error reading file: \n" + searchParams.path, {
+                    title: "Re:Chess",
+                    kind: "error",
+                });
                 console.error(e);
             }
         } else {
@@ -64,7 +67,7 @@ const GameView = () => {
     const memoNewPgn = createMemo(newPgn, undefined, {
         equals: (a, b) => {
             return a === b;
-        }
+        },
     });
 
     createEffect(() => {
@@ -78,7 +81,7 @@ const GameView = () => {
 
     const isPuzzleMode = () => {
         return location.pathname === "/puzzle";
-    }
+    };
 
     const isEditable = () => {
         return true; // TODO: Check if the source is writable
@@ -134,22 +137,23 @@ const GameView = () => {
             <nav class="game-header buttons are-small" role="navigation">
                 <div class="game-name">
                     <Editable
-                        editable={()=>false}
+                        editable={() => false}
                         initialValue={displayedName() || ""}
                         onSave={onRename}
                     ></Editable>
                 </div>
-
-                <div class="navbar-item">
-                    <button
-                        disabled={!canSave()}
-                        class="button is-primary"
-                        onClick={onSave}
-                    >
-                        <IconDeviceFloppy />
-                        Save
-                    </button>
-                </div>
+                <Show when={isEditable()}>
+                    <div class="navbar-item">
+                        <button
+                            disabled={!canSave()}
+                            class="button is-primary"
+                            onClick={onSave}
+                        >
+                            <IconDeviceFloppy />
+                            Save
+                        </button>
+                    </div>
+                </Show>
             </nav>
             <GameManager
                 initalPgn={originalPgn}

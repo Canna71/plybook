@@ -6,6 +6,7 @@ import { CommentsView } from "./Comments";
 
 import { Ply } from "./Ply";
 import { GameContext } from "./GameContext";
+import { PgnNodeData } from "chessops/pgn";
 
 export type MovesProps = {
     // game: Accessor<GameModel | undefined>;
@@ -176,8 +177,9 @@ const Moves: Component<MovesProps> = () => {
     const movesTree = (): HierarchicalMoveData[] => {
         const g = game();
         if(!g) return [];
-        const moves = g.moves;
-
+        let moves = g.moves;
+        const cpath = currentPath() || Path.root;
+        
         const tree = moves && makeTree(moves);
         return tree || [];
     };

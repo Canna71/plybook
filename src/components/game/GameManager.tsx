@@ -623,10 +623,10 @@ const GameManager: Component<GameManagerOptions> = ({
                         </div>
                         <VDivider ref={divider!} />
                         <div class="pgnviewer-sidebar">
-                            <Show when={true}>
+                            <Show when={!isPuzzleMode()}>
                                 <PgnEditBar isEditable={isEditable} />
                             </Show>
-                            <Show when={true}>
+                            <Show when={!isPuzzleMode()}>
                                 <EngineControl />
                             </Show>
                             <Show when={engineCallable() && !playingEngine}>
@@ -636,13 +636,16 @@ const GameManager: Component<GameManagerOptions> = ({
                                 <Show
                                     when={
                                         hasMoves() &&
-                                        viewMode() === ViewMode.MOVES
+                                        viewMode() === ViewMode.MOVES &&
+                                        !isPuzzleMode()
                                     }
                                 >
                                     <Moves />
                                 </Show>
                             </div>
-                            <Show when={viewMode() === ViewMode.MOVES}>
+                            <Show when={viewMode() === ViewMode.MOVES
+                                && !isPuzzleMode()
+                            }>
                                 <ButtonBar />
                             </Show>
 
