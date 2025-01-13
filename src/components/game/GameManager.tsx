@@ -13,12 +13,11 @@ import {
     Switch,
     untrack,
 } from "solid-js";
-import { getMaterial, makeGameInternal, Path } from "../../models/pgn";
+import { makeGameInternal, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
 import {
-    getPosition,
     initFromGameModel,
     isPromotion,
     makeArrowShape,
@@ -32,7 +31,7 @@ import {
 import { Color, Key, Piece, Role, SquareClasses } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
 import BoardEditor from "../boardeditor/BoardEditor";
-import { INITIAL_FEN, makeFen } from "chessops/fen";
+import { INITIAL_FEN } from "chessops/fen";
 import {
     GameContext,
     GameContextType,
@@ -44,7 +43,6 @@ import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
 import { makeSquare, NormalMove, parseUci } from "chessops";
 import "./GameManager.scss";
-import { getDefaultStudyContent } from "../../storage/fs";
 import EngineInfoViewer from "./EngineInfoViewer";
 import { Tooltip } from "../common/Tooltip";
 import PgnEditBar, { ViewMode } from "./PgnEditBar";
@@ -53,7 +51,7 @@ import { useChessEngine } from "./useChessEngine";
 import { playSoundForMove } from "./playSoundForMove";
 import { useTooltip } from "./useTooltip";
 import MarkdownEditor from "../common/MarkdownEditor";
-import { Game, makePgn, parsePgn, PgnNodeData } from "chessops/pgn";
+import { makePgn, parsePgn } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
 import EngineControl from "./EngineControl";
 import { getSettingValue, setSettingValue } from "../../models/settings";
@@ -120,7 +118,9 @@ const GameManager: Component<GameManagerOptions> = ({
     // const [squareHovered, setSquareHovered] = createSignal<string | undefined>(
     //     undefined,
     // );
-    const [highlightedSquares, setHighlightedSquares] = createSignal<string[]>([]);
+    const [highlightedSquares, setHighlightedSquares] = createSignal<string[]>(
+        [],
+    );
     const [highlightedMoves, setHighlightedMoves] = createSignal<string[]>([]);
     const [startingPosition, setStartingPosition] = createSignal<
         string | undefined
@@ -279,7 +279,9 @@ const GameManager: Component<GameManagerOptions> = ({
             movableColor = pos.turn;
         }
 
-        const showArrows = !playingEngine && getSettingValue("engine.analysis.showArrows", false);
+        const showArrows =
+            !playingEngine &&
+            getSettingValue("engine.analysis.showArrows", false);
         const shapes = baseConfig.drawable?.shapes || [];
 
         const hints: SquareClasses = new Map();
@@ -294,7 +296,7 @@ const GameManager: Component<GameManagerOptions> = ({
                 hints.set(from, "selected");
                 hints.set(to, "selected");
             }
-            if(showArrows) {
+            if (showArrows) {
                 const arrow = makeArrowShape(from, to, "black");
                 shapes.push(arrow);
             }
@@ -341,7 +343,6 @@ const GameManager: Component<GameManagerOptions> = ({
                 onChange: onDrawChange,
             },
         };
-
 
         return config;
     };
@@ -453,8 +454,9 @@ const GameManager: Component<GameManagerOptions> = ({
             const gameModel = makeGameInternal(games[gIdx]);
             initFromGameModel(gameContext, gameModel);
         } else if (initialFen) {
-            const gameModel = makeGameInternal(parsePgn("[]]")[0])
-            .withStartingPosition(initialFen);
+            const gameModel = makeGameInternal(
+                parsePgn("[]]")[0],
+            ).withStartingPosition(initialFen);
             initFromGameModel(gameContext, gameModel);
         }
     });
@@ -505,8 +507,14 @@ const GameManager: Component<GameManagerOptions> = ({
         gameIndexSignal: [gameIndex, setGameIndex],
         playingEngine: () => !!playingEngine,
         orientation: orientation,
-        highlightedSquaresSignal: [createMemo(highlightedSquares), setHighlightedSquares],
-        highlightedMovesSignal: [createMemo(highlightedMoves), setHighlightedMoves],
+        highlightedSquaresSignal: [
+            createMemo(highlightedSquares),
+            setHighlightedSquares,
+        ],
+        highlightedMovesSignal: [
+            createMemo(highlightedMoves),
+            setHighlightedMoves,
+        ],
         editable: isEditable,
         engineColorSignal: [engineColor, setEngineColor],
         engineLevelSignal,
