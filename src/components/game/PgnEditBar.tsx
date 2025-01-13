@@ -1,8 +1,7 @@
-import { Component, useContext, batch, Show, Accessor, createMemo } from "solid-js";
+import { Component, useContext, batch, Show, Accessor } from "solid-js";
 import Button from "../common/Button";
 import { GameContext } from "./GameContext";
-import { getPosition, initFromGameModel, updateGameFromPgnString, useFen } from "../common/utils";
-import ToggleSwitch from "../common/ToggleSwitch";
+import { updateGameFromPgnString, useFen } from "../common/utils";
 import { StartingPositionIcon } from "../common/Icons";
 import {
     IconBrackets,
@@ -96,10 +95,10 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
     
 
     const onPlayAgainstEngine = () => {
-        // setPlayingEngine(!playingEngine());
-        const fenStr = fen();
-        navigate(`/play?fen=${fenStr}`);
-        
+        // Toggle the playing engine state (commented out for now)
+        const currentFen = fen();
+        const playUrl = `/play?fen=${currentFen}`;
+        navigate(playUrl);
     }
 
     return (

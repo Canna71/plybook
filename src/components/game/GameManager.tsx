@@ -64,6 +64,7 @@ export type GameManagerOptions = {
     playingEngine?: boolean;
     defaultEngineAnalysisOn?: boolean;
     initialFen?: string;
+    puzzleMode?: boolean;
     editable?: Accessor<boolean>;
 };
 
@@ -107,6 +108,7 @@ const GameManager: Component<GameManagerOptions> = ({
     setPgn,
     playingEngine,
     initialFen,
+    puzzleMode,
     editable,
     defaultEngineAnalysisOn = false,
 }) => {
@@ -191,6 +193,20 @@ const GameManager: Component<GameManagerOptions> = ({
         }
     };
 
+    const applyOpponentMoves = () => {
+        const g = game();
+        if (!g) return;
+
+        const path = currentPath() || Path.root;
+        console.log("TODO: Applying opponent moves");
+    };
+
+    // Call this function when the game is initialized or when a move is made
+    createEffect(() => {
+        if (isPuzzleMode()) {
+        }
+    });
+
     const onSelect = (_key: Key) => {};
 
     const onDrawChange = (shapes: any) => {
@@ -252,6 +268,12 @@ const GameManager: Component<GameManagerOptions> = ({
         }
         const sp = g.initial.pos.turn;
         return sp;
+    });
+
+    const playerColor = createMemo(() => orientation());
+
+    const isPuzzleMode = createMemo(() => {
+        return !!puzzleMode;
     });
 
     // const playingEngine = () => !!engineColor?.();
