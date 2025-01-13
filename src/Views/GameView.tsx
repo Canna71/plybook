@@ -84,7 +84,7 @@ const GameView = () => {
     };
 
     const isEditable = () => {
-        return true; // TODO: Check if the source is writable
+        return !isPuzzleMode(); // TODO: Check if the source is writable
     };
 
     const canSave = () => modified();

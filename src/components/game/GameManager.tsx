@@ -51,7 +51,7 @@ import { useChessEngine } from "./useChessEngine";
 import { playSoundForMove } from "./playSoundForMove";
 import { useTooltip } from "./useTooltip";
 import MarkdownEditor from "../common/MarkdownEditor";
-import { makePgn, parsePgn } from "chessops/pgn";
+import { isChildNode, makePgn, parsePgn } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
 import EngineControl from "./EngineControl";
 import { getSettingValue, setSettingValue } from "../../models/settings";
@@ -171,6 +171,18 @@ const GameManager: Component<GameManagerOptions> = ({
         }
 
         const move = makeMove(orig, dest);
+
+        if (isPuzzleMode()) {
+            const node = g.nodeAt(currentPath()!)!;
+
+            const exists = !!node.children.find((n) => n.data.move === move);
+            if (!exists) {
+                console.debug("Not a right move for puzzle");
+                setCurrentPath(new Path(currentPath()!.path));
+                return;
+            }
+        }
+
         const pos = position();
 
         const isLegal = pos.isLegal(move);
