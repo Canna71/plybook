@@ -57,6 +57,7 @@ import PageNavigator from "./MultiPage";
 import EngineControl from "./EngineControl";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { Config } from "chessground/config";
+import { create } from "@tauri-apps/plugin-fs";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -175,7 +176,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
         if (isPuzzleMode()) {
             const node = g.nodeAt(currentPath()!)!;
-
+            // TODO: also handle promotion, so handle afterwards
             const exists = !!node.children.find((n) => moveEquals(n.data.move as NormalMove, move));
             if (!exists) {
                 console.debug("Not a right move for puzzle");
@@ -468,10 +469,9 @@ const GameManager: Component<GameManagerOptions> = ({
         });
     });
 
+    // this effects is triggered by path changes and handles the automatic play of the next move in puzzle mode
     createEffect(() => {
-        // play sound when path changes
         const path = memoPath();
-
         if(isPuzzleMode() && turn() !== orientation()) {
             console.log("TODO: automaticly play next move");
             const node = game()?.nodeAt(path!);
@@ -480,9 +480,14 @@ const GameManager: Component<GameManagerOptions> = ({
                 const move = next.data.move as NormalMove;
                 applyMove(move);
             } else {
-                console.log("No next move");
+                console.log("TODO: show message that the puzzle is solved");
             }
         }
+    });
+
+    // play sound when path changes
+    createEffect(() => {
+        const path = memoPath();
         
         if ((path?.size() || 0) === 0) return;
         if (path) {
