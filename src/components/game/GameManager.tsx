@@ -58,6 +58,7 @@ import EngineControl from "./EngineControl";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { Config } from "chessground/config";
 import { create } from "@tauri-apps/plugin-fs";
+import Button from "../common/Button";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -119,9 +120,7 @@ const GameManager: Component<GameManagerOptions> = ({
         new Path(""),
     );
     const [game, setGame] = createSignal<GameModel | undefined>(undefined);
-    // const [squareHovered, setSquareHovered] = createSignal<string | undefined>(
-    //     undefined,
-    // );
+
     const [highlightedSquares, setHighlightedSquares] = createSignal<string[]>(
         [],
     );
@@ -140,12 +139,9 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const [description, setDescription] = createSignal<string>("");
     const [isEditingDescription, setIsEditingDescription] = createSignal(false);
-    // #endregion
 
-    // #region view mode state
     const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
     const [gameIndex, setGameIndex] = createSignal(0);
-    // #endregion
 
     const [engineColor, setEngineColor] = createSignal<Color | undefined>(
         undefined,
@@ -153,9 +149,10 @@ const GameManager: Component<GameManagerOptions> = ({
     const [hintType, setHintType] = createSignal(HintType.None);
     // #endregion
     const isEditable = () => {
-        return editable?.() || false;
+        return !!editable?.();
     };
-    // #region Game Context
+
+    const [wrongPuzzleMove, setWrongPuzzleMove] = createSignal(false);
 
     // #region Layout
     let chessBoardDiv: HTMLDivElement | null = null;
@@ -177,10 +174,13 @@ const GameManager: Component<GameManagerOptions> = ({
         if (isPuzzleMode()) {
             const node = g.nodeAt(currentPath()!)!;
             // TODO: also handle promotion, so handle afterwards
-            const exists = !!node.children.find((n) => moveEquals(n.data.move as NormalMove, move));
+            const exists = !!node.children.find((n) =>
+                moveEquals(n.data.move as NormalMove, move),
+            );
             if (!exists) {
                 console.debug("Not a right move for puzzle");
-                setCurrentPath(new Path(currentPath()!.path));
+                // setCurrentPath(new Path(currentPath()!.path));
+                setWrongPuzzleMove(true);
                 return;
             }
         }
@@ -469,14 +469,21 @@ const GameManager: Component<GameManagerOptions> = ({
         });
     });
 
+    const onResetPuzzle = () => {
+        const g = game();
+        if (!g) return;
+        setCurrentPath(Path.root);
+        setWrongPuzzleMove(false);
+    }
+
     // this effects is triggered by path changes and handles the automatic play of the next move in puzzle mode
     createEffect(() => {
         const path = memoPath();
-        if(isPuzzleMode() && turn() !== orientation()) {
+        if (isPuzzleMode() && turn() !== orientation()) {
             console.log("TODO: automaticly play next move");
             const node = game()?.nodeAt(path!);
             const next = node?.children[0];
-            if(next) {
+            if (next) {
                 const move = next.data.move as NormalMove;
                 applyMove(move);
             } else {
@@ -488,7 +495,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // play sound when path changes
     createEffect(() => {
         const path = memoPath();
-        
+
         if ((path?.size() || 0) === 0) return;
         if (path) {
             const ply = memoDataAtPath();
@@ -645,6 +652,17 @@ const GameManager: Component<GameManagerOptions> = ({
                                             setBlackPlayer as Setter<string>,
                                         ]}
                                     />
+                                </Show>
+                                <Show
+                                    when={isPuzzleMode() && wrongPuzzleMove()}
+                                >
+                                    <div class="pgnviewer-wrong-move">
+                                        <Button
+                                            onClick={onResetPuzzle}
+                                        >
+                                            Wrong move try again
+                                        </Button>
+                                    </div>
                                 </Show>
                             </Show>
                             <Show
