@@ -471,6 +471,19 @@ const GameManager: Component<GameManagerOptions> = ({
     createEffect(() => {
         // play sound when path changes
         const path = memoPath();
+
+        if(isPuzzleMode() && turn() !== orientation()) {
+            console.log("TODO: automaticly play next move");
+            const node = game()?.nodeAt(path!);
+            const next = node?.children[0];
+            if(next) {
+                const move = next.data.move as NormalMove;
+                applyMove(move);
+            } else {
+                console.log("No next move");
+            }
+        }
+        
         if ((path?.size() || 0) === 0) return;
         if (path) {
             const ply = memoDataAtPath();
