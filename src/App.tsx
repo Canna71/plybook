@@ -42,6 +42,11 @@ function App() {
                     component={GameView}
                     info={{ engine: true }}
                 />
+                <Route
+                    path="/puzzle"
+                    component={GameView}
+                    info={{ puzzle: true }}
+                />
             </Router>
             <Toaster 
                 containerClassName='toaster-container'

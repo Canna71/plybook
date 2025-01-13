@@ -139,6 +139,12 @@ export const nodeAtPathFrom = (node: AnyNode, path: Path): AnyNode | undefined =
     return child ? nodeAtPathFrom(child, path.tail()) : undefined;
 };
 
+export const nodesUntil = (node: AnyNode, path: Path): AnyNode | undefined  => {
+    if (path.empty()) return node;
+    const child = childById(node, path.head());
+    return child ? nodesUntil(child, path.tail()) : node;
+}
+
 export const isMoveNode = (n: AnyNode): n is MoveNode => 'data' in n;
 export const isMoveData = (d: InitialOrMove): d is PlyData => 'uci' in d;
 

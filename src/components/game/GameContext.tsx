@@ -23,7 +23,6 @@ export interface GameContextType {
 	isEditingDescriptionSignal: Signal<boolean>;
 	gameIndexSignal: Signal<number>;
 	orientation: Accessor<Color>;
-	// orientationSignal: Signal<Color>;
 	engineColorSignal: Signal<Color | undefined>;
 	engineLevelSignal: Signal<number>;
 	moveHintSignal: Signal<string | undefined>;
@@ -31,6 +30,7 @@ export interface GameContextType {
 	highlightedSquaresSignal: Signal<string[]>;
 	highlightedMovesSignal: Signal<string[]>;
 	editable: Accessor<boolean>;
+	isPuzzleMode: Accessor<boolean>;
 	hintTypeSignal: Signal<HintType>;
 }
 

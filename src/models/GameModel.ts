@@ -78,18 +78,6 @@ export class GameModel {
         }
     }
 
-    // applyMove(path: Path, move: Move): [GameModel, Path] {
-    //     const pos = this.getPosition(path);
-
-    //     const san = makeSan(pos, move);
-    //     const moveId = scalachessCharPair(move);
-    //     const pgnNode = this.findPgnNode(path);
-    //     extend(pgnNode!, [{ san }]);
-    //     // this.updateMoves();
-    //     const newGameModel = this.getNewGameModel();
-    //     const newPath = path.append(moveId);
-    //     return [newGameModel, newPath];
-    // }
 
     applyMoves(path: Path, moves: Move[]): [GameModel, Path] {
         const pos = this.getPosition(path).clone();

@@ -538,6 +538,7 @@ const GameManager: Component<GameManagerOptions> = ({
             setHighlightedMoves,
         ],
         editable: isEditable,
+        isPuzzleMode: isPuzzleMode,
         engineColorSignal: [engineColor, setEngineColor],
         engineLevelSignal,
         moveHintSignal,

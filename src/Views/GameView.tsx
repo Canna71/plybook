@@ -76,6 +76,10 @@ const GameView = () => {
         return location.pathname === "/analysis";
     };
 
+    const isPuzzleMode = () => {
+        return location.pathname === "/puzzle";
+    }
+
     const isEditable = () => {
         return true; // TODO: Check if the source is writable
     };
@@ -150,6 +154,7 @@ const GameView = () => {
             <GameManager
                 initalPgn={originalPgn}
                 setPgn={setNewPgn}
+                puzzleMode={isPuzzleMode()}
                 editable={isEditable}
                 defaultEngineAnalysisOn={isEngineAnalysisOn()}
             />

@@ -41,6 +41,7 @@ const CommentsRows: Component<{
 };
 
 const MoveLine: Component<MoveProps> = ({ move }) => {
+    const { currentPathSignal: [currentPath], isPuzzleMode } = useContext(GameContext)!;
     const startingComments =
         move.white?.startingComments || move.black?.startingComments || [];
     const startingPath = move.white?.startingComments
@@ -148,10 +149,12 @@ const MovesTree: Component<MovesTreeProps> = ({
 };
 
 const Moves: Component<MovesProps> = () => {
+
     const {
-        currentPathSignal: [_, setCurrentPath],
+        currentPathSignal: [currentPath, setCurrentPath],
         gameSignal: [game],
         playingEngine,
+        isPuzzleMode
     } = useContext(GameContext)!;
 
 
@@ -171,7 +174,10 @@ const Moves: Component<MovesProps> = () => {
     };
 
     const movesTree = (): HierarchicalMoveData[] => {
-        const moves = game()?.moves;
+        const g = game();
+        if(!g) return [];
+        const moves = g.moves;
+
         const tree = moves && makeTree(moves);
         return tree || [];
     };
