@@ -413,5 +413,5 @@ export function useFen(
 }
 
 export function moveEquals(a: NormalMove, b: NormalMove) {
-    return a.from === b.from && a.to === b.to;
-}
+    return a.from === b.from && a.to === b.to && a.promotion === b.promotion;
+} 

@@ -164,6 +164,24 @@ const GameManager: Component<GameManagerOptions> = ({
     // #endregion
 
     // #region Event Handlers
+
+    const checkPuzzleMove = (move: NormalMove) => {
+        if (isPuzzleMode()) {
+            const g = game()!;
+            const node = g.nodeAt(currentPath()!)!;
+            const exists = !!node.children.find((n) =>
+                moveEquals(n.data.move as NormalMove, move),
+            );
+            if (!exists) {
+                console.debug("Not a right move for puzzle");
+                // setCurrentPath(new Path(currentPath()!.path));
+                setWrongPuzzleMove(true);
+                return false;
+            }
+        }
+        return true;
+    }
+
     const onManualMove = (orig: Key, dest: Key, _capturedPiece?: Piece) => {
         const g = game();
         if (!g) {
@@ -172,24 +190,13 @@ const GameManager: Component<GameManagerOptions> = ({
 
         const move = makeMove(orig, dest);
 
-        if (isPuzzleMode()) {
-            const node = g.nodeAt(currentPath()!)!;
-            // TODO: also handle promotion, so handle afterwards
-            const exists = !!node.children.find((n) =>
-                moveEquals(n.data.move as NormalMove, move),
-            );
-            if (!exists) {
-                console.debug("Not a right move for puzzle");
-                // setCurrentPath(new Path(currentPath()!.path));
-                setWrongPuzzleMove(true);
-                return;
-            }
-        }
+        
 
         const pos = position();
 
         const isLegal = pos.isLegal(move);
         if (isLegal) {
+            if(!checkPuzzleMove(move)) return;
             applyMove(move);
         } else {
             // check for promotion
@@ -208,13 +215,6 @@ const GameManager: Component<GameManagerOptions> = ({
         }
     };
 
-    const applyOpponentMoves = () => {
-        const g = game();
-        if (!g) return;
-
-        const path = currentPath() || Path.root;
-        console.log("TODO: Applying opponent moves");
-    };
 
     // Call this function when the game is initialized or when a move is made
     createEffect(() => {
@@ -235,6 +235,7 @@ const GameManager: Component<GameManagerOptions> = ({
         if (promoData) {
             const move = promoData.move;
             move.promotion = role;
+            if(!checkPuzzleMove(move)) return;
             applyMove(move);
         }
     };
