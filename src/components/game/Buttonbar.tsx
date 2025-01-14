@@ -6,18 +6,12 @@ import {
     IconPlayerTrackPrevFilled,
 } from "@tabler/icons-solidjs";
 import {
-    Accessor,
     Component,
     createMemo,
-    createSignal,
-    Setter,
     Show,
     useContext,
 } from "solid-js";
-import { Path } from "../../models/pgn";
-import { GameModel } from "../../models/GameModel";
 import Button from "../common/Button";
-import Modal from "../common/Modal";
 import { GameContext, HintType } from "./GameContext";
 
 export type ButtonBarProps = {
@@ -27,13 +21,12 @@ export type ButtonBarProps = {
 };
 
 const ButtonBar: Component<ButtonBarProps> = ({}) => {
-    const [modalVisible, setModalVisible] = createSignal(false);
     const {
         gameSignal: [game],
         currentPathSignal: [currentPath, setCurrentPath],
         moveHintSignal: [moveHint],
         playingEngine,
-        hintTypeSignal: [hintType, setHintType],
+        hintTypeSignal: [_hintType, setHintType],
     } = useContext(GameContext)!;
 
     const nextNode = () => {

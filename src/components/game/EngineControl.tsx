@@ -44,7 +44,7 @@ const EngineControl = () => {
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
         engineColor() || "random",
     );
-    const [settingsModalVisible, setSettingsModalVisible] = createSignal(false);
+    const modalSignal = createSignal(false), [settingsModalVisible, setSettingsModalVisible] = modalSignal;
     const handleEngineChange = () => {};
 
     const canEnableEngine = () => {

@@ -60,6 +60,7 @@ import { Config } from "chessground/config";
 import { create } from "@tauri-apps/plugin-fs";
 import Button from "../common/Button";
 import { IconCircleXFilled } from "@tabler/icons-solidjs";
+import Modal from "../common/Modal";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -148,6 +149,9 @@ const GameManager: Component<GameManagerOptions> = ({
         undefined,
     );
     const [hintType, setHintType] = createSignal(HintType.None);
+    
+    const successModalSignal = createSignal(false), [successModalOpen, setSuccessModslOpen] = successModalSignal;
+   
     // #endregion
     const isEditable = () => {
         return !!editable?.();
@@ -488,7 +492,8 @@ const GameManager: Component<GameManagerOptions> = ({
                 const move = next.data.move as NormalMove;
                 applyMove(move);
             } else {
-                console.log("TODO: show message that the puzzle is solved");
+                setSuccessModslOpen(true);
+                // console.log("TODO: show message that the puzzle is solved");
             }
         }
     });
@@ -732,6 +737,15 @@ const GameManager: Component<GameManagerOptions> = ({
             <Show when={reference()}>
                 <Tooltip plyData={ply} reference={reference} />
             </Show>
+            <Modal
+                isOpen={successModalSignal}
+                onClose={() => setSuccessModslOpen(false)}
+                title={() => "Puzzle Solved"}
+            >
+                <div>
+                     Great, you solved it!
+                </div>
+            </Modal>
         </>
     );
 };
