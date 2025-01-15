@@ -493,7 +493,6 @@ const GameManager: Component<GameManagerOptions> = ({
                 applyMove(move);
             } else {
                 setSuccessModslOpen(true);
-                // console.log("TODO: show message that the puzzle is solved");
             }
         }
     });
