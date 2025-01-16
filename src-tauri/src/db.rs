@@ -68,8 +68,27 @@ pub async fn init_db(db_state: State<'_, DatabaseConnection>) -> Result<String, 
     // Store the database connection
     *db_state.0.lock().await = Some(db);
 
+    // run this in the background
+
+    update_cached_weignt(db_state).await.unwrap();
 
     Ok("Database initialized successfully".to_string())
+}
+
+async fn update_cached_weignt(db_state: State<'_, DatabaseConnection>) -> Result<(), String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let query = r#"
+        SELECT * FROM studies WHERE puzzle IS NOT NULL;
+    "#;
+
+    let ret= db.query(query)
+        .await
+        .map_err(|e| e.to_string())?;
+    dbg!(&ret);
+
+    Ok(())
 }
 
 // define a string constant for the table name
