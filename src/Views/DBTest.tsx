@@ -26,10 +26,6 @@ const DBTest = () => {
     let pgnTextArea!: HTMLTextAreaElement;
     const [studies, setStudies] = createSignal<Study[]>([]);
 
-    const initDB = async () => {
-        await invoke("init_db");
-    }
-
     const createRecord = async () => {
         const pgnString = await readTextFile('testdata/01.pgn',
             {
@@ -76,7 +72,7 @@ const DBTest = () => {
     return (
         <div class="dbtest-container">
             <div>
-                <Button onClick={initDB}>Init DB</Button>
+               
                 <Button onClick={createRecord}>Index Game</Button>
                 <Button onClick={listGames}>List Games</Button>
                 <Button onClick={uploadPgn}>Upload PGN</Button>
@@ -146,7 +142,7 @@ Alternatively capturing with the queen, maintaining flexibility in the center.
             </div>
             <div><ul>
                 <For each={studies()}>
-                    {study=><li>{study.created_at}, {study.file_path}, {study.is_puzzle}</li>}
+                    {study=><li>{study.created_at}, {study.file_path}, {study.puzzle?.current_interval}</li>}
                 </For></ul>
             </div>
         </div>

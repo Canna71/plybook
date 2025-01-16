@@ -99,7 +99,12 @@ const GameView = () => {
                 // TODO: improve
                 insertStudy({
                     file_path: searchParams.path,
-                    is_puzzle: true,
+                    puzzle: {
+                        difficulty: 0,
+                        current_interval: 1,
+                        base_weight: 100,
+                        ease_factor: 1.25,
+                    },
                     created_at: new Date().toISOString(),
                 })
                 // await writeDataFile("test.pgn", pgnText);

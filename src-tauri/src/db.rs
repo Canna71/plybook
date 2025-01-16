@@ -17,7 +17,8 @@ pub struct DatabaseConnection(pub Mutex<Option<Surreal<Db>>>);
 pub struct Study {
     // id: i32,  // Primary key
     file_path: String,  // Path to the PGN file
-    is_puzzle: bool,  // Marks if it's a puzzle
+    // is_puzzle: bool,  // Marks if it's a puzzle
+    puzzle: Option<Puzzle>,  // Nullable field
     created_at: String,
 }
 
@@ -41,9 +42,6 @@ pub struct Game {
 
 #[derive(Serialize, Deserialize)]
 struct Puzzle {
-    id: RecordId,  // Primary key
-    title: String,
-    study_id: i32,  // Foreign key referencing studied
     difficulty: i32,  // Scale of 1-5
     current_interval: i32,
     last_played_date: Option<String>,  // Nullable field
@@ -126,7 +124,7 @@ pub async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) ->
     let study: Study = Study {
         // id: -1,
         file_path: "todo".to_string(),
-        is_puzzle: false,
+        puzzle: None,
         created_at: "todo".to_string(),
     };
 
@@ -203,3 +201,4 @@ pub async fn list_studies(db_state: State<'_, DatabaseConnection>) -> Result<Vec
 
     Ok(studies)
 }
+
