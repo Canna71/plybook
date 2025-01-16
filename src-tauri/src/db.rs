@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 pub struct DatabaseConnection(pub Mutex<Option<Surreal<Db>>>);
 
 #[derive(Serialize, Deserialize)]
-struct Study {
+pub struct Study {
     // id: i32,  // Primary key
     file_path: String,  // Path to the PGN file
     is_puzzle: bool,  // Marks if it's a puzzle
@@ -176,15 +176,30 @@ pub async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) ->
     Ok(game)
 }
 
-
-async fn insert_study(db_state: State<'_, DatabaseConnection>, study: Study) -> Result<(), Box<dyn std::error::Error>> {
+#[tauri::command]
+pub async fn insert_study(db_state: State<'_, DatabaseConnection>, study: Study) -> Result<Study, String> {
     let db = db_state.0.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
 
-    let created: Option<Record> = db
-        .create("studies")
+    // creates a study with the id given by its file path
+    let created: Study = db
+        .upsert(("studies", &study.file_path))
         .content(study)
-        .await?;
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("Failed to create record")?
+        ;
+    // dbg!(created);
+    Ok(created)
+}
 
-    Ok(())
+// returns all study (service method, to be removed)
+#[tauri::command]
+pub async fn list_studies(db_state: State<'_, DatabaseConnection>) -> Result<Vec<Study>, String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let studies: Vec<Study> = db.select("studies").await.map_err(|e| e.to_string())?;
+
+    Ok(studies)
 }

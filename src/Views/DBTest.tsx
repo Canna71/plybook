@@ -2,6 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { BaseDirectory, readTextFile } from "@tauri-apps/plugin-fs";
 import { makeGame } from "../models/pgn";
 import Button from "../components/common/Button";
+import { createSignal, For } from "solid-js";
+import { Study } from "../storage/db";
 
 type IGame = {
     file: string,
@@ -22,6 +24,7 @@ type IGame = {
 const DBTest = () => {
 
     let pgnTextArea!: HTMLTextAreaElement;
+    const [studies, setStudies] = createSignal<Study[]>([]);
 
     const initDB = async () => {
         await invoke("init_db");
@@ -64,6 +67,12 @@ const DBTest = () => {
         });
     }
 
+    const listStudies = async () => {
+        const studies = await invoke("list_studies") as Study[];
+        setStudies(studies);
+        console.log(studies);
+    }
+
     return (
         <div class="dbtest-container">
             <div>
@@ -71,6 +80,8 @@ const DBTest = () => {
                 <Button onClick={createRecord}>Index Game</Button>
                 <Button onClick={listGames}>List Games</Button>
                 <Button onClick={uploadPgn}>Upload PGN</Button>
+                <Button onClick={listStudies}>List Studies</Button>
+
             </div>
             <div>
 
@@ -132,6 +143,11 @@ Alternatively capturing with the queen, maintaining flexibility in the center.
 
 
                 </textarea>
+            </div>
+            <div><ul>
+                <For each={studies()}>
+                    {study=><li>{study.created_at}, {study.file_path}, {study.is_puzzle}</li>}
+                </For></ul>
             </div>
         </div>
     );

@@ -32,7 +32,8 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
-            greet, init_db, index_game, list_games, upload_pgn
+            greet, init_db, index_game, list_games, upload_pgn, insert_study,
+            list_studies
         ])
         
         .run(tauri::generate_context!())
