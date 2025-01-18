@@ -9,15 +9,15 @@ import { IUCIInterface } from "./iuciinterface";
 
 
 
-interface EngineOption {
-    name: string;
-    type: "check" | "spin" | "combo" | "string" | "button";
-    default: any;
-    min?: number;
-    max?: number;
-    var?: string;
-    options?: string[];
-}
+// interface EngineOption {
+//     name: string;
+//     type: "check" | "spin" | "combo" | "string" | "button";
+//     default: any;
+//     min?: number;
+//     max?: number;
+//     var?: string;
+//     options?: string[];
+// }
 
 // UCIEngine.ts
 export class UCIEngine implements IChessEngine, IEngineEventEmitter {
@@ -26,7 +26,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     private callbacks: Map<string, Function[]> = new Map();
 
     private engineId?: EngineId;
-    private options: EngineOption[] = [];
+    // private options: EngineOption[] = [];
 
     constructor(uciInterface: IUCIInterface) {
         this.uciInterface = uciInterface;

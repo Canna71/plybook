@@ -21,23 +21,20 @@ import { ViewMode } from "./PgnEditBar";
 import Select from "../common/Select";
 import { Color } from "chessops";
 import Button from "../common/Button";
-import { getDefaultStudyContent } from "../../storage/fs";
-import { range } from "es-toolkit";
 import { makeGame } from "../../models/pgn";
 import { getSettingValue, setSettingValue } from "../../models/settings";
-import { startingPosition } from "chessops/pgn";
 import Modal from "../common/Modal";
 
 const EngineControl = () => {
     const {
         playingEngine,
-        gameSignal: [game, setGame],
+        gameSignal: [, setGame],
         engineAnalysisOnSignal,
         engineLevelSignal: [engineLevel, setEngineLevel],
         engineColorSignal: [engineColor, setEngineColor],
         viewModeSignal: [viewMode],
         isEditingDescriptionSignal: [isEditingDescription],
-        fullPgnSignal: [fullPgn, setFullPgn],
+        fullPgnSignal: [],
         startingPositionSignal: [startingPosition],
     } = useContext(GameContext)!;
 
@@ -45,7 +42,6 @@ const EngineControl = () => {
         engineColor() || "random",
     );
     const modalSignal = createSignal(false), [settingsModalVisible, setSettingsModalVisible] = modalSignal;
-    const handleEngineChange = () => {};
 
     const canEnableEngine = () => {
         return (
@@ -72,18 +68,6 @@ const EngineControl = () => {
         ];
     };
 
-    const engineSkillLevels = () => {
-        // return all stockfish levels
-
-        const elos = range(1000, 3000, 100).map((elo) => {
-            return {
-                key: elo.toString(),
-                value: elo.toString(),
-            };
-        });
-
-        return elos;
-    };
 
     const toggleGame = () => {
         if (engineColor()) {
@@ -124,9 +108,6 @@ const EngineControl = () => {
         setSettingsModalVisible(true);
     };
 
-    const analysysDepth = () => {
-        return getSettingValue("engine.analysis.depth");
-    };
 
     return (
         <>
@@ -240,7 +221,7 @@ const EngineLevel = (props: {
     );
 };
 
-const DepthLevel = (props: {}) => {
+const DepthLevel = () => {
     const onDepthLevelChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
         const level = parseInt(target.value);
@@ -266,7 +247,7 @@ const DepthLevel = (props: {}) => {
     );
 };
 
-const AnalysisDepthLevel = (props: {}) => {
+const AnalysisDepthLevel = () => {
     const onDepthLevelChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
         const level = parseInt(target.value);
@@ -292,7 +273,7 @@ const AnalysisDepthLevel = (props: {}) => {
     );
 };
 
-const MultiPVLevel = (props: {}) => {
+const MultiPVLevel = () => {
     const onMultiPVLevelChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
         const level = parseInt(target.value);

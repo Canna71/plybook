@@ -26,9 +26,7 @@ const ButtonBar: Component<ButtonBarProps> = ({}) => {
         currentPathSignal: [currentPath, setCurrentPath],
         moveHintSignal: [moveHint],
         playingEngine,
-        hintTypeSignal: [_hintType, setHintType],
-        isPuzzleMode
-    } = useContext(GameContext)!;
+        hintTypeSignal: [_hintType, setHintType]    } = useContext(GameContext)!;
 
     const nextNode = () => {
         const path = currentPath();

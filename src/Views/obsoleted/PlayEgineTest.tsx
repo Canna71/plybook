@@ -47,7 +47,7 @@ const PlayEngineTest = () => {
 
     };
 
-    const onBestMove = (bestMove: string, ponder: string) => {
+    const onBestMove = (bestMove: string, _ponder: string) => {
 
         // var bestMove = args[0];
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };

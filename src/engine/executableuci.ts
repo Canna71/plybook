@@ -43,7 +43,7 @@ export class ExecutableUCIInterface implements IUCIInterface {
             console.error(`Engine error: ${line}`);
         });
 
-        this.command.on('close', (code) => {
+        this.command.on('close', (_code) => {
             this.isReady = false;
             this.exited = true;
         });

@@ -1,11 +1,9 @@
-import { Accessor, Component, createEffect, For, useContext } from "solid-js";
+import { Accessor, Component, createEffect, useContext } from "solid-js";
 
-import { GameModel } from "../../models/GameModel";
-import { useCurrentData, safePaste } from "../common/utils";
+import { safePaste } from "../common/utils";
 import { useContextMenu } from "../common/contextmenu";
-import { isPlyData, Path } from "../../models/pgn";
+import { Path } from "../../models/pgn";
 import { GameContext } from "./GameContext";
-import { set } from "es-toolkit/compat";
 
 // regex for square names
 export const squareRegex = /(?<!<|")([a-h][1-8])(?!<|")/g;
@@ -35,8 +33,8 @@ export const CommentsView: Component<CommentsViewProps> = ({
     const {
         editable,
         gameSignal: [game, setGame],
-        highlightedSquaresSignal: [highlightedSquares, setHighlightedSquares],
-        highlightedMovesSignal: [highlightedMoves, setHighlightedMoves],
+        highlightedSquaresSignal: [, setHighlightedSquares],
+        highlightedMovesSignal: [, setHighlightedMoves],
     } = useContext(GameContext)!;
     let ref: HTMLDivElement | undefined;
 

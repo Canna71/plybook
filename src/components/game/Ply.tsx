@@ -450,9 +450,7 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
     const {
         currentPathSignal: [currentPath, _setCurrentPath],
         editable,
-        gameSignal: [game, setGame],
-        playingEngine: platingEngine
-    } = useContext(GameContext)!;
+        gameSignal: [game, setGame]    } = useContext(GameContext)!;
     // const { showTooltip } = useContext(TooltipContext)!;
 
     const onAddComment = (before: boolean) => {

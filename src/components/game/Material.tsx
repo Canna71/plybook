@@ -1,7 +1,6 @@
 // display each player's material advantage
 
-import { Color, defaultSetup, Material, MaterialSide, Position, Role, roleToChar } from "chessops";
-import { get } from "es-toolkit/compat";
+import { Color, defaultSetup, Material, Position, Role, roleToChar } from "chessops";
 import { Accessor, Component, createMemo, JSXElement } from "solid-js";
 import { getFigurine } from "../common/utils";
 import { getMaterial } from "../../models/pgn";

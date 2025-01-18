@@ -1,9 +1,8 @@
 import { Color } from "chessops";
-import { Component, JSXElement, Show } from "solid-js";
+import { Component, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { isPiece } from "../../models/pgn";
 
-import { IconChessKingFilled, IconChessQueenFilled, IconChessRookFilled, IconChessBishopFilled, IconChessKnightFilled, IconChessKing, IconChessQueen, IconChessRook, IconChessBishop, IconChessKnight } from "@tabler/icons-solidjs";
 import { getFigurine } from "./utils";
 
 

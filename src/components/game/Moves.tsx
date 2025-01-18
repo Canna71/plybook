@@ -6,7 +6,6 @@ import { CommentsView } from "./Comments";
 
 import { Ply } from "./Ply";
 import { GameContext } from "./GameContext";
-import { PgnNodeData } from "chessops/pgn";
 
 export type MovesProps = {
     // game: Accessor<GameModel | undefined>;
@@ -42,7 +41,7 @@ const CommentsRows: Component<{
 };
 
 const MoveLine: Component<MoveProps> = ({ move }) => {
-    const { currentPathSignal: [currentPath], isPuzzleMode } = useContext(GameContext)!;
+    const { currentPathSignal: [] } = useContext(GameContext)!;
     const startingComments =
         move.white?.startingComments || move.black?.startingComments || [];
     const startingPath = move.white?.startingComments
@@ -152,11 +151,9 @@ const MovesTree: Component<MovesTreeProps> = ({
 const Moves: Component<MovesProps> = () => {
 
     const {
-        currentPathSignal: [currentPath, setCurrentPath],
+        currentPathSignal: [, setCurrentPath],
         gameSignal: [game],
-        playingEngine,
-        isPuzzleMode
-    } = useContext(GameContext)!;
+        playingEngine    } = useContext(GameContext)!;
 
 
     const onClick = (e: Event) => {
@@ -178,7 +175,6 @@ const Moves: Component<MovesProps> = () => {
         const g = game();
         if(!g) return [];
         let moves = g.moves;
-        const cpath = currentPath() || Path.root;
         
         const tree = moves && makeTree(moves);
         return tree || [];

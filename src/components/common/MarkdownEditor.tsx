@@ -18,9 +18,9 @@ type MarkdownEditorProps = {
     isEditingSignal: Signal<boolean>;
 };
 
-function convertNewLines(text: string) {
+// function convertNewLines(text: string) {
 
-}
+// }
 
 const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
     const [value, setValue] = props.valueSignal;
@@ -28,7 +28,7 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
     // let div: HTMLDivElement | null = null;
     let textarea: HTMLDivElement | null = null;
     const gameContext = useContext(GameContext)!;
-    const { gameSignal:[game, setGame] } = gameContext;
+    const { gameSignal:[game] } = gameContext;
 
     onMount(() => {
         // textarea!.style.height = "";

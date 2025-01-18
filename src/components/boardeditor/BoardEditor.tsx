@@ -12,15 +12,13 @@ import { PiecesToolbar } from "./PiecesToolbar";
 import { Piece, Role } from "chessground/types";
 import ToggleSwitch from "../common/ToggleSwitch";
 import {
-    INITIAL_BOARD_FEN,
     INITIAL_FEN,
     makeFen,
     parseFen,
 } from "chessops/fen";
-import { SquareSet } from "chessops";
 import { makeSquare, parseSquare, squareFromCoords } from "chessops/util";
 import Select from "../common/Select";
-import { getEnPassantSquares, selectAll } from "../common/utils";
+import { getEnPassantSquares } from "../common/utils";
 // see: https://lichess.org/editor/1nbqkbn1/p3pppp/1bp2n2/3r3r/8/8/PPPPPPPP/RNBQKBNR_w_KQha_-_0_1?color=white
 
 import "./BoardEditor.scss";

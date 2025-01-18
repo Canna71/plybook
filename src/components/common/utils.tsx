@@ -36,7 +36,7 @@ import {
     IconChess,
 } from "@tabler/icons-solidjs";
 import { debounce } from "es-toolkit";
-import { DrawBrush, DrawBrushes, DrawShape } from "chessground/draw";
+import { DrawBrushes, DrawShape } from "chessground/draw";
 
 export function lastMove(data: Initial | PlyData | undefined) {
     const lm = isPlyData(data) ? (data.move as NormalMove) : undefined;
@@ -64,7 +64,7 @@ export function useCurrentData(
 }
 export function toShapes(
     highlightedSquares: Accessor<string[]>,
-    highlightedMoves: Accessor<string[]>,
+    _highlightedMoves: Accessor<string[]>,
     data: Initial | PlyData,
 ) {
     let autoShapes = highlightedSquares().length>0

@@ -10,36 +10,6 @@
 // 101 - queen
 // 110 - king
 
-const PIECE_TO_CODE: { [key: string]: number } = {
-    P: 1, // white pawn
-    N: 2, // white knight
-    B: 3, // white bishop
-    R: 4, // white rook
-    Q: 5, // white queen
-    K: 6, // white king
-    p: 9, // black pawn (8 + 1)
-    n: 10, // black knight (8 + 2)
-    b: 11, // black bishop (8 + 3)
-    r: 12, // black rook (8 + 4)
-    q: 13, // black queen (8 + 5)
-    k: 14, // black king (8 + 6)
-};
-
-const CODE_TO_PIECE: { [key: number]: string } = {
-    0: " ", // empty
-    1: "P", // white pawn
-    2: "N", // white knight
-    3: "B", // white bishop
-    4: "R", // white rook
-    5: "Q", // white queen
-    6: "K", // white king
-    9: "p", // black pawn
-    10: "n", // black knight
-    11: "b", // black bishop
-    12: "r", // black rook
-    13: "q", // black queen
-    14: "k", // black king
-};
 
 // turns a UInt8Array into a string of characters in order to be stored in a database
 
@@ -245,23 +215,6 @@ export class ChessPositionEncoder {
     }
 }
 
-// Test cases
-const testCases = [
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 2 5",
-    "4k3/8/4K3/8/8/8/8/8 w - - 0 1",
-    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 5 7",
-];
 
-function test() {
-    testCases.forEach((fen) => {
-        try {
-            const encoded = ChessPositionEncoder.encodeFEN(fen);
-            const decoded = ChessPositionEncoder.decodeFEN(encoded);
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    });
-}
 
 

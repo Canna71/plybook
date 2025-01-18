@@ -64,7 +64,7 @@ export class StockfishManager {
         this.command.stderr.on('data', (line: string) => this.processError(line));
         this.command.stdout.on('data', (line: string) => this.processEngineOutput(line));
 
-        this.command.on('close', (code) => {
+        this.command.on('close', (_code) => {
             this.isReady = false;
             this.exited = true;
         });

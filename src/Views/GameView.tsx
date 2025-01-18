@@ -16,7 +16,6 @@ import "./GameView.scss";
 import Editable from "../components/common/Editable";
 import { useContentContext } from "../components/common/ContentContext";
 import { message } from "@tauri-apps/plugin-dialog";
-import { insert } from "solid-js/web";
 import { updatePerformanceScore, upsertStudy } from "../storage/db";
 import { calculatePerformanceScore } from "../models/puzzles";
 
@@ -28,7 +27,7 @@ const GameView = () => {
     const [modified, setModified] = createSignal(false);
     const [searchParams, _setSearchParams] = useSearchParams();
     const location = useLocation();
-    const { refresh, onRefresh } = useContentContext();
+    const { refresh } = useContentContext();
     const displayedName = () => {
         const path = searchParams.path;
         if (path && typeof path === "string") {

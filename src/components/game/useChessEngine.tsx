@@ -18,9 +18,7 @@ import { makeMove } from "../common/utils";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue, setSettingValue } from "../../models/settings";
-import { create } from "@tauri-apps/plugin-fs";
-import { isPlyData, Path } from "../../models/pgn";
-import { set } from "es-toolkit/compat";
+import { Path } from "../../models/pgn";
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;

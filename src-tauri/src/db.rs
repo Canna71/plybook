@@ -5,7 +5,6 @@ use surrealdb::engine::local::RocksDb;
 use surrealdb::RecordId;
 // use surrealdb::RecordId;
 use surrealdb::Surreal;
-use rand::Rng;
 use tauri::State;
 
 use pgnparse::parser::*;
@@ -319,7 +318,6 @@ SELECT puzzle.cached_weight as weight, id from studies WHERE puzzle
         .map_err(|e| e.to_string())?;
 
     let mut selected: Option<PuzzleWeight> = None;
-    let mut weight_sum = 0.0;
 
     for puzzle in res.iter() {
         // Create new RNG for each iteration

@@ -19,8 +19,6 @@ import {
 } from "../../storage/fs";
 import { useContextMenu } from "../common/contextmenu";
 import Editable from "../common/Editable";
-import { menu } from "@tauri-apps/api";
-import { open } from "@tauri-apps/plugin-shell";
 
 type FileBrowserItemProps = {
     node: TreeNode<FileBrowserFile>;

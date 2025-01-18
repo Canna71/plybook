@@ -3,7 +3,6 @@ import { createEffect } from "solid-js";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
 import { useSearchParams } from "@solidjs/router";
-import { start } from "chessground/drag";
 
 const PlayView = () => {
 

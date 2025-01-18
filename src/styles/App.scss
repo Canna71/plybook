@@ -119,6 +119,7 @@ body {
 .slide-container {
     input[type=range]{
         -webkit-appearance: none;
+        appearance: none;
     }
     
     input[type=range]::-webkit-slider-runnable-track {

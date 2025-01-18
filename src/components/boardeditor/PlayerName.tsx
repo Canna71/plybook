@@ -6,7 +6,6 @@ import Editable from "../common/Editable";
 import { getPosition } from "../common/utils";
 import MaterialWon from "../game/Material";
 import "./PlayerName.scss";
-import EngineControl from "../game/EngineControl";
 
 const PlayerName: Component<{
     name: Accessor<string>;

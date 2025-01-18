@@ -52,17 +52,14 @@ import { useChessEngine } from "./useChessEngine";
 import { playSoundForMove } from "./playSoundForMove";
 import { useTooltip } from "./useTooltip";
 import MarkdownEditor from "../common/MarkdownEditor";
-import { isChildNode, makePgn, parsePgn } from "chessops/pgn";
+import { makePgn, parsePgn } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
 import EngineControl from "./EngineControl";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { Config } from "chessground/config";
-import { create } from "@tauri-apps/plugin-fs";
 import Button from "../common/Button";
 import { IconCircleXFilled } from "@tabler/icons-solidjs";
 import Modal from "../common/Modal";
-import { calculatePerformanceScore } from "../../models/puzzles";
-import { updatePerformanceScore } from "../../storage/db";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -153,7 +150,7 @@ const GameManager: Component<GameManagerOptions> = ({
     );
     const [hintType, setHintType] = createSignal(HintType.None);
     
-    const successModalSignal = createSignal(false), [successModalOpen, setSuccessModalOpen] = successModalSignal;
+    const successModalSignal = createSignal(false), [, setSuccessModalOpen] = successModalSignal;
    
     // #endregion
     const isEditable = () => {
@@ -295,7 +292,6 @@ const GameManager: Component<GameManagerOptions> = ({
         return sp;
     });
 
-    const playerColor = createMemo(() => orientation());
 
     const isPuzzleMode = createMemo(() => {
         return typeof onPuzzleFinished === "function";
