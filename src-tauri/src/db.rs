@@ -234,17 +234,27 @@ pub async fn list_studies(db_state: State<'_, DatabaseConnection>) -> Result<Vec
 }
 
 #[tauri::command]
-pub async fn list_puzzles(db_state: State<'_, DatabaseConnection>) -> Result<Vec<Study>, String> {
+pub async fn list_puzzles(
+    db_state: State<'_, DatabaseConnection>, 
+    #[allow(unused_variables)] limit: Option<i32>
+) -> Result<Vec<Study>, String> {
     let db = db_state.0.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
+    let limit = limit.unwrap_or(100); // Default value of 10 if none provided
 
-    let mut result = db.query("SELECT * from studies WHERE puzzle")
-    .await
-    .map_err(|e| e.to_string())?;
+    let query = r#"
+SELECT * from studies WHERE puzzle 
+ ORDER BY puzzle.cached_weight desc
+ LIMIT $limit
+"#;
+
+    let mut result = db.query(query)
+        .bind(("limit", limit))
+        .await
+        .map_err(|e| e.to_string())?;
 
     let studies: Vec<Study> = result.take(0)
-    .map_err(|e| e.to_string())?
-    ;
+        .map_err(|e| e.to_string())?;
 
     Ok(studies)
 }
