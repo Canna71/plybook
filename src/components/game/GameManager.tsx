@@ -156,6 +156,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const [hintType, setHintType] = createSignal(HintType.None);
     const [hintMove, setHintMove] = createSignal<string | undefined>(undefined);
+    const [hintUsed, setHintUsed] = createSignal(0);
 
     const successModalSignal = createSignal(false),
         [, setSuccessModalOpen] = successModalSignal;
@@ -485,10 +486,8 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // this effects is triggered by path changes and handles the automatic play of the next move in puzzle mode
     createEffect(() => {
-        console.log("path changed");
         const path = memoPath();
         if (isPuzzleMode()) {
-            console.log("puzzle mode");
             const node = game()?.nodeAt(path!);
             const next = node?.children[0];
             if (turn() !== orientation()) {
@@ -502,11 +501,20 @@ const GameManager: Component<GameManagerOptions> = ({
                     setSuccessModalOpen(true);
                 }
             } else {
-                console.log("not my turn", next?.data.uci);
                 // TODO: set moveHint
                 setHintMove(next?.data.uci);
             }
         }
+    });
+
+    createEffect(() => {
+        const hint = hintType();
+        if (hint === HintType.Piece) {
+            setHintUsed(h => h + 0.5);
+        } else if (hint === HintType.Move) {
+            setHintUsed(h => h + 1);
+        }
+        console.log("Hint used", hintUsed());
     });
 
     // play sound when path changes
