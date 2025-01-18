@@ -53,6 +53,7 @@ struct Puzzle {
     base_weight: f64,
     cached_weight: Option<f64>,
     weight_cached_at: Option<String>,
+    performance_score: f64,
 }
 
 #[tauri::command]
@@ -86,8 +87,8 @@ async fn update_cached_weignt(db_state: State<'_, DatabaseConnection>) -> Result
     let query = r#"
 UPDATE studies
 
-SET puzzle.current_interval = IF performance_score >= 0.8 { current_interval * $ease_factor }
-ELSE IF performance_score >= 0.6 { current_interval * 0.5 * $ease_factor }
+SET puzzle.current_interval = IF puzzle.performance_score >= 0.8 { current_interval * $ease_factor }
+ELSE IF puzzle.performance_score >= 0.6 { current_interval * 0.5 * $ease_factor }
 ELSE { $minimum_interval }
 ,
 puzzle.cached_weight = puzzle.base_weight * math::pow(math::e, duration::days(time::now() - <datetime>(last_played_date OR created_at)) / puzzle.current_interval - 1)

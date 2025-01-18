@@ -22,6 +22,7 @@ const Puzzles: Component = () => {
                         <th>Last Played</th>
                         <th>Cached Weight</th>
                         <th>Interval</th>
+                        <th>Score</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,6 +34,7 @@ const Puzzles: Component = () => {
                                 <td>{study.puzzle?.last_played_date}</td>
                                 <td>{study.puzzle?.cached_weight}</td>
                                 <td>{study.puzzle?.current_interval}</td>
+                                <td>{study.puzzle?.performance_score}</td>
                             </tr>
                         )}
                     </For>

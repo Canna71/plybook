@@ -12,6 +12,8 @@ export type Puzzle = {
     cached_weight?: number;
     
     weight_cached_at?: string;
+
+    performance_score?: number;
 };
 
 export type Study = {

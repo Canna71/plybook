@@ -185,7 +185,6 @@ const GameManager: Component<GameManagerOptions> = ({
             const g = game()!;
             const pos = position();
             const node = g.nodeAt(currentPath()!)!;
-            console.log("Checking puzzle move", move, node.children);
             const exists = !!node.children.find((n) =>
                 moveEquals(pos, n.data.move as NormalMove, move),
             );
@@ -495,6 +494,7 @@ const GameManager: Component<GameManagerOptions> = ({
         const path = memoPath();
         if (isPuzzleMode()) {
             const node = game()?.nodeAt(path!);
+            if (!node) return;
             const next = node?.children[0];
             if (turn() !== orientation()) {
                 if (next) {
@@ -507,7 +507,12 @@ const GameManager: Component<GameManagerOptions> = ({
                     setSuccessModalOpen(true);
                 }
             } else {
+                
                 setHintMove(next?.data.uci);
+                if(!next) {
+                    onPuzzleFinished?.(true, hintUsed(), retries());
+                    setSuccessModalOpen(true);
+                }
             }
         }
     });
