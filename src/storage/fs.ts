@@ -63,7 +63,6 @@ export async function writeDataFile(subPath: string, data: string) {
     // return writeTextFile(subPath, data, {
     //     baseDir: BaseDirectory.AppLocalData
     // });
-    // HACK: changed tp use TextEncoder to avoid issues with "unexpected invoke body" error
     return writeFile(subPath, new TextEncoder().encode(data), {
         baseDir: BaseDirectory.AppLocalData,
     });

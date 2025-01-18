@@ -156,7 +156,6 @@ export function useChessEngine(options: ChessEngineOptions) {
     };
 
     createEffect(() => {
-        console.log("Engine analysis on", engineAnalysisOn());
         const fenStr = options.fen();
         setEngineInfo([]);
         let opts = undefined;

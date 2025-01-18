@@ -85,7 +85,6 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
 
     const onOpenInDesktop = async  (node: TreeNode<FileBrowserFile>) => {
         try {
-            console.log("Opening in desktop: ", node.data!.path);
             await openDataPath(node.data!.path);
         } catch (e) {
             console.error(e);

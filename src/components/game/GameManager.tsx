@@ -157,6 +157,7 @@ const GameManager: Component<GameManagerOptions> = ({
     const [hintType, setHintType] = createSignal(HintType.None);
     const [hintMove, setHintMove] = createSignal<string | undefined>(undefined);
     const [hintUsed, setHintUsed] = createSignal(0);
+    const [retries, setRetries] = createSignal(0);
 
     const successModalSignal = createSignal(false),
         [, setSuccessModalOpen] = successModalSignal;
@@ -180,16 +181,19 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const checkPuzzleMove = (move: NormalMove) => {
         if (isPuzzleMode()) {
+            
             const g = game()!;
+            const pos = position();
             const node = g.nodeAt(currentPath()!)!;
+            console.log("Checking puzzle move", move, node.children);
             const exists = !!node.children.find((n) =>
-                moveEquals(n.data.move as NormalMove, move),
+                moveEquals(pos, n.data.move as NormalMove, move),
             );
             if (!exists) {
                 console.debug("Not a right move for puzzle");
                 // setCurrentPath(new Path(currentPath()!.path));
-                // TODO: actually track the performance
-                onPuzzleFinished?.(false, 0, 0);
+                // track the performance
+                onPuzzleFinished?.(false, hintUsed(), retries());
                 setWrongPuzzleMove(true);
                 return false;
             }
@@ -475,6 +479,7 @@ const GameManager: Component<GameManagerOptions> = ({
         });
     });
 
+    // This is called to reset a puzzle after a wrong move
     const onResetPuzzle = () => {
         const g = game();
         if (!g) return;
@@ -482,6 +487,7 @@ const GameManager: Component<GameManagerOptions> = ({
         setWrongPuzzleMove(false);
         // setHintMove(undefined);
         setHintType(HintType.None);
+        setRetries(r => r + 1);
     };
 
     // this effects is triggered by path changes and handles the automatic play of the next move in puzzle mode
@@ -496,12 +502,11 @@ const GameManager: Component<GameManagerOptions> = ({
                     applyMove(move);
                 } else {
                     // Puzzle finished
-                    // TODO: actually track the performance
-                    onPuzzleFinished?.(true, 0, 0);
+                    // track the performance
+                    onPuzzleFinished?.(true, hintUsed(), retries());
                     setSuccessModalOpen(true);
                 }
             } else {
-                // TODO: set moveHint
                 setHintMove(next?.data.uci);
             }
         }
@@ -514,7 +519,6 @@ const GameManager: Component<GameManagerOptions> = ({
         } else if (hint === HintType.Move) {
             setHintUsed(h => h + 1);
         }
-        console.log("Hint used", hintUsed());
     });
 
     // play sound when path changes

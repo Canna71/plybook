@@ -148,6 +148,7 @@ const GameView = () => {
         hintUsed: number,
         retries: number,
     ) => {
+        console.log("Puzzle finished", { solved, hintUsed, retries });
         // puzzle solved
         const score = calculatePerformanceScore(
             solved, // solved

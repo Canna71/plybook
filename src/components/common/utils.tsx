@@ -37,6 +37,7 @@ import {
 } from "@tabler/icons-solidjs";
 import { debounce } from "es-toolkit";
 import { DrawBrushes, DrawShape } from "chessground/draw";
+import { makeSan } from "chessops/san";
 
 export function lastMove(data: Initial | PlyData | undefined) {
     const lm = isPlyData(data) ? (data.move as NormalMove) : undefined;
@@ -422,6 +423,9 @@ export function useFen(
     return fen;
 }
 
-export function moveEquals(a: NormalMove, b: NormalMove) {
-    return a.from === b.from && a.to === b.to && a.promotion === b.promotion;
+export function moveEquals(pos: Position, a: NormalMove, b: NormalMove) {
+    // return a.from === b.from && a.to === b.to && a.promotion === b.promotion;
+    const asan = makeSan(pos, a);
+    const bsan = makeSan(pos, b);
+    return asan === bsan;
 } 

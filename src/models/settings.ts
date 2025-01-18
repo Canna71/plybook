@@ -54,7 +54,6 @@ const DEFAULT : AppSettings = {
     }
 }
 
-// TODO: have a look at here https://github.com/solidjs-community/solid-primitives/tree/main/packages/storage#readme
 
 // let theSettings: AppSettings;
 const [settings, setSettings] = createStore<AppSettings>({...DEFAULT}); //= [undefined, undefined ];

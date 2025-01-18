@@ -10,7 +10,6 @@ const PlayView = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
     
     createEffect(async () => {
-        console.log(searchParams);
         if(typeof(searchParams.fen) === "string") {
             
         } else {
