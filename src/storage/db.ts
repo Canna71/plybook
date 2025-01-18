@@ -46,8 +46,8 @@ export async function initDB() {
 
 export async function updatePerformanceScore(studyId: string, score: number) {
     return await invoke("update_puzzle", {
-        study_id: studyId,
-        performance_score: score
+        studyId: studyId,
+        performanceScore: score
     });  
 }
 

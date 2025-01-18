@@ -71,7 +71,8 @@ export type GameManagerOptions = {
     playingEngine?: boolean;
     defaultEngineAnalysisOn?: boolean;
     initialFen?: string;
-    puzzleMode?: boolean;
+    // puzzleMode?: boolean;
+    onPuzzleFinished?: (solved: boolean, hintUsed: number, retries: number) => void;
     editable?: Accessor<boolean>;
 };
 
@@ -115,7 +116,7 @@ const GameManager: Component<GameManagerOptions> = ({
     setPgn,
     playingEngine,
     initialFen,
-    puzzleMode,
+    onPuzzleFinished,
     editable,
     defaultEngineAnalysisOn = false,
 }) => {
@@ -181,6 +182,8 @@ const GameManager: Component<GameManagerOptions> = ({
             if (!exists) {
                 console.debug("Not a right move for puzzle");
                 // setCurrentPath(new Path(currentPath()!.path));
+                // TODO: actually track the performance
+                onPuzzleFinished?.(false, 0, 0);
                 setWrongPuzzleMove(true);
                 return false;
             }
@@ -295,7 +298,7 @@ const GameManager: Component<GameManagerOptions> = ({
     const playerColor = createMemo(() => orientation());
 
     const isPuzzleMode = createMemo(() => {
-        return !!puzzleMode;
+        return typeof onPuzzleFinished === "function";
     });
 
     // const playingEngine = () => !!engineColor?.();
@@ -494,16 +497,9 @@ const GameManager: Component<GameManagerOptions> = ({
                 const move = next.data.move as NormalMove;
                 applyMove(move);
             } else {
-                // puzzle solved
-                const score = calculatePerformanceScore(
-                    true, // solved
-                    0, // hints used 
-                    0, // retries 
-                    0, // expected time 
-                    0 // time taken
-                );
-                console.log("Puzzle solved with score: " + score);
-                updatePerformanceScore("puzzle", score);
+                // Puzzle finished
+                // TODO: actually track the performance
+                onPuzzleFinished?.(true, 0, 0);
                 setSuccessModalOpen(true);
             }
         }

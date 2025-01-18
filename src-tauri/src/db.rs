@@ -263,7 +263,7 @@ SELECT * from studies WHERE puzzle
 #[tauri::command]
 pub async fn update_puzzle(
     db_state: State<'_, DatabaseConnection>, 
-    study_id: RecordId, 
+    study_id: String, 
     performance_score: f64
 ) -> Result<(), String> {
     let db = db_state.0.lock().await;
@@ -273,7 +273,7 @@ pub async fn update_puzzle(
 UPDATE studies
 SET puzzle.performance_score = $performance_score,
 puzzle.last_played_date = time::now()
-WHERE id = $study_id
+WHERE id = type::thing("studies",  $study_id)
 "#;
 
     let ret = db.query(query)

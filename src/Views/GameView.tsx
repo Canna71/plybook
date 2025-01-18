@@ -17,7 +17,8 @@ import Editable from "../components/common/Editable";
 import { useContentContext } from "../components/common/ContentContext";
 import { message } from "@tauri-apps/plugin-dialog";
 import { insert } from "solid-js/web";
-import { upsertStudy } from "../storage/db";
+import { updatePerformanceScore, upsertStudy } from "../storage/db";
+import { calculatePerformanceScore } from "../models/puzzles";
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -104,7 +105,7 @@ const GameView = () => {
                         base_weight: 100,
                     },
                     created_at: new Date().toISOString(),
-                })
+                });
                 // await writeDataFile("test.pgn", pgnText);
                 setModified(false);
                 refresh();
@@ -143,6 +144,23 @@ const GameView = () => {
         refresh();
     };
 
+    const onPuzzleFinished = async (
+        solved: boolean,
+        hintUsed: number,
+        retries: number,
+    ) => {
+        // puzzle solved
+        const score = calculatePerformanceScore(
+            solved, // solved
+            hintUsed, // hints used
+            retries, // retries
+            0, // expected time
+            0, // time taken
+        );
+        console.log("Puzzle solved with score: " + score);
+        updatePerformanceScore(filePath()!, score);
+    };
+
     return (
         <>
             <nav class="game-header buttons are-small" role="navigation">
@@ -169,7 +187,7 @@ const GameView = () => {
             <GameManager
                 initalPgn={originalPgn}
                 setPgn={setNewPgn}
-                puzzleMode={isPuzzleMode()}
+                onPuzzleFinished={onPuzzleFinished}
                 editable={isEditable}
                 defaultEngineAnalysisOn={isEngineAnalysisOn()}
             />
