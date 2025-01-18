@@ -92,12 +92,13 @@ SET puzzle.current_interval = IF puzzle.performance_score >= 0.8 { puzzle.curren
 ELSE IF puzzle.performance_score >= 0.6 { puzzle.current_interval * 0.5 * $ease_factor }
 ELSE { $minimum_interval }
 ,
-puzzle.cached_weight = puzzle.base_weight * math::pow(math::e, duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at)) / puzzle.current_interval - 1)
+// puzzle.cached_weight = puzzle.base_weight * math::pow(math::e, duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at)) / puzzle.current_interval - 1)
+puzzle.cached_weight = puzzle.base_weight * (1 + duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at))) / puzzle.current_interval 
 ,
 puzzle.weight_cached_at = time::now()
 
 WHERE puzzle AND (puzzle.weight_cached_at IS None 
-OR puzzle.weight_cached_at < (time::now() - 1h)) ;
+OR puzzle.weight_cached_at < (time::now() - 1d)) ;
 "#;
 
     let ret= db.query(query)
