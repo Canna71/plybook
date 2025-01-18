@@ -80,10 +80,24 @@ async fn update_cached_weignt(db_state: State<'_, DatabaseConnection>) -> Result
     let db = db.as_ref().ok_or("Database not initialized")?;
 
     let query = r#"
-        SELECT * FROM studies WHERE puzzle IS NOT NULL;
-    "#;
+UPDATE studies
+
+SET puzzle.current_interval = IF performance_score >= 0.8 { current_interval * $ease_factor }
+ELSE IF performance_score >= 0.6 { current_interval * 0.5 * $ease_factor }
+ELSE { $minimum_interval }
+,
+puzzle.cached_weight = puzzle.base_weight * math::pow(math::e, duration::days(time::now() - <datetime>(last_played_date OR created_at)) / puzzle.current_interval - 1)
+,
+puzzle.weight_cached_at = time::now()
+
+WHERE puzzle AND (puzzle.weight_cached_at IS None 
+OR puzzle.weight_cached_at < (time::now() - 7d)) ;
+"#;
 
     let ret= db.query(query)
+    .bind(("ease_factor", 2.5))
+    .bind(("minimum_interval", 1))
+    
         .await
         .map_err(|e| e.to_string())?;
     dbg!(&ret);
