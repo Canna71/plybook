@@ -304,17 +304,25 @@ export function initFromGameModel(
     context: GameContextType,
     gameModel: GameModel,
 ) {
+
+    const { gameSignal: [, setGame], 
+        viewModeSignal:[, setViewMode] ,
+        descriptionSignal: [, setDescription],
+        startingPositionSignal: [, setStartingPosition],
+    } = context;
+    
+
     batch(() => {
-        context.gameSignal[1](gameModel);
+        setGame(gameModel);
         if (gameModel.headers.get("FEN")) {
             const setup = parseFen(gameModel.headers.get("FEN") || "");
             if (setup.isOk) {
-                context.startingPositionSignal[1](makeFen(setup.value));
+                setStartingPosition(makeFen(setup.value));
             }
         } 
         // context.currentPathSignal[1](gameModel.pathAtMainlinePly(0));
-        context.viewModeSignal[1](ViewMode.MOVES);
-        context.descriptionSignal[1](
+        setViewMode(ViewMode.MOVES);
+        setDescription(
             gameModel.headers.get("Description") || "",
         );
     });

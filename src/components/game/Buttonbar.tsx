@@ -1,18 +1,13 @@
 import {
-    IconBulbFilled,
     IconPlayerSkipBackFilled,
     IconPlayerSkipForwardFilled,
     IconPlayerTrackNextFilled,
     IconPlayerTrackPrevFilled,
 } from "@tabler/icons-solidjs";
-import {
-    Component,
-    createMemo,
-    Show,
-    useContext,
-} from "solid-js";
+import { Component, createMemo, Show, useContext } from "solid-js";
 import Button from "../common/Button";
-import { GameContext, HintType } from "./GameContext";
+import { GameContext } from "./GameContext";
+import HintButtons from "./HintButtons";
 
 export type ButtonBarProps = {
     // game: Accessor<GameModel | undefined>;
@@ -24,9 +19,10 @@ const ButtonBar: Component<ButtonBarProps> = ({}) => {
     const {
         gameSignal: [game],
         currentPathSignal: [currentPath, setCurrentPath],
-        moveHintSignal: [moveHint],
+        hintMoveSignal: [hintMove],
         playingEngine,
-        hintTypeSignal: [_hintType, setHintType]    } = useContext(GameContext)!;
+        hintTypeSignal: [_hintType, setHintType],
+    } = useContext(GameContext)!;
 
     const nextNode = () => {
         const path = currentPath();
@@ -95,15 +91,6 @@ const ButtonBar: Component<ButtonBarProps> = ({}) => {
 
     const hasMoves = createMemo(() => game()?.mainline?.length ?? 0 > 0);
 
-    const onHintPiece = () => {
-        // setModalVisible(!modalVisible());
-        setHintType(HintType.Piece);
-    };
-
-    const onHintMove = () => {
-        setHintType(HintType.Move);
-    };
-
     return (
         <>
             <Show when={game() && currentPath() && hasMoves()}>
@@ -125,15 +112,10 @@ const ButtonBar: Component<ButtonBarProps> = ({}) => {
                     </Button>
                 </div>
             </Show>
-            <Show when={playingEngine() && moveHint()}>
-                <div class="pgnviewer-buttonbar are-small">
-                    <Button onClick={onHintPiece} title="Suggest Piece">
-                        <IconBulbFilled /><span>Piece</span>
-                    </Button>
-                    <Button onClick={onHintMove} title="Suggest Move">
-                        <IconBulbFilled /><span>Move</span>
-                    </Button>
-                </div>
+            <Show when={playingEngine() && hintMove()}>
+                <HintButtons 
+                    setHintType={setHintType}
+                />
             </Show>
         </>
     );

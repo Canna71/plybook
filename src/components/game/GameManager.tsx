@@ -69,7 +69,11 @@ export type GameManagerOptions = {
     defaultEngineAnalysisOn?: boolean;
     initialFen?: string;
     // puzzleMode?: boolean;
-    onPuzzleFinished?: (solved: boolean, hintUsed: number, retries: number) => void;
+    onPuzzleFinished?: (
+        solved: boolean,
+        hintUsed: number,
+        retries: number,
+    ) => void;
     editable?: Accessor<boolean>;
 };
 
@@ -148,10 +152,13 @@ const GameManager: Component<GameManagerOptions> = ({
     const [engineColor, setEngineColor] = createSignal<Color | undefined>(
         undefined,
     );
+
     const [hintType, setHintType] = createSignal(HintType.None);
-    
-    const successModalSignal = createSignal(false), [, setSuccessModalOpen] = successModalSignal;
-   
+    const [hintMove, setHintMove] = createSignal<string | undefined>(undefined);
+
+    const successModalSignal = createSignal(false),
+        [, setSuccessModalOpen] = successModalSignal;
+
     // #endregion
     const isEditable = () => {
         return !!editable?.();
@@ -186,7 +193,7 @@ const GameManager: Component<GameManagerOptions> = ({
             }
         }
         return true;
-    }
+    };
 
     const onManualMove = (orig: Key, dest: Key, _capturedPiece?: Piece) => {
         const g = game();
@@ -196,13 +203,11 @@ const GameManager: Component<GameManagerOptions> = ({
 
         const move = makeMove(orig, dest);
 
-        
-
         const pos = position();
 
         const isLegal = pos.isLegal(move);
         if (isLegal) {
-            if(!checkPuzzleMove(move)) return;
+            if (!checkPuzzleMove(move)) return;
             applyMove(move);
         } else {
             // check for promotion
@@ -221,13 +226,6 @@ const GameManager: Component<GameManagerOptions> = ({
         }
     };
 
-
-    // Call this function when the game is initialized or when a move is made
-    createEffect(() => {
-        if (isPuzzleMode()) {
-        }
-    });
-
     const onSelect = (_key: Key) => {};
 
     const onDrawChange = (shapes: any) => {
@@ -241,7 +239,7 @@ const GameManager: Component<GameManagerOptions> = ({
         if (promoData) {
             const move = promoData.move;
             move.promotion = role;
-            if(!checkPuzzleMove(move)) return;
+            if (!checkPuzzleMove(move)) return;
             applyMove(move);
         }
     };
@@ -292,7 +290,6 @@ const GameManager: Component<GameManagerOptions> = ({
         return sp;
     });
 
-
     const isPuzzleMode = createMemo(() => {
         return typeof onPuzzleFinished === "function";
     });
@@ -328,9 +325,9 @@ const GameManager: Component<GameManagerOptions> = ({
         const shapes = baseConfig.drawable?.shapes || [];
 
         const hints: SquareClasses = new Map();
-        const hintMove = moveHintSignal[0]();
-        if (hintMove) {
-            const move = parseUci(hintMove) as NormalMove;
+        const moveHint = hintMove();
+        if (moveHint) {
+            const move = parseUci(moveHint) as NormalMove;
             const from = makeSquare(move.from);
             const to = makeSquare(move.to);
             if (hintType() === HintType.Piece) {
@@ -481,22 +478,27 @@ const GameManager: Component<GameManagerOptions> = ({
         if (!g) return;
         setCurrentPath(Path.root);
         setWrongPuzzleMove(false);
-    }
+    };
 
     // this effects is triggered by path changes and handles the automatic play of the next move in puzzle mode
     createEffect(() => {
         const path = memoPath();
-        if (isPuzzleMode() && turn() !== orientation()) {
+        if (isPuzzleMode()) {
             const node = game()?.nodeAt(path!);
             const next = node?.children[0];
-            if (next) {
-                const move = next.data.move as NormalMove;
-                applyMove(move);
+            if (turn() !== orientation()) {
+                if (next) {
+                    const move = next.data.move as NormalMove;
+                    applyMove(move);
+                } else {
+                    // Puzzle finished
+                    // TODO: actually track the performance
+                    onPuzzleFinished?.(true, 0, 0);
+                    setSuccessModalOpen(true);
+                }
             } else {
-                // Puzzle finished
-                // TODO: actually track the performance
-                onPuzzleFinished?.(true, 0, 0);
-                setSuccessModalOpen(true);
+                // TODO: set moveHint
+                setHintMove(next?.data.uci);
             }
         }
     });
@@ -524,7 +526,7 @@ const GameManager: Component<GameManagerOptions> = ({
             initFromGameModel(gameContext, gameModel);
         } else if (initialFen) {
             const gameModel = makeGameInternal(
-                parsePgn("[]]")[0],
+                parsePgn("[]")[0],
             ).withStartingPosition(initialFen);
             initFromGameModel(gameContext, gameModel);
         }
@@ -547,7 +549,6 @@ const GameManager: Component<GameManagerOptions> = ({
         engineCallable,
         engineAnalysisOnSignal,
         engineLevelSignal,
-        moveHintSignal,
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -557,6 +558,7 @@ const GameManager: Component<GameManagerOptions> = ({
         applyMove,
         fen,
         playingEngine: () => !!playingEngine,
+        hintMoveSignal: [hintMove, setHintMove],
     });
 
     const gameContext = {
@@ -588,7 +590,7 @@ const GameManager: Component<GameManagerOptions> = ({
         isPuzzleMode: isPuzzleMode,
         engineColorSignal: [engineColor, setEngineColor],
         engineLevelSignal,
-        moveHintSignal,
+        hintMoveSignal: [hintMove, setHintMove],
         hintTypeSignal: [hintType, setHintType],
     } as GameContextType;
     // #endregion
@@ -666,13 +668,17 @@ const GameManager: Component<GameManagerOptions> = ({
                                     when={isPuzzleMode() && wrongPuzzleMove()}
                                 >
                                     <div class="pgnviewer-wrong-move">
-                                        <Button class="is-danger is-outlined"
+                                        <Button
+                                            class="is-danger is-outlined"
                                             onClick={onResetPuzzle}
                                         >
                                             <IconCircleXFilled />
                                             Wrong move try again
                                         </Button>
                                     </div>
+                                </Show>
+                                <Show when={isPuzzleMode()}>
+                                    <span>{hintMove()}</span>
                                 </Show>
                             </Show>
                             <Show
@@ -745,9 +751,7 @@ const GameManager: Component<GameManagerOptions> = ({
                 onClose={() => setSuccessModalOpen(false)}
                 title={() => "Puzzle Solved"}
             >
-                <div>
-                     Great, you solved it!
-                </div>
+                <div>Great, you solved it!</div>
             </Modal>
         </>
     );

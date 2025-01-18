@@ -29,6 +29,7 @@ export type ChessEngineOptions = {
     turn: Accessor<Color>;
     applyMove: (move: NormalMove) => void;
     fen: Accessor<string>;
+    hintMoveSignal: Signal<string | undefined>;
 };
 
 export function useChessEngine(options: ChessEngineOptions) {
@@ -41,7 +42,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         undefined,
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
-    const [hintMove, setHintMove] = createSignal<string | undefined>(undefined);
+    const [hintMove, setHintMove] = options.hintMoveSignal;
 
     const [engineLevel, setEngineLevel] =
         //createSignal<number>(1000);
@@ -51,6 +52,7 @@ export function useChessEngine(options: ChessEngineOptions) {
                 setSettingValue("engine.playing.elo", v);
             },
         ];
+    
 
     const shouldCallEngineAnalysis = createMemo(() => {
         if (engine() && engineAnalysisOn()) {
