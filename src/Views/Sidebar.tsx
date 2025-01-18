@@ -23,7 +23,8 @@ const Sidebar = () => {
                     {/* <li><a href="/boardeditor">Board Editor</a></li> */}
                     {/* <li><a href="/game">Pgn Edit</a></li> */}
                     <li><a href="/play">Play Engine</a></li>
-                    <li><a href="/puzzle?path=/Users/gcannata/Library/Application Support/rechess/Library/pgn/Four Pieces.pgn">Puzzle</a></li>
+                    <li><a href="/puzzles">Puzzles</a></li>
+                    {/* <li><a href="/puzzle?path=/Users/gcannata/Library/Application Support/rechess/Library/pgn/Four Pieces.pgn">Puzzle</a></li> */}
                     {/* <li><a href="/analysis">Analysis</a></li> */}
                     <li><a href="/db">DB Test</a></li>
                 </ul>

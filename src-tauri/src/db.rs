@@ -42,11 +42,9 @@ pub struct Game {
 
 #[derive(Serialize, Deserialize)]
 struct Puzzle {
-    difficulty: i32,  // Scale of 1-5
     current_interval: i32,
     last_played_date: Option<String>,  // Nullable field
     base_weight: f64,
-    ease_factor: f64,
     cached_weight: Option<f64>,
     weight_cached_at: Option<String>,
 }
@@ -97,7 +95,7 @@ OR puzzle.weight_cached_at < (time::now() - 7d)) ;
     let ret= db.query(query)
     .bind(("ease_factor", 2.5))
     .bind(("minimum_interval", 1))
-    
+
         .await
         .map_err(|e| e.to_string())?;
     dbg!(&ret);
@@ -231,6 +229,22 @@ pub async fn list_studies(db_state: State<'_, DatabaseConnection>) -> Result<Vec
     let db = db.as_ref().ok_or("Database not initialized")?;
 
     let studies: Vec<Study> = db.select("studies").await.map_err(|e| e.to_string())?;
+
+    Ok(studies)
+}
+
+#[tauri::command]
+pub async fn list_puzzles(db_state: State<'_, DatabaseConnection>) -> Result<Vec<Study>, String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let mut result = db.query("SELECT * from studies WHERE puzzle")
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let studies: Vec<Study> = result.take(0)
+    .map_err(|e| e.to_string())?
+    ;
 
     Ok(studies)
 }

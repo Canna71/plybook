@@ -9,6 +9,7 @@ import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
 import { ContentContext, useContentContext } from "./components/common/ContentContext";
 import { Toaster } from "solid-toast";
+import Puzzles from "./Views/Puzzles";
 
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
@@ -41,6 +42,11 @@ function App() {
                     path="/analysis"
                     component={GameView}
                     info={{ engine: true }}
+                />
+                 <Route
+                    path="/puzzles"
+                    component={Puzzles}
+                    info={{ puzzle: true }}
                 />
                 <Route
                     path="/puzzle"

@@ -1,0 +1,34 @@
+import { Component, createResource, For } from "solid-js";
+import { listPuzzles, Study } from "../storage/db";
+
+const Puzzles: Component = () => {
+
+    const [puzzles] = createResource<Study[] | undefined>(listPuzzles);
+
+    return (
+        <div class="puzzles_list">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Created At</th>
+                        <th>Last Solved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <For each={puzzles()} fallback={<tr><td>Loading...</td></tr>}>
+                        {(study) => (
+                            <tr>
+                                <td>{study.file_path}</td>
+                                <td>{study.created_at}</td>
+                                <td>{study.puzzle?.last_played_date}</td>
+                            </tr>
+                        )}
+                    </For>
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+export default Puzzles;

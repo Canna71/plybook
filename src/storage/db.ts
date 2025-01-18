@@ -1,18 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 
 export type Puzzle = {
-    /** Foreign key referencing studies */
-    /** Scale of 1-5 */
-    difficulty: number;
-    
+
     current_interval: number;
     
     /** Nullable field */
     last_played_date?: string;
     
     base_weight: number;
-    
-    ease_factor: number;
     
     cached_weight?: number;
     
@@ -38,6 +33,10 @@ export async function insertStudy(study: Study): Promise<Study> {
 
 export async function listStudies(): Promise<Study[]> {
     return await invoke("list_studies");
+}
+
+export async function listPuzzles(): Promise<Study[]> {
+    return await invoke("list_puzzles");
 }
 
 export async function initDB() {

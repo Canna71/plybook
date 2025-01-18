@@ -100,10 +100,8 @@ const GameView = () => {
                 insertStudy({
                     file_path: searchParams.path,
                     puzzle: {
-                        difficulty: 0,
                         current_interval: 1,
                         base_weight: 100,
-                        ease_factor: 1.25,
                     },
                     created_at: new Date().toISOString(),
                 })
