@@ -19,7 +19,7 @@ const Puzzles: Component = () => {
                     <For each={puzzles()} fallback={<tr><td>Loading...</td></tr>}>
                         {(study) => (
                             <tr>
-                                <td>{study.file_path}</td>
+                                <td><a href={`/puzzle?path=${study.file_path}`}>{study.file_path}</a></td>
                                 <td>{study.created_at}</td>
                                 <td>{study.puzzle?.last_played_date}</td>
                             </tr>

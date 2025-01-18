@@ -61,6 +61,8 @@ import { create } from "@tauri-apps/plugin-fs";
 import Button from "../common/Button";
 import { IconCircleXFilled } from "@tabler/icons-solidjs";
 import Modal from "../common/Modal";
+import { calculatePerformanceScore } from "../../models/puzzles";
+import { updatePerformanceScore } from "../../storage/db";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -150,7 +152,7 @@ const GameManager: Component<GameManagerOptions> = ({
     );
     const [hintType, setHintType] = createSignal(HintType.None);
     
-    const successModalSignal = createSignal(false), [successModalOpen, setSuccessModslOpen] = successModalSignal;
+    const successModalSignal = createSignal(false), [successModalOpen, setSuccessModalOpen] = successModalSignal;
    
     // #endregion
     const isEditable = () => {
@@ -492,7 +494,17 @@ const GameManager: Component<GameManagerOptions> = ({
                 const move = next.data.move as NormalMove;
                 applyMove(move);
             } else {
-                setSuccessModslOpen(true);
+                // puzzle solved
+                const score = calculatePerformanceScore(
+                    true, // solved
+                    0, // hints used 
+                    0, // retries 
+                    0, // expected time 
+                    0 // time taken
+                );
+                console.log("Puzzle solved with score: " + score);
+                updatePerformanceScore("puzzle", score);
+                setSuccessModalOpen(true);
             }
         }
     });
@@ -738,7 +750,7 @@ const GameManager: Component<GameManagerOptions> = ({
             </Show>
             <Modal
                 isOpen={successModalSignal}
-                onClose={() => setSuccessModslOpen(false)}
+                onClose={() => setSuccessModalOpen(false)}
                 title={() => "Puzzle Solved"}
             >
                 <div>

@@ -25,8 +25,8 @@ export type Study = {
     created_at: string;
 };
 
-export async function insertStudy(study: Study): Promise<Study> {
-    return await invoke("insert_study", {
+export async function upsertStudy(study: Study): Promise<Study> {
+    return await invoke("upsert_study", {
        study
     });
 }
@@ -42,6 +42,13 @@ export async function listPuzzles(): Promise<Study[]> {
 export async function initDB() {
     const ret = await invoke("init_db");
     console.log("initDB", ret);
+}
+
+export async function updatePerformanceScore(studyId: string, score: number) {
+    return await invoke("update_puzzle", {
+        study_id: studyId,
+        performance_score: score
+    });  
 }
 
 initDB();

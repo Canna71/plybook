@@ -206,7 +206,7 @@ pub async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) ->
 }
 
 #[tauri::command]
-pub async fn insert_study(db_state: State<'_, DatabaseConnection>, study: Study) -> Result<Study, String> {
+pub async fn upsert_study(db_state: State<'_, DatabaseConnection>, study: Study) -> Result<Study, String> {
     let db = db_state.0.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
 
@@ -258,4 +258,33 @@ SELECT * from studies WHERE puzzle
 
     Ok(studies)
 }
+
+// update the performance score of a puzzle
+#[tauri::command]
+pub async fn update_puzzle(
+    db_state: State<'_, DatabaseConnection>, 
+    study_id: RecordId, 
+    performance_score: f64
+) -> Result<(), String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let query = r#"
+UPDATE studies
+SET puzzle.performance_score = $performance_score,
+puzzle.last_played_date = time::now()
+WHERE id = $study_id
+"#;
+
+    let ret = db.query(query)
+        .bind(("performance_score", performance_score))
+        .bind(("study_id", study_id
+        ))
+        .await
+        .map_err(|e| e.to_string())?;
+    dbg!(&ret);
+
+    Ok(())
+}
+
 

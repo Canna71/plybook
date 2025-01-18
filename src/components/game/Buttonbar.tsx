@@ -27,6 +27,7 @@ const ButtonBar: Component<ButtonBarProps> = ({}) => {
         moveHintSignal: [moveHint],
         playingEngine,
         hintTypeSignal: [_hintType, setHintType],
+        isPuzzleMode
     } = useContext(GameContext)!;
 
     const nextNode = () => {

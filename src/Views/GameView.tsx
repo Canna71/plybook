@@ -17,7 +17,7 @@ import Editable from "../components/common/Editable";
 import { useContentContext } from "../components/common/ContentContext";
 import { message } from "@tauri-apps/plugin-dialog";
 import { insert } from "solid-js/web";
-import { insertStudy } from "../storage/db";
+import { upsertStudy } from "../storage/db";
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -97,7 +97,7 @@ const GameView = () => {
             if (typeof searchParams.path === "string") {
                 await writeDataFile(searchParams.path, pgnText);
                 // TODO: improve
-                insertStudy({
+                upsertStudy({
                     file_path: searchParams.path,
                     puzzle: {
                         current_interval: 1,
