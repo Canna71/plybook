@@ -1,12 +1,19 @@
 import { Component, createResource, For } from "solid-js";
-import { listPuzzles, Study } from "../storage/db";
+import { listPuzzles, pickPuzzle, Study } from "../storage/db";
+import Button from "../components/common/Button";
 
 const Puzzles: Component = () => {
 
     const [puzzles] = createResource<Study[] | undefined>(listPuzzles);
 
+    const nextPuzzle = async () => {
+        const puzzle = await pickPuzzle();
+        console.log("Picked puzzle", puzzle.file_path);
+    }
+
     return (
         <div class="puzzles_list">
+            <Button onClick={nextPuzzle}>Pick Random</Button>
             <table class="table">
                 <thead>
                     <tr>

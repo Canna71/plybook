@@ -5,6 +5,7 @@ use surrealdb::engine::local::RocksDb;
 use surrealdb::RecordId;
 // use surrealdb::RecordId;
 use surrealdb::Surreal;
+use rand::Rng;
 use tauri::State;
 
 use pgnparse::parser::*;
@@ -12,6 +13,12 @@ use tokio::sync::Mutex;
 use serde::{Deserialize, Serialize};
 // Wrap database connection in a managed state
 pub struct DatabaseConnection(pub Mutex<Option<Surreal<Db>>>);
+
+#[derive(Serialize, Deserialize)]
+pub struct PuzzleWeight {
+   weight: f64,
+   id: RecordId,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct Study {
@@ -287,4 +294,52 @@ WHERE id = type::thing("studies",  $study_id)
     Ok(())
 }
 
+// fetch all puzzles weights
+#[tauri::command]
+pub async fn pick_puzzle(
+    db_state: State<'_, DatabaseConnection>, 
+    limit: Option<i32>
+) -> Result<Option<Study>, String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+    let limit = limit.unwrap_or(100000); // Default value of 10 if none provided
+
+    let query = r#"
+SELECT puzzle.cached_weight as weight, id from studies WHERE puzzle
+    ORDER BY puzzle.cached_weight desc
+    LIMIT $limit
+"#;
+
+    let mut result = db.query(query)
+        .bind(("limit", limit))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let res: Vec<PuzzleWeight> = result.take(0)
+        .map_err(|e| e.to_string())?;
+
+    let mut selected: Option<PuzzleWeight> = None;
+    let mut weight_sum = 0.0;
+
+    for puzzle in res.iter() {
+        // Create new RNG for each iteration
+        let random_value = rand::random::<f64>();
+        let score: f64 = -random_value.ln() / puzzle.weight;
+        if selected.is_none() || score > selected.as_ref().unwrap().weight {
+            selected = Some(PuzzleWeight {
+                weight: score,
+                id: puzzle.id.clone(),
+            });
+        }
+    }
+
+    // is selected has value gets corresponding study
+    if let Some(puzzle_weight) = selected {
+        let id = puzzle_weight.id.clone();
+        db.select(id).await.map_err(|e| e.to_string())
+    } else {
+        return Ok(None);
+    }
+    
+}
 

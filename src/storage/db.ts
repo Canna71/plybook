@@ -51,4 +51,8 @@ export async function updatePerformanceScore(studyId: string, score: number) {
     });  
 }
 
+export async function pickPuzzle(): Promise<Study> {
+    return await invoke("pick_puzzle");
+}
+
 initDB();
