@@ -324,7 +324,7 @@ SELECT puzzle.cached_weight as weight, id from studies WHERE puzzle
     for puzzle in res.iter() {
         // Create new RNG for each iteration
         let random_value = rand::random::<f64>();
-        let score: f64 = -random_value.ln() / puzzle.weight;
+        let score: f64 = random_value * puzzle.weight;
         if selected.is_none() || score > selected.as_ref().unwrap().weight {
             selected = Some(PuzzleWeight {
                 weight: score,
