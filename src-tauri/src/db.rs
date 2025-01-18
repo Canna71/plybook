@@ -48,7 +48,7 @@ pub struct Game {
 
 #[derive(Serialize, Deserialize)]
 struct Puzzle {
-    current_interval: i32,
+    current_interval: f64,
     last_played_date: Option<String>,  // Nullable field
     base_weight: f64,
     cached_weight: Option<f64>,
@@ -75,28 +75,29 @@ pub async fn init_db(db_state: State<'_, DatabaseConnection>) -> Result<String, 
 
     // run this in the background
 
-    update_cached_weignt(db_state).await.unwrap();
+    update_cached_weights(db_state).await.unwrap();
 
     Ok("Database initialized successfully".to_string())
 }
 
-async fn update_cached_weignt(db_state: State<'_, DatabaseConnection>) -> Result<(), String> {
+#[tauri::command]
+pub async fn update_cached_weights(db_state: State<'_, DatabaseConnection>) -> Result<(), String> {
     let db = db_state.0.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
 
     let query = r#"
 UPDATE studies
 
-SET puzzle.current_interval = IF puzzle.performance_score >= 0.8 { current_interval * $ease_factor }
-ELSE IF puzzle.performance_score >= 0.6 { current_interval * 0.5 * $ease_factor }
+SET puzzle.current_interval = IF puzzle.performance_score >= 0.8 { puzzle.current_interval * $ease_factor }
+ELSE IF puzzle.performance_score >= 0.6 { puzzle.current_interval * 0.5 * $ease_factor }
 ELSE { $minimum_interval }
 ,
-puzzle.cached_weight = puzzle.base_weight * math::pow(math::e, duration::days(time::now() - <datetime>(last_played_date OR created_at)) / puzzle.current_interval - 1)
+puzzle.cached_weight = puzzle.base_weight * math::pow(math::e, duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at)) / puzzle.current_interval - 1)
 ,
 puzzle.weight_cached_at = time::now()
 
 WHERE puzzle AND (puzzle.weight_cached_at IS None 
-OR puzzle.weight_cached_at < (time::now() - 7d)) ;
+OR puzzle.weight_cached_at < (time::now() - 1h)) ;
 "#;
 
     let ret= db.query(query)

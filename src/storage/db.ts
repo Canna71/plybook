@@ -57,4 +57,8 @@ export async function pickPuzzle(): Promise<Study> {
     return await invoke("pick_puzzle");
 }
 
+export async function updateCachedWeights() {
+    return await invoke("update_cached_weights");
+}
+
 initDB();
