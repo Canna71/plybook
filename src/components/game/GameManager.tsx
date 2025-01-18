@@ -60,6 +60,7 @@ import { Config } from "chessground/config";
 import Button from "../common/Button";
 import { IconCircleXFilled } from "@tabler/icons-solidjs";
 import Modal from "../common/Modal";
+import HintButtons from "./HintButtons";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -683,7 +684,9 @@ const GameManager: Component<GameManagerOptions> = ({
                                     </div>
                                 </Show>
                                 <Show when={isPuzzleMode()}>
-                                    <span>{hintMove()}</span>
+                                    <div class="puzzle-hint-buttons">
+                                        <HintButtons setHintType={setHintType} />
+                                    </div>
                                 </Show>
                             </Show>
                             <Show
