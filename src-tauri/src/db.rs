@@ -98,7 +98,7 @@ puzzle.cached_weight = puzzle.base_weight * (1 + duration::days(time::now() - <d
 puzzle.weight_cached_at = time::now()
 
 WHERE puzzle AND (puzzle.weight_cached_at IS None 
-OR puzzle.weight_cached_at < (time::now() - 1d)) ;
+OR puzzle.weight_cached_at < (time::now() - 1h)) ;
 "#;
 
     let ret= db.query(query)
