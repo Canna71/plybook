@@ -309,11 +309,13 @@ export function initFromGameModel(
         viewModeSignal:[, setViewMode] ,
         descriptionSignal: [, setDescription],
         startingPositionSignal: [, setStartingPosition],
+        hintMoveSignal: [, setHintMove],
     } = context;
     
 
     batch(() => {
         setGame(gameModel);
+        setHintMove(undefined);
         if (gameModel.headers.get("FEN")) {
             const setup = parseFen(gameModel.headers.get("FEN") || "");
             if (setup.isOk) {

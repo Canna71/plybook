@@ -320,7 +320,7 @@ const GameManager: Component<GameManagerOptions> = ({
         }
 
         const showArrows =
-            !playingEngine &&
+            !playingEngine && !isPuzzleMode() &&
             getSettingValue("engine.analysis.showArrows", false);
         const shapes = baseConfig.drawable?.shapes || [];
 
