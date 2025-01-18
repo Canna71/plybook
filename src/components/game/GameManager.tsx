@@ -478,12 +478,16 @@ const GameManager: Component<GameManagerOptions> = ({
         if (!g) return;
         setCurrentPath(Path.root);
         setWrongPuzzleMove(false);
+        // setHintMove(undefined);
+        setHintType(HintType.None);
     };
 
     // this effects is triggered by path changes and handles the automatic play of the next move in puzzle mode
     createEffect(() => {
+        console.log("path changed");
         const path = memoPath();
         if (isPuzzleMode()) {
+            console.log("puzzle mode");
             const node = game()?.nodeAt(path!);
             const next = node?.children[0];
             if (turn() !== orientation()) {
@@ -497,6 +501,7 @@ const GameManager: Component<GameManagerOptions> = ({
                     setSuccessModalOpen(true);
                 }
             } else {
+                console.log("not my turn", next?.data.uci);
                 // TODO: set moveHint
                 setHintMove(next?.data.uci);
             }

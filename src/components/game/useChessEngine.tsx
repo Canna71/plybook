@@ -156,12 +156,14 @@ export function useChessEngine(options: ChessEngineOptions) {
     };
 
     createEffect(() => {
-        setHintMove(undefined);
+        console.log("Engine analysis on", engineAnalysisOn());
         const fenStr = options.fen();
         setEngineInfo([]);
         let opts = undefined;
 
         if (shouldCallEngineAnalysis()) {
+            setHintMove(undefined);
+
             engine()!.setOption("UCI_LimitStrength", "false");
             engine()!.setOption("UCI_Elo", 3200);
 
@@ -170,6 +172,8 @@ export function useChessEngine(options: ChessEngineOptions) {
                 multipv: getSettingValue("engine.analysis.multipv", 3),
             };
         } else if (shouldCallEngineMove()) {
+            setHintMove(undefined);
+
             // engine()!.setOption("UCI_AnalyseMode", 0);
             engine()!.setOption("UCI_LimitStrength", "true");
             engine()!.setOption("UCI_Elo", engineLevel());
