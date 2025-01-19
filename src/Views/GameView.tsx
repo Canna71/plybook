@@ -34,6 +34,7 @@ import {
 } from "../storage/db";
 import { calculatePerformanceScore } from "../models/puzzles";
 import Select, { Option } from "../components/common/Select";
+import Button from "../components/common/Button";
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -209,7 +210,7 @@ const GameView = () => {
 
     return (
         <>
-            <nav class="game-header buttons are-small" role="navigation">
+            <nav class="game-header buttons buttons-bar" role="navigation">
                 <div class="game-name">
                     <Editable
                         editable={() => false}
@@ -221,7 +222,7 @@ const GameView = () => {
                 <Show when={isEditable() || isPuzzleMode()}>
                     <Show when={isPuzzleMode()}>
                         <div class="navbar-item">
-                            <button onClick={onNextPuzzle}>Next Puzzle</button>
+                            <Button class="is-primary is-outlined" onClick={onNextPuzzle}>Next Puzzle</Button>
                         </div>
                     </Show>
 

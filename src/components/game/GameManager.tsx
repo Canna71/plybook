@@ -189,9 +189,6 @@ const GameManager: Component<GameManagerOptions> = ({
                 moveEquals(pos, n.data.move as NormalMove, move),
             );
             if (!exists) {
-                console.debug("Not a right move for puzzle");
-                // setCurrentPath(new Path(currentPath()!.path));
-                // track the performance
                 onPuzzleFinished?.(false, hintUsed(), retries());
                 setWrongPuzzleMove(true);
                 return false;
@@ -764,7 +761,9 @@ const GameManager: Component<GameManagerOptions> = ({
                         </div>
                     </div>
                     <div class="pgn-viewer-bottom">
-                        <PageNavigator />
+                        <Show when={!isPuzzleMode()}>
+                            <PageNavigator />
+                        </Show>
                     </div>
                 </TooltipContext.Provider>
             </GameContext.Provider>

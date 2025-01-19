@@ -3,49 +3,42 @@ import {
     listPuzzles,
     pickPuzzle,
     Study,
-    updateCachedWeights,
 } from "../storage/db";
 import Button from "../components/common/Button";
-import { formatDate } from "../components/common/utils";
+import { formatDate, round } from "../components/common/utils";
+import "./Puzzles.scss";
+import { useNavigate } from "@solidjs/router";
 
 const Puzzles: Component = () => {
-    const [puzzles, { refetch }] = createResource<Study[] | undefined>(
+    const [puzzles] = createResource<Study[] | undefined>(
         listPuzzles,
     );
+    const navigate = useNavigate();
 
     const nextPuzzle = async () => {
         const puzzle = await pickPuzzle();
         console.log("Picked puzzle", puzzle.file_path);
+        navigate(`/puzzle?path=${puzzle.file_path}`);
     };
 
-    const onUpdateWeights = async () => {
-        await updateCachedWeights();
-        refetch();
-    };
-
-
+    // const onUpdateWeights = async () => {
+    //     await updateCachedWeights();
+    //     refetch();
+    // };
 
     return (
-        <div class="puzzles_list">
-            <Button onClick={nextPuzzle}>Pick Random</Button>
-            <Button onClick={onUpdateWeights}>Update Cached Weights</Button>
-            <div
-                style={{
-                    height: "400px",
-                    width: "100%",
-                    overflow: "auto",
-                }}
-            >
-                <table class="table">
+        <div class="puzzles_view ">
+            <div class="buttons-bar">
+                <Button class="is-primary" onClick={nextPuzzle}>Pick Puzzle</Button>
+            </div>
+            {/* <Button onClick={onUpdateWeights}>Update Cached Weights</Button> */}
+            <div class="table-container">
+                <table class="table puzzles_table is-hoverable">
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Created At</th>
                             <th>Last Played</th>
-                            <th>Base Weight</th>
-                            <th>Cached Weight</th>
                             <th>Score</th>
-                            <th>Cached At</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -58,7 +51,7 @@ const Puzzles: Component = () => {
                             }
                         >
                             {(study) => (
-                                <tr>
+                                <tr class=" ">
                                     <td>
                                         <a
                                             href={`/puzzle?path=${study.file_path}`}
@@ -66,12 +59,17 @@ const Puzzles: Component = () => {
                                             {study.file_path}
                                         </a>
                                     </td>
-                                    <td>{formatDate(study.created_at)}</td>
-                                    <td>{formatDate(study.puzzle?.last_played_date)}</td>
-                                    <td>{study.puzzle?.base_weight}</td>
-                                    <td>{study.puzzle?.cached_weight}</td>
-                                    <td>{study.puzzle?.performance_score}</td>
-                                    <td>{formatDate(study.puzzle?.weight_cached_at)}</td>
+                                    <td>
+                                        {formatDate(
+                                            study.puzzle?.last_played_date,
+                                        )}
+                                    </td>
+                                    <td>
+                                        {round(
+                                            study.puzzle?.performance_score,
+                                            2,
+                                        )}
+                                    </td>
                                 </tr>
                             )}
                         </For>

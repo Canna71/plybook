@@ -431,5 +431,11 @@ export function moveEquals(pos: Position, a: NormalMove, b: NormalMove) {
 } 
 
 export const formatDate = (date?: string) => {
-    return date && new Date(date).toLocaleString() || "";
+    return date && new Date(date).toLocaleDateString() || "";
+}
+
+// round a number to a given number of decimal places
+export function round(value: number | undefined, decimals: number) {
+    if(typeof value !== "number") return value;
+    return Number(Math.round(Number(value + "e" + decimals)) + "e-" + decimals);
 }
