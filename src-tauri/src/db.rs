@@ -271,7 +271,7 @@ SELECT * from studies WHERE puzzle
 
 // update the performance score of a puzzle
 #[tauri::command]
-pub async fn update_puzzle(
+pub async fn update_puzzle_score(
     db_state: State<'_, DatabaseConnection>, 
     study_id: String, 
     performance_score: f64
@@ -296,6 +296,75 @@ WHERE id = type::thing("studies",  $study_id)
 
     Ok(())
 }
+
+#[tauri::command]
+pub async fn update_puzzle_base_weight(
+    db_state: State<'_, DatabaseConnection>, 
+    study_id: String, 
+    base_weight: f64
+) -> Result<(), String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let query = r#"
+UPDATE studies
+SET puzzle.base_weight = $base_weight
+WHERE id = type::thing("studies",  $study_id)
+"#;
+
+    let ret = db.query(query)
+        .bind(("base_weight", base_weight))
+        .bind(("study_id", study_id
+        ))
+        .await
+        .map_err(|e| e.to_string())?;
+    dbg!(&ret);
+
+    Ok(())
+}
+
+// delete a puzzle from a study
+#[tauri::command]
+pub async fn delete_puzzle(
+    db_state: State<'_, DatabaseConnection>, 
+    study_id: String
+) -> Result<(), String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let query = r#"
+UPDATE studies
+UNSET puzzle
+WHERE id = type::thing("studies",  $study_id)
+"#;
+
+    let ret = db.query(query)
+        .bind(("study_id", study_id
+        ))
+        .await
+        .map_err(|e| e.to_string())?;
+    dbg!(&ret);
+
+    Ok(())
+}
+
+// get Study by id
+#[tauri::command]
+pub async fn get_study(
+    db_state: State<'_, DatabaseConnection>, 
+    study_id: String
+) -> Result<Study, String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let study: Option<Study> = db.select(("studies",study_id))
+        .await
+        .map_err(|e| e.to_string())?;
+    let ret = study.ok_or("Study not found")?;
+
+    Ok(ret)
+}
+
 
 // fetch all puzzles weights
 #[tauri::command]

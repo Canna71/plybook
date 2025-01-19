@@ -47,10 +47,30 @@ export async function initDB() {
 }
 
 export async function updatePerformanceScore(studyId: string, score: number) {
-    return await invoke("update_puzzle", {
+    return await invoke("update_puzzle_score", {
         studyId: studyId,
         performanceScore: score
     });  
+}
+
+export async function updateBaseWeight(studyId: string, weight: number) {
+    return await invoke("update_puzzle_base_weight", {
+        studyId: studyId,
+        baseWeight: weight
+    });  
+}
+
+export async function deletePuzzle(studyId: string) {
+    return await invoke("delete_puzzle", {
+        studyId: studyId
+    });
+}
+
+// get study by id
+export async function getStudy(studyId: string): Promise<Study> {
+    return await invoke("get_study", {
+        studyId: studyId
+    });
 }
 
 export async function pickPuzzle(): Promise<Study> {

@@ -1,4 +1,4 @@
-import { batch, createEffect, createMemo, createSignal, Show } from "solid-js";
+import { batch, createEffect, createMemo, createResource, createSignal, Setter, Show } from "solid-js";
 import { save } from "@tauri-apps/plugin-dialog";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
@@ -16,8 +16,9 @@ import "./GameView.scss";
 import Editable from "../components/common/Editable";
 import { useContentContext } from "../components/common/ContentContext";
 import { message } from "@tauri-apps/plugin-dialog";
-import { updatePerformanceScore, upsertStudy } from "../storage/db";
+import { deletePuzzle, getStudy, updateBaseWeight, updatePerformanceScore, upsertStudy } from "../storage/db";
 import { calculatePerformanceScore } from "../models/puzzles";
+import Select, { Option } from "../components/common/Select";
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -28,6 +29,7 @@ const GameView = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
     const location = useLocation();
     const { refresh } = useContentContext();
+    
     const displayedName = () => {
         const path = searchParams.path;
         if (path && typeof path === "string") {
@@ -42,6 +44,12 @@ const GameView = () => {
         }
         return undefined;
     };
+
+    const fetchStudy = async (path: string) => {
+        const studyId = path;
+        return await getStudy(studyId);
+    }
+    const [study] = createResource(filePath, fetchStudy);
 
     createEffect(async () => {
         // onRefresh();
@@ -123,16 +131,7 @@ const GameView = () => {
         }
     };
 
-    // const onTitleKeyDown = (e: KeyboardEvent) => {
-    //     const target = e.target as HTMLElement;
-    //     const _text = target.innerText;
-    //     if (e.key === "Enter") {
-    //         e.preventDefault(); // This stops the default <br> insertion
-    //         // Optionally blur the element or trigger save
 
-    //         target.blur();
-    //     }
-    // };
 
     const onRename = async (text: string) => {
         await renameOrCreateDataFile(
@@ -161,6 +160,31 @@ const GameView = () => {
         updatePerformanceScore(filePath()!, score);
     };
 
+    const puzzlePriorities = () => {
+        return [
+            { value: "0", label: "None" },
+            { value: "100", label: "Very Low" },
+            { value: "200", label: "Low" },
+            { value: "300", label: "Medium" },
+            { value: "400", label: "High" },
+            { value: "500", label: "Very High" },
+        ] as Option[];
+    }
+
+    const puzzlePriority = createMemo(() => {
+        return study()?.puzzle?.base_weight.toString() || "0";
+    });
+
+    const onChangePuzzlePriority = async (value: string) => {
+        const weight = parseInt(value);
+        const studyId = filePath()!;
+        if(weight <= 0) {
+            await deletePuzzle(studyId);
+        } else {
+            await updateBaseWeight(studyId, weight);
+        }
+    }
+
     return (
         <>
             <nav class="game-header buttons are-small" role="navigation">
@@ -171,8 +195,16 @@ const GameView = () => {
                         onSave={onRename}
                     ></Editable>
                 </div>
-                <Show when={isEditable()}>
+
+                <Show when={isEditable() || isPuzzleMode()}>
+                    <Select 
+                        options={puzzlePriorities}
+                        selectedValue={puzzlePriority}
+                        setSelectedValue={onChangePuzzlePriority as Setter<string>}
+                    />
+
                     <div class="navbar-item">
+    
                         <button
                             disabled={!canSave()}
                             class="button is-primary"

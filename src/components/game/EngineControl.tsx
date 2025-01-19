@@ -54,16 +54,16 @@ const EngineControl = () => {
     const engineColors = () => {
         return [
             {
-                key: "random",
                 value: "random",
+                label: "random",
             },
             {
-                key: "white",
-                value: "White",
+                value: "white",
+                label: "White",
             },
             {
-                key: "black",
-                value: "Black",
+                value: "black",
+                label: "Black",
             },
         ];
     };

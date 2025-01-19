@@ -200,8 +200,8 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
             squares = getEnPassantSquares(setup, whitesTurn());
         }
         //  squares = ["a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3"];
-        const options = [{ key: "", value: "None" }].concat(
-            squares.map((square) => ({ key: square, value: square })),
+        const options = [{ value: "", label: "None" }].concat(
+            squares.map((square) => ({ value: square, label: square })),
         );
         return options;
     };

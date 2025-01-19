@@ -3,8 +3,8 @@ import { For } from 'solid-js/web';
 // import styles from './Select.module.scss';
 
 export type Option = {
-    key: string;
     value: string;
+    label: string;
 };
 
 type SelectProps = {
@@ -39,8 +39,8 @@ const Select = (props: SelectProps) => {
                 </Show>
                 <For each={props.options()}>
                     {(option) => (
-                        <option value={option.key} selected={option.key === props.selectedValue()}>
-                            {option.value}
+                        <option value={option.value} selected={option.value === props.selectedValue()}>
+                            {option.label}
                         </option>
                     )}
                 </For>
