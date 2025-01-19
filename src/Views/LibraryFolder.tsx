@@ -1,5 +1,6 @@
 import { useSearchParams } from "@solidjs/router";
 import {
+    deleteDataFileOrFolder,
     listAppData,
     NameWithoutExtension,
     renameOrCreateDataFile,
@@ -9,6 +10,7 @@ import { sep } from "@tauri-apps/api/path";
 import Button from "../components/common/Button";
 import { ContentContext } from "../components/common/ContentContext";
 import Editable from "../components/common/Editable";
+import { IconRefresh } from "@tabler/icons-solidjs";
 
 const LibraryFolder = () => {
     const [searchParams] = useSearchParams();
@@ -55,16 +57,24 @@ const LibraryFolder = () => {
     const onRenamed = async (newName: string) => {
         // await renameOrCreateDataFile(renaming(), newName);
         await renameOrCreateDataFile(renaming(), newName);
-        console.log("renamed", renaming(), newName);
         batch(() => {
             setRenaming(undefined);
             refresh();
         });
     };
 
+    const onDelete = async (name: string) => {
+        console.log("delete", name);
+        await deleteDataFileOrFolder(getFullPath(name));
+        refresh();
+    }
+
     return (
         <div>
             <h1>Library Folder</h1>
+            <Button onClick={refetch}>
+                <IconRefresh />
+            </Button>
             <h2>{folderPath()}</h2>
             <div class="table-container">
                 <table class="table puzzles_table is-hoverable">
@@ -109,6 +119,11 @@ const LibraryFolder = () => {
                                             onClick={() => onRename(file.name)}
                                         >
                                             Rename
+                                        </Button>
+                                        <Button
+                                            onClick={() => onDelete(file.name)}
+                                        >
+                                            Delete
                                         </Button>
                                     </td>
                                 </tr>
