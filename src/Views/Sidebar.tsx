@@ -13,7 +13,6 @@ const Sidebar = () => {
             }
         }
         if(file && file.isDirectory) {
-            console.log('Navigating to', file.path);
             navigate(`/library?path=${file.path}`);
         }
     }

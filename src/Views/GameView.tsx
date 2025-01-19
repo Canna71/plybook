@@ -64,11 +64,9 @@ const GameView = () => {
 
     const fetchStudy = async (path: string) => {
         const studyId = path;
-        console.log("Fetching study", studyId);
         try {
             return await getStudy(studyId);
         } catch (e) {
-            console.log("Error fetching study", e);
             return undefined;
         }
     };
@@ -159,7 +157,6 @@ const GameView = () => {
         hintUsed: number,
         retries: number,
     ) => {
-        console.log("Puzzle finished", { solved, hintUsed, retries });
         // puzzle solved
         const score = calculatePerformanceScore(
             solved, // solved
@@ -168,7 +165,6 @@ const GameView = () => {
             0, // expected time
             0, // time taken
         );
-        console.log("Puzzle solved with score: " + score);
         updatePerformanceScore(filePath()!, score);
     };
 
@@ -190,7 +186,6 @@ const GameView = () => {
     const onChangePuzzlePriority = async (value: string) => {
         const weight = parseInt(value);
         const studyId = filePath()!;
-        console.log("Changing puzzle priority", { studyId, weight });
         if (weight <= 0 && study() !== undefined) {
             await deletePuzzle(studyId);
         } else {
@@ -204,7 +199,6 @@ const GameView = () => {
 
     const onNextPuzzle = async () => {
         const puzzle = await pickPuzzle();
-        console.log("Picked puzzle", puzzle.file_path);
         navigate(`/puzzle?path=${puzzle.file_path}`, { replace: true });
     };
 

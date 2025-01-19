@@ -17,7 +17,6 @@ const Puzzles: Component = () => {
 
     const nextPuzzle = async () => {
         const puzzle = await pickPuzzle();
-        console.log("Picked puzzle", puzzle.file_path);
         navigate(`/puzzle?path=${puzzle.file_path}`);
     };
 
