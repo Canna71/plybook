@@ -95,7 +95,7 @@ const LibraryFolder = () => {
     };
 
     return (
-        <div>
+        <div class="library-folder">
             <div class="buttons-bar">
                 <Button class="is-primary is-outlined"  onClick={refetch}>
                     <IconRefresh />
