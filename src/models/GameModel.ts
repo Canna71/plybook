@@ -300,6 +300,18 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
+    public updateEvaluation(path: Path, evaluation: Evaluation): GameModel {
+        const pgnNode = this.findPgnNode(path);
+        const node = nodeAtPathFrom(this.moves, path);
+        if (!pgnNode || !node) return this;
+        if (isChildNode(node) && isChildNode(pgnNode)) {
+            pgnNode.data.comments = this.mergeShapes(pgnNode.data.comments, node.data.shapes, false, evaluation);
+        } else {
+            this.game.comments = this.mergeShapes(this.game.comments, this.initial.shapes, false, evaluation);
+        }
+        return this.getNewGameModel();
+    }
+
     public updateHeaders(headers: Map<string, string>) {
         headers.forEach((value, key) => this.game.headers.set(key, value));
         return this.getNewGameModel();
