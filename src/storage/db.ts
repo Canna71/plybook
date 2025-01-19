@@ -73,6 +73,19 @@ export async function getStudy(studyId: string): Promise<Study> {
     });
 }
 
+export async function createPuzzle(studyId: string, baseWeight?: number) {
+    return await invoke("upsert_study", {
+        study: {
+            file_path: studyId,
+            puzzle: {
+                current_interval: 1,
+                base_weight: baseWeight || 300,
+            },
+            created_at: new Date().toISOString(),
+        } as Study
+    } );
+}
+
 export async function pickPuzzle(): Promise<Study> {
     return await invoke("pick_puzzle");
 }

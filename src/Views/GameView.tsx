@@ -1,4 +1,12 @@
-import { batch, createEffect, createMemo, createResource, createSignal, Setter, Show } from "solid-js";
+import {
+    batch,
+    createEffect,
+    createMemo,
+    createResource,
+    createSignal,
+    Setter,
+    Show,
+} from "solid-js";
 import { save } from "@tauri-apps/plugin-dialog";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
@@ -16,7 +24,14 @@ import "./GameView.scss";
 import Editable from "../components/common/Editable";
 import { useContentContext } from "../components/common/ContentContext";
 import { message } from "@tauri-apps/plugin-dialog";
-import { deletePuzzle, getStudy, updateBaseWeight, updatePerformanceScore, upsertStudy } from "../storage/db";
+import {
+    createPuzzle,
+    deletePuzzle,
+    getStudy,
+    updateBaseWeight,
+    updatePerformanceScore,
+    upsertStudy,
+} from "../storage/db";
 import { calculatePerformanceScore } from "../models/puzzles";
 import Select, { Option } from "../components/common/Select";
 
@@ -29,7 +44,7 @@ const GameView = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
     const location = useLocation();
     const { refresh } = useContentContext();
-    
+
     const displayedName = () => {
         const path = searchParams.path;
         if (path && typeof path === "string") {
@@ -47,8 +62,14 @@ const GameView = () => {
 
     const fetchStudy = async (path: string) => {
         const studyId = path;
-        return await getStudy(studyId);
-    }
+        console.log("Fetching study", studyId);
+        try {
+            return await getStudy(studyId);
+        } catch (e) {
+            console.log("Error fetching study", e);
+            return undefined;
+        }
+    };
     const [study] = createResource(filePath, fetchStudy);
 
     createEffect(async () => {
@@ -104,15 +125,6 @@ const GameView = () => {
         if (pgnText) {
             if (typeof searchParams.path === "string") {
                 await writeDataFile(searchParams.path, pgnText);
-                // TODO: improve
-                upsertStudy({
-                    file_path: searchParams.path,
-                    puzzle: {
-                        current_interval: 1,
-                        base_weight: 100,
-                    },
-                    created_at: new Date().toISOString(),
-                });
                 // await writeDataFile("test.pgn", pgnText);
                 setModified(false);
                 refresh();
@@ -130,8 +142,6 @@ const GameView = () => {
             }
         }
     };
-
-
 
     const onRename = async (text: string) => {
         await renameOrCreateDataFile(
@@ -169,7 +179,7 @@ const GameView = () => {
             { value: "400", label: "High" },
             { value: "500", label: "Very High" },
         ] as Option[];
-    }
+    };
 
     const puzzlePriority = createMemo(() => {
         return study()?.puzzle?.base_weight.toString() || "0";
@@ -178,12 +188,17 @@ const GameView = () => {
     const onChangePuzzlePriority = async (value: string) => {
         const weight = parseInt(value);
         const studyId = filePath()!;
-        if(weight <= 0) {
+        console.log("Changing puzzle priority", { studyId, weight });
+        if (weight <= 0 && study() !== undefined) {
             await deletePuzzle(studyId);
         } else {
-            await updateBaseWeight(studyId, weight);
+            if(study() === undefined) {
+                await createPuzzle(studyId, weight);
+            } else {
+                await updateBaseWeight(studyId, weight);
+            }
         }
-    }
+    };
 
     return (
         <>
@@ -197,14 +212,18 @@ const GameView = () => {
                 </div>
 
                 <Show when={isEditable() || isPuzzleMode()}>
-                    <Select 
-                        options={puzzlePriorities}
-                        selectedValue={puzzlePriority}
-                        setSelectedValue={onChangePuzzlePriority as Setter<string>}
-                    />
+                    <div class="navbar-item">
+                        <Select
+                            title={"Puzzle Priority"}
+                            options={puzzlePriorities}
+                            selectedValue={puzzlePriority}
+                            setSelectedValue={
+                                onChangePuzzlePriority as Setter<string>
+                            }
+                        />
+                    </div>
 
                     <div class="navbar-item">
-    
                         <button
                             disabled={!canSave()}
                             class="button is-primary"
@@ -219,7 +238,7 @@ const GameView = () => {
             <GameManager
                 initalPgn={originalPgn}
                 setPgn={setNewPgn}
-                onPuzzleFinished={onPuzzleFinished}
+                onPuzzleFinished={isPuzzleMode() ? onPuzzleFinished : undefined}
                 editable={isEditable}
                 defaultEngineAnalysisOn={isEngineAnalysisOn()}
             />

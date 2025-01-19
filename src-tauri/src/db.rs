@@ -53,7 +53,7 @@ struct Puzzle {
     base_weight: f64,
     cached_weight: Option<f64>,
     weight_cached_at: Option<String>,
-    performance_score: f64,
+    performance_score: Option<f64>,
 }
 
 #[tauri::command]
