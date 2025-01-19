@@ -284,7 +284,7 @@ puzzle.last_played_date = time::now()
 WHERE id = type::thing("studies",  $study_id)
 "#;
 
-    let ret = db.query(query)
+    let _ret = db.query(query)
         .bind(("performance_score", performance_score))
         .bind(("study_id", study_id
         ))
@@ -310,7 +310,7 @@ SET puzzle.base_weight = $base_weight
 WHERE id = type::thing("studies",  $study_id)
 "#;
 
-    let ret = db.query(query)
+    let _ret = db.query(query)
         .bind(("base_weight", base_weight))
         .bind(("study_id", study_id
         ))
@@ -336,7 +336,7 @@ UNSET puzzle
 WHERE id = type::thing("studies",  $study_id)
 "#;
 
-    let ret = db.query(query)
+    let _ret = db.query(query)
         .bind(("study_id", study_id
         ))
         .await

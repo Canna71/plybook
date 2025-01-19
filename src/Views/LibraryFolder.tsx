@@ -26,7 +26,7 @@ import BreadCrumb from "../components/common/BreadCrumb";
 
 const LibraryFolder = () => {
     const [searchParams] = useSearchParams();
-    const { renaming, setRenaming, refresh, onRefresh } =
+    const { renaming, setRenaming, refresh } =
         useContext(ContentContext)!;
 
     const folderPath = () => {
@@ -51,7 +51,6 @@ const LibraryFolder = () => {
 
     createEffect(() => {
         console.log("refreshing");
-        const refreshTrigger = onRefresh();
         refetch();
     });
 

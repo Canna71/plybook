@@ -10,10 +10,8 @@ import { ContentContext } from "../common/ContentContext";
 import { TreeNode } from "../common/TreeView";
 import { FileBrowserFile } from "./FileBrowser";
 import {
-    createNewDataFile,
     createNewDataFolder,
     deleteDataFileOrFolder,
-    getDefaultStudyContent,
     openDataPath,
     renameOrCreateDataFile,
 } from "../../storage/fs";
@@ -29,18 +27,6 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
     const { renaming, setRenaming, refresh } = useContext(ContentContext)!;
     const [expandedNodes, setExpandedNodes] = expandedNodesSignal;
 
-    const onNewStudy = async (_id: string, node: TreeNode<FileBrowserFile>) => {
-        const newPath = await createNewDataFile(
-            node.data!.path,
-            "Untitled.pgn",
-            getDefaultStudyContent(),
-        );
-        batch(() => {
-            setExpandedNodes(new Set(expandedNodes()).add(node.id));
-            setRenaming(newPath);
-            refresh();
-        });
-    };
 
     const onNewFolder = async (_id: string, node: TreeNode<FileBrowserFile>) => {
         const newPath = await createNewDataFolder(node.data!.path, "Untitled");

@@ -1,7 +1,7 @@
 // solidjs component to display the breadcrumbs of the current path, with each segment being a clickable link
 
 import { sep } from "@tauri-apps/api/path";
-import { Accessor, createEffect, createSignal, For } from "solid-js";
+import { Accessor, For } from "solid-js";
 
 type BreadCrumbProps = {
     path: Accessor<string | undefined>;
