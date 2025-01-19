@@ -12,6 +12,10 @@ const Sidebar = () => {
                 navigate(`/game?path=${file.path}&source=library`);
             }
         }
+        if(file && file.isDirectory) {
+            console.log('Navigating to', file.path);
+            navigate(`/library?path=${file.path}`);
+        }
     }
     
 

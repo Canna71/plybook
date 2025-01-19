@@ -100,13 +100,13 @@ WHERE puzzle AND (puzzle.weight_cached_at IS None
 OR puzzle.weight_cached_at < (time::now() - 1h)) ;
 "#;
 
-    let ret= db.query(query)
+    let _ret= db.query(query)
     .bind(("ease_factor", 2.5))
     .bind(("minimum_interval", 1))
 
         .await
         .map_err(|e| e.to_string())?;
-    dbg!(&ret);
+    // dbg!(&ret);
 
     Ok(())
 }
@@ -174,7 +174,7 @@ pub async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) ->
         .unwrap()
         ;
     let study_id = study.unwrap().id;
-    dbg!(&study_id);
+    // dbg!(&study_id);
 
     let timeControl = parsedPgn.get_header("TimeControl");
     let timeControlParts: Vec<&str> = timeControl.split("+").collect();
@@ -290,7 +290,7 @@ WHERE id = type::thing("studies",  $study_id)
         ))
         .await
         .map_err(|e| e.to_string())?;
-    dbg!(&ret);
+    // dbg!(&ret);
 
     Ok(())
 }
@@ -316,7 +316,7 @@ WHERE id = type::thing("studies",  $study_id)
         ))
         .await
         .map_err(|e| e.to_string())?;
-    dbg!(&ret);
+    // dbg!(&ret);
 
     Ok(())
 }
@@ -341,7 +341,7 @@ WHERE id = type::thing("studies",  $study_id)
         ))
         .await
         .map_err(|e| e.to_string())?;
-    dbg!(&ret);
+    // dbg!(&ret);
 
     Ok(())
 }

@@ -10,6 +10,7 @@ import Play from "./Views/Play";
 import { ContentContext, useContentContext } from "./components/common/ContentContext";
 import { Toaster } from "solid-toast";
 import Puzzles from "./Views/Puzzles";
+import LibraryFolder from "./Views/LibraryFolder";
 
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
@@ -38,6 +39,8 @@ function App() {
                 <Route path="/boardeditor" component={BoardEditorView} />
                 <Route path="/db" component={DBTest} />
                 <Route path="/play" component={Play} />
+                <Route path="/library" component={LibraryFolder} />
+
                 <Route
                     path="/analysis"
                     component={GameView}
