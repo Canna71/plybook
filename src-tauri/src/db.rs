@@ -48,7 +48,7 @@ pub struct Game {
 
 #[derive(Serialize, Deserialize)]
 struct Puzzle {
-    current_interval: f64,
+    current_interval: Option<f64>,
     last_played_date: Option<String>,  // Nullable field
     base_weight: f64,
     cached_weight: Option<f64>,
@@ -92,8 +92,6 @@ SET puzzle.current_interval = IF puzzle.performance_score >= 0.8 { puzzle.curren
 ELSE IF puzzle.performance_score >= 0.6 { puzzle.current_interval * 0.5 * $ease_factor }
 ELSE { $minimum_interval }
 ,
-// puzzle.cached_weight = puzzle.base_weight * math::pow(math::e, duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at)) / puzzle.current_interval - 1)
-// puzzle.cached_weight = puzzle.base_weight * (1 + duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at))) / puzzle.current_interval 
 puzzle.cached_weight = puzzle.base_weight * (1 + duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at))) * (1 / (0.1 +puzzle.performance_score))
 ,
 puzzle.weight_cached_at = time::now()
@@ -253,9 +251,9 @@ pub async fn list_puzzles(
     let limit = limit.unwrap_or(100); // Default value of 10 if none provided
 
     let query = r#"
-SELECT * from studies WHERE puzzle 
- ORDER BY puzzle.cached_weight desc
- LIMIT $limit
+SELECT *, (puzzle.cached_weight OR puzzle.base_weight) AS weight  from studies WHERE puzzle 
+ORDER BY weight desc
+LIMIT $limit
 "#;
 
     let mut result = db.query(query)
@@ -377,9 +375,11 @@ pub async fn pick_puzzle(
     let limit = limit.unwrap_or(100000); // Default value of 10 if none provided
 
     let query = r#"
-SELECT puzzle.cached_weight as weight, id from studies WHERE puzzle
-    ORDER BY puzzle.cached_weight desc
-    LIMIT $limit
+SELECT (puzzle.cached_weight OR puzzle.base_weight) as weight, id from studies 
+
+WHERE puzzle
+ORDER BY weight desc
+LIMIT $limit
 "#;
 
     let mut result = db.query(query)

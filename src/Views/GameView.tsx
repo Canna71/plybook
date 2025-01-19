@@ -18,7 +18,7 @@ import {
     renameOrCreateDataFile,
     writeDataFile,
 } from "../storage/fs";
-import { useLocation, useSearchParams } from "@solidjs/router";
+import { Navigate, useLocation, useNavigate, useSearchParams } from "@solidjs/router";
 import { IconDeviceFloppy } from "@tabler/icons-solidjs";
 import "./GameView.scss";
 import Editable from "../components/common/Editable";
@@ -28,12 +28,14 @@ import {
     createPuzzle,
     deletePuzzle,
     getStudy,
+    pickPuzzle,
     updateBaseWeight,
     updatePerformanceScore,
     upsertStudy,
 } from "../storage/db";
 import { calculatePerformanceScore } from "../models/puzzles";
 import Select, { Option } from "../components/common/Select";
+import Button from "../components/common/Button";
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -44,7 +46,8 @@ const GameView = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
     const location = useLocation();
     const { refresh } = useContentContext();
-
+    const navigate = useNavigate();
+    
     const displayedName = () => {
         const path = searchParams.path;
         if (path && typeof path === "string") {
@@ -192,12 +195,18 @@ const GameView = () => {
         if (weight <= 0 && study() !== undefined) {
             await deletePuzzle(studyId);
         } else {
-            if(study() === undefined) {
+            if (study() === undefined) {
                 await createPuzzle(studyId, weight);
             } else {
                 await updateBaseWeight(studyId, weight);
             }
         }
+    };
+
+    const onNextPuzzle = async () => {
+        const puzzle = await pickPuzzle();
+        console.log("Picked puzzle", puzzle.file_path);
+        navigate(`/puzzle?path=${puzzle.file_path}`, { replace: true });
     };
 
     return (
@@ -212,6 +221,12 @@ const GameView = () => {
                 </div>
 
                 <Show when={isEditable() || isPuzzleMode()}>
+                    <Show when={isPuzzleMode()}>
+                        <div class="navbar-item">
+                            <button onClick={onNextPuzzle}>Next Puzzle</button>
+                        </div>
+                    </Show>
+
                     <div class="navbar-item">
                         <Select
                             title={"Puzzle Priority"}
