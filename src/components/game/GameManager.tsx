@@ -181,7 +181,6 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const checkPuzzleMove = (move: NormalMove) => {
         if (isPuzzleMode()) {
-            
             const g = game()!;
             const pos = position();
             const node = g.nodeAt(currentPath()!)!;
@@ -322,7 +321,8 @@ const GameManager: Component<GameManagerOptions> = ({
         }
 
         const showArrows =
-            !playingEngine && !isPuzzleMode() &&
+            !playingEngine &&
+            !isPuzzleMode() &&
             getSettingValue("engine.analysis.showArrows", false);
         const shapes = baseConfig.drawable?.shapes || [];
 
@@ -483,7 +483,7 @@ const GameManager: Component<GameManagerOptions> = ({
         setWrongPuzzleMove(false);
         // setHintMove(undefined);
         setHintType(HintType.None);
-        setRetries(r => r + 1);
+        setRetries((r) => r + 1);
     };
 
     // this effects is triggered by path changes and handles the automatic play of the next move in puzzle mode
@@ -504,9 +504,8 @@ const GameManager: Component<GameManagerOptions> = ({
                     setSuccessModalOpen(true);
                 }
             } else {
-                
                 setHintMove(next?.data.uci);
-                if(!next) {
+                if (!next) {
                     onPuzzleFinished?.(true, hintUsed(), retries());
                     setSuccessModalOpen(true);
                 }
@@ -517,9 +516,9 @@ const GameManager: Component<GameManagerOptions> = ({
     createEffect(() => {
         const hint = hintType();
         if (hint === HintType.Piece) {
-            setHintUsed(h => h + 0.5);
+            setHintUsed((h) => h + 0.5);
         } else if (hint === HintType.Move) {
-            setHintUsed(h => h + 1);
+            setHintUsed((h) => h + 1);
         }
     });
 
@@ -569,7 +568,7 @@ const GameManager: Component<GameManagerOptions> = ({
         engineCallable,
         engineAnalysisOnSignal,
         engineLevelSignal,
-        isReviewingSignal
+        isReviewingSignal,
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -613,7 +612,7 @@ const GameManager: Component<GameManagerOptions> = ({
         engineLevelSignal,
         hintMoveSignal: [hintMove, setHintMove],
         hintTypeSignal: [hintType, setHintType],
-        isReviewModeSignal: isReviewingSignal
+        isReviewModeSignal: isReviewingSignal,
     } as GameContextType;
     // #endregion
 
@@ -701,7 +700,9 @@ const GameManager: Component<GameManagerOptions> = ({
                                 </Show>
                                 <Show when={isPuzzleMode()}>
                                     <div class="puzzle-hint-buttons">
-                                        <HintButtons setHintType={setHintType} />
+                                        <HintButtons
+                                            setHintType={setHintType}
+                                        />
                                     </div>
                                 </Show>
                             </Show>
@@ -725,17 +726,19 @@ const GameManager: Component<GameManagerOptions> = ({
                             <Show when={engineCallable() && !playingEngine}>
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
-                            <div class="pgnviewer-moves-wrapper">
-                                <Show
-                                    when={
-                                        hasMoves() &&
-                                        viewMode() === ViewMode.MOVES &&
-                                        !isPuzzleMode()
-                                    }
-                                >
+
+                            <Show
+                                when={
+                                    hasMoves() &&
+                                    viewMode() === ViewMode.MOVES &&
+                                    !isPuzzleMode()
+                                }
+                            >
+                                <div class="pgnviewer-moves-wrapper">
                                     <Moves />
-                                </Show>
-                            </div>
+                                </div>
+                            </Show>
+
                             <Show
                                 when={
                                     viewMode() === ViewMode.MOVES &&

@@ -20,6 +20,7 @@ import { GameModel } from "../../models/GameModel";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { Path } from "../../models/pgn";
 import { Evaluation } from "chessops/pgn";
+import { set } from "es-toolkit/compat";
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
@@ -49,6 +50,10 @@ export function useChessEngine(options: ChessEngineOptions) {
         Path | undefined
     >(undefined);
     const [game, setGame] = options.gameSignal;
+
+    const [annotatedGame, setAnnotatedGame] = createSignal<
+        GameModel | undefined
+    >(game());
 
     const [engineLevel, setEngineLevel] =
         //createSignal<number>(1000);
@@ -151,24 +156,33 @@ export function useChessEngine(options: ChessEngineOptions) {
                 const path = reviewPositionPath() || Path.root;
                 const score = engineInfo[0]?.score;
                 const depth = engineInfo[0]?.depth;
-                const evaluation : Evaluation = score!.type === "cp" ? {
-                    depth: depth,
-                    pawns: score!.value, // TODO: /100 ?
-                } : {
-                    depth: depth,
-                    mate: score!.value,
-                };
-                const ng = game()!.updateEvaluation(path,evaluation);
-                setGame(ng);
-                // TODO: save evaluation in plydata?
+                const evaluation: Evaluation =
+                    score!.type === "cp"
+                        ? {
+                              depth: depth,
+                              pawns: score!.value, // TODO: /100 ?
+                          }
+                        : {
+                              depth: depth,
+                              mate: score!.value,
+                          };
+                const ng = game()!.updateEvaluation(path, evaluation);
+                setAnnotatedGame(ng);
+                // setGame(ng);
                 console.log("reviewing", path, engineInfo);
                 // pass to the next position
                 const node = g.nodeAt(path);
-                
+
                 if (node) {
                     const next = node.children[0];
                     if (next) {
                         setReviewPositionPath(next.data.path);
+                    } else {
+                        console.log("No next position");
+                        batch(() => {
+                            setGame(annotatedGame());
+                            setIsReviewing(false);
+                        });
                     }
                 }
             }
@@ -185,12 +199,20 @@ export function useChessEngine(options: ChessEngineOptions) {
         }
     };
 
+    // this should triger when stating a game review/evaluation process
+    createEffect(() => {
+        const reviewing = isReviewing();
+        if (reviewing) {
+            engine()?.stop();
+            setAnnotatedGame(game());
+        }
+    });
+
     // TODO: avoid conflicts with review mode
     createEffect(() => {
         let fenStr = options.fen();
         if (isReviewing()) {
-            fenStr = game()!
-                .dataAt(reviewPositionPath() || Path.root)!.fen;
+            fenStr = game()!.dataAt(reviewPositionPath() || Path.root)!.fen;
             console.log("Reviewing", fenStr);
         }
         setEngineInfo([]);
