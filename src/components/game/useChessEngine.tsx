@@ -147,9 +147,11 @@ export function useChessEngine(options: ChessEngineOptions) {
         ) {
             if (isReviewing()) {
                 const evaluation = engineInfo[0]?.score;
+                // TODO: save evaluation in plydata?
                 console.log("reviewing", reviewPositionPath(), engineInfo);
                 // pass to the next position
                 const node = g.nodeAt(reviewPositionPath() || Path.root);
+                
                 if (node) {
                     const next = node.children[0];
                     if (next) {
