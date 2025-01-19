@@ -147,6 +147,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         ) {
             if (isReviewing()) {
                 const evaluation = engineInfo[0]?.score;
+                const depth = engineInfo[0]?.depth;
                 // TODO: save evaluation in plydata?
                 console.log("reviewing", reviewPositionPath(), engineInfo);
                 // pass to the next position

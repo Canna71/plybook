@@ -1,5 +1,5 @@
 import { FEN } from "chessground/types";
-import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game } from "chessops/pgn";
+import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game, Evaluation } from "chessops/pgn";
 import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName, Material } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
@@ -12,6 +12,7 @@ export interface Comments {
     shapes: CommentShape[];
     clock?: number;
     emt?: number;
+    evaluation?: Evaluation;
 }
 
 export interface Metadata {
@@ -31,6 +32,7 @@ export interface InitialOrMove {
     comments: string[];
     shapes: CommentShape[];
     clocks: Clocks;
+    evaluation?: Evaluation
 }
 
 export type Clocks = {
@@ -106,7 +108,6 @@ export interface PlyData extends InitialOrMove {
     fen: FEN;
     pgnNode?: PgnNodeData;
     pos: Position;
-    evaluation?: Score
 }
 
 // Type guard function to check if an object is PlyData
@@ -169,6 +170,7 @@ function makeMove(metadata: Metadata): (ctx: State, data: PgnNodeData, childInde
         const comments = parseComments(node.comments || []);
         const startingComments = parseComments(node.startingComments || []);
         const shapes = [...comments.shapes, ...startingComments.shapes];
+        const evaluation = comments.evaluation;
         const ply = (setup.fullmoves - 1) * 2 + (state.pos.turn === 'white' ? 0 : 1);
         let clocks = (state.clocks = makeClocks(state.clocks, state.pos.turn, comments.clock));
         if (ply < 2 && metadata.timeControl)
@@ -195,6 +197,7 @@ function makeMove(metadata: Metadata): (ctx: State, data: PgnNodeData, childInde
             emt: comments.emt,
             pgnNode: node,
             pos: state.pos.clone(),
+            evaluation
         };
         return moveNode;
     };
@@ -233,6 +236,7 @@ function parseComments(strings: string[]): Comments {
         shapes: comments.flatMap(c => c.shapes),
         clock: reduceTimes(comments.map(c => c.clock)),
         emt: reduceTimes(comments.map(c => c.emt)),
+        evaluation: comments.reduce<Evaluation | undefined>((last, c) => c.evaluation || last, undefined),
     };
 };
 
@@ -324,6 +328,7 @@ export function makeGameInternal(game: Game<PgnNodeData>): GameModel {
             white: metadata.timeControl?.initial || comments.clock,
             black: metadata.timeControl?.initial || comments.clock,
         },
+        evaluation: comments.evaluation
     };
     const moves = makeMoves(start, game.moves, metadata);
 
