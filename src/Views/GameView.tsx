@@ -35,6 +35,8 @@ import {
 import { calculatePerformanceScore } from "../models/puzzles";
 import Select, { Option } from "../components/common/Select";
 import Button from "../components/common/Button";
+import BreadCrumb from "../components/common/BreadCrumb";
+import { sep } from "@tauri-apps/api/path";
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -61,6 +63,13 @@ const GameView = () => {
         }
         return undefined;
     };
+
+    const folderPath = () => {
+        const path = filePath();
+        if (path) {
+            return path.substring(0, path.lastIndexOf(sep()));
+        }
+    }
 
     const fetchStudy = async (path: string) => {
         const studyId = path;
@@ -206,6 +215,7 @@ const GameView = () => {
         <>
             <nav class="game-header buttons buttons-bar" role="navigation">
                 <div class="game-name">
+                    <BreadCrumb path={folderPath} />
                     <Editable
                         editable={() => false}
                         initialValue={displayedName() || ""}
