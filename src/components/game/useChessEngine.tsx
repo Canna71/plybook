@@ -19,12 +19,13 @@ import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { Path } from "../../models/pgn";
+import { Evaluation } from "chessops/pgn";
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
     engineColor: Accessor<Color | undefined>;
     playingEngine: Accessor<boolean>;
-    game: Accessor<GameModel | undefined>;
+    gameSignal: Signal<GameModel | undefined>;
     path: Accessor<Path | undefined>;
     turn: Accessor<Color>;
     applyMove: (move: NormalMove) => void;
@@ -47,6 +48,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     const [reviewPositionPath, setReviewPositionPath] = createSignal<
         Path | undefined
     >(undefined);
+    const [game, setGame] = options.gameSignal;
 
     const [engineLevel, setEngineLevel] =
         //createSignal<number>(1000);
@@ -75,7 +77,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         tmp ||= !!options.engineColor?.();
         // check if the current position is the last one
         if (!tmp) return false;
-        const node = options.game()?.nodeAt(options.path() || Path.root);
+        const node = game()?.nodeAt(options.path() || Path.root);
         if (node && node.children.length > 0) {
             return false;
         }
@@ -135,7 +137,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     });
 
     const onEngineBestMove = (bestMove: string, _ponder: string) => {
-        const g = options.game();
+        const g = game();
         if (!g) {
             return;
         }
@@ -146,12 +148,22 @@ export function useChessEngine(options: ChessEngineOptions) {
             options.engineColor?.() != options.turn()
         ) {
             if (isReviewing()) {
-                const evaluation = engineInfo[0]?.score;
+                const path = reviewPositionPath() || Path.root;
+                const score = engineInfo[0]?.score;
                 const depth = engineInfo[0]?.depth;
+                const evaluation : Evaluation = score!.type === "cp" ? {
+                    depth: depth,
+                    pawns: score!.value, // TODO: /100 ?
+                } : {
+                    depth: depth,
+                    mate: score!.value,
+                };
+                const ng = game()!.updateEvaluation(path,evaluation);
+                setGame(ng);
                 // TODO: save evaluation in plydata?
-                console.log("reviewing", reviewPositionPath(), engineInfo);
+                console.log("reviewing", path, engineInfo);
                 // pass to the next position
-                const node = g.nodeAt(reviewPositionPath() || Path.root);
+                const node = g.nodeAt(path);
                 
                 if (node) {
                     const next = node.children[0];
@@ -177,8 +189,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     createEffect(() => {
         let fenStr = options.fen();
         if (isReviewing()) {
-            fenStr = options
-                .game()!
+            fenStr = game()!
                 .dataAt(reviewPositionPath() || Path.root)!.fen;
             console.log("Reviewing", fenStr);
         }

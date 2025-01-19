@@ -573,7 +573,7 @@ const GameManager: Component<GameManagerOptions> = ({
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
-        game,
+        gameSignal: [game, setGame],
         path: currentPath,
         turn,
         applyMove,
