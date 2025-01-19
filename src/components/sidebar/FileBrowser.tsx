@@ -31,7 +31,7 @@ export interface FileBrowserFile {
 async function directoryToNodes(path: string) {
     const content = await listAppData(path);
     const ret = content
-        .filter((de) => de.isFile || de.isDirectory)
+        .filter((de) => /*de.isFile ||*/ de.isDirectory) // We want to show only directories
         .filter((de) => !de.name.startsWith("."))
         .map((file) => {
             const fullPath = `${path}${sep()}${file.name}`;

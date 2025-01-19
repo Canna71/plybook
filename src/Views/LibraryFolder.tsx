@@ -1,20 +1,32 @@
 import { useSearchParams } from "@solidjs/router";
 import {
+    createNewDataFile,
     deleteDataFileOrFolder,
+    getDefaultStudyContent,
     listAppData,
     NameWithoutExtension,
     renameOrCreateDataFile,
 } from "../storage/fs";
-import { batch, createEffect, createResource, For, Show, useContext } from "solid-js";
+import {
+    batch,
+    createEffect,
+    createResource,
+    For,
+    Show,
+    useContext,
+} from "solid-js";
 import { sep } from "@tauri-apps/api/path";
 import Button from "../components/common/Button";
 import { ContentContext } from "../components/common/ContentContext";
 import Editable from "../components/common/Editable";
-import { IconRefresh } from "@tabler/icons-solidjs";
+import { IconCircleXFilled, IconEdit, IconPlus, IconRefresh } from "@tabler/icons-solidjs";
+
+import "./LibraryFolder.scss";
 
 const LibraryFolder = () => {
     const [searchParams] = useSearchParams();
-    const { renaming, setRenaming, refresh, onRefresh } = useContext(ContentContext)!;
+    const { renaming, setRenaming, refresh, onRefresh } =
+        useContext(ContentContext)!;
 
     const folderPath = () => {
         if (typeof searchParams.path === "string") {
@@ -24,15 +36,12 @@ const LibraryFolder = () => {
     };
 
     const fetchFiles = async (path: string) => {
-        console.log("fetching files for", path);
         const ret = await listAppData(path);
-        console.log(ret);
         const arr = ret.filter((de) => de.isFile && de.name.endsWith(".pgn"));
-        console.log(arr);
         return arr;
     };
 
-    const [files, {refetch}] = createResource(folderPath, fetchFiles);
+    const [files, { refetch }] = createResource(folderPath, fetchFiles);
 
     const getFullPath = (name: string) => {
         const fullPath = `${folderPath()}${sep()}${name}`;
@@ -55,6 +64,7 @@ const LibraryFolder = () => {
     };
 
     const onRenamed = async (newName: string) => {
+        console.log("renamed", renaming(), newName);
         // await renameOrCreateDataFile(renaming(), newName);
         await renameOrCreateDataFile(renaming(), newName);
         batch(() => {
@@ -67,17 +77,42 @@ const LibraryFolder = () => {
         console.log("delete", name);
         await deleteDataFileOrFolder(getFullPath(name));
         refresh();
-    }
+    };
+
+    const newStudy = async () => {
+        const newPath = await createNewDataFile(
+            folderPath()!,
+            "Untitled.pgn",
+            getDefaultStudyContent(),
+        );
+        console.log("new study", newPath);
+        batch(() => {
+            // setExpandedNodes(new Set(expandedNodes()).add(node.id));
+            refresh();
+            setRenaming(newPath);
+        });
+        // setTimeout(()=>setRenaming(newPath),100);
+    };
 
     return (
         <div>
-            <h1>Library Folder</h1>
-            <Button onClick={refetch}>
-                <IconRefresh />
-            </Button>
+            <div class="buttons-bar">
+                <Button class="is-primary is-outlined"  onClick={refetch}>
+                    <IconRefresh />
+                </Button>
+                <Button class="is-primary is-outlined" onClick={newStudy}>
+                    <IconPlus />
+                    New Study
+                </Button>
+            </div>
+
             <h2>{folderPath()}</h2>
+            <h3>{renaming()}</h3>
             <div class="table-container">
-                <table class="table puzzles_table is-hoverable">
+                <table class="table files_table is-hoverable is-fullwidth">
+                <colgroup>
+                    <col width={"99%"} />
+                </colgroup>
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -107,7 +142,9 @@ const LibraryFolder = () => {
                                         </Show>
                                         <Show when={isRenaming(file.name)}>
                                             <Editable
-                                                initialValue={file.name}
+                                                initialValue={NameWithoutExtension(
+                                                    file.name,
+                                                )}
                                                 editable={() => true}
                                                 onSave={onRenamed}
                                                 focus={true}
@@ -116,14 +153,17 @@ const LibraryFolder = () => {
                                     </td>
                                     <td>
                                         <Button
+                                            title="Rename"
                                             onClick={() => onRename(file.name)}
                                         >
-                                            Rename
+                                            <IconEdit />
                                         </Button>
                                         <Button
+                                            class=""
+                                            title="Delete"
                                             onClick={() => onDelete(file.name)}
                                         >
-                                            Delete
+                                            <IconCircleXFilled />
                                         </Button>
                                     </td>
                                 </tr>

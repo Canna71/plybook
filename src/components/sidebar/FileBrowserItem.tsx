@@ -99,11 +99,11 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
         e.preventDefault();
         const menuItems: MenuItemOptions[] = [];
         if (!node.data || node.data.isDirectory) {
-            menuItems.push({
-                id: "file_new",
-                text: "New Study",
-                action: (id: string) => onNewStudy(id, node),
-            });
+            // menuItems.push({
+            //     id: "file_new",
+            //     text: "New Study",
+            //     action: (id: string) => onNewStudy(id, node),
+            // });
             menuItems.push({
                 id: "folder_new",
                 text: "New Folder",
