@@ -5,6 +5,7 @@ import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
 import { makeFen } from "chessops/fen";
 import { GameModel } from "./GameModel";
+import { Score } from "../engine/engineinterfaces";
 
 export interface Comments {
     texts: string[];
@@ -104,7 +105,8 @@ export interface PlyData extends InitialOrMove {
     emt?: number;
     fen: FEN;
     pgnNode?: PgnNodeData;
-    pos: Position
+    pos: Position;
+    evaluation?: Score
 }
 
 // Type guard function to check if an object is PlyData

@@ -36,11 +36,13 @@ const EngineControl = () => {
         isEditingDescriptionSignal: [isEditingDescription],
         fullPgnSignal: [],
         startingPositionSignal: [startingPosition],
+        isReviewModeSignal: [isReviewing, setIsReviewing],
     } = useContext(GameContext)!;
 
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
         engineColor() || "random",
     );
+
     const modalSignal = createSignal(false), [settingsModalVisible, setSettingsModalVisible] = modalSignal;
 
     const canEnableEngine = () => {
@@ -108,6 +110,10 @@ const EngineControl = () => {
         setSettingsModalVisible(true);
     };
 
+    const reviewGame = () => {
+        setIsReviewing(true);
+    }
+
 
     return (
         <>
@@ -127,6 +133,9 @@ const EngineControl = () => {
                                 title="Analysis Settings"
                             >
                                 <IconSettingsFilled />
+                            </Button>
+                            <Button onClick={reviewGame} title="Review Game">
+                                Review
                             </Button>
                         </div>
                     </Show>

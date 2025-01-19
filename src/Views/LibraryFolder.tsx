@@ -69,14 +69,14 @@ const LibraryFolder = () => {
         await renameOrCreateDataFile(renaming(), newName);
         batch(() => {
             setRenaming(undefined);
-            refresh();
+            refetch();
         });
     };
 
     const onDelete = async (name: string) => {
         console.log("delete", name);
         await deleteDataFileOrFolder(getFullPath(name));
-        refresh();
+        refetch();
     };
 
     const newStudy = async () => {

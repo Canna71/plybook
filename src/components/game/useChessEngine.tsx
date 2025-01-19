@@ -43,6 +43,10 @@ export function useChessEngine(options: ChessEngineOptions) {
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
     const [hintMove, setHintMove] = options.hintMoveSignal;
+    const [isReviewing, setIsReviewing] = createSignal(false);
+    const [reviewPositionPath, setReviewPositionPath] = createSignal<
+        Path | undefined
+    >(undefined);
 
     const [engineLevel, setEngineLevel] =
         //createSignal<number>(1000);
@@ -52,7 +56,6 @@ export function useChessEngine(options: ChessEngineOptions) {
                 setSettingValue("engine.playing.elo", v);
             },
         ];
-    
 
     const shouldCallEngineAnalysis = createMemo(() => {
         if (engine() && engineAnalysisOn()) {
@@ -142,6 +145,18 @@ export function useChessEngine(options: ChessEngineOptions) {
             !options.engineColor?.() ||
             options.engineColor?.() != options.turn()
         ) {
+            if (isReviewing()) {
+                const evaluation = engineInfo[0]?.score;
+                console.log("reviewing", reviewPositionPath(), engineInfo);
+                // pass to the next position
+                const node = g.nodeAt(reviewPositionPath() || Path.root);
+                if (node) {
+                    const next = node.children[0];
+                    if (next) {
+                        setReviewPositionPath(next.data.path);
+                    }
+                }
+            }
             setHintMove(bestMove);
             return;
         }
@@ -155,8 +170,15 @@ export function useChessEngine(options: ChessEngineOptions) {
         }
     };
 
+    // TODO: avoid conflicts with review mode
     createEffect(() => {
-        const fenStr = options.fen();
+        let fenStr = options.fen();
+        if (isReviewing()) {
+            fenStr = options
+                .game()!
+                .dataAt(reviewPositionPath() || Path.root)!.fen;
+            console.log("Reviewing", fenStr);
+        }
         setEngineInfo([]);
         let opts = undefined;
 
@@ -182,7 +204,7 @@ export function useChessEngine(options: ChessEngineOptions) {
                 multipv: 1,
             };
         }
-        if(opts) {
+        if (opts) {
             engine()!.analyzeFromFenOrMoves(fenStr, opts);
         }
     });
@@ -196,5 +218,6 @@ export function useChessEngine(options: ChessEngineOptions) {
             engineAnalysisOn,
             setEngineAnalysisOn,
         ] as Signal<boolean>,
+        isReviewingSignal: [isReviewing, setIsReviewing] as Signal<boolean>,
     };
 }

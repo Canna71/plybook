@@ -32,6 +32,7 @@ export interface GameContextType {
 	editable: Accessor<boolean>;
 	isPuzzleMode: Accessor<boolean>;
 	hintTypeSignal: Signal<HintType>;
+	isReviewModeSignal: Signal<boolean>;
 }
 
 export const GameContext = createContext<GameContextType>();

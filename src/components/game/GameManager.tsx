@@ -569,6 +569,7 @@ const GameManager: Component<GameManagerOptions> = ({
         engineCallable,
         engineAnalysisOnSignal,
         engineLevelSignal,
+        isReviewingSignal
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -612,6 +613,7 @@ const GameManager: Component<GameManagerOptions> = ({
         engineLevelSignal,
         hintMoveSignal: [hintMove, setHintMove],
         hintTypeSignal: [hintType, setHintType],
+        isReviewModeSignal: isReviewingSignal
     } as GameContextType;
     // #endregion
 
