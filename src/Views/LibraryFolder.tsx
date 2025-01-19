@@ -12,10 +12,9 @@ import Editable from "../components/common/Editable";
 
 const LibraryFolder = () => {
     const [searchParams] = useSearchParams();
-    const { renaming, setRenaming, refresh } = useContext(ContentContext)!;
+    const { renaming, setRenaming, refresh, onRefresh } = useContext(ContentContext)!;
 
     const folderPath = () => {
-        console.log("folderPath", searchParams.path);
         if (typeof searchParams.path === "string") {
             return searchParams.path;
         }
@@ -31,7 +30,7 @@ const LibraryFolder = () => {
         return arr;
     };
 
-    const [files] = createResource(folderPath, fetchFiles);
+    const [files, {refetch}] = createResource(folderPath, fetchFiles);
 
     const getFullPath = (name: string) => {
         const fullPath = `${folderPath()}${sep()}${name}`;
@@ -39,10 +38,12 @@ const LibraryFolder = () => {
     };
 
     createEffect(() => {
-        console.log("files: ", files());
+        console.log("refreshing");
+        const refreshTrigger = onRefresh();
+        refetch();
     });
 
-    const onRename = async (name: string) => {
+    const onRename = (name: string) => {
         console.log("rename", name);
         setRenaming(getFullPath(name));
     };
@@ -52,9 +53,9 @@ const LibraryFolder = () => {
     };
 
     const onRenamed = async (newName: string) => {
-        console.log("renamed", renaming(), newName);
         // await renameOrCreateDataFile(renaming(), newName);
         await renameOrCreateDataFile(renaming(), newName);
+        console.log("renamed", renaming(), newName);
         batch(() => {
             setRenaming(undefined);
             refresh();
