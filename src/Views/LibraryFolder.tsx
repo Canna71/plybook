@@ -22,6 +22,7 @@ import Editable from "../components/common/Editable";
 import { IconCircleXFilled, IconEdit, IconPlus, IconRefresh } from "@tabler/icons-solidjs";
 
 import "./LibraryFolder.scss";
+import BreadCrumb from "../components/common/BreadCrumb";
 
 const LibraryFolder = () => {
     const [searchParams] = useSearchParams();
@@ -106,8 +107,8 @@ const LibraryFolder = () => {
                 </Button>
             </div>
 
-            <h2>{folderPath()}</h2>
-            <h3>{renaming()}</h3>
+            <BreadCrumb path={folderPath} />
+            
             <div class="table-container">
                 <table class="table files_table is-hoverable is-fullwidth">
                 <colgroup>
