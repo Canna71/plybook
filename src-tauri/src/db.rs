@@ -93,7 +93,8 @@ ELSE IF puzzle.performance_score >= 0.6 { puzzle.current_interval * 0.5 * $ease_
 ELSE { $minimum_interval }
 ,
 // puzzle.cached_weight = puzzle.base_weight * math::pow(math::e, duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at)) / puzzle.current_interval - 1)
-puzzle.cached_weight = puzzle.base_weight * (1 + duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at))) / puzzle.current_interval 
+// puzzle.cached_weight = puzzle.base_weight * (1 + duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at))) / puzzle.current_interval 
+puzzle.cached_weight = puzzle.base_weight * (1 + duration::days(time::now() - <datetime>(puzzle.last_played_date OR created_at))) * (1 / (0.1 +puzzle.performance_score))
 ,
 puzzle.weight_cached_at = time::now()
 
