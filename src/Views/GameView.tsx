@@ -18,7 +18,7 @@ import {
     renameOrCreateDataFile,
     writeDataFile,
 } from "../storage/fs";
-import { Navigate, useLocation, useNavigate, useSearchParams } from "@solidjs/router";
+import { useLocation, useNavigate, useSearchParams } from "@solidjs/router";
 import { IconDeviceFloppy } from "@tabler/icons-solidjs";
 import "./GameView.scss";
 import Editable from "../components/common/Editable";
@@ -31,11 +31,9 @@ import {
     pickPuzzle,
     updateBaseWeight,
     updatePerformanceScore,
-    upsertStudy,
 } from "../storage/db";
 import { calculatePerformanceScore } from "../models/puzzles";
 import Select, { Option } from "../components/common/Select";
-import Button from "../components/common/Button";
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(

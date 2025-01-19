@@ -25,7 +25,7 @@ const Select = (props: SelectProps) => {
         }
     };
 
-    const [selectProps, divProps] = splitProps(props, ['options', 'selectedValue', 'setSelectedValue', 'placeholder', 'onChange']);
+    const [, divProps] = splitProps(props, ['options', 'selectedValue', 'setSelectedValue', 'placeholder', 'onChange']);
 
     return (
         <div {...divProps} class="select">

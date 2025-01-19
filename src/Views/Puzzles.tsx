@@ -6,6 +6,7 @@ import {
     updateCachedWeights,
 } from "../storage/db";
 import Button from "../components/common/Button";
+import { formatDate } from "../components/common/utils";
 
 const Puzzles: Component = () => {
     const [puzzles, { refetch }] = createResource<Study[] | undefined>(
@@ -21,6 +22,8 @@ const Puzzles: Component = () => {
         await updateCachedWeights();
         refetch();
     };
+
+
 
     return (
         <div class="puzzles_list">
@@ -41,7 +44,6 @@ const Puzzles: Component = () => {
                             <th>Last Played</th>
                             <th>Base Weight</th>
                             <th>Cached Weight</th>
-                            <th>Interval</th>
                             <th>Score</th>
                             <th>Cached At</th>
                         </tr>
@@ -64,13 +66,12 @@ const Puzzles: Component = () => {
                                             {study.file_path}
                                         </a>
                                     </td>
-                                    <td>{study.created_at}</td>
-                                    <td>{study.puzzle?.last_played_date}</td>
+                                    <td>{formatDate(study.created_at)}</td>
+                                    <td>{formatDate(study.puzzle?.last_played_date)}</td>
                                     <td>{study.puzzle?.base_weight}</td>
                                     <td>{study.puzzle?.cached_weight}</td>
-                                    <td>{study.puzzle?.current_interval}</td>
                                     <td>{study.puzzle?.performance_score}</td>
-                                    <td>{study.puzzle?.weight_cached_at}</td>
+                                    <td>{formatDate(study.puzzle?.weight_cached_at)}</td>
                                 </tr>
                             )}
                         </For>

@@ -429,3 +429,7 @@ export function moveEquals(pos: Position, a: NormalMove, b: NormalMove) {
     const bsan = makeSan(pos, b);
     return asan === bsan;
 } 
+
+export const formatDate = (date?: string) => {
+    return date && new Date(date).toLocaleString() || "";
+}
