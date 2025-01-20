@@ -351,7 +351,6 @@ export function getMaterial(position: Position) {
     return material;
 }
 
-export function is
 
 
 /*

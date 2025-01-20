@@ -140,7 +140,6 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
 
             case "info":
                 const info = this.parseInfoMessage(tokens.slice(1));
-                console.log(info);
                 if (info) {
                     this.emit("info", info);
                 }

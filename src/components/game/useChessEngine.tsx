@@ -169,7 +169,7 @@ export function useChessEngine(options: ChessEngineOptions) {
                 const ng = game()!.updateEvaluation(path, evaluation);
                 setAnnotatedGame(ng);
                 // setGame(ng);
-                console.log("reviewing", path, engineInfo);
+                console.log("reviewed", path, {...score});
                 // pass to the next position
                 const node = g.nodeAt(path);
 
@@ -205,6 +205,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         if (reviewing) {
             engine()?.stop();
             setAnnotatedGame(game());
+            setReviewPositionPath(Path.root);
         }
     });
 
