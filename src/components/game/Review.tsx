@@ -5,6 +5,7 @@ import { Color } from "chessops";
 import { Path } from "../../models/pgn";
 import { Ply } from "./Ply";
 import { PlyFan } from "../common/PlyFan";
+import { isMate, isPawns } from "chessops/pgn";
 
 type PlyReviewProps = {
     line: HierarchicalMoveData;
@@ -14,16 +15,22 @@ type PlyReviewProps = {
 const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
     const plyData = line[color === "white" ? "white" : "black"];
     const evaluation = plyData?.evaluation;
+    let score = "";
+    if(evaluation && isPawns(evaluation)) {
+        score = evaluation.pawns.toString();
+    } 
+    if(evaluation && isMate(evaluation)) {
+        score = evaluation.mate.toString();
+    }
     const isValid = () => {
         return plyData !== undefined;
     };
 
-    console.log(plyData);
     return (
         <span class="pgnviewer-movecontent">
             {/* {(color && line[color]?.fan) || "..."} */}
             <Show when={isValid()} fallback="...">
-                <PlyFan san={plyData?.san!} color={color!} />
+                <PlyFan san={plyData?.san!} color={color!} />({score})
             </Show>
         </span>
     );

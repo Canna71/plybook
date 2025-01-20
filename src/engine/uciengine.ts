@@ -121,7 +121,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     // ... other IChessEngine implementation methods ...
 
     private processEngineOutput(line: string): void {
-        // console.log(line);
+        console.log(line);
         const tokens = line.trim().split(" ");
 
         switch (tokens[0]) {
@@ -140,6 +140,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
 
             case "info":
                 const info = this.parseInfoMessage(tokens.slice(1));
+                console.log(info);
                 if (info) {
                     this.emit("info", info);
                 }
@@ -183,7 +184,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
             const result: EngineInfo = {};
 
             // Skip 'info' at parts[0]
-            for (let i = 1; i < tokens.length; i++) {
+            for (let i = 0; i < tokens.length; i++) {
                 switch (tokens[i]) {
                     case "multipv":
                         if (i + 1 < tokens.length) {

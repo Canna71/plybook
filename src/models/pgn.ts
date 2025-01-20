@@ -351,6 +351,8 @@ export function getMaterial(position: Position) {
     return material;
 }
 
+export function is
+
 
 /*
 else if (token === '!') this.handleNag(1);
