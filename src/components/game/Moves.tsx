@@ -15,6 +15,7 @@ export type MovesProps = {
     // squareHovered?: (square: string | undefined) => void;
 };
 
+
 const CommentsRows: Component<{
     path: Path;
     starting?: boolean;

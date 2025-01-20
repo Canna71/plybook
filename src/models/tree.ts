@@ -11,7 +11,7 @@ export interface HierarchicalMoveData extends MoveData {
 
 
 // variations will be added as variations of the PlyData and the UI will indent it
-export function makeTree(root: Node<PlyData>, level: number = 0): HierarchicalMoveData[] {
+export function makeTree(root: Node<PlyData>, level: number = 0, variations: boolean=true): HierarchicalMoveData[] {
 	const list: MoveData[] = [];
 	let currentMove: HierarchicalMoveData = undefined as any;
 
@@ -29,9 +29,9 @@ export function makeTree(root: Node<PlyData>, level: number = 0): HierarchicalMo
 		const turn = mainLine.data.turn;
 		currentMove[turn === 'white' ? 'black' : 'white'] = mainLine.data;
 
-		const variations = node.children.slice(1);
-		if (variations.length) {
-			currentMove.variations = variations.map(v => {
+		const moveVariations = node.children.slice(1);
+		if (variations && moveVariations.length) {
+			currentMove.variations = moveVariations.map(v => {
 				const tmp = new Node<PlyData>();
 				tmp.children = [v];
 				// extend<PlyData>(tmp, [v.data]);

@@ -1,5 +1,7 @@
 import { Switch, Match, createSignal } from "solid-js";
 import Moves from "./Moves";
+import Reveiew from "./Review";
+import Review from "./Review";
 
 const SidebarTabs = () => {
     const [tab, setTab] = createSignal(0);
@@ -31,7 +33,11 @@ const SidebarTabs = () => {
                             <Moves />
                         </div>
                     </Match>
-                    <Match when={tab() === 1}>TODO</Match>
+                    <Match when={tab() === 1}>
+                        <div class="pgnviewer-moves-wrapper">
+                            <Review />
+                        </div>
+                    </Match>
                 </Switch>
             </div>
         </div>
