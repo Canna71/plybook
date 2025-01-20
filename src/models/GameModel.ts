@@ -271,16 +271,20 @@ export class GameModel {
     }
 
     private  mergeShapes(oldComments: string[] | undefined, shapes: CommentShape[], allowEmpty:boolean=false, evaluation?: Evaluation):string[] {
-        
-        const comments = (oldComments || [""])
-            .map(parseComment)
-            .filter(c => c.text !== EMPTY_COMMENT);
+        // BUG: processing comments with already only empty comment, will discard the shapes and/or evaluation
+        let comments = (oldComments || [""])
+            .map(parseComment);
+        if(comments.length > 1) {
+            comments = comments.filter(c => c.text !== EMPTY_COMMENT);
+        }
+        console.log("mergeShapes init", comments, oldComments);
         const tc = comments.map((c, i) => {
             c.shapes = i === 0 ? shapes : [];
             c.text = (i > 0 || allowEmpty) ? c.text : (
                 c.text || EMPTY_COMMENT
             );
             c.evaluation = i === 0 ? evaluation : undefined;
+            console.log("mergeShapes out", c);
             return makeComment(c);
         });
         return tc;
@@ -306,6 +310,7 @@ export class GameModel {
         if (!pgnNode || !node) return this;
         if (isChildNode(node) && isChildNode(pgnNode)) {
             pgnNode.data.comments = this.mergeShapes(pgnNode.data.comments, node.data.shapes, false, evaluation);
+            console.log("updateEvaluation", pgnNode.data.comments, evaluation);
         } else {
             this.game.comments = this.mergeShapes(this.game.comments, this.initial.shapes, false, evaluation);
         }

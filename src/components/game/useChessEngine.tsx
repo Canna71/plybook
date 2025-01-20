@@ -160,16 +160,15 @@ export function useChessEngine(options: ChessEngineOptions) {
                     score!.type === "cp"
                         ? {
                               depth: depth,
-                              pawns: score!.value, // TODO: /100 ?
+                              pawns: score!.value / 100 
                           }
                         : {
                               depth: depth,
                               mate: score!.value,
                           };
-                const ng = game()!.updateEvaluation(path, evaluation);
+                const ng = annotatedGame()!.updateEvaluation(path, {...evaluation});
                 setAnnotatedGame(ng);
                 // setGame(ng);
-                console.log("reviewed", path, {...score});
                 // pass to the next position
                 const node = g.nodeAt(path);
 
@@ -180,8 +179,10 @@ export function useChessEngine(options: ChessEngineOptions) {
                     } else {
                         console.log("No next position");
                         batch(() => {
-                            setGame(annotatedGame());
+                            setGame(ng);
+                            console.log("Reviewing done", ng);
                             setIsReviewing(false);
+                            setReviewPositionPath(undefined);
                         });
                     }
                 }
@@ -214,7 +215,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         let fenStr = options.fen();
         if (isReviewing()) {
             fenStr = game()!.dataAt(reviewPositionPath() || Path.root)!.fen;
-            console.log("Reviewing", fenStr);
+            // console.log("Reviewing: ", fenStr);
         }
         setEngineInfo([]);
         let opts = undefined;
