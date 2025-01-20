@@ -61,6 +61,7 @@ import Button from "../common/Button";
 import { IconCircleXFilled } from "@tabler/icons-solidjs";
 import Modal from "../common/Modal";
 import HintButtons from "./HintButtons";
+import SidebarTabs from "./SidebarTabs";
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -734,9 +735,9 @@ const GameManager: Component<GameManagerOptions> = ({
                                     !isPuzzleMode()
                                 }
                             >
-                                <div class="pgnviewer-moves-wrapper">
-                                    <Moves />
-                                </div>
+                                {/* <Moves /> */}
+                                <SidebarTabs />
+                                {/* </div> */}
                             </Show>
 
                             <Show
