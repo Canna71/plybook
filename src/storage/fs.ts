@@ -8,7 +8,7 @@ import {
     rename,
     writeFile,
 } from "@tauri-apps/plugin-fs";
-import { appLocalDataDir, join, sep } from "@tauri-apps/api/path";
+import { appConfigDir, appLocalDataDir, join, sep } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-shell";
 // import { path } from "@tauri-apps/api";
 
@@ -18,6 +18,7 @@ const THEMES_FOLDER = "Themes";
 
 export async function initStorage() {
     await ensureAppDataFolders();
+    await ensureAppConfigFolder();
 }
 
 export async function ensureConfigFileExists(subPath: string) {
@@ -78,6 +79,15 @@ async function ensureFolderExists(folderPath: string): Promise<void> {
         }
     } catch (error) {
         console.error(`Error ensuring folder exists at ${folderPath}:`, error);
+    }
+}
+
+export async function ensureAppConfigFolder() {
+    try {
+        const appConfigPath = await appConfigDir();
+        await ensureFolderExists(appConfigPath);
+    } catch (error) {
+        console.error("Error ensuring AppConfig folder exists:", error);
     }
 }
 

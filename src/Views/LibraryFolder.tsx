@@ -88,7 +88,7 @@ const LibraryFolder = () => {
         console.log("new study", newPath);
         batch(() => {
             // setExpandedNodes(new Set(expandedNodes()).add(node.id));
-            refresh();
+            refetch();
             setRenaming(newPath);
         });
         // setTimeout(()=>setRenaming(newPath),100);

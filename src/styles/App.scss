@@ -22,6 +22,10 @@
     }
 }
 
+html {
+    overflow: hidden;
+}
+
 body {
     overflow: hidden;
 }
@@ -55,7 +59,7 @@ body {
     --bulma-scheme-s: 15%;
     --bulma-scheme-l: 28%;
     // --bulma-column-gap: 0.35rem;
-}
+}   
 
 #root {
     height: 100vh;
