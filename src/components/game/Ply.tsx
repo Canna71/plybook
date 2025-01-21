@@ -264,7 +264,7 @@ const mainNags: ValidComponent[] = [
     Inaccuracy,
 ];
 
-const NagIcon: Component<{ nag: number }> = ({ nag }) => {
+export const NagIcon: Component<{ nag: number }> = ({ nag }) => {
     return (
         <span class="pgnviewer-annotation">
             <Dynamic component={mainNags[nag]!} />

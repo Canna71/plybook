@@ -1,11 +1,12 @@
 import { Component, For, Show, useContext } from "solid-js";
 import { HierarchicalMoveData, makeTree } from "../../models/tree";
 import { GameContext } from "./GameContext";
-import { Color } from "chessops";
+import { Color, parseUci } from "chessops";
 import { Path } from "../../models/pgn";
-import { Ply } from "./Ply";
+import { NagIcon, Ply } from "./Ply";
 import { PlyFan } from "../common/PlyFan";
 import { isMate, isPawns } from "chessops/pgn";
+import { makeSan } from "chessops/san";
 
 type PlyReviewProps = {
     line: HierarchicalMoveData;
@@ -13,35 +14,79 @@ type PlyReviewProps = {
 };
 
 const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
-
-    const {gameSignal: [game]} = useContext(GameContext)!;
+    const {
+        gameSignal: [game],
+    } = useContext(GameContext)!;
 
     const plyData = line[color === "white" ? "white" : "black"];
     const evaluation = plyData?.evaluation;
     let score = "";
-    if(evaluation && isPawns(evaluation)) {
+    if (evaluation && isPawns(evaluation)) {
         score = evaluation.pawns.toString();
-    } 
-    if(evaluation && isMate(evaluation)) {
+    }
+    if (evaluation && isMate(evaluation)) {
         score = evaluation.mate.toString();
     }
     const isValid = () => {
         return plyData !== undefined;
     };
 
+    if (!isValid()) {
+        return <span class="pgnviewer-movecontent">...</span>;
+    }
+
     const parent = () => {
-        if(isValid()) {
+        if (isValid()) {
             return game()!.dataAt(plyData!.path.previous());
         }
-    } 
+    };
+
+    const nag = () => {
+        // return 1-6 nags
+        const evalThis = plyData?.evaluation;
+        const evalPrev = parent()?.evaluation;
+        const bestMoveUci = evalPrev?.ext as string;
+        const bestMove = parseUci(bestMoveUci)!;
+        const san = makeSan(parent()?.pos!, bestMove);
+        const isBestMove = san === plyData?.san;
+        let nag = 0;
+        let diff = 0;
+        if (evalThis && evalPrev) {
+            if (isPawns(evalThis) && isPawns(evalPrev)) {
+                diff = evalThis.pawns - evalPrev.pawns;
+                if(parent()!.turn === "black")  diff = -diff;
+                
+                if (diff > 5) {
+                    nag = 3;
+                } else if (diff > 0.5) {
+                    nag = 1;
+                } else if (diff < -1) {
+                    nag = 4;
+                } else if (diff < 0.5) {
+                    nag = 2;
+                }
+            }
+        }
+        return {
+            nag,
+            isBestMove,
+            diff
+        };
+    };
 
     return (
-        <span class="pgnviewer-movecontent">
-            {/* {(color && line[color]?.fan) || "..."} */}
-            <Show when={isValid()} fallback="...">
-                <PlyFan san={plyData?.san!} color={color!} />({score})({parent()?.evaluation?.ext})({parent()?.evaluation?.pawns})
+        <div class="move-cell">
+            <Show when={nag().nag > 0}>
+                <NagIcon nag={nag().nag} />
             </Show>
-        </span>
+            <span class="pgnviewer-movecontent">
+                {/* {(color && line[color]?.fan) || "..."} */}
+                <PlyFan san={plyData?.san!} color={color!} />({score})({nag().diff})
+            </span>
+            <Show when={nag().isBestMove}>
+                <span class="pgnviewer-bestmove">*</span>
+            </Show>
+        </div>
     );
 };
 
