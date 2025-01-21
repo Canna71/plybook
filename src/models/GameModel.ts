@@ -271,7 +271,7 @@ export class GameModel {
     }
 
     private  mergeShapes(oldComments: string[] | undefined, shapes: CommentShape[], allowEmpty:boolean=false, evaluation?: Evaluation):string[] {
-        // BUG: processing comments with already only empty comment, will discard the shapes and/or evaluation
+        // FIX: processing comments with already only empty comment, will discard the shapes and/or evaluation
         let comments = (oldComments || [""])
             .map(parseComment);
         if(comments.length > 1) {
