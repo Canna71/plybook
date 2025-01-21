@@ -1,6 +1,31 @@
 import { FEN } from "chessground/types";
-import { CommentShape, Node, ChildNode, PgnNodeData, transform, parseComment, parsePgn, startingPosition, Game, Evaluation } from "chessops/pgn";
-import { Color, makeUci, Position, Move, makeSquare, NormalMove, SquareName, Material } from "chessops";
+import {
+    CommentShape,
+    Node,
+    ChildNode,
+    PgnNodeData,
+    transform,
+    parseComment,
+    parsePgn,
+    startingPosition,
+    Game,
+    Evaluation,
+    CommentShapeColor,
+    Comment,
+    isMate,
+} from "chessops/pgn";
+import {
+    Color,
+    makeUci,
+    Position,
+    Move,
+    makeSquare,
+    NormalMove,
+    SquareName,
+    Material,
+    parseSquare,
+    defined,
+} from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
 import { makeFen } from "chessops/fen";
@@ -32,7 +57,7 @@ export interface InitialOrMove {
     comments: string[];
     shapes: CommentShape[];
     clocks: Clocks;
-    evaluation?: Evaluation
+    evaluation?: Evaluation;
 }
 
 export type Clocks = {
@@ -43,7 +68,6 @@ export type Clocks = {
 export interface Initial extends InitialOrMove {
     pos: Position;
 }
-
 
 export interface MoveData {
     number: number;
@@ -56,7 +80,7 @@ export class State {
         readonly pos: Position,
         public path: Path,
         public clocks: Clocks,
-    ) { }
+    ) {}
     clone = () => new State(this.pos.clone(), this.path, { ...this.clocks });
 }
 
@@ -67,7 +91,7 @@ export type Uci = string;
 export type Ply = number;
 
 export class Path {
-    constructor(readonly path: string) { }
+    constructor(readonly path: string) {}
 
     size = () => this.path.length / 2;
 
@@ -80,7 +104,7 @@ export class Path {
 
     last = (): Id => this.path.slice(-2);
 
-    empty = () => this.path == '';
+    empty = () => this.path == "";
 
     contains = (other: Path): boolean => this.path.startsWith(other.path);
 
@@ -92,7 +116,7 @@ export class Path {
 
     previous = (): Path => new Path(this.path.slice(0, -2));
 
-    static root = new Path('');
+    static root = new Path("");
 }
 
 export interface PlyData extends InitialOrMove {
@@ -100,7 +124,7 @@ export interface PlyData extends InitialOrMove {
     ply: number;
     move: Move;
     san: San;
-    fan: Fan,
+    fan: Fan;
     uci: Uci;
     startingComments: string[];
     nags: number[];
@@ -113,7 +137,7 @@ export interface PlyData extends InitialOrMove {
 // Type guard function to check if an object is PlyData
 export function isPlyData(obj: any): obj is PlyData {
     // Check for specific properties that are unique to PlyData
-    return obj && typeof obj === 'object' && 'move' in obj;
+    return obj && typeof obj === "object" && "move" in obj;
 }
 
 export type Headers = Map<string, string>;
@@ -128,37 +152,48 @@ export interface Players {
     black: Player;
 }
 
-
-
 export type AnyNode = Node<PlyData>;
 export type MoveNode = ChildNode<PlyData>;
 
 const childById = (node: AnyNode, id: Id): MoveNode | undefined =>
-    node.children.find(c => c.data.path.last() == id);
+    node.children.find((c) => c.data.path.last() == id);
 
-export const nodeAtPathFrom = (node: AnyNode, path: Path): AnyNode | undefined => {
+export const nodeAtPathFrom = (
+    node: AnyNode,
+    path: Path,
+): AnyNode | undefined => {
     if (path.empty()) return node;
     const child = childById(node, path.head());
     return child ? nodeAtPathFrom(child, path.tail()) : undefined;
 };
 
-export const nodesUntil = (node: AnyNode, path: Path): AnyNode | undefined  => {
+export const nodesUntil = (node: AnyNode, path: Path): AnyNode | undefined => {
     if (path.empty()) return node;
     const child = childById(node, path.head());
     return child ? nodesUntil(child, path.tail()) : node;
-}
+};
 
-export const isMoveNode = (n: AnyNode): n is MoveNode => 'data' in n;
-export const isMoveData = (d: InitialOrMove): d is PlyData => 'uci' in d;
+export const isMoveNode = (n: AnyNode): n is MoveNode => "data" in n;
+export const isMoveData = (d: InitialOrMove): d is PlyData => "uci" in d;
 
-export const makeMoves = (start: Position, moves: Node<PgnNodeData>, metadata: Metadata) =>
-    transform<PgnNodeData, PlyData, State>(moves, new State(start, Path.root, {}), makeMove(metadata));
+export const makeMoves = (
+    start: Position,
+    moves: Node<PgnNodeData>,
+    metadata: Metadata,
+) =>
+    transform<PgnNodeData, PlyData, State>(
+        moves,
+        new State(start, Path.root, {}),
+        makeMove(metadata),
+    );
 
-function makeMove(metadata: Metadata): (ctx: State, data: PgnNodeData, childIndex: number) => PlyData | undefined {
+function makeMove(
+    metadata: Metadata,
+): (ctx: State, data: PgnNodeData, childIndex: number) => PlyData | undefined {
     return (state, node, _index) => {
         const move = parseSan(state.pos, node.san);
         if (!move) {
-            console.debug('Invalid move', node.san, state.pos);
+            console.debug("Invalid move", node.san, state.pos);
             return undefined;
         }
         const moveId = scalachessCharPair(move);
@@ -171,8 +206,13 @@ function makeMove(metadata: Metadata): (ctx: State, data: PgnNodeData, childInde
         const startingComments = parseComments(node.startingComments || []);
         const shapes = [...comments.shapes, ...startingComments.shapes];
         const evaluation = comments.evaluation;
-        const ply = (setup.fullmoves - 1) * 2 + (state.pos.turn === 'white' ? 0 : 1);
-        let clocks = (state.clocks = makeClocks(state.clocks, state.pos.turn, comments.clock));
+        const ply =
+            (setup.fullmoves - 1) * 2 + (state.pos.turn === "white" ? 0 : 1);
+        let clocks = (state.clocks = makeClocks(
+            state.clocks,
+            state.pos.turn,
+            comments.clock,
+        ));
         if (ply < 2 && metadata.timeControl)
             clocks = {
                 white: metadata.timeControl.initial,
@@ -197,7 +237,7 @@ function makeMove(metadata: Metadata): (ctx: State, data: PgnNodeData, childInde
             emt: comments.emt,
             pgnNode: node,
             pos: state.pos.clone(),
-            evaluation
+            evaluation,
         };
         return moveNode;
     };
@@ -207,99 +247,107 @@ function makeMove(metadata: Metadata): (ctx: State, data: PgnNodeData, childInde
 function makePlayers(headers: Headers, metadata: Metadata): Players {
     const get = (color: Color, field: string): string | undefined => {
         const raw = headers.get(`${color}${field}`);
-        return raw == '?' || raw == '' ? undefined : raw;
+        return raw == "?" || raw == "" ? undefined : raw;
     };
     const makePlayer = (color: Color): Player => {
-        const name = get(color, '');
+        const name = get(color, "");
         return {
             name,
-            title: get(color, 'title'),
-            rating: parseInt(get(color, 'elo') || '') || undefined,
+            title: get(color, "title"),
+            rating: parseInt(get(color, "elo") || "") || undefined,
         };
     };
     return {
-        white: makePlayer('white'),
-        black: makePlayer('black'),
+        white: makePlayer("white"),
+        black: makePlayer("black"),
     };
 }
-
-
 
 export const EMPTY_COMMENT = "%EMPTY%";
 
 function parseComments(strings: string[]): Comments {
-    const comments = strings.map(parseComment);
+    const comments = strings.map(parseComment2);
     const reduceTimes = (times: Array<number | undefined>) =>
-        times.reduce<number | undefined>((last, time) => (typeof time == undefined ? last : time), undefined);
+        times.reduce<number | undefined>(
+            (last, time) => (typeof time == undefined ? last : time),
+            undefined,
+        );
     return {
-        texts: comments.map(c => c.text).filter(c => c !== EMPTY_COMMENT), //.filter(t => !!t), HACK: we keep empty comments for now
-        shapes: comments.flatMap(c => c.shapes),
-        clock: reduceTimes(comments.map(c => c.clock)),
-        emt: reduceTimes(comments.map(c => c.emt)),
-        evaluation: comments.reduce<Evaluation | undefined>((last, c) => c.evaluation || last, undefined),
+        texts: comments.map((c) => c.text).filter((c) => c !== EMPTY_COMMENT), //.filter(t => !!t), HACK: we keep empty comments for now
+        shapes: comments.flatMap((c) => c.shapes),
+        clock: reduceTimes(comments.map((c) => c.clock)),
+        emt: reduceTimes(comments.map((c) => c.emt)),
+        evaluation: comments.reduce<Evaluation | undefined>(
+            (last, c) => c.evaluation || last,
+            undefined,
+        ),
     };
-};
+}
 
 export function makeMetadata(headers: Headers): Metadata {
-    const site = headers.get('source') || headers.get('site');
+    const site = headers.get("source") || headers.get("site");
     const tcs = headers
-        .get('timecontrol')
-        ?.split('+')
-        .map(x => parseInt(x));
+        .get("timecontrol")
+        ?.split("+")
+        .map((x) => parseInt(x));
     const timeControl =
         tcs && tcs[0]
             ? {
-                initial: tcs[0],
-                increment: tcs[1] || 0,
-            }
+                  initial: tcs[0],
+                  increment: tcs[1] || 0,
+              }
             : undefined;
-    const orientation = headers.get('orientation');
+    const orientation = headers.get("orientation");
     return {
         externalLink: site && site.match(/^https?:\/\//) ? site : undefined,
         timeControl,
-        orientation: orientation === 'white' || orientation === 'black' ? orientation : undefined,
-        result: headers.get('result') || undefined,
+        orientation:
+            orientation === "white" || orientation === "black"
+                ? orientation
+                : undefined,
+        result: headers.get("result") || undefined,
     };
 }
 
 const makeClocks = (prev: Clocks, turn: Color, clk?: number): Clocks =>
-    turn == 'white' ? { ...prev, black: clk } : { ...prev, white: clk };
+    turn == "white" ? { ...prev, black: clk } : { ...prev, white: clk };
 
 export function isPiece(letter: string): boolean {
-    return 'KQRBN'.includes(letter);
+    return "KQRBN".includes(letter);
 }
 
 export function sanToFan(san: string, turn: Color): string {
     // Define the mapping from SAN piece letters to FAN symbols
 
     const fanMap: { [key: string]: string } = {
-        K: '♔',  // King
-        Q: '♕',  // Queen
-        R: '♖',  // Rook
-        B: '♗',  // Bishop
-        N: '♘',  // Knight
+        K: "♔", // King
+        Q: "♕", // Queen
+        R: "♖", // Rook
+        B: "♗", // Bishop
+        N: "♘", // Knight
         // black pieces
-        k: '♚',  // King
-        q: '♛',  // Queen
-        r: '♜',  // Rook
-        b: '♝',  // Bishop
-        n: '♞',  // Knight
+        k: "♚", // King
+        q: "♛", // Queen
+        r: "♜", // Rook
+        b: "♝", // Bishop
+        n: "♞", // Knight
 
         // Pawns do not need an entry, as they are not represented by a letter in SAN
     };
 
     // Convert SAN notation to FAN by replacing each piece letter with its corresponding symbol
-    let fan = '';
+    let fan = "";
     for (const char of san) {
-        const lookup = turn === 'white' ? char.toUpperCase() : char.toLowerCase();
-        fan += isPiece(char) ? fanMap[lookup] : char;  // Replace piece letter or leave character as-is if no match
+        const lookup =
+            turn === "white" ? char.toUpperCase() : char.toLowerCase();
+        fan += isPiece(char) ? fanMap[lookup] : char; // Replace piece letter or leave character as-is if no match
     }
 
     return fan;
 }
 
 export function toMove(move: NormalMove): [SquareName, SquareName] {
-    return move && [makeSquare(move.from), makeSquare(move.to)]
+    return move && [makeSquare(move.from), makeSquare(move.to)];
 }
 
 export function makeGame(pgnString: string): GameModel {
@@ -314,7 +362,9 @@ export function makeGameInternal(game: Game<PgnNodeData>): GameModel {
     const fen = makeFen(setup);
     // const moves = pgn.moves;
     const comments = parseComments(game.comments || []);
-    const headers: Headers = new Map(Array.from(game.headers, ([key, value]) => [key.toLowerCase(), value]));
+    const headers: Headers = new Map(
+        Array.from(game.headers, ([key, value]) => [key.toLowerCase(), value]),
+    );
     const metadata = makeMetadata(headers);
 
     const initial: Initial = {
@@ -328,10 +378,9 @@ export function makeGameInternal(game: Game<PgnNodeData>): GameModel {
             white: metadata.timeControl?.initial || comments.clock,
             black: metadata.timeControl?.initial || comments.clock,
         },
-        evaluation: comments.evaluation
+        evaluation: comments.evaluation,
     };
     const moves = makeMoves(start, game.moves, metadata);
-
 
     const players = makePlayers(headers, metadata);
 
@@ -344,20 +393,143 @@ export function getMaterial(position: Position) {
     // Parse the FEN position
     const setup = position.toSetup();
     const board = setup.board;
-    
+
     // Initialize material counters for both sides
     const material = Material.fromBoard(board);
-    
+
     return material;
 }
 
+//Chessops Extension
 
+export type EvaluationExt = Evaluation & { ext?: any };
 
-/*
-else if (token === '!') this.handleNag(1);
-else if (token === '?') this.handleNag(2);
-else if (token === '!!') this.handleNag(3);
-else if (token === '??') this.handleNag(4);
-else if (token === '!?') this.handleNag(5);
-else if (token === '?!') this.handleNag(6);
-*/
+export const parseComment2 = (comment: string): Comment => {
+    let emt, clock, evaluation;
+    const shapes: CommentShape[] = [];
+    const text = comment
+        .replace(
+            /\s?\[%(emt|clk)\s(\d{1,5}):(\d{1,2}):(\d{1,2}(?:\.\d{0,3})?)\]\s?/g,
+            (_, annotation, hours, minutes, seconds) => {
+                const value =
+                    parseInt(hours, 10) * 3600 +
+                    parseInt(minutes, 10) * 60 +
+                    parseFloat(seconds);
+                if (annotation === "emt") emt = value;
+                else if (annotation === "clk") clock = value;
+                return "  ";
+            },
+        )
+        .replace(
+            /\s?\[%(?:csl|cal)\s([RGYB][a-h][1-8](?:[a-h][1-8])?(?:,[RGYB][a-h][1-8](?:[a-h][1-8])?)*)\]\s?/g,
+            (_, arrows) => {
+                for (const arrow of arrows.split(",")) {
+                    shapes.push(parseCommentShape(arrow)!);
+                }
+                return "  ";
+            },
+        )
+        .replace(
+            /\s?\[%eval\s(?:#([+-]?\d{1,5})|([+-]?(?:\d{1,5}|\d{0,5}\.\d{1,2})))(?:,(\d{1,5}))?,([^\]]*)?\]\s?/g,
+            (_, mate, pawns, d, ext) => {
+                const depth = d && parseInt(d, 10);
+                evaluation = mate
+                    ? { mate: parseInt(mate, 10), depth, ext }
+                    : { pawns: parseFloat(pawns), depth, ext };
+                return "  ";
+            },
+        )
+        .trim();
+    return {
+        text,
+        shapes,
+        emt,
+        clock,
+        evaluation,
+    };
+};
+
+const parseCommentShape = (str: string): CommentShape | undefined => {
+    const color = parseCommentShapeColor(str.slice(0, 1));
+    const from = parseSquare(str.slice(1, 3));
+    const to = parseSquare(str.slice(3, 5));
+    if (!color || !defined(from)) return;
+    if (str.length === 3) return { color, from, to: from };
+    if (str.length === 5 && defined(to)) return { color, from, to };
+    return;
+};
+
+function parseCommentShapeColor(str: string): CommentShapeColor | undefined {
+    switch (str) {
+        case "G":
+            return "green";
+        case "R":
+            return "red";
+        case "Y":
+            return "yellow";
+        case "B":
+            return "blue";
+        default:
+            return;
+    }
+}
+
+export const makeComment2 = (comment: Partial<Comment>): string => {
+    const builder = [];
+    if (defined(comment.text)) builder.push(comment.text);
+    const circles = (comment.shapes || [])
+        .filter((shape) => shape.to === shape.from)
+        .map(makeCommentShape);
+    if (circles.length) builder.push(`[%csl ${circles.join(",")}]`);
+    const arrows = (comment.shapes || [])
+        .filter((shape) => shape.to !== shape.from)
+        .map(makeCommentShape);
+    if (arrows.length) builder.push(`[%cal ${arrows.join(",")}]`);
+    if (comment.evaluation)
+        builder.push(`[%eval ${makeEval(comment.evaluation)}]`);
+    if (defined(comment.emt)) builder.push(`[%emt ${makeClk(comment.emt)}]`);
+    if (defined(comment.clock))
+        builder.push(`[%clk ${makeClk(comment.clock)}]`);
+    return builder.join(" ");
+};
+
+const makeEval = (ev: EvaluationExt): string => {
+    let str = isMate(ev) ? "#" + ev.mate : ev.pawns.toFixed(2);
+    str = defined(ev.depth) ? str + "," + ev.depth : str;
+    str = defined(ev.ext) ? str + "," + ev.ext : str;
+    return str;
+};
+
+const makeClk = (seconds: number): string => {
+    seconds = Math.max(0, seconds);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    seconds = (seconds % 3600) % 60;
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toLocaleString(
+        "en",
+        {
+            minimumIntegerDigits: 2,
+            maximumFractionDigits: 3,
+        },
+    )}`;
+};
+
+const makeCommentShape = (shape: CommentShape): string =>
+    shape.to === shape.from
+        ? `${makeCommentShapeColor(shape.color)}${makeSquare(shape.to)}`
+        : `${makeCommentShapeColor(shape.color)}${makeSquare(shape.from)}${makeSquare(shape.to)}`;
+
+const makeCommentShapeColor = (
+    color: CommentShapeColor,
+): "G" | "R" | "Y" | "B" => {
+    switch (color) {
+        case "green":
+            return "G";
+        case "red":
+            return "R";
+        case "yellow":
+            return "Y";
+        case "blue":
+            return "B";
+    }
+};

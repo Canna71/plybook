@@ -18,7 +18,7 @@ const THEMES_FOLDER = "Themes";
 
 export async function initStorage() {
     await ensureAppDataFolders();
-    await ensureAppConfigFolder();
+    await ensureConfigFolder();
 }
 
 export async function ensureConfigFileExists(subPath: string, value: any) {

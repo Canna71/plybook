@@ -1,9 +1,9 @@
 import { Move, Chess, parseSquare  } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
-import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, makeComment, CommentShape, parseComment, Evaluation } from "chessops/pgn";
+import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, CommentShape, parseComment, Evaluation } from "chessops/pgn";
 import { makeSan, parseSan } from "chessops/san";
-import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal, EMPTY_COMMENT } from "./pgn";
+import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal, EMPTY_COMMENT, makeComment2 } from "./pgn";
 import { DrawShape } from "chessground/draw";
 
 // immutable ?
@@ -132,7 +132,7 @@ export class GameModel {
         const c = parseComment(comment);
         c.text = text;
         
-        return makeComment(c);
+        return makeComment2(c);
     }
 
     updateComment(path: Path, index: number, comment: string, starting: boolean = false): GameModel {
@@ -285,7 +285,7 @@ export class GameModel {
             );
             c.evaluation = i === 0 ? evaluation : undefined;
             console.log("mergeShapes out", c);
-            return makeComment(c);
+            return makeComment2(c);
         });
         return tc;
     }
