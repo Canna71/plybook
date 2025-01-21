@@ -21,14 +21,15 @@ export async function initStorage() {
     await ensureAppConfigFolder();
 }
 
-export async function ensureConfigFileExists(subPath: string) {
+export async function ensureConfigFileExists(subPath: string, value: any) {
+    await ensureConfigFolder();
+    console.log("config folder exists");
     const fileExists = await exists(subPath, {
         baseDir: BaseDirectory.AppConfig,
     });
     if (!fileExists) {
-        await writeFile(subPath, new Uint8Array(), {
-            baseDir: BaseDirectory.AppConfig,
-        });
+        console.log("config file does not exist, creating it");
+        await writeConfigFile(subPath, value);
     }
 }
 
@@ -82,12 +83,12 @@ async function ensureFolderExists(folderPath: string): Promise<void> {
     }
 }
 
-export async function ensureAppConfigFolder() {
+export async function ensureConfigFolder() {
     try {
-        const appConfigPath = await appConfigDir();
-        await ensureFolderExists(appConfigPath);
+        const configPath = await appConfigDir();
+        await ensureFolderExists(configPath);
     } catch (error) {
-        console.error("Error ensuring AppConfig folder exists:", error);
+        console.error("Error ensuring Config folder exists:", error);
     }
 }
 

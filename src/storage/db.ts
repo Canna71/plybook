@@ -42,8 +42,16 @@ export async function listPuzzles(): Promise<Study[]> {
 }
 
 export async function initDB() {
-    const ret = await invoke("init_db");
-    console.log("initDB", ret);
+    try {
+        const ret = await invoke("init_db");
+        
+    } catch (error) {
+        if ((error as string).includes("The process cannot access the file because it is being used by another process")) {
+            console.info("DB already initialized");
+        } else {
+            console.error("initDB", error);
+        }
+    }
 }
 
 export async function updatePerformanceScore(studyId: string, score: number) {
@@ -94,4 +102,4 @@ export async function updateCachedWeights() {
     return await invoke("update_cached_weights");
 }
 
-initDB();
+setTimeout(initDB,10);
