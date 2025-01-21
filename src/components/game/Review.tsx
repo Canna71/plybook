@@ -74,8 +74,20 @@ const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
         };
     };
 
+    const posScore = () => {
+        if(plyData?.evaluation && isMate(plyData!.evaluation)) {
+            return `#${plyData!.evaluation?.mate}`;
+        } else if(plyData?.evaluation && isPawns(plyData!.evaluation)) {
+            return `${plyData!.evaluation?.pawns}` ;
+        }
+        return "";
+    }
+
     return (
         <div class="move-cell">
+             <span class="engine-info-score has-background-info has-text-info-invert">
+                {posScore()}
+            </span>
             <Show when={nag().nag > 0}>
                 <NagIcon nag={nag().nag} />
             </Show>
