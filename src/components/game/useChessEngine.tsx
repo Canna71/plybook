@@ -18,7 +18,7 @@ import { makeMove } from "../common/utils";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue, setSettingValue } from "../../models/settings";
-import { Path } from "../../models/pgn";
+import { EvaluationExt, isPlyData, Path } from "../../models/pgn";
 import { Evaluation } from "chessops/pgn";
 import { set } from "es-toolkit/compat";
 
@@ -154,19 +154,34 @@ export function useChessEngine(options: ChessEngineOptions) {
         ) {
             if (isReviewing()) {
                 const path = reviewPositionPath() || Path.root;
+                const data = g.dataAt(path);
+                let ext = bestMove; // best move
+                // if (isPlyData(data)) {
+                //     console.log("Data: ", data.move, move);
+                //     if (
+                //         (data.move as NormalMove).from == move.from &&
+                //         (data.move as NormalMove).to == move.to
+                //     ) {
+                //         ext = "*"; // best move
+                //     }
+                // }
                 const score = engineInfo[0]?.score;
                 const depth = engineInfo[0]?.depth;
-                const evaluation: Evaluation =
+                const evaluation: EvaluationExt =
                     score!.type === "cp"
                         ? {
                               depth: depth,
-                              pawns: score!.value / 100 
+                              pawns: score!.value / 100,
+                              ext: ext,
                           }
                         : {
                               depth: depth,
                               mate: score!.value,
+                              ext: ext,
                           };
-                const ng = annotatedGame()!.updateEvaluation(path, {...evaluation});
+                const ng = annotatedGame()!.updateEvaluation(path, {
+                    ...evaluation,
+                });
                 setAnnotatedGame(ng);
                 // setGame(ng);
                 // pass to the next position

@@ -5,7 +5,7 @@ import {
     ChildNode,
     PgnNodeData,
     transform,
-    parseComment,
+    // parseComment,
     parsePgn,
     startingPosition,
     Game,
@@ -30,7 +30,6 @@ import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
 import { makeFen } from "chessops/fen";
 import { GameModel } from "./GameModel";
-import { Score } from "../engine/engineinterfaces";
 
 export interface Comments {
     texts: string[];
