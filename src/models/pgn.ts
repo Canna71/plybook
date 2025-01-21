@@ -56,7 +56,7 @@ export interface InitialOrMove {
     comments: string[];
     shapes: CommentShape[];
     clocks: Clocks;
-    evaluation?: Evaluation;
+    evaluation?: EvaluationExt;
 }
 
 export type Clocks = {

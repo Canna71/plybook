@@ -13,6 +13,9 @@ type PlyReviewProps = {
 };
 
 const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
+
+    const {gameSignal: [game]} = useContext(GameContext)!;
+
     const plyData = line[color === "white" ? "white" : "black"];
     const evaluation = plyData?.evaluation;
     let score = "";
@@ -26,11 +29,17 @@ const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
         return plyData !== undefined;
     };
 
+    const parent = () => {
+        if(isValid()) {
+            return game()!.dataAt(plyData!.path.previous());
+        }
+    } 
+
     return (
         <span class="pgnviewer-movecontent">
             {/* {(color && line[color]?.fan) || "..."} */}
             <Show when={isValid()} fallback="...">
-                <PlyFan san={plyData?.san!} color={color!} />({score})
+                <PlyFan san={plyData?.san!} color={color!} />({score})({parent()?.evaluation?.ext})({parent()?.evaluation?.pawns})
             </Show>
         </span>
     );
