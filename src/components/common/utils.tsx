@@ -38,6 +38,7 @@ import {
 import { debounce } from "es-toolkit";
 import { DrawBrushes, DrawShape } from "chessground/draw";
 import { makeSan } from "chessops/san";
+import { getTheme } from "../../theming/thememanager";
 
 export function lastMove(data: Initial | PlyData | undefined) {
     const lm = isPlyData(data) ? (data.move as NormalMove) : undefined;
@@ -391,6 +392,15 @@ const figurineMap: Record<string, () => JSXElement> = {
 };
 
 export function getFigurine(piece: string) {
+    
+    if(getTheme() === "light"){
+        // invert the casing of piece
+        if(piece === piece.toUpperCase()){
+            piece = piece.toLowerCase();
+        } else {
+            piece = piece.toUpperCase();
+        }
+    }
     return figurineMap[piece];
 }
 

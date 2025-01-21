@@ -12,6 +12,7 @@ import { Toaster } from "solid-toast";
 import Puzzles from "./Views/Puzzles";
 import LibraryFolder from "./Views/LibraryFolder";
 
+
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
     // const [name, setName] = createSignal("");
