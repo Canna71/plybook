@@ -64,7 +64,7 @@ const [settingsLoaded, setSettingsLoaded] = createSignal(false);
 // }
 async function loadSettings() {
     if(settingsLoaded()) return settings;
-    await ensureConfigFileExists("settings.json");
+    await ensureConfigFileExists("settings.json", DEFAULT);
     const newSettings = await readConfigFileAsJson<AppSettings>("settings.json") || {} as AppSettings;
     
     const mergedSettings = toMerged(DEFAULT, newSettings)// {...DEFAULT, ...newSettings};

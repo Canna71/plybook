@@ -8,7 +8,7 @@ import {
     rename,
     writeFile,
 } from "@tauri-apps/plugin-fs";
-import { appLocalDataDir, join, sep } from "@tauri-apps/api/path";
+import { appConfigDir, appLocalDataDir, join, sep } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-shell";
 // import { path } from "@tauri-apps/api";
 
@@ -20,14 +20,15 @@ export async function initStorage() {
     await ensureAppDataFolders();
 }
 
-export async function ensureConfigFileExists(subPath: string) {
+export async function ensureConfigFileExists(subPath: string, value: any) {
+    await ensureConfigFolder();
+    console.log("config folder exists");
     const fileExists = await exists(subPath, {
         baseDir: BaseDirectory.AppConfig,
     });
     if (!fileExists) {
-        await writeFile(subPath, new Uint8Array(), {
-            baseDir: BaseDirectory.AppConfig,
-        });
+        console.log("config file does not exist, creating it");
+        await writeConfigFile(subPath, value);
     }
 }
 
@@ -78,6 +79,15 @@ async function ensureFolderExists(folderPath: string): Promise<void> {
         }
     } catch (error) {
         console.error(`Error ensuring folder exists at ${folderPath}:`, error);
+    }
+}
+
+export async function ensureConfigFolder() {
+    try {
+        const configPath = await appConfigDir();
+        await ensureFolderExists(configPath);
+    } catch (error) {
+        console.error("Error ensuring Config folder exists:", error);
     }
 }
 
