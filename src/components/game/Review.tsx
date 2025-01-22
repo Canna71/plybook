@@ -40,6 +40,25 @@ const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
             return game()!.dataAt(plyData!.path.previous());
         }
     };
+/*
+"Inaccuracy" - The computer evaluates that this move resulted in a position that is at least 0.3 points worse than the position resulting from the best move available
+
+"Mistake" - This move is at least 0.9 points worse than the best move available
+
+"Blunder" - This move is at least 2 points worse than the best move available - pretty bad!  happy.png
+
+const nagNames = [
+    "Good Move",
+    "Good Move", 1
+    "Bad Move", 2
+    "Brilliant", 3 
+    "Blunder", 4
+    "Interesting", 5
+    "Inaccuracy", 6
+];
+
+*/
+
 
     const nag = () => {
         // return 1-6 nags
@@ -60,10 +79,12 @@ const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
                     nag = 3; // brilliant
                 } else if (diff > 2) {
                     nag = 1; // good move
-                } else if (diff < -5) {
+                } else if (diff < -2) {
                     nag = 4; // blunder
-                } else if (diff < -1) {
+                } else if (diff < -0.9) {
                     nag = 2; // mistake
+                } else if (diff < -0.3) {
+                    nag = 6; // inaccuracy
                 }
             }
         }
@@ -84,7 +105,10 @@ const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
     }
 
     return (
-        <div class="move-cell">
+        <div class="move-cell"
+            data-color={color}
+            data-path={color && line[color]?.path.path}
+        >
              <span class="engine-info-score has-background-info has-text-info-invert">
                 {posScore()}
             </span>
@@ -93,10 +117,10 @@ const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
             </Show>
             <span class="pgnviewer-movecontent">
                 {/* {(color && line[color]?.fan) || "..."} */}
-                <PlyFan san={plyData?.san!} color={color!} />({score})({nag().diff})
+                <PlyFan san={plyData?.san!} color={color!} />
             </span>
             <Show when={nag().isBestMove}>
-                <span class="pgnviewer-bestmove">*</span>
+                <span class="pgnviewer-bestmove" title="Best Move">⭐</span>
             </Show>
         </div>
     );
@@ -169,8 +193,23 @@ const Review: Component = () => {
         return tree || [];
     };
 
+    const onClick = (e: Event) => {
+        if (playingEngine()) return;
+        const target = e.target as HTMLElement;
+
+        // find the closest anchestor with data-path attribute
+        const pathElement = target.closest("[data-path]") as HTMLElement;
+        if (!pathElement) return;
+
+        const path: string | undefined = pathElement.dataset.path;
+        if (!path) {
+            return;
+        }
+        setCurrentPath(new Path(path));
+    };
+
     return (
-        <div class="pgnviewer-moves-panel">
+        <div class="pgnviewer-moves-panel" onClick={onClick}>
             <ReviewTree movesTree={movesTree} />
         </div>
     );

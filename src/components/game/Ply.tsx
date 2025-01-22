@@ -264,9 +264,21 @@ const mainNags: ValidComponent[] = [
     Inaccuracy,
 ];
 
+
+
+const nagNames = [
+    "Good Move",
+    "Good Move",
+    "Bad Move",
+    "Brilliant",
+    "Blunder",
+    "Interesting",
+    "Inaccuracy",
+];
+
 export const NagIcon: Component<{ nag: number }> = ({ nag }) => {
     return (
-        <span class="pgnviewer-annotation">
+        <span class="pgnviewer-annotation" title={nagNames[nag]}>
             <Dynamic component={mainNags[nag]!} />
         </span>
     );

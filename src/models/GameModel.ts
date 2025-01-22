@@ -1,9 +1,9 @@
 import { Move, Chess, parseSquare  } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
-import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, CommentShape, parseComment, Evaluation } from "chessops/pgn";
+import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, CommentShape, Evaluation } from "chessops/pgn";
 import { makeSan, parseSan } from "chessops/san";
-import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal, EMPTY_COMMENT, makeComment2 } from "./pgn";
+import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal, EMPTY_COMMENT, makeComment2, parseComment2 } from "./pgn";
 import { DrawShape } from "chessground/draw";
 
 // immutable ?
@@ -129,7 +129,7 @@ export class GameModel {
     // }
 
     private changeCommentText(comment: string, text: string): string {
-        const c = parseComment(comment);
+        const c = parseComment2(comment);
         c.text = text;
         
         return makeComment2(c);
@@ -273,7 +273,7 @@ export class GameModel {
     private  mergeShapes(oldComments: string[] | undefined, shapes: CommentShape[], allowEmpty:boolean=false, evaluation?: Evaluation):string[] {
         // FIX: processing comments with already only empty comment, will discard the shapes and/or evaluation
         let comments = (oldComments || [""])
-            .map(parseComment);
+            .map(parseComment2);
         if(comments.length > 1) {
             comments = comments.filter(c => c.text !== EMPTY_COMMENT);
         }
