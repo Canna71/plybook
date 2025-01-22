@@ -56,14 +56,14 @@ const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
                 diff = evalThis.pawns - evalPrev.pawns;
                 if(parent()!.turn === "black")  diff = -diff;
                 
-                if (diff > 5) {
-                    nag = 3;
-                } else if (diff > 0.5) {
-                    nag = 1;
+                if (diff > 10) {
+                    nag = 3; // brilliant
+                } else if (diff > 2) {
+                    nag = 1; // good move
+                } else if (diff < -5) {
+                    nag = 4; // blunder
                 } else if (diff < -1) {
-                    nag = 4;
-                } else if (diff < 0.5) {
-                    nag = 2;
+                    nag = 2; // mistake
                 }
             }
         }
