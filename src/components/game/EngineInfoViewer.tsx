@@ -24,6 +24,7 @@ function makeLine(info: EngineInfo, path: Path, game: GameModel) {
     const line = pvMoves.reduce(
         ([prevPos, path, list], currentMove) => {
             // const move = parseSan(pos as Position, currentMove)!;
+            // if(!prevPos) return undefined;
             const pos = prevPos.clone();
             const move = parseUci(currentMove)!;
             const moveId = scalachessCharPair(move);

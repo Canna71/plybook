@@ -38,18 +38,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     getId(): EngineId | undefined {
         return this.engineId;
     }
-    analyzePosition(fen: string, options: AnalysisOptions): void {
-        // throw new Error("Method not implemented.");
-        this.uciInterface.sendCommand("stop");
-        this.uciInterface.sendCommand(`position fen ${fen}`);
-        let goCommand = "go";
-        if (options.depth) goCommand += ` depth ${options.depth}`;
-        if (options.movetime) goCommand += ` movetime ${options.movetime}`;
-        if (options.multipv) {
-            this.setOption("MultiPV", options.multipv);
-        }
-        this.uciInterface.sendCommand(goCommand);
-    }
+
     analyzeFromFenOrMoves(
         fenOrMoves: string[] | string,
         options: AnalysisOptions,
@@ -62,6 +51,8 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
                 `position startpos moves ${fenOrMoves.join(" ")}`,
             );
         }
+        // TODO: put in settings or somewhere else
+        this.setOption("Threads", 4);
         let goCommand = "go";
         if (options.depth) goCommand += ` depth ${options.depth}`;
         if (options.movetime) goCommand += ` movetime ${options.movetime}`;
@@ -121,7 +112,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     // ... other IChessEngine implementation methods ...
 
     private processEngineOutput(line: string): void {
-        // console.log(line);
+        console.log(line);
         const tokens = line.trim().split(" ");
 
         switch (tokens[0]) {
