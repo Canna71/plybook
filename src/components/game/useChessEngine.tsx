@@ -227,6 +227,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     // TODO: avoid conflicts with review mode
     createEffect(() => {
+        engine()?.stop();
         let fenStr = options.fen();
         if (isReviewing()) {
             fenStr = game()!.dataAt(reviewPositionPath() || Path.root)!.fen;
