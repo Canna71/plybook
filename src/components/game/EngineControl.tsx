@@ -186,6 +186,9 @@ const EngineControl = () => {
                     <div class="engine-control-row">
                         Depth: <DepthLevel />
                     </div>
+                    <div class="engine-control-row">
+                        Time: <MoveTime />
+                    </div>
                 </Show>
             </div>
             <Modal
@@ -197,6 +200,10 @@ const EngineControl = () => {
                     <div>
                         <label>Depth</label>
                         <AnalysisDepthLevel />
+                    </div>
+                    <div>
+                        <label>Time</label>
+                        <AnalysisMoveTime />
                     </div>
                     <div>
                         <label>MultiPV</label>
@@ -285,6 +292,54 @@ const AnalysisDepthLevel = () => {
                 value={depth()}
             />
             <span class="slide-value">{depth()}</span>
+        </div>
+    );
+};
+
+const MoveTime = () => {
+    const onMoveTimeChange = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const time = parseInt(target.value);
+        setSettingValue("engine.playing.moveTime", time);
+    };
+    const time = () => {
+        return getSettingValue("engine.playing.moveTime", 1000);
+    };
+    return (
+        <div class="slide-container">
+            <input
+                type="range"
+                min={1000}
+                max={1000000}
+                step={1000}
+                onchange={onMoveTimeChange}
+                value={time()}
+            />
+            <span class="slide-value">{time()}</span>
+        </div>
+    );
+};
+
+const AnalysisMoveTime = () => {
+    const onMoveTimeChange = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const time = parseInt(target.value);
+        setSettingValue("engine.analysis.moveTime", time);
+    };
+    const time = () => {
+        return getSettingValue("engine.analysis.moveTime", 1000);
+    };
+    return (
+        <div class="slide-container">
+            <input
+                type="range"
+                min={1000}
+                max={1000000}
+                step={1000}
+                onchange={onMoveTimeChange}
+                value={time()}
+            />
+            <span class="slide-value">{time()}</span>
         </div>
     );
 };
