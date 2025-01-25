@@ -36,7 +36,8 @@ const EngineControl = () => {
         isEditingDescriptionSignal: [isEditingDescription],
         fullPgnSignal: [],
         startingPositionSignal: [startingPosition],
-        isReviewModeSignal: [isReviewing, setIsReviewing],
+        // isReviewModeSignal: [isReviewing, setIsReviewing],
+        startReview,
     } = useContext(GameContext)!;
 
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
@@ -111,7 +112,7 @@ const EngineControl = () => {
     };
 
     const reviewGame = () => {
-        setIsReviewing(true);
+        startReview();
     }
 
 

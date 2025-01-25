@@ -1,4 +1,4 @@
-import { NormalMove } from "chessops";
+import { debug, NormalMove } from "chessops";
 import {
     createSignal,
     createResource,
@@ -66,7 +66,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         ];
 
     const shouldCallEngineAnalysis = createMemo(() => {
-        if (engine() && engineAnalysisOn()) {
+        if (engine() && (engineAnalysisOn() || isReviewing())) {
             return true;
         }
         // if(options.playingEngine() && options.engineColor?.() && options.engineColor?.() !== options.turn()) {
@@ -92,7 +92,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     const shouldInitEngine = () => {
         const shouldInit =
-            (engineAnalysisOn() || options.playingEngine?.()) &&
+            (engineAnalysisOn() || options.playingEngine?.() || isReviewing()) &&
             engineFolder() &&
             !engine();
         return shouldInit;
@@ -133,7 +133,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     };
 
     createEffect(() => {
-        if (!engineAnalysisOn() && !options.playingEngine?.()) {
+        if (!engineAnalysisOn() && !options.playingEngine?.() && !isReviewing()) {
             cleanup();
         }
     });
@@ -167,7 +167,7 @@ export function useChessEngine(options: ChessEngineOptions) {
                 //     }
                 // }
                 let score = engineInfo[0]?.score;
-                
+
                 const depth = engineInfo[0]?.depth;
                 const evaluation: EvaluationExt =
                     score!.type === "cp"
@@ -214,8 +214,8 @@ export function useChessEngine(options: ChessEngineOptions) {
     const onEngineInfo = (info: EngineInfo) => {
         if (info.multipv) {
             const pos = parseFen(analyzeFen());
-            if(pos.isOk) {
-                if(pos.value.turn === "black") {
+            if (pos.isOk) {
+                if (pos.value.turn === "black") {
                     info.score!.value = -info.score!.value;
                 }
             }
@@ -223,11 +223,20 @@ export function useChessEngine(options: ChessEngineOptions) {
         }
     };
 
+    const startReview = () => {
+        engine()?.stop();
+        batch(() => {
+            setIsReviewing(true);
+            setReviewPositionPath(Path.root);
+        });
+    };
+
     // this should triger when stating a game review/evaluation process
     createEffect(() => {
         const reviewing = isReviewing();
+        // const 
         if (reviewing) {
-            engine()?.stop();
+            // engine()?.stop();
             setAnnotatedGame(game());
             setReviewPositionPath(Path.root);
         }
@@ -286,5 +295,6 @@ export function useChessEngine(options: ChessEngineOptions) {
             setEngineAnalysisOn,
         ] as Signal<boolean>,
         isReviewingSignal: [isReviewing, setIsReviewing] as Signal<boolean>,
+        startReview,
     };
 }
