@@ -40,7 +40,7 @@ const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
             return game()!.dataAt(plyData!.path.previous());
         }
     };
-/*
+    /*
 "Inaccuracy" - The computer evaluates that this move resulted in a position that is at least 0.3 points worse than the position resulting from the best move available
 
 "Mistake" - This move is at least 0.9 points worse than the best move available
@@ -59,22 +59,25 @@ const nagNames = [
 
 */
 
-
     const nag = () => {
         // return 1-6 nags
         const evalThis = plyData?.evaluation;
         const evalPrev = parent()?.evaluation;
-        const bestMoveUci = evalPrev?.ext as string;
-        const bestMove = parseUci(bestMoveUci)!;
-        const san = makeSan(parent()?.pos!, bestMove);
-        const isBestMove = san === plyData?.san;
+        let isBestMove = false;
+        if (evalPrev) {
+            const bestMoveUci = evalPrev?.ext as string | undefined;
+            const bestMove = bestMoveUci && parseUci(bestMoveUci)!;
+            const san = bestMove && makeSan(parent()?.pos!, bestMove);
+            isBestMove = san === plyData?.san;
+        }
+
         let nag = 0;
         let diff = 0;
         if (evalThis && evalPrev) {
             if (isPawns(evalThis) && isPawns(evalPrev)) {
                 diff = evalThis.pawns - evalPrev.pawns;
-                if(parent()!.turn === "black")  diff = -diff;
-                
+                if (parent()!.turn === "black") diff = -diff;
+
                 if (diff > 10) {
                     nag = 3; // brilliant
                 } else if (diff > 2) {
@@ -91,25 +94,26 @@ const nagNames = [
         return {
             nag,
             isBestMove,
-            diff
+            diff,
         };
     };
 
     const posScore = () => {
-        if(plyData?.evaluation && isMate(plyData!.evaluation)) {
+        if (plyData?.evaluation && isMate(plyData!.evaluation)) {
             return `#${plyData!.evaluation?.mate}`;
-        } else if(plyData?.evaluation && isPawns(plyData!.evaluation)) {
-            return `${plyData!.evaluation?.pawns}` ;
+        } else if (plyData?.evaluation && isPawns(plyData!.evaluation)) {
+            return `${plyData!.evaluation?.pawns}`;
         }
         return "";
-    }
+    };
 
     return (
-        <div class="move-cell pgnviewer-move"
+        <div
+            class="move-cell pgnviewer-move"
             data-color={color}
             data-path={color && line[color]?.path.path}
         >
-             <span class="engine-info-score has-background-info has-text-info-invert">
+            <span class="engine-info-score has-background-info has-text-info-invert">
                 {posScore()}
             </span>
             <Show when={nag().nag > 0}>
@@ -120,7 +124,9 @@ const nagNames = [
                 <PlyFan san={plyData?.san!} color={color!} />
             </span>
             <Show when={nag().isBestMove}>
-                <span class="pgnviewer-bestmove" title="Best Move">⭐</span>
+                <span class="pgnviewer-bestmove" title="Best Move">
+                    ⭐
+                </span>
             </Show>
         </div>
     );
@@ -157,6 +163,33 @@ const ReviewLine: Component<{ move: HierarchicalMoveData }> = ({ move }) => {
                     <PlyReview line={move} color="black" />
                 </td>
             </tr>
+
+            <Show when={afterWhite.length && move.black}>
+                <tr>
+                    <td>
+                        <div class="pgnviewer-movenumber">{move.number}.</div>
+                    </td>
+                    <td>
+                        <Ply line={move} />
+                    </td>
+                    <td>
+                        <Ply line={move} color="black" />
+                    </td>
+                </tr>
+            </Show>
+            {move.variations && (
+                <For each={move.variations}>
+                    {(variation) => (
+                        <tr>
+                            <td class="pgnviewer-variation-cell" colSpan={3}>
+                                <ReviewTree
+                                    movesTree={() => variation}
+                                />
+                            </td>
+                        </tr>
+                    )}
+                </For>
+            )}
         </>
     );
 };
@@ -189,7 +222,8 @@ const Review: Component = () => {
         if (!g) return [];
         let moves = g.moves;
 
-        const tree = moves && makeTree(moves, 0, false);
+        const tree = moves && makeTree(moves, 0, true);
+        console.log("tree", tree);
         return tree || [];
     };
 
