@@ -73,11 +73,10 @@ export function useChessEngine(options: ChessEngineOptions) {
             const total = game()?.mainline.length || 0;
             // TODO: handle progress with variations
             return {
-                total: total+1,
-                current: path.size()
-            }
-        }
-        else return undefined;
+                total: total + 1,
+                current: path.size(),
+            };
+        } else return undefined;
     });
 
     const shouldCallEngineAnalysis = createMemo(() => {
@@ -107,7 +106,9 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     const shouldInitEngine = () => {
         const shouldInit =
-            (engineAnalysisOn() || options.playingEngine?.() || isReviewing()) &&
+            (engineAnalysisOn() ||
+                options.playingEngine?.() ||
+                isReviewing()) &&
             engineFolder() &&
             !engine();
         return shouldInit;
@@ -148,7 +149,11 @@ export function useChessEngine(options: ChessEngineOptions) {
     };
 
     createEffect(() => {
-        if (!engineAnalysisOn() && !options.playingEngine?.() && !isReviewing()) {
+        if (
+            !engineAnalysisOn() &&
+            !options.playingEngine?.() &&
+            !isReviewing()
+        ) {
             cleanup();
         }
     });
@@ -172,15 +177,7 @@ export function useChessEngine(options: ChessEngineOptions) {
                 const path = reviewPositionPath() || Path.root;
                 const data = g.dataAt(path);
                 let ext = bestMove; // best move
-                // if (isPlyData(data)) {
-                //     console.log("Data: ", data.move, move);
-                //     if (
-                //         (data.move as NormalMove).from == move.from &&
-                //         (data.move as NormalMove).to == move.to
-                //     ) {
-                //         ext = "*"; // best move
-                //     }
-                // }
+                
                 let score = engineInfo[0]?.score;
 
                 const depth = engineInfo[0]?.depth;
@@ -212,15 +209,26 @@ export function useChessEngine(options: ChessEngineOptions) {
                         let cn = node;
                         // try to find an uneexplored anchestor
                         let parent = g.nodeAt(path.previous());
-                        while(parent && isChildNode(parent)) {
-
-                            if(parent?.children.indexOf(cn) === parent?.children.length-1) {
+                        while (
+                            parent &&
+                            isChildNode(parent) &&
+                            isChildNode(cn)
+                        ) {
+                            if (
+                                parent?.children.indexOf(cn) ===
+                                parent?.children.length - 1
+                            ) {
                                 cn = parent;
                                 parent = g.nodeAt(parent.data.path.previous());
                             } else {
-                                cn = parent.children[parent.children.indexOf(cn)+1];
-                                setReviewPositionPath(cn.data.path);
-                                return;
+                                cn =
+                                    parent.children[
+                                        parent.children.indexOf(cn) + 1
+                                    ];
+                                if (isChildNode(cn)) {
+                                    setReviewPositionPath(cn.data.path);
+                                    return;
+                                }
                             }
                         }
 
@@ -265,7 +273,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     // // this should triger when stating a game review/evaluation process
     // createEffect(() => {
     //     const reviewing = isReviewing();
-    //     // const 
+    //     // const
     //     if (reviewing) {
     //         // engine()?.stop();
     //         setAnnotatedGame(game());
@@ -327,6 +335,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         ] as Signal<boolean>,
         isReviewing,
         startReview,
-        reviewProgress
+        reviewProgress,
     };
 }
