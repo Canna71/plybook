@@ -2,6 +2,8 @@ import {
     AnalysisOptions,
     EngineId,
     EngineInfo,
+    EngineOption,
+    EngineOptions,
     IChessEngine,
     IEngineEventEmitter,
 } from "./engineinterfaces";
@@ -26,6 +28,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     private callbacks: Map<string, Function[]> = new Map();
 
     private engineId?: EngineId;
+    private EngineOptions?: EngineOptions;
     // private options: EngineOption[] = [];
 
     constructor(uciInterface: IUCIInterface) {
@@ -75,6 +78,10 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     }
     setOption(name: string, value: any): void {
         this.uciInterface.sendCommand(`setoption name ${name} value ${value}`);
+    }
+
+    getOptions(): EngineOptions | undefined {
+        return this.EngineOptions;
     }
 
     on(event: string, callback: Function): void {
@@ -138,11 +145,50 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
             case "id":
                 this.parseId(tokens);
                 break;
+            case "option":
+                console.log(line);
+                this.parseOptions(tokens);
+                break;
+
+
             default:
                 if (line.startsWith("error")) {
                     this.emit("error", new Error(line));
                 }
         }
+    }
+    parseOptions(tokens: string[]) {
+
+        // option name Skill Level type spin default 20 min 0 max 20
+
+        const typeIndex = tokens.indexOf("type");
+        
+        // const optionsIndex = tokens.indexOf("options"); // Optional
+        // name is at 2 until type
+
+        const optionName = tokens.slice(2, typeIndex).join(" ");
+
+        const optionType = tokens[typeIndex+1];
+        const optionDefault = tokens[typeIndex+3];
+        const optionMin = tokens[typeIndex+5];
+        const optionMax = tokens[typeIndex+7];
+        const optionVar = tokens.slice(typeIndex+9);
+        // const optionOptions = tokens.slice(7);
+        const option: EngineOption = {
+            name: optionName,
+            type: optionType as "check" | "spin" | "combo" | "string" | "button",
+            default: optionDefault,
+            min: optionMin ? parseInt(optionMin, 10) : undefined,
+            max: optionMax ? parseInt(optionMax, 10) : undefined,
+            var: optionVar,
+            // options: optionOptions,
+        };
+        console.log(this.EngineOptions);
+
+        this.EngineOptions = {
+            ...this.EngineOptions || {},
+            [optionName]: option, // Use optionName as the key
+        };
     }
 
     private parseId(tokens: string[]): void {

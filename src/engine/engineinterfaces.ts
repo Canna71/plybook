@@ -1,3 +1,5 @@
+import { get } from 'es-toolkit/compat';
+import { getOptions } from 'showdown';
 // types.ts
 export interface AnalysisOptions {
     depth?: number;
@@ -45,6 +47,7 @@ export interface IChessEngine extends IEngineEventEmitter {
     setOption(name: string, value: any): void;
     getElos?(): [{ level: number; elo: number }];
     getId(): EngineId | undefined;
+    getOptions(): EngineOptions | undefined;
 }
 
 // IEngineEventEmitter.ts
@@ -52,4 +55,24 @@ export interface IEngineEventEmitter {
     on(event: string, callback: Function): void;
     off(event: string, callback: Function): void;
     // emit(event: string, ...args: any[]): void;
+}
+
+// defined an interface for an engine capabilities (e.g. UCI options)
+
+export interface EngineCapabilities {
+    name: string;
+    author: string;
+    uci_options: EngineOptions;
+}
+
+export interface EngineOptions {
+    [key: string]: EngineOption;
+}
+export interface EngineOption {
+    name: string;
+    type: string;
+    default: any;
+    min?: number;
+    max?: number;
+    var?: string[];
 }

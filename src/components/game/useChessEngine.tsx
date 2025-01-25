@@ -121,6 +121,8 @@ export function useChessEngine(options: ChessEngineOptions) {
 
             await engine.init();
 
+            console.log("engine initialized", engine.getOptions());
+            // Add this function inside useChessEngine before onEngineBestMov
             engine.on("bestmove", onEngineBestMove);
             engine.on("info", onEngineInfo);
             engine.newGame();
