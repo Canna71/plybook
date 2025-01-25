@@ -1,12 +1,22 @@
-import { Switch, Match, createSignal } from "solid-js";
+import { Switch, Match, createSignal, Show, useContext, createEffect } from "solid-js";
 import Moves from "./Moves";
 import Reveiew from "./Review";
 import Review from "./Review";
+import { GameContext } from "./GameContext";
 
 const SidebarTabs = () => {
     const [tab, setTab] = createSignal(0);
+    const { isReviewing } = useContext(GameContext)!;
 
     const updateTab = (index: number) => setTab(index);
+
+
+    createEffect(() => {
+        if(isReviewing() && tab() === 0) {
+            setTab(1);
+        }
+    });
+
 
     return (
         <div class="sidebar-tabs">
@@ -35,7 +45,9 @@ const SidebarTabs = () => {
                     </Match>
                     <Match when={tab() === 1}>
                         <div class="pgnviewer-moves-wrapper">
-                            <Review />
+                            <Show when={!isReviewing()}>
+                                <Review />
+                            </Show>
                         </div>
                     </Match>
                 </Switch>
