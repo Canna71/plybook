@@ -7,7 +7,7 @@ import {
     Signal,
     useContext,
 } from "solid-js";
-import { GameContext } from "./GameContext";
+import { GameContext, ReviewProgress } from "./GameContext";
 
 import "./EngineControl.scss";
 import {
@@ -38,13 +38,16 @@ const EngineControl = () => {
         startingPositionSignal: [startingPosition],
         // isReviewModeSignal: [isReviewing, setIsReviewing],
         startReview,
+        isReviewing,
+        reviewProgress
     } = useContext(GameContext)!;
 
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
         engineColor() || "random",
     );
 
-    const modalSignal = createSignal(false), [settingsModalVisible, setSettingsModalVisible] = modalSignal;
+    const modalSignal = createSignal(false),
+        [settingsModalVisible, setSettingsModalVisible] = modalSignal;
 
     const canEnableEngine = () => {
         return (
@@ -70,7 +73,6 @@ const EngineControl = () => {
             },
         ];
     };
-
 
     const toggleGame = () => {
         if (engineColor()) {
@@ -113,14 +115,13 @@ const EngineControl = () => {
 
     const reviewGame = () => {
         startReview();
-    }
-
+    };
 
     return (
         <>
             <div class="engine-control">
                 <div class="engine-control-row">
-                    <Show when={canEnableEngine()}>
+                    <Show when={canEnableEngine() && !isReviewing()}>
                         <div
                             title="Enable Engine Analysis"
                             class="is-flex is-flex-direction-row"
@@ -139,6 +140,11 @@ const EngineControl = () => {
                                 Review
                             </Button>
                         </div>
+                    </Show>
+                    <Show when={isReviewing()}>
+                        <ReviewProgressIndicator
+                            reviewProgress={reviewProgress}
+                        />
                     </Show>
                     <Show when={playingEngine()}>
                         <div title="Engine Color">
@@ -199,7 +205,7 @@ const EngineControl = () => {
                     <div>
                         <label>Arrows</label>
                         <ShowErrorToggle />
-                    </div>    
+                    </div>
                 </div>
             </Modal>
         </>
@@ -310,7 +316,8 @@ const MultiPVLevel = () => {
 };
 
 const ShowErrorToggle = () => {
-    const showArrows = () => getSettingValue("engine.analysis.showArrows", false);
+    const showArrows = () =>
+        getSettingValue("engine.analysis.showArrows", false);
 
     const setShowArrows = (value: boolean) => {
         setSettingValue("engine.analysis.showArrows", value);
@@ -319,8 +326,16 @@ const ShowErrorToggle = () => {
     return (
         <ToggleSwitch
             toggleSignal={[showArrows, setShowArrows] as Signal<boolean>}
-            labels={["Don't Show Arrows","Show Arrows"]}
+            labels={["Don't Show Arrows", "Show Arrows"]}
         />
+    );
+};
+
+const ReviewProgressIndicator = ({reviewProgress}:{reviewProgress: Accessor<ReviewProgress>}) => {
+    return (
+        <div class="review-progress">
+            {reviewProgress()?.current} / {reviewProgress()?.total}
+        </div>
     );
 };
 

@@ -34,7 +34,7 @@ export interface GameContextType {
 	hintTypeSignal: Signal<HintType>;
 	isReviewing: Accessor<boolean>;
 	startReview: () => void;
-	reviewProgress: Accessor<any>;
+	reviewProgress: Accessor<ReviewProgress>;
 }
 
 export const GameContext = createContext<GameContextType>();
@@ -44,3 +44,8 @@ export interface TooltipContextType {
 }
 
 export const TooltipContext = createContext<TooltipContextType>();
+
+export interface ReviewProgress {
+	total: number;
+	current: number;
+}

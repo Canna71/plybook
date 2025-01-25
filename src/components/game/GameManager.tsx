@@ -723,16 +723,8 @@ const GameManager: Component<GameManagerOptions> = ({
                             </Show>
                             <Show when={!isPuzzleMode()}>
                                 <EngineControl />
-                                <Show when={isReviewing()}>
-                                    <Show when={reviewProgress}>
-                                        <div class="review-progress">
-                                            {reviewProgress()?.current} /{" "}
-                                            {reviewProgress()?.total}
-                                        </div>
-                                    </Show>
-                                </Show>
                             </Show>
-                            <Show when={engineCallable() && !playingEngine}>
+                            <Show when={engineCallable() && !playingEngine && !isReviewing()}>
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
 
