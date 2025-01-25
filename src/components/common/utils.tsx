@@ -19,7 +19,7 @@ import { parseSquare, squareFromCoords } from "chessops/util";
 import Split from "split-grid";
 import { DOMElement } from "solid-js/jsx-runtime";
 import { GameContextType, TooltipContext } from "../game/GameContext";
-import { makeFen, parseFen } from "chessops/fen";
+import { makeBoardFen, makeFen, parseFen } from "chessops/fen";
 import { ViewMode } from "../game/PgnEditBar";
 import {
     IconChessKingFilled,
@@ -429,7 +429,11 @@ export function useFen(
     currentPath: Accessor<Path | undefined>,
 ) {
     const position = usePosition(game, currentPath);
-    const fen = createMemo(() => makeFen(position().toSetup()))
+    console.log("useFen", position());
+    const fen = createMemo(() => makeFen(position().toSetup(), {
+        epd: true,
+    }));
+    console.log("useFen", fen());
     return fen;
 }
 

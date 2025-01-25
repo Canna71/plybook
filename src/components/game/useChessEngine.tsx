@@ -21,6 +21,7 @@ import { getSettingValue, setSettingValue } from "../../models/settings";
 import { EvaluationExt, isPlyData, Path } from "../../models/pgn";
 import { Evaluation } from "chessops/pgn";
 import { set } from "es-toolkit/compat";
+import { parseFen } from "chessops/fen";
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
@@ -165,7 +166,8 @@ export function useChessEngine(options: ChessEngineOptions) {
                 //         ext = "*"; // best move
                 //     }
                 // }
-                const score = engineInfo[0]?.score;
+                let score = engineInfo[0]?.score;
+                
                 const depth = engineInfo[0]?.depth;
                 const evaluation: EvaluationExt =
                     score!.type === "cp"
@@ -211,6 +213,12 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     const onEngineInfo = (info: EngineInfo) => {
         if (info.multipv) {
+            const pos = parseFen(analyzeFen());
+            if(pos.isOk) {
+                if(pos.value.turn === "black") {
+                    info.score!.value = -info.score!.value;
+                }
+            }
             setEngineInfo(info.multipv - 1, info);
         }
     };
@@ -225,14 +233,19 @@ export function useChessEngine(options: ChessEngineOptions) {
         }
     });
 
-    // TODO: avoid conflicts with review mode
-    createEffect(() => {
-        engine()?.stop();
+    const analyzeFen = createMemo(() => {
         let fenStr = options.fen();
         if (isReviewing()) {
             fenStr = game()!.dataAt(reviewPositionPath() || Path.root)!.fen;
             // console.log("Reviewing: ", fenStr);
         }
+        return fenStr;
+    });
+
+    // TODO: avoid conflicts with review mode
+    createEffect(() => {
+        engine()?.stop();
+        let fenStr = analyzeFen();
         setEngineInfo([]);
         let opts = undefined;
 

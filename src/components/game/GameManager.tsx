@@ -260,10 +260,6 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // #region Computed Properties
 
-    // const position = createMemo(() => getPosition(game, currentPath));
-
-    // const fen = createMemo(() => makeFen(position().toSetup()));
-
     const position = usePosition(game, currentPath);
 
     const fen = useFen(game, currentPath);

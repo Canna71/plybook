@@ -42,7 +42,7 @@ function makeLine(info: EngineInfo, path: Path, game: GameModel) {
                 san,
                 fan,
                 uci: makeUci(move),
-                fen: makeFen(pos.toSetup()),
+                fen: makeFen(pos.toSetup(), { epd: true }),
                 turn: pos.turn,
                 check: pos.isCheck(),
                 comments: [],
@@ -126,13 +126,19 @@ const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
         "engine-info-row-expanded": isExpanded(),
     });
 
+    const scoreString = () => {
+        if (info.score?.type === "cp") {
+            return `${info.score.value / 100}`;
+        } else {
+            return `#${info.score?.value}`;
+        }
+    }
+
     return (
         <div classList={classList()}>
             {/* <div class="engine-info-depth">Depth: {info.depth}</div> */}
             <span class="engine-info-score has-background-info has-text-info-invert">
-                {info.score?.type === "cp"
-                    ? info.score.value / 100
-                    : `#${info.score?.value}`}
+                {scoreString()}
             </span>
             {line().map((move) => {
                 return <PVMove move={move} onClick={onMoveClicked} />;
