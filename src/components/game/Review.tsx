@@ -20,12 +20,9 @@ const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
 
     const plyData = line[color === "white" ? "white" : "black"];
     const evaluation = plyData?.evaluation;
-    let score = "";
     if (evaluation && isPawns(evaluation)) {
-        score = evaluation.pawns.toString();
     }
     if (evaluation && isMate(evaluation)) {
-        score = evaluation.mate.toString();
     }
     const isValid = () => {
         return plyData !== undefined;
@@ -136,17 +133,8 @@ const ReviewLine: Component<{ move: HierarchicalMoveData }> = ({ move }) => {
     const {
         currentPathSignal: [],
     } = useContext(GameContext)!;
-    const startingComments =
-        move.white?.startingComments || move.black?.startingComments || [];
-    const startingPath = move.white?.startingComments
-        ? move.white.path
-        : move.black!.path;
     const afterWhite = move.white?.comments || [];
-    const afterBlack = move.black?.comments || [];
 
-    const ppath = move.white?.path.previous() || Path.root;
-    const wpath = move.white?.path || ppath;
-    const bpath = move.black?.path || wpath;
 
     return (
         <>
@@ -223,7 +211,6 @@ const Review: Component = () => {
         let moves = g.moves;
 
         const tree = moves && makeTree(moves, 0, true);
-        console.log("tree", tree);
         return tree || [];
     };
 

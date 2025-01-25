@@ -161,6 +161,65 @@ export function useChessEngine(options: ChessEngineOptions) {
         cleanup();
     });
 
+    // Add this function inside useChessEngine before onEngineBestMove
+    const handleReviewPosition = (bestMove: string, g: GameModel) => {
+        const path = reviewPositionPath() || Path.root;
+        let ext = bestMove;
+
+        let score = engineInfo[0]?.score;
+        const depth = engineInfo[0]?.depth;
+        const evaluation: EvaluationExt =
+            score!.type === "cp"
+                ? {
+                      depth: depth,
+                      pawns: score!.value / 100,
+                      ext: ext,
+                  }
+                : {
+                      depth: depth,
+                      mate: score!.value,
+                      ext: ext,
+                  };
+        const ng = annotatedGame()!.updateEvaluation(path, {
+            ...evaluation,
+        });
+        setAnnotatedGame(ng);
+
+        const node = g.nodeAt(path);
+        if (node) {
+            const next = node.children[0];
+            if (next) {
+                setReviewPositionPath(next.data.path);
+            } else {
+                let cn = node;
+                // try to find an uneexplored anchestor
+                let parent = g.nodeAt(path.previous());
+                while (parent && isChildNode(parent) && isChildNode(cn)) {
+                    if (
+                        parent?.children.indexOf(cn) ===
+                        parent?.children.length - 1
+                    ) {
+                        cn = parent;
+                        parent = g.nodeAt(parent.data.path.previous());
+                    } else {
+                        cn = parent.children[parent.children.indexOf(cn) + 1];
+                        if (isChildNode(cn)) {
+                            setReviewPositionPath(cn.data.path);
+                            return;
+                        }
+                    }
+                }
+
+                console.log("No next position");
+                batch(() => {
+                    setGame(ng);
+                    console.log("Reviewing done", ng);
+                    setReviewPositionPath(undefined);
+                });
+            }
+        }
+    };
+
     const onEngineBestMove = (bestMove: string, _ponder: string) => {
         const g = game();
         if (!g) {
@@ -173,72 +232,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             options.engineColor?.() != options.turn()
         ) {
             if (isReviewing()) {
-                const path = reviewPositionPath() || Path.root;
-                let ext = bestMove; // best move
-                
-                let score = engineInfo[0]?.score;
-
-                const depth = engineInfo[0]?.depth;
-                const evaluation: EvaluationExt =
-                    score!.type === "cp"
-                        ? {
-                              depth: depth,
-                              pawns: score!.value / 100,
-                              ext: ext,
-                          }
-                        : {
-                              depth: depth,
-                              mate: score!.value,
-                              ext: ext,
-                          };
-                const ng = annotatedGame()!.updateEvaluation(path, {
-                    ...evaluation,
-                });
-                setAnnotatedGame(ng);
-                // setGame(ng);
-                // pass to the next position
-                const node = g.nodeAt(path);
-
-                if (node) {
-                    const next = node.children[0];
-                    if (next) {
-                        setReviewPositionPath(next.data.path);
-                    } else {
-                        let cn = node;
-                        // try to find an uneexplored anchestor
-                        let parent = g.nodeAt(path.previous());
-                        while (
-                            parent &&
-                            isChildNode(parent) &&
-                            isChildNode(cn)
-                        ) {
-                            if (
-                                parent?.children.indexOf(cn) ===
-                                parent?.children.length - 1
-                            ) {
-                                cn = parent;
-                                parent = g.nodeAt(parent.data.path.previous());
-                            } else {
-                                cn =
-                                    parent.children[
-                                        parent.children.indexOf(cn) + 1
-                                    ];
-                                if (isChildNode(cn)) {
-                                    setReviewPositionPath(cn.data.path);
-                                    return;
-                                }
-                            }
-                        }
-
-                        console.log("No next position");
-                        batch(() => {
-                            setGame(ng);
-                            console.log("Reviewing done", ng);
-                            // setIsReviewing(false);
-                            setReviewPositionPath(undefined);
-                        });
-                    }
-                }
+                handleReviewPosition(bestMove, g);
             }
             setHintMove(bestMove);
             return;
