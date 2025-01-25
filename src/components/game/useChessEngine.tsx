@@ -46,7 +46,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
     const [hintMove, setHintMove] = options.hintMoveSignal;
-    const [isReviewing, setIsReviewing] = createSignal(false);
+    // const [isReviewing, setIsReviewing] = createSignal(false);
     const [reviewPositionPath, setReviewPositionPath] = createSignal<
         Path | undefined
     >(undefined);
@@ -64,6 +64,8 @@ export function useChessEngine(options: ChessEngineOptions) {
                 setSettingValue("engine.playing.elo", v);
             },
         ];
+
+    const isReviewing = () => !!reviewPositionPath();
 
     const shouldCallEngineAnalysis = createMemo(() => {
         if (engine() && (engineAnalysisOn() || isReviewing())) {
@@ -198,7 +200,7 @@ export function useChessEngine(options: ChessEngineOptions) {
                         batch(() => {
                             setGame(ng);
                             console.log("Reviewing done", ng);
-                            setIsReviewing(false);
+                            // setIsReviewing(false);
                             setReviewPositionPath(undefined);
                         });
                     }
@@ -226,21 +228,22 @@ export function useChessEngine(options: ChessEngineOptions) {
     const startReview = () => {
         engine()?.stop();
         batch(() => {
-            setIsReviewing(true);
+            // setIsReviewing(true);
             setReviewPositionPath(Path.root);
+            setAnnotatedGame(game());
         });
     };
 
-    // this should triger when stating a game review/evaluation process
-    createEffect(() => {
-        const reviewing = isReviewing();
-        // const 
-        if (reviewing) {
-            // engine()?.stop();
-            setAnnotatedGame(game());
-            setReviewPositionPath(Path.root);
-        }
-    });
+    // // this should triger when stating a game review/evaluation process
+    // createEffect(() => {
+    //     const reviewing = isReviewing();
+    //     // const 
+    //     if (reviewing) {
+    //         // engine()?.stop();
+    //         setAnnotatedGame(game());
+    //         setReviewPositionPath(Path.root);
+    //     }
+    // });
 
     const analyzeFen = createMemo(() => {
         let fenStr = options.fen();
@@ -294,7 +297,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             engineAnalysisOn,
             setEngineAnalysisOn,
         ] as Signal<boolean>,
-        isReviewingSignal: [isReviewing, setIsReviewing] as Signal<boolean>,
+        isReviewing,
         startReview,
     };
 }

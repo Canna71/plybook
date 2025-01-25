@@ -32,7 +32,7 @@ export interface GameContextType {
 	editable: Accessor<boolean>;
 	isPuzzleMode: Accessor<boolean>;
 	hintTypeSignal: Signal<HintType>;
-	isReviewModeSignal: Signal<boolean>;
+	isReviewing: Accessor<boolean>;
 	startReview: () => void;
 }
 
