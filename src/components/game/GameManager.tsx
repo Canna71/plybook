@@ -565,8 +565,9 @@ const GameManager: Component<GameManagerOptions> = ({
         engineCallable,
         engineAnalysisOnSignal,
         engineLevelSignal,
-        isReviewingSignal,
+        isReviewing,
         startReview,
+        reviewProgress
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -610,8 +611,9 @@ const GameManager: Component<GameManagerOptions> = ({
         engineLevelSignal,
         hintMoveSignal: [hintMove, setHintMove],
         hintTypeSignal: [hintType, setHintType],
-        isReviewModeSignal: isReviewingSignal,
-        startReview
+        isReviewing: isReviewing,
+        startReview,
+        reviewProgress
     } as GameContextType;
     // #endregion
 
@@ -730,7 +732,7 @@ const GameManager: Component<GameManagerOptions> = ({
                                 when={
                                     hasMoves() &&
                                     viewMode() === ViewMode.MOVES &&
-                                    !isPuzzleMode()
+                                    !isPuzzleMode() 
                                 }
                             >
                                 {/* <Moves /> */}

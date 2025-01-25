@@ -65,6 +65,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
         }, 10);
     }
     stop(): void {
+        debugger;
         this.uciInterface.sendCommand("stop");
     }
     quit(): void {
@@ -112,7 +113,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     // ... other IChessEngine implementation methods ...
 
     private processEngineOutput(line: string): void {
-        // console.log(line);
+        console.log(line);
         const tokens = line.trim().split(" ");
 
         switch (tokens[0]) {

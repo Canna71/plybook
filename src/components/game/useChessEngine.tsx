@@ -46,7 +46,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
     const [hintMove, setHintMove] = options.hintMoveSignal;
-    const [isReviewing, setIsReviewing] = createSignal(false);
+    // const [isReviewing, setIsReviewing] = createSignal(false);
     const [reviewPositionPath, setReviewPositionPath] = createSignal<
         Path | undefined
     >(undefined);
@@ -64,6 +64,16 @@ export function useChessEngine(options: ChessEngineOptions) {
                 setSettingValue("engine.playing.elo", v);
             },
         ];
+
+    const isReviewing = () => reviewPositionPath() !== undefined;
+
+    const reviewProgress = createMemo(() => {
+        if (!isReviewing()) return 0;
+        const path = reviewPositionPath() || Path.root;
+        const gameLength = game()?.mainline.length || 0;
+        const current = path.size();
+        return (current / gameLength) * 100;
+    });
 
     const shouldCallEngineAnalysis = createMemo(() => {
         if (engine() && (engineAnalysisOn() || isReviewing())) {
@@ -117,11 +127,12 @@ export function useChessEngine(options: ChessEngineOptions) {
         }
     });
 
-    createEffect(() => {
-        if (engine() && !options.engineColor()) {
-            engine()!.stop();
-        }
-    });
+    // createEffect(() => {
+    //     if (engine() && !options.engineColor() && !isReviewing() ) {
+    //         debugger;
+    //         engine()!.stop();
+    //     }
+    // });
 
     const cleanup = () => {
         const eng = engine();
@@ -169,6 +180,7 @@ export function useChessEngine(options: ChessEngineOptions) {
                 let score = engineInfo[0]?.score;
 
                 const depth = engineInfo[0]?.depth;
+                if(!score) debugger;
                 const evaluation: EvaluationExt =
                     score!.type === "cp"
                         ? {
@@ -192,13 +204,14 @@ export function useChessEngine(options: ChessEngineOptions) {
                 if (node) {
                     const next = node.children[0];
                     if (next) {
+                        debugger;
                         setReviewPositionPath(next.data.path);
                     } else {
                         console.log("No next position");
                         batch(() => {
                             setGame(ng);
                             console.log("Reviewing done", ng);
-                            setIsReviewing(false);
+                            // setIsReviewing(false);
                             setReviewPositionPath(undefined);
                         });
                     }
@@ -224,9 +237,10 @@ export function useChessEngine(options: ChessEngineOptions) {
     };
 
     const startReview = () => {
+        debugger;
         engine()?.stop();
         batch(() => {
-            setIsReviewing(true);
+            // setIsReviewing(true);
             setReviewPositionPath(Path.root);
         });
     };
@@ -236,7 +250,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         const reviewing = isReviewing();
         // const 
         if (reviewing) {
-            // engine()?.stop();
             setAnnotatedGame(game());
             setReviewPositionPath(Path.root);
         }
@@ -253,7 +266,8 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     // TODO: avoid conflicts with review mode
     createEffect(() => {
-        engine()?.stop();
+        // debugger;
+        // engine()?.stop();
         let fenStr = analyzeFen();
         setEngineInfo([]);
         let opts = undefined;
@@ -281,6 +295,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             };
         }
         if (opts) {
+            debugger;
             engine()!.analyzeFromFenOrMoves(fenStr, opts);
         }
     });
@@ -294,7 +309,8 @@ export function useChessEngine(options: ChessEngineOptions) {
             engineAnalysisOn,
             setEngineAnalysisOn,
         ] as Signal<boolean>,
-        isReviewingSignal: [isReviewing, setIsReviewing] as Signal<boolean>,
+        isReviewing: isReviewing as Accessor<boolean>,
         startReview,
+        reviewProgress
     };
 }
