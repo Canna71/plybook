@@ -334,7 +334,9 @@ const ShowErrorToggle = () => {
 const ReviewProgressIndicator = ({reviewProgress}:{reviewProgress: Accessor<ReviewProgress>}) => {
     return (
         <div class="review-progress">
-            {reviewProgress()?.current} / {reviewProgress()?.total}
+            Reviewing...
+            <progress id="file" max={reviewProgress()?.total} value={reviewProgress()?.current}></progress>
+
         </div>
     );
 };
