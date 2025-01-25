@@ -30,7 +30,6 @@ const EngineControl = () => {
         playingEngine,
         gameSignal: [, setGame],
         engineAnalysisOnSignal,
-        engineLevelSignal: [engineLevel, setEngineLevel],
         engineColorSignal: [engineColor, setEngineColor],
         viewModeSignal: [viewMode],
         isEditingDescriptionSignal: [isEditingDescription],
@@ -179,8 +178,7 @@ const EngineControl = () => {
                     <div class="engine-control-row">
                         ELO:{" "}
                         <EngineLevel
-                            engineLevel={engineLevel}
-                            setEngineLevel={setEngineLevel}
+                            
                         />
                     </div>
                     <div class="engine-control-row">
@@ -219,14 +217,15 @@ const EngineControl = () => {
     );
 };
 
-const EngineLevel = (props: {
-    engineLevel: Accessor<number>;
-    setEngineLevel: (level: number) => void;
-}) => {
+const EngineLevel = () => {
     const onEngineLevelChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
         const level = parseInt(target.value);
-        props.setEngineLevel(level);
+        setSettingValue("engine.playing.level", level);
+    };
+
+    const engineLevel = () => {
+        return getSettingValue("engine.playing.level", 1000);
     };
 
     return (
@@ -237,9 +236,9 @@ const EngineLevel = (props: {
                 max={3200}
                 step={100}
                 onchange={onEngineLevelChange}
-                value={props.engineLevel()}
+                value={engineLevel()}
             />
-            <span class="slide-value">{props.engineLevel()}</span>
+            <span class="slide-value">{engineLevel()}</span>
         </div>
     );
 };

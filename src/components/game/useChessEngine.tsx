@@ -55,14 +55,14 @@ export function useChessEngine(options: ChessEngineOptions) {
         GameModel | undefined
     >(game());
 
-    const [engineLevel, setEngineLevel] =
-        //createSignal<number>(1000);
-        [
-            () => getSettingValue("engine.playing.elo", 1000),
-            (v: number) => {
-                setSettingValue("engine.playing.elo", v);
-            },
-        ];
+    // const [engineLevel, setEngineLevel] =
+    //     //createSignal<number>(1000);
+    //     [
+    //         () => getSettingValue("engine.playing.elo", 1000),
+    //         (v: number) => {
+    //             setSettingValue("engine.playing.elo", v);
+    //         },
+    //     ];
 
     const isReviewing = () => !!reviewPositionPath();
 
@@ -307,7 +307,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
             // engine()!.setOption("UCI_AnalyseMode", 0);
             engine()!.setOption("UCI_LimitStrength", "true");
-            engine()!.setOption("UCI_Elo", engineLevel());
+            engine()!.setOption("UCI_Elo", getSettingValue("engine.playing.elo", 1000));
 
             opts = {
                 depth: getSettingValue("engine.playing.depth", 15),
@@ -323,7 +323,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     return {
         engineInfo,
         moveHintSignal: [hintMove, setHintMove] as Signal<string | undefined>,
-        engineLevelSignal: [engineLevel, setEngineLevel] as Signal<number>,
+        // engineLevelSignal: [engineLevel, setEngineLevel] as Signal<number>,
         engineCallable: shouldCallEngineAnalysis,
         engineAnalysisOnSignal: [
             engineAnalysisOn,

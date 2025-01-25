@@ -24,7 +24,6 @@ export interface GameContextType {
 	gameIndexSignal: Signal<number>;
 	orientation: Accessor<Color>;
 	engineColorSignal: Signal<Color | undefined>;
-	engineLevelSignal: Signal<number>;
 	hintMoveSignal: Signal<string | undefined>;
 	playingEngine: Accessor<boolean>;
 	highlightedSquaresSignal: Signal<string[]>;
