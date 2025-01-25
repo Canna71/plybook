@@ -219,7 +219,6 @@ function makeMove(
                 ...clocks,
             };
         const fen = makeFen(setup, { epd: false });
-        console.log("Move: ", state.pos, setup, san, fen);
         const moveNode: PlyData = {
             path,
             ply,
@@ -360,7 +359,7 @@ export function makeGame(pgnString: string): GameModel {
 export function makeGameInternal(game: Game<PgnNodeData>): GameModel {
     const start = startingPosition(game.headers || []).unwrap();
     const setup = start.toSetup();
-    const fen = makeFen(setup, { epd: true });
+    const fen = makeFen(setup, { epd: false });
     // const moves = pgn.moves;
     const comments = parseComments(game.comments || []);
     const headers: Headers = new Map(

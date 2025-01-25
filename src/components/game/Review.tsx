@@ -105,7 +105,7 @@ const nagNames = [
     }
 
     return (
-        <div class="move-cell"
+        <div class="move-cell pgnviewer-move"
             data-color={color}
             data-path={color && line[color]?.path.path}
         >

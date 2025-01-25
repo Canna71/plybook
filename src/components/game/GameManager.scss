@@ -108,9 +108,7 @@
                     cursor: default;
 
                     &.editable {
-                        .pgnviewer-move {
-                            cursor: pointer;
-                        }
+                        
                     }
 
                     table.pgnviewer-moves {
@@ -303,4 +301,8 @@
     text-align: center;
     border-radius: 0.2em;
     margin-right: 0.5em;
+}
+
+.pgnviewer-move {
+    cursor: pointer;
 }

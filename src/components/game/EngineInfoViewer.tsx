@@ -42,7 +42,7 @@ function makeLine(info: EngineInfo, path: Path, game: GameModel) {
                 san,
                 fan,
                 uci: makeUci(move),
-                fen: makeFen(pos.toSetup(), { epd: true }),
+                fen: makeFen(pos.toSetup(), { epd: false }),
                 turn: pos.turn,
                 check: pos.isCheck(),
                 comments: [],

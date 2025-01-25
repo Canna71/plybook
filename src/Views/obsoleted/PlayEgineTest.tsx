@@ -53,7 +53,7 @@ const PlayEngineTest = () => {
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
         const move: NormalMove = makeMove(m.from, m.to);
         game().play(move);
-        const newFen = makeFen(game().toSetup(), { epd: true });
+        const newFen = makeFen(game().toSetup(), { epd: false });
         api()?.set({
             fen: newFen,
             lastMove: [m.from as Key, m.to as Key],
@@ -95,7 +95,7 @@ const PlayEngineTest = () => {
         //     verbose: true
         // }).map(move => move.lan);
         // const moves:string[] = [];
-        const fen = makeFen(game().toSetup(), { epd: true });
+        const fen = makeFen(game().toSetup(), { epd: false });
 
 
         engine()?.analyzeFromFenOrMoves(fen, {

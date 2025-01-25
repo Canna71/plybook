@@ -429,11 +429,9 @@ export function useFen(
     currentPath: Accessor<Path | undefined>,
 ) {
     const position = usePosition(game, currentPath);
-    console.log("useFen", position());
     const fen = createMemo(() => makeFen(position().toSetup(), {
-        epd: true,
+        epd: false,
     }));
-    console.log("useFen", fen());
     return fen;
 }
 
