@@ -19,7 +19,7 @@ import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { EvaluationExt, isPlyData, Path } from "../../models/pgn";
-import { Evaluation } from "chessops/pgn";
+import { Evaluation, isChildNode } from "chessops/pgn";
 import { set } from "es-toolkit/compat";
 import { parseFen } from "chessops/fen";
 
@@ -209,6 +209,21 @@ export function useChessEngine(options: ChessEngineOptions) {
                     if (next) {
                         setReviewPositionPath(next.data.path);
                     } else {
+                        let cn = node;
+                        // try to find an uneexplored anchestor
+                        let parent = g.nodeAt(path.previous());
+                        while(parent && isChildNode(parent)) {
+
+                            if(parent?.children.indexOf(cn) === parent?.children.length-1) {
+                                cn = parent;
+                                parent = g.nodeAt(parent.data.path.previous());
+                            } else {
+                                cn = parent.children[parent.children.indexOf(cn)+1];
+                                setReviewPositionPath(cn.data.path);
+                                return;
+                            }
+                        }
+
                         console.log("No next position");
                         batch(() => {
                             setGame(ng);

@@ -63,7 +63,7 @@ export class ExecutableUCIInterface implements IUCIInterface {
     }
 
     sendCommand(command: string): void {
-        console.log(`Sending command: ${command}`);
+        // console.log(`Sending command: ${command}`);
         this.child?.write(command + '\n');
     }
 
