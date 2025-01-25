@@ -1,6 +1,5 @@
 import { Switch, Match, createSignal, Show, useContext, createEffect } from "solid-js";
 import Moves from "./Moves";
-import Reveiew from "./Review";
 import Review from "./Review";
 import { GameContext } from "./GameContext";
 

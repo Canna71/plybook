@@ -1,4 +1,4 @@
-import { debug, NormalMove } from "chessops";
+import { NormalMove } from "chessops";
 import {
     createSignal,
     createResource,
@@ -18,9 +18,8 @@ import { makeMove } from "../common/utils";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue, setSettingValue } from "../../models/settings";
-import { EvaluationExt, isPlyData, Path } from "../../models/pgn";
-import { Evaluation, isChildNode } from "chessops/pgn";
-import { set } from "es-toolkit/compat";
+import { EvaluationExt, Path } from "../../models/pgn";
+import { isChildNode } from "chessops/pgn";
 import { parseFen } from "chessops/fen";
 
 export type ChessEngineOptions = {
@@ -175,7 +174,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         ) {
             if (isReviewing()) {
                 const path = reviewPositionPath() || Path.root;
-                const data = g.dataAt(path);
                 let ext = bestMove; // best move
                 
                 let score = engineInfo[0]?.score;
