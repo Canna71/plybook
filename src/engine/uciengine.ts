@@ -119,7 +119,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     // ... other IChessEngine implementation methods ...
 
     private processEngineOutput(line: string): void {
-        // console.log(line);
+        console.log(line);
         const tokens = line.trim().split(" ");
 
         switch (tokens[0]) {
@@ -146,7 +146,6 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
                 this.parseId(tokens);
                 break;
             case "option":
-                console.log(line);
                 this.parseOptions(tokens);
                 break;
 
@@ -183,7 +182,6 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
             var: optionVar,
             // options: optionOptions,
         };
-        console.log(this.EngineOptions);
 
         this.EngineOptions = {
             ...this.EngineOptions || {},

@@ -300,17 +300,17 @@ const MoveTime = () => {
     const onMoveTimeChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
         const time = parseInt(target.value);
-        setSettingValue("engine.playing.moveTime", time);
+        setSettingValue("engine.playing.movetime", time);
     };
     const time = () => {
-        return getSettingValue("engine.playing.moveTime", 1000);
+        return getSettingValue("engine.playing.movetime", 1000);
     };
     return (
         <div class="slide-container">
             <input
                 type="range"
                 min={1000}
-                max={1000000}
+                max={120000}
                 step={1000}
                 onchange={onMoveTimeChange}
                 value={time()}
@@ -324,17 +324,17 @@ const AnalysisMoveTime = () => {
     const onMoveTimeChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
         const time = parseInt(target.value);
-        setSettingValue("engine.analysis.moveTime", time);
+        setSettingValue("engine.analysis.movetime", time);
     };
     const time = () => {
-        return getSettingValue("engine.analysis.moveTime", 1000);
+        return getSettingValue("engine.analysis.movetime", 1000);
     };
     return (
         <div class="slide-container">
             <input
                 type="range"
                 min={1000}
-                max={1000000}
+                max={120000}
                 step={1000}
                 onchange={onMoveTimeChange}
                 value={time()}

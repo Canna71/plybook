@@ -284,7 +284,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         return fenStr;
     });
 
-    // TODO: avoid conflicts with review mode
+    
     createEffect(() => {
         engine()?.stop();
         let fenStr = analyzeFen();
@@ -299,6 +299,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
             opts = {
                 depth: getSettingValue("engine.analysis.depth", 15),
+                movetime: getSettingValue("engine.analysis.movetime", 10000),
                 multipv: getSettingValue("engine.analysis.multipv", 3),
             };
         } else if (shouldCallEngineMove()) {
@@ -310,6 +311,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
             opts = {
                 depth: getSettingValue("engine.playing.depth", 15),
+                movetime: getSettingValue("engine.playing.movetime", 10000),
                 multipv: 1,
             };
         }
