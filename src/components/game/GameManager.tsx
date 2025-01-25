@@ -567,6 +567,7 @@ const GameManager: Component<GameManagerOptions> = ({
         engineLevelSignal,
         isReviewing,
         startReview,
+        reviewProgress,
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -611,7 +612,8 @@ const GameManager: Component<GameManagerOptions> = ({
         hintMoveSignal: [hintMove, setHintMove],
         hintTypeSignal: [hintType, setHintType],
         isReviewing,
-        startReview
+        startReview,
+        reviewProgress,
     } as GameContextType;
     // #endregion
 
@@ -721,6 +723,14 @@ const GameManager: Component<GameManagerOptions> = ({
                             </Show>
                             <Show when={!isPuzzleMode()}>
                                 <EngineControl />
+                                <Show when={isReviewing()}>
+                                    <Show when={reviewProgress}>
+                                        <div class="review-progress">
+                                            {reviewProgress()?.current} /{" "}
+                                            {reviewProgress()?.total}
+                                        </div>
+                                    </Show>
+                                </Show>
                             </Show>
                             <Show when={engineCallable() && !playingEngine}>
                                 <EngineInfoViewer engineInfo={engineInfo} />

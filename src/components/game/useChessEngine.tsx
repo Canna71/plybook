@@ -67,6 +67,19 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     const isReviewing = () => !!reviewPositionPath();
 
+    const reviewProgress = createMemo(() => {
+        if (isReviewing()) {
+            const path = reviewPositionPath() || Path.root;
+            const total = game()?.mainline.length || 0;
+            // TODO: handle progress with variations
+            return {
+                total: total+1,
+                current: path.size()
+            }
+        }
+        else return undefined;
+    });
+
     const shouldCallEngineAnalysis = createMemo(() => {
         if (engine() && (engineAnalysisOn() || isReviewing())) {
             return true;
@@ -299,5 +312,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         ] as Signal<boolean>,
         isReviewing,
         startReview,
+        reviewProgress
     };
 }

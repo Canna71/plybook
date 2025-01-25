@@ -34,6 +34,7 @@ export interface GameContextType {
 	hintTypeSignal: Signal<HintType>;
 	isReviewing: Accessor<boolean>;
 	startReview: () => void;
+	reviewProgress: Accessor<any>;
 }
 
 export const GameContext = createContext<GameContextType>();
