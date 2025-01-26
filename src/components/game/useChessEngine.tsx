@@ -19,8 +19,9 @@ import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue } from "../../models/settings";
 import { EvaluationExt, Path } from "../../models/pgn";
-import { isChildNode } from "chessops/pgn";
+import { Box, isChildNode, walk } from "chessops/pgn";
 import { parseFen } from "chessops/fen";
+import { ReviewProgress } from "./GameContext";
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
@@ -55,6 +56,10 @@ export function useChessEngine(options: ChessEngineOptions) {
         GameModel | undefined
     >(game());
 
+    const [reviewProgress, setReviewProgress] = createSignal<
+        ReviewProgress | undefined
+    >(undefined);
+
     // const [engineLevel, setEngineLevel] =
     //     //createSignal<number>(1000);
     //     [
@@ -66,17 +71,26 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     const isReviewing = () => !!reviewPositionPath();
 
-    const reviewProgress = createMemo(() => {
-        if (isReviewing()) {
-            const path = reviewPositionPath() || Path.root;
-            const total = game()?.mainline.length || 0;
-            // TODO: handle progress with variations
-            return {
-                total: total + 1,
-                current: path.size(),
-            };
-        } else return undefined;
-    });
+    // const reviewProgress = createMemo<ReviewProgress | undefined>(() => {
+    //     if (isReviewing()) {
+    //         // count the total number of positions in the game
+    //         const g = annotatedGame();
+    //         if (!g) return undefined;
+    //         let total = 0;
+    //         let current = 0;
+    //         walk(g.moves, new Box(0), (ctx, node, idx) => {
+
+    //                 total++;
+    //                 if(node.path.equals(reviewPositionPath()!)) {
+    //                     current = total;
+    //                 }
+    //                 return true;
+    //         });
+    //         console.log("Review progress", current, total);
+    //         return {current, total};
+
+    //     } else return undefined;
+    // });
 
     const shouldCallEngineAnalysis = createMemo(() => {
         if (engine() && (engineAnalysisOn() || isReviewing())) {
@@ -163,6 +177,14 @@ export function useChessEngine(options: ChessEngineOptions) {
         cleanup();
     });
 
+    const incrementReviewProgress = () => {
+        setReviewProgress((p) =>
+            p
+                ? { current: p.current + 1, total: p.total }
+                : { current: 1, total: 1 },
+        );
+    }
+
     // Add this function inside useChessEngine before onEngineBestMove
     const handleReviewPosition = (bestMove: string, g: GameModel) => {
         const path = reviewPositionPath() || Path.root;
@@ -191,7 +213,10 @@ export function useChessEngine(options: ChessEngineOptions) {
         if (node) {
             const next = node.children[0];
             if (next) {
-                setReviewPositionPath(next.data.path);
+                batch(() => {
+                    setReviewPositionPath(next.data.path);
+                    incrementReviewProgress();
+                });
             } else {
                 let cn = node;
                 // try to find an uneexplored anchestor
@@ -206,7 +231,10 @@ export function useChessEngine(options: ChessEngineOptions) {
                     } else {
                         cn = parent.children[parent.children.indexOf(cn) + 1];
                         if (isChildNode(cn)) {
+
                             setReviewPositionPath(cn.data.path);
+                            incrementReviewProgress();
+                            
                             return;
                         }
                     }
@@ -257,10 +285,19 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     const startReview = () => {
         engine()?.stop();
+
+        // computes the total number of positions in the game
+        let total = 0;
+        walk(game()!.moves, new Box(0), (ctx, node, idx) => {
+            total++;
+            return true;
+        });
+
         batch(() => {
             // setIsReviewing(true);
             setReviewPositionPath(Path.root);
             setAnnotatedGame(game());
+            setReviewProgress({ current: 0, total});
         });
     };
 
@@ -284,7 +321,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         return fenStr;
     });
 
-    
     createEffect(() => {
         engine()?.stop();
         let fenStr = analyzeFen();
@@ -308,7 +344,10 @@ export function useChessEngine(options: ChessEngineOptions) {
 
             // engine()!.setOption("UCI_AnalyseMode", 0);
             engine()!.setOption("UCI_LimitStrength", "true");
-            engine()!.setOption("UCI_Elo", getSettingValue("engine.playing.elo", 1000));
+            engine()!.setOption(
+                "UCI_Elo",
+                getSettingValue("engine.playing.elo", 1000),
+            );
 
             opts = {
                 depth: getSettingValue("engine.playing.depth", 15),
