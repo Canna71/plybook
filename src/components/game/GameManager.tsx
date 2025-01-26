@@ -13,7 +13,7 @@ import {
     Switch,
     untrack,
 } from "solid-js";
-import { makeGameInternal, Path } from "../../models/pgn";
+import { makeGameInternal, Path, PlyData } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import ButtonBar from "./Buttonbar";
 import {
@@ -167,7 +167,7 @@ const GameManager: Component<GameManagerOptions> = ({
         return !!editable?.();
     };
 
-    const [wrongPuzzleMove, setWrongPuzzleMove] = createSignal(false);
+    const [wrongPuzzleMove, setWrongPuzzleMove] = createSignal<NormalMove | undefined>(undefined);
 
     // #region Layout
     let chessBoardDiv: HTMLDivElement | null = null;
@@ -184,12 +184,13 @@ const GameManager: Component<GameManagerOptions> = ({
             const g = game()!;
             const pos = position();
             const node = g.nodeAt(currentPath()!)!;
-            const exists = !!node.children.find((n) =>
+            const cn = node.children.find((n) =>
                 moveEquals(pos, n.data.move as NormalMove, move),
             );
+            const exists = !!cn;
             if (!exists) {
                 onPuzzleFinished?.(false, hintUsed(), retries());
-                setWrongPuzzleMove(true);
+                setWrongPuzzleMove(move);
                 return false;
             }
         }
@@ -476,7 +477,7 @@ const GameManager: Component<GameManagerOptions> = ({
         const g = game();
         if (!g) return;
         setCurrentPath(Path.root);
-        setWrongPuzzleMove(false);
+        setWrongPuzzleMove(undefined);
         // setHintMove(undefined);
         setHintType(HintType.None);
         setRetries((r) => r + 1);
