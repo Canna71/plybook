@@ -6,6 +6,7 @@ import "ulog";
 
 await initStorage();
 
+document.getElementById("root")!.innerHTML = "";
 render(
     () => (
         <App />
