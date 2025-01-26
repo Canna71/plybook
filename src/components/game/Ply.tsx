@@ -13,6 +13,7 @@ import { range } from "es-toolkit";
 import { GameContext } from "./GameContext";
 import { useFenTooltip } from "../common/utils";
 import { PlyFan } from "../common/PlyFan";
+import { Path } from "../../models/pgn";
 
 const GoodMove = () => {
     return (
@@ -575,7 +576,11 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
     createEffect(() => {
         if (isCurrent() && ref) {
             ref.scrollIntoView({ block: "nearest" });
+        } else if (currentPath?.()?.equals(Path.root) && plyData?.path.size() === 1) {
+            // scroll to the top of the game if the current path is root
+            ref?.scrollIntoView({ block: "nearest" });
         }
+
     });
 
     return (
