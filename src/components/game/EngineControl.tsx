@@ -187,6 +187,9 @@ const EngineControl = () => {
                     <div class="engine-control-row">
                         Time: <MoveTime />
                     </div>
+                    <div class="engine-control-row">
+                        Threads: <Threads />
+                    </div>
                 </Show>
             </div>
             <Modal
@@ -210,6 +213,10 @@ const EngineControl = () => {
                     <div>
                         <label>Arrows</label>
                         <ShowErrorToggle />
+                    </div>
+                    <div>
+                        <label>Threads</label>
+                        <Threads />
                     </div>
                 </div>
             </Modal>
@@ -318,6 +325,32 @@ const MoveTime = () => {
         </div>
     );
 };
+
+const Threads = () => {
+    const onThreadsChange = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const threads = parseInt(target.value);
+        setSettingValue("engine.threads", threads);
+    };
+
+    const threads = () => {
+        return getSettingValue("engine.threads", 1);
+    };
+
+    return (
+        <div class="slide-container">
+            <input
+                type="range"
+                min={1}
+                max={16}
+                step={1}
+                onchange={onThreadsChange}
+                value={threads()}
+            />
+            <span class="slide-value">{threads()}</span>
+        </div>
+    );
+}
 
 const AnalysisMoveTime = () => {
     const onMoveTimeChange = (e: Event) => {

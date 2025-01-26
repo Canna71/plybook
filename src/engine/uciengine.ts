@@ -55,7 +55,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
             );
         }
         // TODO: put in settings or somewhere else
-        this.setOption("Threads", 4);
+        this.setOption("Threads", options.threads || 1);
         let goCommand = "go";
         if (options.depth) goCommand += ` depth ${options.depth}`;
         if (options.movetime) goCommand += ` movetime ${options.movetime}`;

@@ -5,6 +5,7 @@ export interface AnalysisOptions {
     depth?: number;
     movetime?: number;
     multipv?: number;
+    threads?: number;
 }
 
 // Types for the parsed information

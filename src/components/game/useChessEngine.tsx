@@ -301,6 +301,7 @@ export function useChessEngine(options: ChessEngineOptions) {
                 depth: getSettingValue("engine.analysis.depth", 15),
                 movetime: getSettingValue("engine.analysis.movetime", 10000),
                 multipv: getSettingValue("engine.analysis.multipv", 3),
+                threads: getSettingValue("engine.threads", 1),
             };
         } else if (shouldCallEngineMove()) {
             setHintMove(undefined);
@@ -313,6 +314,7 @@ export function useChessEngine(options: ChessEngineOptions) {
                 depth: getSettingValue("engine.playing.depth", 15),
                 movetime: getSettingValue("engine.playing.movetime", 10000),
                 multipv: 1,
+                threads: getSettingValue("engine.threads", 1),
             };
         }
         if (opts) {
