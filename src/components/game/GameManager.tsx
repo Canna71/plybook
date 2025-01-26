@@ -498,6 +498,10 @@ const GameManager: Component<GameManagerOptions> = ({
         setRetries((r) => r + 1);
     };
 
+    // HACK: just for test!!!
+    setSuccessModalOpen(true);
+
+
     // this effects is triggered by path changes and handles the automatic play of the next move in puzzle mode
     createEffect(() => {
         const path = memoPath();
@@ -791,6 +795,7 @@ const GameManager: Component<GameManagerOptions> = ({
                 <Tooltip plyData={ply} reference={reference} orientation={orientation} />
             </Show>
             <Modal
+                
                 isOpen={successModalSignal}
                 onClose={() => setSuccessModalOpen(false)}
                 title={() => "Puzzle Solved"}

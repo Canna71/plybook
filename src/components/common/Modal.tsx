@@ -18,6 +18,7 @@ const Modal: ParentComponent<ModalProps> = (props) => {
             modal: true,
             "is-active": props.isOpen[0](),
             "is-clipped": true,
+           
         };
     };
 
@@ -26,19 +27,21 @@ const Modal: ParentComponent<ModalProps> = (props) => {
             <div classList={classList()}>
                 <div class="modal-background"></div>
 
-                <div class="modal-card">
+                <div class="modal-card animate__animated animate__zoomIn animate__faster">
                     <Show when={props.title}>
                         <header class="modal-card-head">{props.title!()}</header>
                     </Show>
                     <div class="modal-card-body">{props.children}</div>
                     <footer class="modal-card-foot">
-                        <button
-                            onClick={onClose}
-                            class="button"
-                            aria-label="close"
-                        >
-                            Close
-                        </button>
+                        <div class="buttons is-centered is-fullwidth">
+                            <button
+                                onClick={onClose}
+                                class="button is-primary"
+                                aria-label="close"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </footer>
                 </div>
             </div>
