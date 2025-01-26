@@ -772,7 +772,7 @@ const GameManager: Component<GameManagerOptions> = ({
                 </TooltipContext.Provider>
             </GameContext.Provider>
             <Show when={reference()}>
-                <Tooltip plyData={ply} reference={reference} />
+                <Tooltip plyData={ply} reference={reference} orientation={orientation} />
             </Show>
             <Modal
                 isOpen={successModalSignal}
