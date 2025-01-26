@@ -737,7 +737,7 @@ const GameManager: Component<GameManagerOptions> = ({
                             <Show when={!isPuzzleMode()}>
                                 <EngineControl />
                             </Show>
-                            <Show when={engineCallable() && !playingEngine && !isReviewing()}>
+                            <Show when={engineCallable() && !playingEngine && !isReviewing() && !isPuzzleMode()}>
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
 
