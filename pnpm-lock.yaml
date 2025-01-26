@@ -80,9 +80,6 @@ importers:
       split-grid:
         specifier: ^1.0.11
         version: 1.0.11
-      stockfish.wasm:
-        specifier: ^0.10.0
-        version: 0.10.0
       ulog:
         specifier: 2.0.0-beta.19
         version: 2.0.0-beta.19(anylogger@1.0.11)
@@ -1448,9 +1445,6 @@ packages:
 
   split-grid@1.0.11:
     resolution: {integrity: sha512-ELtFtxc3r5we5GZfe6Fi0BFFxIi2M6BY1YEntBscKRDD3zx4JVHqx2VnTRSQu1BixCYSTH3MTjKd4esI2R7EgQ==}
-
-  stockfish.wasm@0.10.0:
-    resolution: {integrity: sha512-OTvOlz0ijCSmIb/YvOZ1Dn6vwZVS4Ge3N+RcV0d2b6LXUtCJ9UwmBHypRW3DZ+VXf8WNm7E3P+6jMTVvb3QaBg==}
 
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
@@ -2825,8 +2819,6 @@ snapshots:
   source-map-js@1.2.1: {}
 
   split-grid@1.0.11: {}
-
-  stockfish.wasm@0.10.0: {}
 
   strip-json-comments@3.1.1: {}
 
