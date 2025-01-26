@@ -61,6 +61,8 @@ import { IconCircleXFilled } from "@tabler/icons-solidjs";
 import Modal from "../common/Modal";
 import HintButtons from "./HintButtons";
 import SidebarTabs from "./SidebarTabs";
+import anylogger from "anylogger";
+const log = anylogger("gamemanager");
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
@@ -223,7 +225,7 @@ const GameManager: Component<GameManagerOptions> = ({
                 setPromotionData(promoData);
                 setGame(g.clone());
             } else {
-                console.debug("Illegal move");
+                log.debug("Illegal move");
                 setGame(g.clone());
             }
         }
@@ -348,7 +350,6 @@ const GameManager: Component<GameManagerOptions> = ({
                 hints.set(to, "selected");
             }
             if (showArrows || (isPuzzleMode() && !!wrongPuzzleMove())) {
-                console.log("Adding arrow", moveHint);
                 const arrow = makeArrowShape(from, to, "black");
                 shapes.push(arrow);
             }
@@ -423,7 +424,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // #region Game Manipulation
 
     const applyMove = (move: NormalMove) => {
-        console.log("Applying move", move);
+        log.debug("Applying move", move);
         const g = game();
         if (!g) {
             return;
@@ -487,7 +488,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // This is called to reset a puzzle after a wrong move
     const onResetPuzzle = () => {
-        console.log("Resetting puzzle");
+        log.debug("Resetting puzzle");
         const g = game();
         if (!g) return;
         setCurrentPath(Path.root);

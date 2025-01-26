@@ -1,4 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
+import anylogger from "anylogger";
+const log = anylogger("db");
 
 export type Puzzle = {
 
@@ -46,10 +48,13 @@ export async function initDB() {
         await invoke("init_db");
         
     } catch (error) {
-        if ((error as string).includes("The process cannot access the file because it is being used by another process")) {
-            console.info("DB already initialized");
+        if ((error as string).includes("The process cannot access the file because it is being used by another process")
+            ||
+            (error as string).includes("lock hold by current process")
+        ) {
+            log.debug("DB already initialized"); 
         } else {
-            console.error("initDB", error);
+            log.warn("initDB", error);
         }
     }
 }

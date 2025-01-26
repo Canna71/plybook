@@ -1,7 +1,8 @@
 import { Child, Command } from "@tauri-apps/plugin-shell";
 import { IUCIInterface } from "./iuciinterface";
 import { isWindows } from "../models/osutils";
-
+import anylogger from "anylogger";
+const log = anylogger("uciengine");
 // ExecutableUCIInterface.ts
 export class ExecutableUCIInterface implements IUCIInterface {
     private command?: Command<string>;
@@ -40,7 +41,7 @@ export class ExecutableUCIInterface implements IUCIInterface {
         });
 
         this.command.stderr.on('data', (line: string) => {
-            console.error(`Engine error: ${line}`);
+            log.error(`Engine error: ${line}`);
         });
 
         this.command.on('close', (_code) => {
@@ -49,7 +50,7 @@ export class ExecutableUCIInterface implements IUCIInterface {
         });
 
         this.command.on('error', (err) => {
-            console.error(`error: ${err}`);
+            log.error(`error: ${err}`);
         });
 
         this.child = await this.command.spawn();
@@ -63,7 +64,7 @@ export class ExecutableUCIInterface implements IUCIInterface {
     }
 
     sendCommand(command: string): void {
-        // console.log(`Sending command: ${command}`);
+        log.debug(`Sending command: ${command}`);
         this.child?.write(command + '\n');
     }
 

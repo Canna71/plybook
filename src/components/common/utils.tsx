@@ -372,7 +372,7 @@ export async function safePaste(
 
         editableDiv.normalize();
     } catch (err) {
-        console.error("Paste operation failed:", err);
+        throw err;
     }
 }
 

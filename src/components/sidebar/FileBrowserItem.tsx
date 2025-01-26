@@ -17,6 +17,8 @@ import {
 } from "../../storage/fs";
 import { useContextMenu } from "../common/contextmenu";
 import Editable from "../common/Editable";
+import anylogger from "anylogger";
+const log = anylogger("filebrowser");
 
 type FileBrowserItemProps = {
     node: TreeNode<FileBrowserFile>;
@@ -73,7 +75,7 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
         try {
             await openDataPath(node.data!.path);
         } catch (e) {
-            console.error(e);
+            log.error(e);
         }
     }
     

@@ -30,6 +30,8 @@ import { scalachessCharPair } from "chessops/compat";
 import { makeSanAndPlay, parseSan } from "chessops/san";
 import { makeFen } from "chessops/fen";
 import { GameModel } from "./GameModel";
+import anylogger from "anylogger";
+const log = anylogger("pgn");
 
 export interface Comments {
     texts: string[];
@@ -192,7 +194,7 @@ function makeMove(
     return (state, node, _index) => {
         const move = parseSan(state.pos, node.san);
         if (!move) {
-            console.debug("Invalid move", node.san, state.pos);
+            log.warn("Invalid move", node.san, state.pos);
             return undefined;
         }
         const moveId = scalachessCharPair(move);

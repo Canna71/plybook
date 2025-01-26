@@ -8,7 +8,8 @@ import {
     IEngineEventEmitter,
 } from "./engineinterfaces";
 import { IUCIInterface } from "./iuciinterface";
-
+import anylogger from 'anylogger'
+const log = anylogger('uciengine')
 
 
 // interface EngineOption {
@@ -119,7 +120,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     // ... other IChessEngine implementation methods ...
 
     private processEngineOutput(line: string): void {
-        // console.log(line);
+        log.debug(line);
         const tokens = line.trim().split(" ");
 
         switch (tokens[0]) {
@@ -321,7 +322,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
 
             return result;
         } catch (error) {
-            console.error("Error parsing info message:", error);
+            log.error("Error parsing info message:", error);
             return null;
         }
     }

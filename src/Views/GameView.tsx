@@ -37,6 +37,8 @@ import Select, { Option } from "../components/common/Select";
 import Button from "../components/common/Button";
 import BreadCrumb from "../components/common/BreadCrumb";
 import { sep } from "@tauri-apps/api/path";
+import anylogger from "anylogger";
+const log = anylogger("gameview");
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -93,7 +95,7 @@ const GameView = () => {
                     title: "Re:Chess",
                     kind: "error",
                 });
-                console.error(e);
+                log.error(e);
             }
         } else {
         }

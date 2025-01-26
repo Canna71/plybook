@@ -10,7 +10,8 @@ import {
 } from "@tauri-apps/plugin-fs";
 import { appConfigDir, appLocalDataDir, join, sep } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-shell";
-// import { path } from "@tauri-apps/api";
+import anylogger from "anylogger";
+const log = anylogger("fs");
 
 const LIBRARY_FOLDER = "Library";
 const ENGINES_FOLDER = "Engines";
@@ -48,7 +49,7 @@ export async function readConfigFileAsJson<T>(subPath: string): Promise<T> {
     try {
         return JSON.parse(json) as T;
     } catch (error) {
-        console.error("Error parsing JSON from file:", error);
+        log.error("Error parsing JSON from file:", error);
         return {} as T;
     }
 }
@@ -77,7 +78,7 @@ async function ensureFolderExists(folderPath: string): Promise<void> {
         } else {
         }
     } catch (error) {
-        console.error(`Error ensuring folder exists at ${folderPath}:`, error);
+        log.error(`Error ensuring folder exists at ${folderPath}:`, error);
     }
 }
 
@@ -86,7 +87,7 @@ export async function ensureConfigFolder() {
         const configPath = await appConfigDir();
         await ensureFolderExists(configPath);
     } catch (error) {
-        console.error("Error ensuring Config folder exists:", error);
+        log.error("Error ensuring Config folder exists:", error);
     }
 }
 
@@ -100,7 +101,7 @@ export async function ensureAppDataFolders() {
         await ensureFolderExists(await join(appDataPath, ENGINES_FOLDER));
         await ensureFolderExists(await join(appDataPath, THEMES_FOLDER));
     } catch (error) {
-        console.error("Error ensuring AppData folders exist:", error);
+        log.error("Error ensuring AppData folders exist:", error);
     }
 }
 

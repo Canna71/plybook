@@ -22,6 +22,8 @@ import { EvaluationExt, Path } from "../../models/pgn";
 import { Box, isChildNode, walk } from "chessops/pgn";
 import { makeFen, parseFen } from "chessops/fen";
 import { ReviewProgress } from "./GameContext";
+import anylogger from 'anylogger'
+const log = anylogger('usechessengine')
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
@@ -112,7 +114,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
             await engine.init();
 
-            console.log("engine initialized", engine.getOptions());
+            log.debug("engine initialized", engine.getOptions());
             // Add this function inside useChessEngine before onEngineBestMov
             engine.on("bestmove", onEngineBestMove);
             engine.on("info", onEngineInfo);
@@ -213,10 +215,10 @@ export function useChessEngine(options: ChessEngineOptions) {
                     }
                 }
 
-                console.log("No next position");
+                log.debug("No next position");
                 batch(() => {
                     setGame(ng);
-                    console.log("Reviewing done", ng);
+                    log.debug("Reviewing done", ng);
                     setReviewPositionPath(undefined);
                 });
             }
@@ -237,7 +239,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             if (isReviewing()) {
                 handleReviewPosition(bestMove, g);
             }
-            console.log("Engine move", bestMove);
+            log.debug("Engine move", bestMove);
             setHintMove(bestMove);
             return;
         }
@@ -294,7 +296,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             const pos = game()!.dataAt(options.path() || Path.root)?.pos.clone()!;
             pos?.play(options.wrongPuzzleMove()!);
             fenStr = makeFen(pos?.toSetup(), { epd: false });
-            console.log("wrongPuzzleMove", fenStr);
+            log.debug("wrongPuzzleMove", fenStr);
         }
         return fenStr;
     });
@@ -335,7 +337,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             };
         }
         if (opts) {
-            console.log("Analyzing", fenStr, opts);
+            log.debug("Analyzing", fenStr, opts);
             engine()!.analyzeFromFenOrMoves(fenStr, opts);
         }
     });

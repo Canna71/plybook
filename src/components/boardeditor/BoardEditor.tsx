@@ -26,6 +26,8 @@ import Button from "../common/Button";
 import { IconCopy, IconRestore } from "@tabler/icons-solidjs";
 import Collapsible from "../common/Collapsible";
 import { makeToast } from "../common/Toast";
+import anylogger from "anylogger";
+const log = anylogger("boardeditor");
 
 export type BoardEditorProps = {
     fen: Accessor<string | undefined>;
@@ -246,7 +248,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
             await navigator.clipboard.writeText(text);
             makeToast("FEN copied to clipboard");
         } catch (err) {
-            console.error("Failed to copy text: ", err);
+            log.error("Failed to copy text: ", err);
         }
     };
 
