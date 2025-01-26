@@ -31,7 +31,7 @@ import {
 import { Color, Key, Piece, Role, SquareClasses } from "chessground/types";
 import { chessgroundDests } from "chessops/compat";
 import BoardEditor from "../boardeditor/BoardEditor";
-import { INITIAL_FEN } from "chessops/fen";
+import { INITIAL_FEN, makeFen } from "chessops/fen";
 import {
     GameContext,
     GameContextType,
@@ -191,6 +191,7 @@ const GameManager: Component<GameManagerOptions> = ({
             if (!exists) {
                 onPuzzleFinished?.(false, hintUsed(), retries());
                 setWrongPuzzleMove(move);
+                setHintMove(undefined);
                 return false;
             }
         }
@@ -302,7 +303,14 @@ const GameManager: Component<GameManagerOptions> = ({
             highlightedMoves,
             orientation,
         )();
-        const pos = position();
+        let pos = position();
+
+        if(wrongPuzzleMove()) {
+            pos = pos.clone();
+            pos.play(wrongPuzzleMove()!);
+            baseConfig.fen = makeFen(pos.toSetup(),{ epd: false });
+        }
+
         const isCheck = pos.isCheck();
         const allDests = chessgroundDests(pos);
 
@@ -318,9 +326,13 @@ const GameManager: Component<GameManagerOptions> = ({
         }
 
         const showArrows =
-            !playingEngine &&
+            (!playingEngine &&
             !isPuzzleMode() &&
-            getSettingValue("engine.analysis.showArrows", false);
+            getSettingValue("engine.analysis.showArrows", false)) 
+            // ||
+            // isPuzzleMode() && !!wrongPuzzleMove()
+            ;
+        
         const shapes = baseConfig.drawable?.shapes || [];
 
         const hints: SquareClasses = new Map();
@@ -335,7 +347,8 @@ const GameManager: Component<GameManagerOptions> = ({
                 hints.set(from, "selected");
                 hints.set(to, "selected");
             }
-            if (showArrows) {
+            if (showArrows || (isPuzzleMode() && !!wrongPuzzleMove())) {
+                console.log("Adding arrow", moveHint);
                 const arrow = makeArrowShape(from, to, "black");
                 shapes.push(arrow);
             }
@@ -382,7 +395,6 @@ const GameManager: Component<GameManagerOptions> = ({
                 onChange: onDrawChange,
             },
         };
-
         return config;
     };
 
@@ -411,6 +423,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // #region Game Manipulation
 
     const applyMove = (move: NormalMove) => {
+        console.log("Applying move", move);
         const g = game();
         if (!g) {
             return;
@@ -474,6 +487,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
     // This is called to reset a puzzle after a wrong move
     const onResetPuzzle = () => {
+        console.log("Resetting puzzle");
         const g = game();
         if (!g) return;
         setCurrentPath(Path.root);
@@ -577,6 +591,7 @@ const GameManager: Component<GameManagerOptions> = ({
         fen,
         playingEngine: () => !!playingEngine,
         hintMoveSignal: [hintMove, setHintMove],
+        wrongPuzzleMove
     });
 
     const gameContext = {
