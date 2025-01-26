@@ -23,12 +23,10 @@ export async function initStorage() {
 
 export async function ensureConfigFileExists(subPath: string, value: any) {
     await ensureConfigFolder();
-    console.log("config folder exists");
     const fileExists = await exists(subPath, {
         baseDir: BaseDirectory.AppConfig,
     });
     if (!fileExists) {
-        console.log("config file does not exist, creating it");
         await writeConfigFile(subPath, value);
     }
 }

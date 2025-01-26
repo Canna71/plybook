@@ -19,7 +19,7 @@ import { parseSquare, squareFromCoords } from "chessops/util";
 import Split from "split-grid";
 import { DOMElement } from "solid-js/jsx-runtime";
 import { GameContextType, TooltipContext } from "../game/GameContext";
-import { makeBoardFen, makeFen, parseFen } from "chessops/fen";
+import { makeFen, parseFen } from "chessops/fen";
 import { ViewMode } from "../game/PgnEditBar";
 import {
     IconChessKingFilled,

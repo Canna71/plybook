@@ -3,7 +3,7 @@ import { getSettingValue } from "../models/settings";
 import { CSSLoader } from "./CssLoader";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { appConfigDir, join } from "@tauri-apps/api/path";
-import { Window, Theme, getCurrentWindow } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 const cssLoader = new CSSLoader();
 
@@ -49,7 +49,6 @@ const buildinPiecesThemes = {
 
 import brown from "/src/assets/styles/boards/brown.css?inline";
 import bluish from "/src/assets/styles/boards/bluish.css?inline";
-import { getCurrentWebview } from "@tauri-apps/api/webview";
 
 const boardBuiltinStyles = {
     bluish: bluish,

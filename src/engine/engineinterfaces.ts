@@ -1,5 +1,3 @@
-import { get } from 'es-toolkit/compat';
-import { getOptions } from 'showdown';
 // types.ts
 export interface AnalysisOptions {
     depth?: number;

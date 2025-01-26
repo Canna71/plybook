@@ -26,7 +26,7 @@ import BreadCrumb from "../components/common/BreadCrumb";
 
 const LibraryFolder = () => {
     const [searchParams] = useSearchParams();
-    const { renaming, setRenaming, refresh } =
+    const { renaming, setRenaming } =
         useContext(ContentContext)!;
 
     const folderPath = () => {
@@ -50,12 +50,10 @@ const LibraryFolder = () => {
     };
 
     createEffect(() => {
-        console.log("refreshing");
         refetch();
     });
 
     const onRename = (name: string) => {
-        console.log("rename", name);
         setRenaming(getFullPath(name));
     };
 
@@ -64,7 +62,6 @@ const LibraryFolder = () => {
     };
 
     const onRenamed = async (newName: string) => {
-        console.log("renamed", renaming(), newName);
         // await renameOrCreateDataFile(renaming(), newName);
         await renameOrCreateDataFile(renaming(), newName);
         batch(() => {
@@ -74,7 +71,6 @@ const LibraryFolder = () => {
     };
 
     const onDelete = async (name: string) => {
-        console.log("delete", name);
         await deleteDataFileOrFolder(getFullPath(name));
         refetch();
     };
@@ -85,7 +81,6 @@ const LibraryFolder = () => {
             "Untitled.pgn",
             getDefaultStudyContent(),
         );
-        console.log("new study", newPath);
         batch(() => {
             // setExpandedNodes(new Set(expandedNodes()).add(node.id));
             refetch();

@@ -43,7 +43,7 @@ export async function listPuzzles(): Promise<Study[]> {
 
 export async function initDB() {
     try {
-        const ret = await invoke("init_db");
+        await invoke("init_db");
         
     } catch (error) {
         if ((error as string).includes("The process cannot access the file because it is being used by another process")) {

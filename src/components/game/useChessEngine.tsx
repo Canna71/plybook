@@ -17,7 +17,7 @@ import { getEnginePath } from "../../storage/fs";
 import { makeMove } from "../common/utils";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
-import { getSettingValue, setSettingValue } from "../../models/settings";
+import { getSettingValue } from "../../models/settings";
 import { EvaluationExt, Path } from "../../models/pgn";
 import { isChildNode } from "chessops/pgn";
 import { parseFen } from "chessops/fen";

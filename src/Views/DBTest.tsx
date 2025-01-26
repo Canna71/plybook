@@ -53,8 +53,6 @@ const DBTest = () => {
     }
 
     const listGames = async () => {
-        const games = await invoke("list_games");
-        console.log(games);
     }
 
     const uploadPgn = async (_e: MouseEvent) => {
@@ -67,7 +65,6 @@ const DBTest = () => {
     const listStudies = async () => {
         const studies = await invoke("list_studies") as Study[];
         setStudies(studies);
-        console.log(studies);
     }
 
     return (

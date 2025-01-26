@@ -15,7 +15,6 @@ import {
 } from "solid-js";
 import { makeGameInternal, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
-import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
 import {
     initFromGameModel,
