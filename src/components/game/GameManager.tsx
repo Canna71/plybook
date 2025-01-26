@@ -795,7 +795,7 @@ const GameManager: Component<GameManagerOptions> = ({
                 <Tooltip plyData={ply} reference={reference} orientation={orientation} />
             </Show>
             <Modal
-                
+                icon={() => "success"}
                 isOpen={successModalSignal}
                 onClose={() => setSuccessModalOpen(false)}
                 title={() => "Puzzle Solved"}

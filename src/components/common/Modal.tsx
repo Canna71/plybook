@@ -1,10 +1,12 @@
 import { Accessor, ParentComponent, Show, Signal } from "solid-js";
 import { Portal } from "solid-js/web";
+import SuccessIcon from "./SuccessIcon";
 
 type ModalProps = {
     isOpen: Signal<boolean>;
     onClose?: () => void;
     title?: Accessor<string>;
+    icon?: Accessor<string>;
 };
 
 const Modal: ParentComponent<ModalProps> = (props) => {
@@ -22,14 +24,27 @@ const Modal: ParentComponent<ModalProps> = (props) => {
         };
     };
 
+    const icon = () => {
+        if (props.icon) {
+            switch (props.icon!()) {
+                case "success":
+                   return  <SuccessIcon />;
+                break;
+            }
+        }
+    }
+
     return (
         <Portal>
             <div classList={classList()}>
                 <div class="modal-background"></div>
 
                 <div class="modal-card animate__animated animate__zoomIn animate__faster">
-                    <Show when={props.title}>
-                        <header class="modal-card-head">{props.title!()}</header>
+                    <Show when={props.title || props.icon}>
+                        <header class="modal-card-head">
+                            {icon()}
+                            {props.title?.()}
+                        </header>
                     </Show>
                     <div class="modal-card-body">{props.children}</div>
                     <footer class="modal-card-foot">
