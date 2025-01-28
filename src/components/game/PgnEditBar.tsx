@@ -7,6 +7,7 @@ import {
     IconBrackets,
     IconCheck,
     IconCpu,
+    IconPlayerPlayFilled,
     IconSwitchVertical,
     IconTextPlus,
 } from "@tabler/icons-solidjs";
@@ -103,6 +104,7 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
 
     return (
         <div class="buttons-bar are-small">
+               
             <Show when={props.isEditable()}>
                 <Button onClick={onFLipBoard} title="Flip Board">
                     <IconSwitchVertical />
@@ -130,7 +132,7 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
                         <IconBrackets />
                     </Button>
                     <Button title="Play Against Engine" onClick={onPlayAgainstEngine}>
-                        <IconCpu />
+                        <IconPlayerPlayFilled />
                     </Button>
 
                 </Show>

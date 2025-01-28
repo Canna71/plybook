@@ -90,6 +90,7 @@ export class GameModel {
             const san = makeSan(pos, move);
             // Note: this is to avoid different Ids for castling moves
             const move2 = parseSan(pos, san);
+            if (!move2) debugger;
             pos.play(move2!);
             const moveId = scalachessCharPair(move2!);
             p = p.append(moveId);

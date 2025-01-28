@@ -440,7 +440,7 @@ const GameManager: Component<GameManagerOptions> = ({
             if(isMate) {
                 // TODO: use different modal
                 // TODO: use different modal for win and lose
-                setSuccessModalOpen(true);
+                setTimeout(()=>setSuccessModalOpen(true),500);
                 setEngineColor(undefined);
             }
         });
