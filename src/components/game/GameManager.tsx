@@ -430,12 +430,21 @@ const GameManager: Component<GameManagerOptions> = ({
             return;
         }
         const path = currentPath() || Path.root;
+        debugger;
         const [newGameModel, newPath] = g.applyMoves(path, [move]);
+        const isMate = newGameModel.isMate(newPath);
         batch(() => {
             setHintType(HintType.None);
             setGame(newGameModel);
             setCurrentPath(newPath);
+            if(isMate) {
+                // TODO: use different modal
+                // TODO: use different modal for win and lose
+                setSuccessModalOpen(true);
+                setEngineColor(undefined);
+            }
         });
+
     };
 
     // #endregion

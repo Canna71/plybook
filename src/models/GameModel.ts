@@ -9,6 +9,7 @@ import { DrawShape } from "chessground/draw";
 // immutable ?
 
 export class GameModel {
+    
     mainline: PlyData[];
     moves: AnyNode;
     constructor(
@@ -336,6 +337,11 @@ export class GameModel {
     // get a header from the game
     get headers() {
         return this.game.headers;
+    }
+
+    isMate(path: Path) {
+        const position = this.getPosition(path);
+        return position.isCheckmate();
     }
     
 }
