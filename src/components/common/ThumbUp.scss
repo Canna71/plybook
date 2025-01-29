@@ -1,0 +1,120 @@
+.thumbup-container {
+
+    max-width: 64px;
+    position: relative;
+}
+.center::after {
+    clear: both;
+    content: "";
+    display: block;
+}
+
+.thumb {
+    -webkit-animation: scale 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+    -moz-animation: scale 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+    animation: scale 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+    -webkit-animation-iteration-count: infinite;
+    -moz-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+    -webkit-animation-delay: 2s;
+    -moz-animation-delay: 2s;
+    animation-delay: 2s;
+    color: var(--bulma-success);
+    font-size: 96px;
+    text-decoration: none;
+}
+
+@keyframes scale {
+    0% {
+        transform: scale(1);
+    }
+    1% {
+        transform: scale(0);
+    }
+    20% {
+        transform: scale(0);
+    }
+    35% {
+        transform: scale(1.4);
+    }
+    40% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    65% {
+        transform: scale(1);
+    }
+    90% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+.circle-wrap {
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+}
+
+.circle-lg {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border-style: solid;
+    border-color: var(--bulma-success);
+    opacity: 0;
+    -webkit-animation: scaleCircle 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+    -moz-animation: scaleCircle 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+    animation: scaleCircle 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+    -webkit-animation-iteration-count: infinite;
+    -moz-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+    -webkit-animation-delay: 2s;
+    -moz-animation-delay: 2s;
+    animation-delay: 2s;
+}
+
+
+@keyframes scaleCircle {
+    0% {
+        border-width: 90px;
+        transform: scale(0);
+    }
+    15% {
+        border-color: #f9e8a0;
+        border-width: 90px;
+    }
+    30% {
+        border-color: #a8ebc4;
+        opacity: 1;
+    }
+    35% {
+        border-color: #aef3d5;
+    }
+    50% {
+        border-width: 0;
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    100% {
+        border-width: 0;
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+

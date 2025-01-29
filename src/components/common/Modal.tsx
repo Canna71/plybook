@@ -1,6 +1,7 @@
 import { Accessor, ParentComponent, Show, Signal } from "solid-js";
 import { Portal } from "solid-js/web";
 import SuccessIcon from "./SuccessIcon";
+import ThumbUp from "./ThumbUp";
 
 type ModalProps = {
     isOpen: Signal<boolean>;
@@ -29,6 +30,8 @@ const Modal: ParentComponent<ModalProps> = (props) => {
             switch (props.icon!()) {
                 case "success":
                    return  <SuccessIcon />;
+                case "thumbup":
+                    return <ThumbUp />;
                 break;
             }
         }

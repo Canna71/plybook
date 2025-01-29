@@ -808,6 +808,8 @@ const GameManager: Component<GameManagerOptions> = ({
             >
                 <div>Great, you solved it!</div>
             </Modal>
+
+
         </>
     );
 };
