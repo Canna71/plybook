@@ -3,6 +3,7 @@ import Moves from "./Moves";
 import Review from "./Review";
 import { GameContext } from "./GameContext";
 import Button from "../common/Button";
+import { IconDeviceAnalytics } from "@tabler/icons-solidjs";
 
 const SidebarTabs = () => {
     const [tab, setTab] = createSignal(0);
@@ -49,7 +50,8 @@ const SidebarTabs = () => {
                     </Match>
                     <Match when={tab() === 1}>
                             <Button onClick={reviewGame} title="Review Game">
-                                Review
+                                <IconDeviceAnalytics />
+                                Analyze Game
                             </Button>
                         <div class="pgnviewer-moves-wrapper">
                             <Show when={!isReviewing()} fallback={<div>Analizing...</div>}>
