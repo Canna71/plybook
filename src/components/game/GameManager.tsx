@@ -68,11 +68,9 @@ const log = anylogger("gamemanager");
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
     setPgn?: (pgn: string) => void;
-    // engineColor?: Accessor<Color | undefined>;
     playingEngine?: boolean;
     defaultEngineAnalysisOn?: boolean;
     initialFen?: string;
-    // puzzleMode?: boolean;
     onPuzzleFinished?: (
         solved: boolean,
         hintUsed: number,
@@ -272,11 +270,7 @@ const GameManager: Component<GameManagerOptions> = ({
     const orientation = createMemo(() => {
         const engCol = engineColor?.();
         if (playingEngine) {
-            // if(engCol === "white") {
-            //     return "black";
-            // } else {
-            //     return "white";
-            // }
+            
             return otherColor(engCol);
         }
         const g = game();
@@ -295,7 +289,6 @@ const GameManager: Component<GameManagerOptions> = ({
         return typeof onPuzzleFinished === "function";
     });
 
-    // const playingEngine = () => !!engineColor?.();
 
     const config = () => {
         const baseConfig: Config = makeConfig(
@@ -337,8 +330,9 @@ const GameManager: Component<GameManagerOptions> = ({
 
         const hints: SquareClasses = new Map();
         const moveHint = hintMove();
-        if (moveHint) {
-            const move = parseUci(moveHint) as NormalMove;
+        const move = moveHint && parseUci(moveHint) as NormalMove;
+        if (move) {
+           
             const from = makeSquare(move.from);
             const to = makeSquare(move.to);
             if (hintType() === HintType.Piece) {
@@ -617,6 +611,7 @@ const GameManager: Component<GameManagerOptions> = ({
         isReviewing,
         startReview,
         reviewProgress,
+        isPlayingOnSignal,
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -658,6 +653,7 @@ const GameManager: Component<GameManagerOptions> = ({
         editable: isEditable,
         isPuzzleMode: isPuzzleMode,
         engineColorSignal: [engineColor, setEngineColor],
+        isPlayingOnSignal,
         hintMoveSignal: [hintMove, setHintMove],
         hintTypeSignal: [hintType, setHintType],
         isReviewing,

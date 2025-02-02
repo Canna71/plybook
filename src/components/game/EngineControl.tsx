@@ -31,6 +31,7 @@ const EngineControl = () => {
         gameSignal: [, setGame],
         engineAnalysisOnSignal,
         engineColorSignal: [engineColor, setEngineColor],
+        isPlayingOnSignal: [isPlayingOn, setIsPlayingOn],
         viewModeSignal: [viewMode],
         isEditingDescriptionSignal: [isEditingDescription],
         fullPgnSignal: [],
@@ -74,10 +75,11 @@ const EngineControl = () => {
     };
 
     const toggleGame = () => {
-        if (engineColor()) {
+        if (isPlayingOn()) {
             batch(() => {
-                setEngineColor(undefined);
+                // setEngineColor(undefined);
                 setGame(makeGame("[]"));
+                setIsPlayingOn(false);
             });
         } else {
             let c = internalColor();
@@ -103,7 +105,7 @@ const EngineControl = () => {
                 setGame(newGame);
                 setEngineColor(c);
                 setInternalColor(c);
-                // setFullPgn(getDefaultStudyContent());
+                setIsPlayingOn(true);
             });
         }
     };
@@ -156,12 +158,12 @@ const EngineControl = () => {
                                 options={engineColors}
                             />
                         </div>
-                        <Show when={!!engineColor()}>
+                        <Show when={isPlayingOn()}>
                             <Button onClick={toggleGame} title="Stop Game">
                                 <IconPlayerStopFilled />
                             </Button>
                         </Show>
-                        <Show when={!engineColor()}>
+                        <Show when={!isPlayingOn()}>
                             <Button onClick={toggleGame} title="New Game">
                                 <IconPlayerPlayFilled />
                             </Button>

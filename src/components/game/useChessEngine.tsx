@@ -63,6 +63,8 @@ export function useChessEngine(options: ChessEngineOptions) {
         ReviewProgress | undefined
     >(undefined);
 
+    const [isPlayingOn, setIsPlayingOn] = createSignal(false);
+
     const isReviewing = () => !!reviewPositionPath();
 
     const needEngine = () => {
@@ -86,9 +88,10 @@ export function useChessEngine(options: ChessEngineOptions) {
     const shouldCallEngineMove = createMemo(() => {
         let tmp =
             engine() &&
-            options.playingEngine() &&
+            options.playingEngine() && isPlayingOn() &&
             options.engineColor?.() == options.turn();
-        tmp ||= !!options.engineColor?.();
+            
+        tmp ||= !!isPlayingOn();
         // check if the current position is the last one
         if (!tmp) return false;
         const node = game()?.nodeAt(options.path() || Path.root);
@@ -128,7 +131,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     });
 
     createEffect(() => {
-        if (engine() && !options.engineColor()) {
+        if (engine() && !isPlayingOn()) {
             engine()!.stop();
         }
     });
@@ -233,7 +236,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
         const move: NormalMove = makeMove(m.from, m.to);
         if (
-            !options.engineColor?.() ||
+            !isPlayingOn() ||
             options.engineColor?.() != options.turn()
         ) {
             if (isReviewing()) {
@@ -354,5 +357,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         isReviewing,
         startReview,
         reviewProgress,
+        isPlayingOnSignal: [isPlayingOn, setIsPlayingOn] as Signal<boolean>,
     };
 }
