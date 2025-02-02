@@ -459,7 +459,7 @@ const GameManager: Component<GameManagerOptions> = ({
                     );
                 }
 
-                setEngineColor(undefined);
+                setIsPlayingOn(false);
             }
         });
     };
@@ -617,7 +617,7 @@ const GameManager: Component<GameManagerOptions> = ({
         isReviewing,
         startReview,
         reviewProgress,
-        isPlayingOnSignal,
+        isPlayingOnSignal: [isPlayingOn, setIsPlayingOn],
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -659,7 +659,7 @@ const GameManager: Component<GameManagerOptions> = ({
         editable: isEditable,
         isPuzzleMode: isPuzzleMode,
         engineColorSignal: [engineColor, setEngineColor],
-        isPlayingOnSignal,
+        isPlayingOnSignal: [isPlayingOn, setIsPlayingOn],
         hintMoveSignal: [hintMove, setHintMove],
         hintTypeSignal: [hintType, setHintType],
         isReviewing,
