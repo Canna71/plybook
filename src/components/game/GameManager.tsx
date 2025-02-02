@@ -417,17 +417,21 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const applyMove = (move: NormalMove) => {
         log.debug("Applying move", move);
-        // TODO: check that this is not a late hint from playing against the engine
-        
         const g = game();
         if (!g) {
             return;
         }
         const path = currentPath() || Path.root;
         log.debug("Current move", move);
+        const isLegal = g.isLegal(path, move);
+        if (!isLegal) {
+            log.warn("Illegal move, considering it a late hint", move);
+            return
+        }
+
+
         const [newGameModel, newPath] = g.applyMoves(path, [move]);
         const isMate = newGameModel.isMate(newPath);
-        const t = turn();
         batch(() => {
             setHintType(HintType.None);
             setGame(newGameModel);

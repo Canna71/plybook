@@ -80,6 +80,10 @@ export class GameModel {
         }
     }
 
+    isLegal(path: Path, move: Move): boolean {
+        const pos = this.getPosition(path);
+        return pos.isLegal(move);
+    }
 
     applyMoves(path: Path, moves: Move[]): [GameModel, Path] {
         const pos = this.getPosition(path).clone();
