@@ -1,42 +1,59 @@
-import { createEffect } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
 import { useSearchParams } from "@solidjs/router";
+import { IconDeviceFloppy } from "@tabler/icons-solidjs";
+import anylogger from "anylogger";
+const log = anylogger("play");
 
 const PlayView = () => {
-
-   
     const [searchParams, _setSearchParams] = useSearchParams();
-    
+    const [newPgn, setNewPgn] = createSignal<string | undefined>(undefined);
+
     createEffect(async () => {
-        if(typeof(searchParams.fen) === "string") {
-            
+        if (typeof searchParams.fen === "string") {
         } else {
-            
         }
     });
 
+    const canSave = () => {
+        return typeof newPgn() === "string";
+    }
+
+    const onSave = async () => {
+        log.debug("onSave", newPgn());   
+    }
+
     const initialFen = () => {
-        if(typeof(searchParams.fen) === "string") {
+        if (typeof searchParams.fen === "string") {
             return searchParams.fen;
         }
         return undefined;
-    }
-
-   
+    };
 
     return (
         <>
-            <div class="playarea-header">
-                TODO:  | Time Control  | Save Game | Draw
-            </div>
+            <nav class="game-header buttons buttons-bar" role="navigation">
+                TODO: | Time Control | Save Game | Draw
+                <div class="navbar-item">
+                    <button
+                        disabled={!canSave()}
+                        class="button is-primary"
+                        onClick={onSave}
+                    >
+                        <IconDeviceFloppy />
+                        Save
+                    </button>
+                </div>
+            </nav>
             <GameManager 
-                initialFen={initialFen()}
+                initialFen={initialFen()} 
                 playingEngine={true}
+                setPgn={setNewPgn}
             />
         </>
     );
-}
+};
 
 export default PlayView;
