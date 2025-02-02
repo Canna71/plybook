@@ -5,7 +5,7 @@ import { Color, parseUci } from "chessops";
 import { Path } from "../../models/pgn";
 import { NagIcon, Ply } from "./Ply";
 import { PlyFan } from "../common/PlyFan";
-import { isMate, isPawns } from "chessops/pgn";
+import { Box, isMate, isPawns, walk } from "chessops/pgn";
 import { makeSan } from "chessops/san";
 
 type PlyReviewProps = {
@@ -135,7 +135,6 @@ const ReviewLine: Component<{ move: HierarchicalMoveData }> = ({ move }) => {
     } = useContext(GameContext)!;
     const afterWhite = move.white?.comments || [];
 
-
     return (
         <>
             <tr>
@@ -170,9 +169,7 @@ const ReviewLine: Component<{ move: HierarchicalMoveData }> = ({ move }) => {
                     {(variation) => (
                         <tr>
                             <td class="pgnviewer-variation-cell" colSpan={3}>
-                                <ReviewTree
-                                    movesTree={() => variation}
-                                />
+                                <ReviewTree movesTree={() => variation} />
                             </td>
                         </tr>
                     )}
@@ -214,6 +211,21 @@ const Review: Component = () => {
         return tree || [];
     };
 
+    const hasEvaluation = () => {
+        const g = game();
+        if (!g) return false;
+        const moves = g.moves;
+
+        let num = 0;
+        walk(moves, new Box(0), (_ctx, node, _idx) => {
+            if (node.evaluation) {
+                num++;
+            }
+            return true;
+        });
+        return num > 0;
+    };
+
     const onClick = (e: Event) => {
         if (playingEngine()) return;
         const target = e.target as HTMLElement;
@@ -230,9 +242,11 @@ const Review: Component = () => {
     };
 
     return (
-        <div class="pgnviewer-moves-panel" onClick={onClick}>
-            <ReviewTree movesTree={movesTree} />
-        </div>
+        <Show when={hasEvaluation()} fallback={<div>No evaluation data.</div>}>
+            <div class="pgnviewer-moves-panel" onClick={onClick}>
+                <ReviewTree movesTree={movesTree} />
+            </div>
+        </Show>
     );
 };
 

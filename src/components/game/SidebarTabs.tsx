@@ -52,7 +52,7 @@ const SidebarTabs = () => {
                                 Review
                             </Button>
                         <div class="pgnviewer-moves-wrapper">
-                            <Show when={!isReviewing()}>
+                            <Show when={!isReviewing()} fallback={<div>Analizing...</div>}>
                                 <Review />
                             </Show>
                         </div>
