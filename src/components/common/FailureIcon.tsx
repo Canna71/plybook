@@ -1,12 +1,12 @@
 import { Component } from "solid-js";
 import "./FailureIcon.scss";
+import { IconMoodSadFilled } from "@tabler/icons-solidjs";
 
 const FailureIcon: Component<{}> = (props) => {
   
   return <div>
     <div class="failure-icon modal-icon">
-      <div class="failure-icon__tip"></div>
-      <div class="failure-icon__long"></div>
+      <IconMoodSadFilled class="sadface" size={64} />
     </div>
   </div>;
 };
