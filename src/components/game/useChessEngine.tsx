@@ -242,11 +242,12 @@ export function useChessEngine(options: ChessEngineOptions) {
             if (isReviewing()) {
                 handleReviewPosition(bestMove, g);
             }
-            log.debug("Engine move", bestMove);
+            log.debug("Hint move", bestMove);
             setHintMove(bestMove);
             return;
         }
 
+        log.debug("Engine move", bestMove);
         options.applyMove(move);
     };
 
@@ -329,7 +330,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             engine()!.setOption("UCI_LimitStrength", "true");
             engine()!.setOption(
                 "UCI_Elo",
-                getSettingValue("engine.playing.elo", 1000),
+                getSettingValue("engine.playing.level", 1000),
             );
 
             opts = {

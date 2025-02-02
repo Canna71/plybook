@@ -5,7 +5,8 @@ import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColo
 import { makeSan, parseSan } from "chessops/san";
 import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal, EMPTY_COMMENT, makeComment2, parseComment2 } from "./pgn";
 import { DrawShape } from "chessground/draw";
-
+import anylogger from 'anylogger'
+const log = anylogger('gamemodel');
 // immutable ?
 
 export class GameModel {
@@ -90,7 +91,7 @@ export class GameModel {
             const san = makeSan(pos, move);
             // Note: this is to avoid different Ids for castling moves
             const move2 = parseSan(pos, san);
-            if (!move2) debugger;
+            log.info("applyMoves", {move, san, pos, move2});
             pos.play(move2!);
             const moveId = scalachessCharPair(move2!);
             p = p.append(moveId);
