@@ -101,6 +101,7 @@ const EngineControl = () => {
                     new Map([
                         [engineColorTitleCase, "Engine"],
                         [playerColor, "Player"],
+                        ["Date", new Date().toISOString().split("T")[0]],
                     ]),
                 );
                 newGame = newGame.withStartingPosition(

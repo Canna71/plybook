@@ -430,24 +430,13 @@ const GameManager: Component<GameManagerOptions> = ({
         }
 
 
-        const [newGameModel, newPath] = g.applyMoves(path, [move]);
+        let [newGameModel, newPath] = g.applyMoves(path, [move]);
         const isMate = newGameModel.isMate(newPath);
         batch(() => {
             setHintType(HintType.None);
-            setGame(newGameModel);
-            setCurrentPath(newPath);
+            
             if (isMate) {
                 if (turn() === engineColor?.()) {
-                    setTimeout(
-                        () =>
-                            showAlert({
-                                icon: "success",
-                                title: "Checkmate",
-                                message: "You won the game",
-                            }),
-                        500,
-                    );
-                } else {
                     setTimeout(
                         () =>
                             showAlert({
@@ -457,10 +446,25 @@ const GameManager: Component<GameManagerOptions> = ({
                             }),
                         500,
                     );
+                } else {
+                    setTimeout(
+                        () =>
+                            showAlert({
+                                icon: "successfailure",
+                                title: "Checkmate",
+                                message: "You won the game",
+                            }),
+                        500,
+                    );
                 }
-
+                // TODO: double check this
+                const score = turn() === "white" ? "1-0" : "0-1";
+                
+                newGameModel = newGameModel.updateHeaders(new Map([["Result", score]]));
                 setIsPlayingOn(false);
             }
+            setCurrentPath(newPath);
+            setGame(newGameModel);
         });
     };
 

@@ -29,7 +29,7 @@ const PlayView = () => {
     return (
         <>
             <div class="playarea-header">
-                TODO:  | Time Control  | Save Game | Load Game
+                TODO:  | Time Control  | Save Game | Draw
             </div>
             <GameManager 
                 initialFen={initialFen()}
