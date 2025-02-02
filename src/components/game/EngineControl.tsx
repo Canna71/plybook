@@ -37,7 +37,7 @@ const EngineControl = () => {
         fullPgnSignal: [],
         startingPositionSignal: [startingPosition],
         // isReviewModeSignal: [isReviewing, setIsReviewing],
-        startReview,
+        // startReview,
         isReviewing,
         reviewProgress
     } = useContext(GameContext)!;
@@ -114,9 +114,7 @@ const EngineControl = () => {
         setSettingsModalVisible(true);
     };
 
-    const reviewGame = () => {
-        startReview();
-    };
+
 
     return (
         <>
@@ -137,9 +135,7 @@ const EngineControl = () => {
                             >
                                 <IconSettingsFilled />
                             </Button>
-                            <Button onClick={reviewGame} title="Review Game">
-                                Review
-                            </Button>
+
                         </div>
                     </Show>
                     <Show when={isReviewing()}>

@@ -2,10 +2,11 @@ import { Switch, Match, createSignal, Show, useContext, createEffect } from "sol
 import Moves from "./Moves";
 import Review from "./Review";
 import { GameContext } from "./GameContext";
+import Button from "../common/Button";
 
 const SidebarTabs = () => {
     const [tab, setTab] = createSignal(0);
-    const { isReviewing } = useContext(GameContext)!;
+    const { isReviewing, startReview } = useContext(GameContext)!;
 
     const updateTab = (index: number) => setTab(index);
 
@@ -15,6 +16,10 @@ const SidebarTabs = () => {
             setTab(1);
         }
     });
+
+    const reviewGame = () => {
+        startReview();
+    };
 
 
     return (
@@ -43,6 +48,9 @@ const SidebarTabs = () => {
                         </div>
                     </Match>
                     <Match when={tab() === 1}>
+                            <Button onClick={reviewGame} title="Review Game">
+                                Review
+                            </Button>
                         <div class="pgnviewer-moves-wrapper">
                             <Show when={!isReviewing()}>
                                 <Review />
