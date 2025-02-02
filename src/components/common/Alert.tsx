@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { Portal, render } from "solid-js/web";
+import { render } from "solid-js/web";
 import Modal from "./Modal";
 import FailureIcon from "./FailureIcon";
 import SuccessIcon from "./SuccessIcon";

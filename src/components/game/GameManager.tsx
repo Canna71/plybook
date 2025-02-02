@@ -13,7 +13,7 @@ import {
     Switch,
     untrack,
 } from "solid-js";
-import { makeGameInternal, Path, PlyData } from "../../models/pgn";
+import { makeGameInternal, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import ButtonBar from "./Buttonbar";
 import {
@@ -58,7 +58,6 @@ import { getSettingValue, setSettingValue } from "../../models/settings";
 import { Config } from "chessground/config";
 import Button from "../common/Button";
 import { IconCircleXFilled } from "@tabler/icons-solidjs";
-import Modal from "../common/Modal";
 import HintButtons from "./HintButtons";
 import SidebarTabs from "./SidebarTabs";
 import anylogger from "anylogger";

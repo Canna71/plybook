@@ -48,10 +48,10 @@ const EngineControl = () => {
     );
 
     const settingsModalSignal = createSignal(false),
-        [settingsModalVisible, setSettingsModalVisible] = settingsModalSignal;
+        [_settingsModalVisible, setSettingsModalVisible] = settingsModalSignal;
 
     const playSettingsModal = createSignal(false),
-        [playSettingsVisible, setPlaySettingsVisible] = playSettingsModal;
+        [_playSettingsVisible, setPlaySettingsVisible] = playSettingsModal;
 
     const canEnableEngine = () => {
         return (

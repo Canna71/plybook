@@ -1,8 +1,6 @@
 import { Accessor, JSX, ParentComponent, Show, Signal } from "solid-js";
 import { Portal } from "solid-js/web";
-import SuccessIcon from "./SuccessIcon";
-import ThumbUp from "./ThumbUp";
-import FailureIcon from "./FailureIcon";
+
 
 type ModalProps = {
     isOpen: Signal<boolean>;

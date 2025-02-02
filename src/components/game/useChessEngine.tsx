@@ -268,7 +268,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
         // computes the total number of positions in the game
         let total = 0;
-        walk(game()!.moves, new Box(0), (ctx, node, idx) => {
+        walk(game()!.moves, new Box(0), (_ctx, _node, _idx) => {
             total++;
             return true;
         });

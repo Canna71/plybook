@@ -6,7 +6,6 @@ import { StartingPositionIcon } from "../common/Icons";
 import {
     IconBrackets,
     IconCheck,
-    IconCpu,
     IconPlayerPlayFilled,
     IconSwitchVertical,
     IconTextPlus,
