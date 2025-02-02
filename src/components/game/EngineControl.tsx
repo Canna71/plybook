@@ -78,7 +78,7 @@ const EngineControl = () => {
         if (isPlayingOn()) {
             batch(() => {
                 // setEngineColor(undefined);
-                setGame(makeGame("[]"));
+                // setGame(makeGame("[]"));
                 setIsPlayingOn(false);
             });
         } else {
