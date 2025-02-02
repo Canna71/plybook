@@ -93,18 +93,16 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
     };
 
     const fen = useFen(game, currentPath);
-    
 
     const onPlayAgainstEngine = () => {
         // Toggle the playing engine state (commented out for now)
         const currentFen = fen();
         const playUrl = `/play?fen=${currentFen}`;
         navigate(playUrl);
-    }
+    };
 
     return (
         <div class="buttons-bar are-small">
-               
             <Show when={props.isEditable()}>
                 <Button onClick={onFLipBoard} title="Flip Board">
                     <IconSwitchVertical />
@@ -131,20 +129,21 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
                     <Button onClick={onEditPgn} title="Edit PGN">
                         <IconBrackets />
                     </Button>
-                    <Button title="Play Against Engine" onClick={onPlayAgainstEngine}>
+                    <Button
+                        title="Play Against Engine"
+                        onClick={onPlayAgainstEngine}
+                    >
                         <IconPlayerPlayFilled />
                     </Button>
-
                 </Show>
-            </Show>
-
-            <Show when={viewMode() === ViewMode.MOVES}>
-                <Button
-                    onClick={onEditStartingPosition}
-                    title="Change Starting Position"
-                >
-                    <StartingPositionIcon />
-                </Button>
+                <Show when={viewMode() === ViewMode.MOVES}>
+                    <Button
+                        onClick={onEditStartingPosition}
+                        title="Change Starting Position"
+                    >
+                        <StartingPositionIcon />
+                    </Button>
+                </Show>
             </Show>
 
             <Show when={viewMode() === ViewMode.STARTING_POSITION}>

@@ -21,6 +21,7 @@ const ButtonBar: Component<ButtonBarProps> = ({}) => {
         currentPathSignal: [currentPath, setCurrentPath],
         hintMoveSignal: [hintMove],
         playingEngine,
+        isPlayingOnSignal: [isPlayingOn],
         hintTypeSignal: [_hintType, setHintType],
     } = useContext(GameContext)!;
 
@@ -112,7 +113,7 @@ const ButtonBar: Component<ButtonBarProps> = ({}) => {
                     </Button>
                 </div>
             </Show>
-            <Show when={playingEngine() && hintMove()}>
+            <Show when={isPlayingOn() && hintMove()}>
                 <HintButtons 
                     setHintType={setHintType}
                 />

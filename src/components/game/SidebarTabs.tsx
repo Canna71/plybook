@@ -1,4 +1,11 @@
-import { Switch, Match, createSignal, Show, useContext, createEffect } from "solid-js";
+import {
+    Switch,
+    Match,
+    createSignal,
+    Show,
+    useContext,
+    createEffect,
+} from "solid-js";
 import Moves from "./Moves";
 import Review from "./Review";
 import { GameContext } from "./GameContext";
@@ -7,13 +14,12 @@ import { IconDeviceAnalytics } from "@tabler/icons-solidjs";
 
 const SidebarTabs = () => {
     const [tab, setTab] = createSignal(0);
-    const { isReviewing, startReview } = useContext(GameContext)!;
+    const { isReviewing, startReview, isPlayingOnSignal: [isPlayingOn] } = useContext(GameContext)!;
 
     const updateTab = (index: number) => setTab(index);
 
-
     createEffect(() => {
-        if(isReviewing() && tab() === 0) {
+        if (isReviewing() && tab() === 0) {
             setTab(1);
         }
     });
@@ -21,7 +27,6 @@ const SidebarTabs = () => {
     const reviewGame = () => {
         startReview();
     };
-
 
     return (
         <div class="sidebar-tabs">
@@ -33,12 +38,14 @@ const SidebarTabs = () => {
                     >
                         <a>Moves</a>
                     </li>
-                    <li
-                        classList={{ "is-active": tab() === 1 }}
-                        onClick={() => updateTab(1)}
-                    >
-                        <a>Evaluation</a>
-                    </li>
+                    <Show when={!isPlayingOn()}>
+                        <li
+                            classList={{ "is-active": tab() === 1 }}
+                            onClick={() => updateTab(1)}
+                        >
+                            <a>Evaluation</a>
+                        </li>
+                    </Show>
                 </ul>
             </div>
             <div class="tab" classList={{}}>
@@ -49,12 +56,15 @@ const SidebarTabs = () => {
                         </div>
                     </Match>
                     <Match when={tab() === 1}>
-                            <Button onClick={reviewGame} title="Review Game">
-                                <IconDeviceAnalytics />
-                                Analyze Game
-                            </Button>
+                        <Button onClick={reviewGame} title="Review Game">
+                            <IconDeviceAnalytics />
+                            Analyze Game
+                        </Button>
                         <div class="pgnviewer-moves-wrapper">
-                            <Show when={!isReviewing()} fallback={<div>Analizing...</div>}>
+                            <Show
+                                when={!isReviewing()}
+                                fallback={<div>Analizing...</div>}
+                            >
                                 <Review />
                             </Show>
                         </div>

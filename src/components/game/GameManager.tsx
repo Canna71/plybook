@@ -772,7 +772,7 @@ const GameManager: Component<GameManagerOptions> = ({
                             <Show when={!isPuzzleMode()}>
                                 <PgnEditBar isEditable={isEditable} />
                             </Show>
-                            <Show when={!isPuzzleMode()}>
+                            <Show when={!isPuzzleMode() && viewMode() === ViewMode.MOVES}>
                                 <EngineControl />
                             </Show>
                             <Show

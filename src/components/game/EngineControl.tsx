@@ -24,6 +24,7 @@ import Button from "../common/Button";
 import { makeGame } from "../../models/pgn";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import Modal from "../common/Modal";
+import { StartingPositionIcon } from "../common/Icons";
 
 const EngineControl = () => {
     const {
@@ -32,22 +33,25 @@ const EngineControl = () => {
         engineAnalysisOnSignal,
         engineColorSignal: [engineColor, setEngineColor],
         isPlayingOnSignal: [isPlayingOn, setIsPlayingOn],
-        viewModeSignal: [viewMode],
+        viewModeSignal: [viewMode, setViewMode],
         isEditingDescriptionSignal: [isEditingDescription],
         fullPgnSignal: [],
         startingPositionSignal: [startingPosition],
         // isReviewModeSignal: [isReviewing, setIsReviewing],
         // startReview,
         isReviewing,
-        reviewProgress
+        reviewProgress,
     } = useContext(GameContext)!;
 
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
         engineColor() || "random",
     );
 
-    const modalSignal = createSignal(false),
-        [settingsModalVisible, setSettingsModalVisible] = modalSignal;
+    const settingsModalSignal = createSignal(false),
+        [settingsModalVisible, setSettingsModalVisible] = settingsModalSignal;
+
+    const playSettingsModal = createSignal(false),
+        [playSettingsVisible, setPlaySettingsVisible] = playSettingsModal;
 
     const canEnableEngine = () => {
         return (
@@ -114,8 +118,6 @@ const EngineControl = () => {
         setSettingsModalVisible(true);
     };
 
-
-
     return (
         <>
             <div class="engine-control">
@@ -135,7 +137,6 @@ const EngineControl = () => {
                             >
                                 <IconSettingsFilled />
                             </Button>
-
                         </div>
                     </Show>
                     <Show when={isReviewing()}>
@@ -154,6 +155,12 @@ const EngineControl = () => {
                                 options={engineColors}
                             />
                         </div>
+                        <Button
+                            onClick={() => setPlaySettingsVisible(true)}
+                            title="Playing Settings"
+                        >
+                            <IconSettingsFilled />
+                        </Button>
                         <Show when={isPlayingOn()}>
                             <Button onClick={toggleGame} title="Stop Game">
                                 <IconPlayerStopFilled />
@@ -164,6 +171,14 @@ const EngineControl = () => {
                                 <IconPlayerPlayFilled />
                             </Button>
                         </Show>
+                        <Show when={viewMode() === ViewMode.MOVES}>
+                            <Button
+                                onClick={()=>setViewMode(ViewMode.STARTING_POSITION)}
+                                title="Change Starting Position"
+                            >
+                                <StartingPositionIcon />
+                            </Button>
+                        </Show>
                         {/* <Select
                     selectedValue={engineLevelString}
                     setSelectedValue={engineLevelSelected as Setter<string>}
@@ -171,13 +186,15 @@ const EngineControl = () => {
                 /> */}
                     </Show>
                 </div>
-
-                <Show when={playingEngine()}>
+            </div>
+            <Modal
+                isOpen={playSettingsModal}
+                onClose={() => setPlaySettingsVisible(false)}
+                title={() => "Playing Settings"}
+            >
+                <div>
                     <div class="engine-control-row">
-                        ELO:{" "}
-                        <EngineLevel
-                            
-                        />
+                        ELO: <EngineLevel />
                     </div>
                     <div class="engine-control-row">
                         Depth: <DepthLevel />
@@ -188,10 +205,10 @@ const EngineControl = () => {
                     <div class="engine-control-row">
                         Threads: <Threads />
                     </div>
-                </Show>
-            </div>
+                </div>
+            </Modal>
             <Modal
-                isOpen={[settingsModalVisible, setSettingsModalVisible]}
+                isOpen={settingsModalSignal}
                 onClose={() => setSettingsModalVisible(false)}
                 title={() => "Analysis Settings"}
             >
@@ -348,7 +365,7 @@ const Threads = () => {
             <span class="slide-value">{threads()}</span>
         </div>
     );
-}
+};
 
 const AnalysisMoveTime = () => {
     const onMoveTimeChange = (e: Event) => {
@@ -416,12 +433,19 @@ const ShowErrorToggle = () => {
     );
 };
 
-const ReviewProgressIndicator = ({reviewProgress}:{reviewProgress: Accessor<ReviewProgress>}) => {
+const ReviewProgressIndicator = ({
+    reviewProgress,
+}: {
+    reviewProgress: Accessor<ReviewProgress>;
+}) => {
     return (
         <div class="review-progress">
             Reviewing...
-            <progress id="file" max={reviewProgress()?.total} value={reviewProgress()?.current}></progress>
-
+            <progress
+                id="file"
+                max={reviewProgress()?.total}
+                value={reviewProgress()?.current}
+            ></progress>
         </div>
     );
 };
