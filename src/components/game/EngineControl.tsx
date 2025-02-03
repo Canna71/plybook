@@ -97,13 +97,16 @@ const EngineControl = () => {
 
                 const playerColor = c === "white" ? "Black" : "White";
 
-                let newGame = makeGame("[]").updateHeaders(
-                    new Map([
-                        [engineColorTitleCase, "Engine"],
-                        [playerColor, "Player"],
-                        ["Date", new Date().toISOString().split("T")[0]],
-                    ]),
-                );
+                const engineElo = getSettingValue("engine.playing.level", 1000)!;
+                const currentDate = new Date().toISOString();
+                const headers = new Map([
+                    [engineColorTitleCase, "Engine"],
+                    [engineColorTitleCase + "Elo", engineElo.toString()],
+                    [playerColor, "Player"],
+                    ["Date", currentDate.split("T")[0]],
+                    ["Timestamp", currentDate],
+                ]);
+                let newGame = makeGame("[]").updateHeaders(headers);
                 newGame = newGame.withStartingPosition(
                     startingPosition() || "",
                 );
