@@ -5,6 +5,7 @@ import GameManager from "../components/game/GameManager";
 import { useSearchParams } from "@solidjs/router";
 import { IconDeviceFloppy } from "@tabler/icons-solidjs";
 import anylogger from "anylogger";
+import { saveGameToHistory } from "../storage/fs";
 const log = anylogger("play");
 
 const PlayView = () => {
@@ -22,7 +23,12 @@ const PlayView = () => {
     }
 
     const onSave = async () => {
-        log.debug("onSave", newPgn());   
+        log.debug("onSave", newPgn()); 
+        const pgn = newPgn();
+        if (typeof pgn !== "string") {
+            return;
+        }  
+        saveGameToHistory(pgn);
     }
 
     const initialFen = () => {

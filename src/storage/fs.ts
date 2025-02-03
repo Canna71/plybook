@@ -14,6 +14,7 @@ import anylogger from "anylogger";
 const log = anylogger("fs");
 
 const LIBRARY_FOLDER = "Library";
+const HISTORY_FOLDER = "History";
 const ENGINES_FOLDER = "Engines";
 const THEMES_FOLDER = "Themes";
 
@@ -95,9 +96,11 @@ export async function ensureAppDataFolders() {
     try {
         const appDataPath = await appLocalDataDir();
         await ensureFolderExists(appDataPath);
-        await ensureFolderExists(
-            await join(appDataPath, LIBRARY_FOLDER, "pgn"),
-        );
+        // await ensureFolderExists(
+        //     await join(appDataPath, LIBRARY_FOLDER, "pgn"),
+        // );
+        await ensureFolderExists(await join(appDataPath, LIBRARY_FOLDER));
+        await ensureFolderExists(await join(appDataPath, HISTORY_FOLDER));
         await ensureFolderExists(await join(appDataPath, ENGINES_FOLDER));
         await ensureFolderExists(await join(appDataPath, THEMES_FOLDER));
     } catch (error) {
@@ -261,4 +264,27 @@ export function getDefaultStudyContent() {
 export async function openDataPath(path: string) {
     const fullPath = await join(await appLocalDataDir(), path);
     return await open(fullPath);
+}
+
+export async function saveGameToHistory(pgn: string) {
+    const historyPath = await join(await appLocalDataDir(), HISTORY_FOLDER);
+    // read the timestamp from the pgn tag  [Timestamp "2021.09.01 12:00:00"]
+    
+    const timestamp = pgn.match(/\[Timestamp "([^"]+)"\]/)?.[1] || new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+
+    log.debug("saveGameToHistory", timestamp);
+
+    // create a new file with the timestamp as name and the path as yyyy/MM/dd
+    const date = timestamp.split("T")[0];
+    const [year, month, day] = date.split("-");
+    const yearFolder = await join(historyPath, year)
+    await ensureFolderExists(yearFolder);
+    
+    const monthFolder = await join(yearFolder, month);
+    await ensureFolderExists(monthFolder);
+
+    const dayFolder = await join(monthFolder, day);
+    await ensureFolderExists(dayFolder);
+
+    return createNewDataFile(dayFolder, `${timestamp}.pgn`, pgn);
 }
