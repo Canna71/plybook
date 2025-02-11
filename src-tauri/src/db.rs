@@ -31,7 +31,8 @@ pub struct Study {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Game {
     // id: RecordId,  // Primary key
-    study_id: RecordId,  // Foreign key to the study
+    game_id: Option<RecordId>,  // Foreign key to the study
+    pgn: String,  // PGN string
     timeControlInitial: i16,
     timeControlIncrement: i16,
     // orientation: String,
@@ -155,26 +156,7 @@ pub async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) ->
 
     println!("Received PGN: {}", pgn);
 
-    let mut parsedPgn = parse_pgn_to_rust_struct(pgn);
-
-    println!("Parsed PGN: {:?}", parsedPgn);
-
-    // first create the study
-    let study: Study = Study {
-        // id: -1,
-        file_path: "todo".to_string(),
-        puzzle: None,
-        created_at: "todo".to_string(),
-    };
-
-    let study:Option<Record> = db
-        .create("studies")
-        .content(study)
-        .await
-        .unwrap()
-        ;
-    let study_id = study.unwrap().id;
-    // dbg!(&study_id);
+    let mut parsedPgn = parse_pgn_to_rust_struct(pgn.clone());
 
     let timeControl = parsedPgn.get_header("TimeControl");
     let timeControlParts: Vec<&str> = timeControl.split("+").collect();
@@ -192,7 +174,8 @@ pub async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) ->
     println!("{:?}", parsedPgn.headers);
 
     let game: Game = Game {
-        study_id: study_id,
+        game_id: None,
+        pgn: pgn,
         // file: "todo".to_string(),
         timeControlInitial: timeControlParts.get(0).unwrap_or(&"").parse().unwrap_or(-1),
         timeControlIncrement: timeControlParts.get(1).unwrap_or(&"").parse().unwrap_or(-1),
@@ -208,9 +191,16 @@ pub async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) ->
         round: round.parse().unwrap_or(-1),
     };
 
-    println!("Game: {:?}", game);
+    let created: Game = db
+        .create(GAMES_TABLE)
+        .content(game)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("Failed to create record")?;
 
-    Ok(game)
+    println!("Game: {:?}", created);
+
+    Ok(created)
 }
 
 #[tauri::command]
