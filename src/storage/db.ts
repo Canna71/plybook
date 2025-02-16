@@ -1,3 +1,4 @@
+
 import { invoke } from "@tauri-apps/api/core";
 import anylogger from "anylogger";
 const log = anylogger("db");
@@ -27,6 +28,22 @@ export type Study = {
     
     /** Creation timestamp */
     created_at: string;
+};
+
+
+
+export type Game = {
+    game_id?: string;
+    pgn: string;
+    timeControlInitial: number;
+    timeControlIncrement: number;
+    result: string;
+    whiteName: string;
+    whiteRating: number;
+    blackName: string;
+    blackRating: number;
+    eventDate: string;
+    round: number;
 };
 
 export async function upsertStudy(study: Study): Promise<Study> {
@@ -106,5 +123,20 @@ export async function pickPuzzle(): Promise<Study> {
 export async function updateCachedWeights() {
     return await invoke("update_cached_weights");
 }
+
+// History
+
+export async function listHistory(): Promise<Game[]> {
+    return await invoke("list_history");
+}
+
+export async function addToHistory(game: Game) {
+    return await invoke("add_to_history", {
+        game
+    });
+}
+
+
+
 
 setTimeout(initDB,10);

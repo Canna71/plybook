@@ -35,6 +35,7 @@ export interface GameContextType {
 	isReviewing: Accessor<boolean>;
 	startReview: () => void;
 	reviewProgress: Accessor<ReviewProgress>;
+	onGameFinished?: () => void;
 }
 
 export const GameContext = createContext<GameContextType>();

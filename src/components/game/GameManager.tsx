@@ -75,6 +75,7 @@ export type GameManagerOptions = {
         hintUsed: number,
         retries: number,
     ) => void;
+    onGameFinished?: () => void;
     editable?: Accessor<boolean>;
 };
 
@@ -121,6 +122,7 @@ const GameManager: Component<GameManagerOptions> = ({
     onPuzzleFinished,
     editable,
     defaultEngineAnalysisOn = false,
+    onGameFinished,
 }) => {
     // #region Game State
     const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
@@ -269,7 +271,6 @@ const GameManager: Component<GameManagerOptions> = ({
     const orientation = createMemo(() => {
         const engCol = engineColor?.();
         if (playingEngine) {
-            
             return otherColor(engCol);
         }
         const g = game();
@@ -287,7 +288,6 @@ const GameManager: Component<GameManagerOptions> = ({
     const isPuzzleMode = createMemo(() => {
         return typeof onPuzzleFinished === "function";
     });
-
 
     const config = () => {
         const baseConfig: Config = makeConfig(
@@ -329,9 +329,8 @@ const GameManager: Component<GameManagerOptions> = ({
 
         const hints: SquareClasses = new Map();
         const moveHint = hintMove();
-        const move = moveHint && parseUci(moveHint) as NormalMove;
+        const move = moveHint && (parseUci(moveHint) as NormalMove);
         if (move) {
-           
             const from = makeSquare(move.from);
             const to = makeSquare(move.to);
             if (hintType() === HintType.Piece) {
@@ -425,15 +424,14 @@ const GameManager: Component<GameManagerOptions> = ({
         const isLegal = g.isLegal(path, move);
         if (!isLegal) {
             log.warn("Illegal move, considering it a late hint", move);
-            return
+            return;
         }
-
 
         let [newGameModel, newPath] = g.applyMoves(path, [move]);
         const isMate = newGameModel.isMate(newPath);
         batch(() => {
             setHintType(HintType.None);
-            
+
             if (isMate) {
                 if (turn() === engineColor?.()) {
                     setTimeout(
@@ -458,12 +456,17 @@ const GameManager: Component<GameManagerOptions> = ({
                 }
                 // TODO: double check this
                 const score = turn() === "white" ? "1-0" : "0-1";
-                
-                newGameModel = newGameModel.updateHeaders(new Map([["Result", score]]));
+
+                newGameModel = newGameModel.updateHeaders(
+                    new Map([["Result", score]]),
+                );
                 setIsPlayingOn(false);
             }
             setCurrentPath(newPath);
             setGame(newGameModel);
+            if (isMate) {
+                onGameFinished?.();
+            }
         });
     };
 
@@ -668,6 +671,7 @@ const GameManager: Component<GameManagerOptions> = ({
         isReviewing,
         startReview,
         reviewProgress,
+        onGameFinished,
     } as GameContextType;
     // #endregion
 
@@ -775,7 +779,12 @@ const GameManager: Component<GameManagerOptions> = ({
                             <Show when={!isPuzzleMode()}>
                                 <PgnEditBar isEditable={isEditable} />
                             </Show>
-                            <Show when={!isPuzzleMode() && viewMode() === ViewMode.MOVES}>
+                            <Show
+                                when={
+                                    !isPuzzleMode() &&
+                                    viewMode() === ViewMode.MOVES
+                                }
+                            >
                                 <EngineControl />
                             </Show>
                             <Show

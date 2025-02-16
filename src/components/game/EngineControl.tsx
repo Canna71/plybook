@@ -1,6 +1,7 @@
 import {
     Accessor,
     batch,
+    createMemo,
     createSignal,
     Setter,
     Show,
@@ -12,6 +13,7 @@ import { GameContext, ReviewProgress } from "./GameContext";
 import "./EngineControl.scss";
 import {
     IconCpu,
+    IconFlag,
     IconPlayerPlayFilled,
     IconPlayerStopFilled,
     IconSettingsFilled,
@@ -25,11 +27,12 @@ import { makeGame } from "../../models/pgn";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import Modal from "../common/Modal";
 import { StartingPositionIcon } from "../common/Icons";
+import { usePosition } from "../common/utils";
 
 const EngineControl = () => {
     const {
         playingEngine,
-        gameSignal: [, setGame],
+        gameSignal: [game, setGame],
         engineAnalysisOnSignal,
         engineColorSignal: [engineColor, setEngineColor],
         isPlayingOnSignal: [isPlayingOn, setIsPlayingOn],
@@ -41,6 +44,8 @@ const EngineControl = () => {
         // startReview,
         isReviewing,
         reviewProgress,
+        currentPathSignal: [currentPath],
+        onGameFinished,
     } = useContext(GameContext)!;
 
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
@@ -60,6 +65,10 @@ const EngineControl = () => {
             !playingEngine()
         );
     };
+
+    // const position = usePosition(game, currentPath);
+
+    // const turn = createMemo(() => position().turn as Color);
 
     const engineColors = () => {
         return [
@@ -83,7 +92,18 @@ const EngineControl = () => {
             batch(() => {
                 // setEngineColor(undefined);
                 // setGame(makeGame("[]"));
-                setIsPlayingOn(false);
+                const score = engineColor() === "white" ? "1-0" : "0-1";
+
+                var newGameModel = game()!.updateHeaders(
+                    new Map([["Result", score]]),
+                );
+                batch(() => {
+                    setIsPlayingOn(false);
+                    setGame(newGameModel);
+                });
+                setTimeout(() => {
+                    onGameFinished?.();
+                }, 100);
             });
         } else {
             let c = internalColor();
@@ -97,7 +117,10 @@ const EngineControl = () => {
 
                 const playerColor = c === "white" ? "Black" : "White";
 
-                const engineElo = getSettingValue("engine.playing.level", 1000)!;
+                const engineElo = getSettingValue(
+                    "engine.playing.level",
+                    1000,
+                )!;
                 const currentDate = new Date().toISOString();
                 const headers = new Map([
                     [engineColorTitleCase, "Engine"],
@@ -166,8 +189,8 @@ const EngineControl = () => {
                             <IconSettingsFilled />
                         </Button>
                         <Show when={isPlayingOn()}>
-                            <Button onClick={toggleGame} title="Stop Game">
-                                <IconPlayerStopFilled />
+                            <Button onClick={toggleGame} title="Resign">
+                                <IconFlag />
                             </Button>
                         </Show>
                         <Show when={!isPlayingOn()}>
@@ -177,7 +200,9 @@ const EngineControl = () => {
                         </Show>
                         <Show when={viewMode() === ViewMode.MOVES}>
                             <Button
-                                onClick={()=>setViewMode(ViewMode.STARTING_POSITION)}
+                                onClick={() =>
+                                    setViewMode(ViewMode.STARTING_POSITION)
+                                }
                                 title="Change Starting Position"
                             >
                                 <StartingPositionIcon />

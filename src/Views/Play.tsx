@@ -18,17 +18,11 @@ const PlayView = () => {
         }
     });
 
-    const canSave = () => {
-        return typeof newPgn() === "string";
-    }
+  
 
-    const onSave = async () => {
+    const save = async () => {
         log.debug("onSave", newPgn()); 
-        const pgn = newPgn();
-        if (typeof pgn !== "string") {
-            return;
-        }  
-        saveGameToHistory(pgn);
+        
     }
 
     const initialFen = () => {
@@ -42,21 +36,13 @@ const PlayView = () => {
         <>
             <nav class="game-header buttons buttons-bar" role="navigation">
                 TODO: | Time Control | Save Game | Draw
-                <div class="navbar-item">
-                    <button
-                        disabled={!canSave()}
-                        class="button is-primary"
-                        onClick={onSave}
-                    >
-                        <IconDeviceFloppy />
-                        Save
-                    </button>
-                </div>
+                
             </nav>
             <GameManager 
                 initialFen={initialFen()} 
                 playingEngine={true}
                 setPgn={setNewPgn}
+                onGameFinished={save}
             />
         </>
     );

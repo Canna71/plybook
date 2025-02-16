@@ -34,7 +34,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet, init_db, index_game, list_games, upload_pgn, upsert_study,
             list_studies, list_puzzles, update_puzzle_score, pick_puzzle, 
-            update_cached_weights, update_puzzle_base_weight, delete_puzzle, get_study
+            update_cached_weights, update_puzzle_base_weight, delete_puzzle, get_study,
+            add_to_history, list_history
         ])
         
         .run(tauri::generate_context!())
