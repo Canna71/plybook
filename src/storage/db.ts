@@ -130,9 +130,11 @@ export async function listHistory(): Promise<Game[]> {
     return await invoke("list_history");
 }
 
-export async function addToHistory(game: Game) {
+(window as any).listHistory = listHistory;
+
+export async function addToHistory(pgn: string) {
     return await invoke("add_to_history", {
-        game
+        pgn
     });
 }
 
