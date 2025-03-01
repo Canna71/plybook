@@ -33,7 +33,7 @@ pub struct Study {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Game {
     // id: RecordId,  // Primary key
-    game_id: Option<RecordId>,  // Foreign key to the study
+    id: Option<RecordId>,  // Foreign key to the study
     pgn: String,  // PGN string
     timeControlInitial: i16,
     timeControlIncrement: i16,
@@ -160,7 +160,7 @@ fn pgn_to_game(pgn: String) -> Game {
     let timeControlParts: Vec<&str> = timeControl.split("+").collect();
     
     Game {
-        game_id: None,
+        id: None,
         pgn,
         timeControlInitial: timeControlParts.get(0).unwrap_or(&"").parse().unwrap_or(-1),
         timeControlIncrement: timeControlParts.get(1).unwrap_or(&"").parse().unwrap_or(-1),

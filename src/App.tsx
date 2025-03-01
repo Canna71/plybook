@@ -11,6 +11,7 @@ import { ContentContext, useContentContext } from "./components/common/ContentCo
 import { Toaster } from "solid-toast";
 import Puzzles from "./Views/Puzzles";
 import LibraryFolder from "./Views/LibraryFolder";
+import History from "./Views/History";
 
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
                 <Route path="/db" component={DBTest} />
                 <Route path="/play" component={Play} />
                 <Route path="/library" component={LibraryFolder} />
+                <Route path="/history" component={History} />
 
                 <Route
                     path="/analysis"

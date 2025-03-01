@@ -19,15 +19,13 @@ const PlayView = () => {
         }
     });
 
-  
-
     const save = async () => {
         log.debug("onSave", newPgn()); 
         const pgn = newPgn();
         if (typeof pgn !== "string") {
             return;
         }
-        addToHistory(pgn);
+        await addToHistory(pgn);
     }
 
     const initialFen = () => {
@@ -41,7 +39,7 @@ const PlayView = () => {
         <>
             <nav class="game-header buttons buttons-bar" role="navigation">
                 TODO: | Time Control | Save Game | Draw
-                
+
             </nav>
             <GameManager 
                 initialFen={initialFen()} 
