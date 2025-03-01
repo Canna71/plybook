@@ -159,7 +159,7 @@ export async function updateCachedWeights() {
 export async function getHistoryGames(): Promise<Game[]> {
     try {
         const games = (await invoke("list_history")) as Game[];
-        console.log("getHistoryGames", games);
+        log.debug("getHistoryGames", games);
         return games;
     } catch (e) {
         console.error("Failed to get history games", e);
