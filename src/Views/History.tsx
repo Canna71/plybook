@@ -3,7 +3,6 @@ import { getHistoryGames, getIdValue } from "../storage/db";
 import Button from "../components/common/Button";
 import { formatDate } from "../components/common/utils";
 import { useNavigate } from "@solidjs/router";
-import { NameWithoutExtension } from "../storage/fs";
 import "./History.scss";
 
 const History: Component = () => {
