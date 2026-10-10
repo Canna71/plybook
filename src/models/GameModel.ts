@@ -97,9 +97,9 @@ export class GameModel {
     findPgnNode = (path: Path): Node<PgnNodeData> | undefined => {
         const node = nodeAtPathFrom(this.moves, path);
         if (!node) return undefined;
-        let n = this.game.moves;
+        const n = this.game.moves;
         if (isChildNode(node)) {
-            for (let pn of this.allPgnNodes(n)) {
+            for (const pn of this.allPgnNodes(n)) {
                 if (isChildNode(pn)) {
                     if (pn.data === node.data.pgnNode) {
                         return pn;

@@ -466,22 +466,22 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
     // const { showTooltip } = useContext(TooltipContext)!;
 
     const onAddComment = (before: boolean) => {
-        const ng = game()?.insertComment(plyData?.path!, "", before);
+        const ng = game()?.insertComment(plyData!.path, "", before);
         setGame(ng);
     };
 
     const onDelete = () => {
-        const ng = game()?.deleteFrom(plyData?.path!);
+        const ng = game()?.deleteFrom(plyData!.path);
         setGame(ng);
     };
 
     const onAnnotate = (nag: number) => {
-        const ng = game()?.annotate(plyData?.path!, nag);
+        const ng = game()?.annotate(plyData!.path, nag);
         setGame(ng);
     };
 
     const onClearAnnotation = () => {
-        const ng = game()?.annotate(plyData?.path!, -1);
+        const ng = game()?.annotate(plyData!.path, -1);
         setGame(ng);
     };
     // context menu functions
@@ -600,7 +600,7 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
             <span class="pgnviewer-movecontent">
                 {/* {(color && line[color]?.fan) || "..."} */}
                 <Show when={isValid()} fallback="...">
-                    <PlyFan san={plyData?.san!} color={color!} />
+                    <PlyFan san={plyData!.san} color={color!} />
                 </Show>
                 {secondaryNagSymbol()}
             </span>

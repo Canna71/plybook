@@ -52,8 +52,8 @@ const PageNavigator: Component = () => {
         }
         let games = parsePgn(fullPgn()!);
         games = games.filter((_, i) => i !== gameIndex());
-        let newIndex = Math.max(gameIndex() - 1, 0);
-        let newPgn = games.map((g) => makePgn(g)).join("\n\n");
+        const newIndex = Math.max(gameIndex() - 1, 0);
+        const newPgn = games.map((g) => makePgn(g)).join("\n\n");
         batch(() => {
             setFullPgn(newPgn);
             setGameIndex(newIndex);

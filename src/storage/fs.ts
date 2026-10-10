@@ -75,7 +75,6 @@ async function ensureFolderExists(folderPath: string): Promise<void> {
 
         if (!folderExists) {
             await mkdir(folderPath, { recursive: true });
-        } else {
         }
     } catch (error) {
         log.error(`Error ensuring folder exists at ${folderPath}:`, error);

@@ -7,14 +7,6 @@ import { CommentsView } from "./Comments";
 import { Ply } from "./Ply";
 import { GameContext } from "./GameContext";
 
-export type MovesProps = {
-    // game: Accessor<GameModel | undefined>;
-    // setGame: Setter<GameModel | undefined>;
-    // currentPath: Accessor<Path | undefined>;
-    // setCurrentPath: Setter<Path | undefined>;
-    // squareHovered?: (square: string | undefined) => void;
-};
-
 const CommentsRows: Component<{
     path: Path;
     starting?: boolean;
@@ -41,9 +33,6 @@ const CommentsRows: Component<{
 };
 
 const MoveLine: Component<MoveProps> = ({ move }) => {
-    const {
-        currentPathSignal: [],
-    } = useContext(GameContext)!;
     const startingComments =
         move.white?.startingComments || move.black?.startingComments || [];
     const startingPath = move.white?.startingComments
@@ -150,7 +139,7 @@ const MovesTree: Component<MovesTreeProps> = ({
     );
 };
 
-const Moves: Component<MovesProps> = () => {
+const Moves: Component = () => {
     const {
         currentPathSignal: [, setCurrentPath],
         gameSignal: [game],
@@ -175,7 +164,7 @@ const Moves: Component<MovesProps> = () => {
     const movesTree = (): HierarchicalMoveData[] => {
         const g = game();
         if (!g) return [];
-        let moves = g.moves;
+        const moves = g.moves;
 
         const tree = moves && makeTree(moves);
         return tree || [];

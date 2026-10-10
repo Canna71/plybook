@@ -8,9 +8,7 @@ const PlayView = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
 
     createEffect(async () => {
-        if (typeof searchParams.fen === "string") {
-        } else {
-        }
+        // TODO: start from searchParams.fen when provided
     });
 
     const initialFen = () => {

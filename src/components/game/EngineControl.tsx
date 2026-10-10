@@ -33,7 +33,6 @@ const EngineControl = () => {
         engineColorSignal: [engineColor, setEngineColor],
         viewModeSignal: [viewMode],
         isEditingDescriptionSignal: [isEditingDescription],
-        fullPgnSignal: [],
         startingPositionSignal: [startingPosition],
         // isReviewModeSignal: [isReviewing, setIsReviewing],
         startReview,

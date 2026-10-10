@@ -22,8 +22,7 @@ export function makeTree(
     while (node.children.length) {
         const mainLine = node.children[0] as ChildNode<PlyData>;
         const num = Math.ceil(mainLine.data.ply / 2);
-        if (num == currentMove?.number) {
-        } else {
+        if (num != currentMove?.number) {
             currentMove = { number: num, level };
             list.push(currentMove);
         }

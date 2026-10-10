@@ -12,7 +12,6 @@ export type DraggablePieceProps = {
 };
 
 export const DraggablePiece: Component<DraggablePieceProps> = (props) => {
-    // @ts-ignore
     const { draggable } = createDraggable();
     const [position, setPosition] = createSignal({ x: 0, y: 0 });
     let ref: HTMLDivElement | null = null;

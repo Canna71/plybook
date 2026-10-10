@@ -77,7 +77,7 @@ const GameView = () => {
         const studyId = path;
         try {
             return await getStudy(studyId);
-        } catch (e) {
+        } catch {
             return undefined;
         }
     };
@@ -97,7 +97,6 @@ const GameView = () => {
                 });
                 log.error(e);
             }
-        } else {
         }
         batch(() => {
             setNewPgn(pgnText); // this is to avoid detecting changes on the new pgn

@@ -130,18 +130,20 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
                 this.isReady = true;
                 this.emit("ready");
                 break;
-            case "bestmove":
+            case "bestmove": {
                 const bestmove = tokens[1];
                 const ponder = tokens[3]; // Optional ponder move
                 this.emit("bestmove", bestmove, ponder);
                 break;
+            }
 
-            case "info":
+            case "info": {
                 const info = this.parseInfoMessage(tokens.slice(1));
                 if (info) {
                     this.emit("info", info);
                 }
                 break;
+            }
             case "id":
                 this.parseId(tokens);
                 break;
@@ -244,7 +246,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
                         }
                         break;
 
-                    case "pv":
+                    case "pv": {
                         // Collect all remaining tokens as moves
                         const moves: string[] = [];
                         while (
@@ -269,6 +271,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
                         }
                         result.pv = moves;
                         break;
+                    }
 
                     case "nodes":
                         if (i + 1 < tokens.length) {

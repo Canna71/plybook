@@ -152,7 +152,7 @@ export function makeConfig(
         }
 
         const lastMoveKey = lastMove(data);
-        let shapes = toShapes(highlightedSquares, highlightedMoves, data);
+        const shapes = toShapes(highlightedSquares, highlightedMoves, data);
 
         const config: Config = {
             ...baseConfig,
@@ -168,7 +168,7 @@ export function makeConfig(
 }
 
 function* toSquares(squares: SquareSet) {
-    for (let square of squares) {
+    for (const square of squares) {
         yield makeSquare(square) as Key;
     }
 }
@@ -290,7 +290,7 @@ export function useFenTooltip(
     ) => {
         if (!tooltipEnabled) return;
         if (e) {
-            !!plyData && showTooltip(e.currentTarget, plyData);
+            if (plyData) showTooltip(e.currentTarget, plyData);
         } else {
             showTooltip(undefined, undefined);
         }
@@ -354,27 +354,23 @@ export async function safePaste(
     const selection = window.getSelection();
     if (!selection) return;
     if (!isSelectionInEditableDiv(editableDiv, selection)) return;
-    try {
-        let text = await navigator.clipboard.readText();
-        text = sanitizeText(text);
+    let text = await navigator.clipboard.readText();
+    text = sanitizeText(text);
 
-        const range = selection.getRangeAt(0);
-        range.deleteContents();
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
 
-        const textNode = document.createTextNode(text);
-        range.insertNode(textNode);
+    const textNode = document.createTextNode(text);
+    range.insertNode(textNode);
 
-        // Update selection
-        selection.removeAllRanges();
-        const newRange = document.createRange();
-        newRange.setStartAfter(textNode);
-        newRange.setEndAfter(textNode);
-        selection.addRange(newRange);
+    // Update selection
+    selection.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.setStartAfter(textNode);
+    newRange.setEndAfter(textNode);
+    selection.addRange(newRange);
 
-        editableDiv.normalize();
-    } catch (err) {
-        throw err;
-    }
+    editableDiv.normalize();
 }
 
 const figurineMap: Record<string, () => JSXElement> = {

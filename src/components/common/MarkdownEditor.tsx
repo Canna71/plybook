@@ -26,6 +26,7 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
     const [value, setValue] = props.valueSignal;
     const [isEditing, setIsEditing] = props.isEditingSignal;
     // let div: HTMLDivElement | null = null;
+    // eslint-disable-next-line prefer-const -- assigned by Solid via ref={...}
     let textarea: HTMLDivElement | null = null;
     const gameContext = useContext(GameContext)!;
     const {

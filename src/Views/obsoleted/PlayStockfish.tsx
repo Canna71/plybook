@@ -14,9 +14,9 @@ const Play = () => {
     const [stockfish, setStockfish] = createSignal<any | undefined>(undefined);
 
     const updateStatus = () => {
-        var status = "";
+        let status = "";
 
-        var moveColor = "White";
+        let moveColor = "White";
         if (game().turn() === "b") {
             moveColor = "Black";
         }
@@ -48,7 +48,7 @@ const Play = () => {
             sf.addMessageListener((line: any) => {
                 // var line = event.data;
                 if (line.startsWith("bestmove")) {
-                    var bestMove = line.split(" ")[1];
+                    const bestMove = line.split(" ")[1];
                     game().move({
                         from: bestMove.slice(0, 2),
                         to: bestMove.slice(2, 4),
@@ -69,7 +69,7 @@ const Play = () => {
     // @ts-ignore
     function onMove(from: Key, to: Key, captured: Piece | undefined) {
         // see if the move is legal
-        var move = game().move({
+        const move = game().move({
             from: from,
             to: to,
             promotion: "q", // NOTE: always promote to a queen for example simplicity

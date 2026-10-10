@@ -53,7 +53,6 @@ const Analysis: Component<PgnViewerOptions> = ({ pgn }) => {
         return g.nodeAt(path);
     };
 
-    // @ts-ignore
     const currentData = () => {
         const g = game();
         if (!g) {

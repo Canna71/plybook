@@ -9,13 +9,7 @@ import Button from "../common/Button";
 import { GameContext } from "./GameContext";
 import HintButtons from "./HintButtons";
 
-export type ButtonBarProps = {
-    // game: Accessor<GameModel | undefined>;
-    // currentPath: Accessor<Path | undefined>;
-    // setCurrentPath: Setter<Path | undefined>;
-};
-
-const ButtonBar: Component<ButtonBarProps> = ({}) => {
+const ButtonBar: Component = () => {
     const {
         gameSignal: [game],
         currentPathSignal: [currentPath, setCurrentPath],

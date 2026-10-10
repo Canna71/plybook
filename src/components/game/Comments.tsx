@@ -10,7 +10,7 @@ export const squareRegex = /(?<!<|")([a-h][1-8])(?!<|")/g;
 const squareSubst = `<span class="square" data-square="$1">$1</span>`;
 
 // regex for moves, like 1. e4 or 1... e5 or 12. Nf3+
-export const moveRegex = /(\d+\.+\s*)([a-h][1-8][\+\#]?)/g;
+export const moveRegex = /(\d+\.+\s*)([a-h][1-8][+#]?)/g;
 const moveSubst = `<span class="move" data-move="$2">$&</span>`;
 
 export type CommentsViewProps = {

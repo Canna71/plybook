@@ -13,7 +13,7 @@ import {
     Switch,
     untrack,
 } from "solid-js";
-import { makeGameInternal, Path, PlyData } from "../../models/pgn";
+import { makeGameInternal, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import ButtonBar from "./Buttonbar";
 import {
@@ -174,7 +174,7 @@ const GameManager: Component<GameManagerOptions> = ({
     >(undefined);
 
     // #region Layout
-    let chessBoardDiv: HTMLDivElement | null = null;
+    const chessBoardDiv: HTMLDivElement | null = null;
 
     const divider = useSplitter((layout) => {
         setSettingValue("layout.playing.columnsTemplate", layout);
@@ -321,7 +321,7 @@ const GameManager: Component<GameManagerOptions> = ({
         // movable color is current color if not playing against engine
         let movableColor = undefined;
 
-        if (!!playingEngine) {
+        if (playingEngine) {
             if (engineColor?.() && pos.turn !== engineColor?.()) {
                 movableColor = pos.turn;
             }
@@ -355,7 +355,7 @@ const GameManager: Component<GameManagerOptions> = ({
             }
         } else {
             if (engineInfo.length > 0 && showArrows) {
-                for (let info of engineInfo) {
+                for (const info of engineInfo) {
                     if (info.pv) {
                         const move = parseUci(info.pv[0]) as NormalMove;
                         const from = makeSquare(move.from);
@@ -443,7 +443,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // #region Effects
 
     createEffect(() => {
-        let pgnString = initialPgn?.();
+        const pgnString = initialPgn?.();
         // if (!pgnString) {
         //     pgnString = getDefaultStudyContent();
         // }

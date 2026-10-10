@@ -88,7 +88,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     };
 
     const onChange = () => {
-        let fen = api()?.getFen();
+        const fen = api()?.getFen();
         props.setFen(fen);
     };
 
@@ -143,15 +143,12 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         return "";
     };
 
-    const setEnPassant: Setter<string> = (value) => {
-        const v = typeof value === "function" ? value(enPassant()) : value;
-
+    const setEnPassant = (value: string) => {
         const setup = position();
         if (setup) {
-            setup.epSquare = parseSquare(v);
+            setup.epSquare = parseSquare(value);
             props.setFen(makeFen(setup));
         }
-        return value;
     };
 
     const onClear = () => {

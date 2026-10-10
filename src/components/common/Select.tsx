@@ -1,4 +1,4 @@
-import { Accessor, JSX, Setter, Show, splitProps } from "solid-js";
+import { Accessor, JSX, Show, splitProps } from "solid-js";
 import { For } from "solid-js/web";
 // import styles from './Select.module.scss';
 
@@ -10,7 +10,7 @@ export type Option = {
 type SelectProps = {
     options: Accessor<Option[]>;
     selectedValue: Accessor<string>;
-    setSelectedValue: Setter<string>;
+    setSelectedValue: (value: string) => void;
     placeholder?: string;
     onChange?: (value: string) => void;
 } & JSX.HTMLAttributes<HTMLDivElement>;
