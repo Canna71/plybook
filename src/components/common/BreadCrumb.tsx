@@ -28,7 +28,9 @@ const BreadCrumb = (props: BreadCrumbProps) => {
                 <For each={segments()}>
                     {(segment) => (
                         <li>
-                            <a href={`/library?path=${segment.path}`}>
+                            <a
+                                href={`/library?path=${encodeURIComponent(segment.path)}`}
+                            >
                                 {segment.name}
                             </a>
                         </li>

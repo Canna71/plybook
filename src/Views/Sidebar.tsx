@@ -11,11 +11,13 @@ const Sidebar = () => {
     const onNodeClick = (file: FileBrowserFile) => {
         if (file && !file.isDirectory) {
             if (file.name.endsWith(".pgn")) {
-                navigate(`/game?path=${file.path}&source=library`);
+                navigate(
+                    `/game?path=${encodeURIComponent(file.path)}&source=library`,
+                );
             }
         }
         if (file && file.isDirectory) {
-            navigate(`/library?path=${file.path}`);
+            navigate(`/library?path=${encodeURIComponent(file.path)}`);
         }
     };
 
