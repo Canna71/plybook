@@ -2,6 +2,7 @@
 // use tauri::Manager;   
 mod db;
 mod engine;
+mod migrate;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -35,6 +36,8 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .setup(|app| {
+            // Must run before the puzzle DB or any user file is opened.
+            migrate::migrate_legacy_data(app.handle());
             // the webview cannot touch the Engines folder, so it is created here
             ensure_engines_folder(app.handle())?;
             Ok(())
