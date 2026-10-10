@@ -38,7 +38,7 @@ const EngineControl = () => {
         // isReviewModeSignal: [isReviewing, setIsReviewing],
         startReview,
         isReviewing,
-        reviewProgress
+        reviewProgress,
     } = useContext(GameContext)!;
 
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
@@ -176,10 +176,7 @@ const EngineControl = () => {
 
                 <Show when={playingEngine()}>
                     <div class="engine-control-row">
-                        ELO:{" "}
-                        <EngineLevel
-                            
-                        />
+                        ELO: <EngineLevel />
                     </div>
                     <div class="engine-control-row">
                         Depth: <DepthLevel />
@@ -350,7 +347,7 @@ const Threads = () => {
             <span class="slide-value">{threads()}</span>
         </div>
     );
-}
+};
 
 const AnalysisMoveTime = () => {
     const onMoveTimeChange = (e: Event) => {
@@ -418,12 +415,19 @@ const ShowErrorToggle = () => {
     );
 };
 
-const ReviewProgressIndicator = ({reviewProgress}:{reviewProgress: Accessor<ReviewProgress>}) => {
+const ReviewProgressIndicator = ({
+    reviewProgress,
+}: {
+    reviewProgress: Accessor<ReviewProgress>;
+}) => {
     return (
         <div class="review-progress">
             Reviewing...
-            <progress id="file" max={reviewProgress()?.total} value={reviewProgress()?.current}></progress>
-
+            <progress
+                id="file"
+                max={reviewProgress()?.total}
+                value={reviewProgress()?.current}
+            ></progress>
         </div>
     );
 };

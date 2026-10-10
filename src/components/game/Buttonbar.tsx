@@ -113,9 +113,7 @@ const ButtonBar: Component<ButtonBarProps> = ({}) => {
                 </div>
             </Show>
             <Show when={playingEngine() && hintMove()}>
-                <HintButtons 
-                    setHintType={setHintType}
-                />
+                <HintButtons setHintType={setHintType} />
             </Show>
         </>
     );

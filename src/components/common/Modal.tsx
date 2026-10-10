@@ -28,7 +28,9 @@ const Modal: ParentComponent<ModalProps> = (props) => {
 
                 <div class="modal-card">
                     <Show when={props.title}>
-                        <header class="modal-card-head">{props.title!()}</header>
+                        <header class="modal-card-head">
+                            {props.title!()}
+                        </header>
                     </Show>
                     <div class="modal-card-body">{props.children}</div>
                     <footer class="modal-card-foot">

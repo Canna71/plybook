@@ -135,7 +135,6 @@ const ReviewLine: Component<{ move: HierarchicalMoveData }> = ({ move }) => {
     } = useContext(GameContext)!;
     const afterWhite = move.white?.comments || [];
 
-
     return (
         <>
             <tr>
@@ -170,9 +169,7 @@ const ReviewLine: Component<{ move: HierarchicalMoveData }> = ({ move }) => {
                     {(variation) => (
                         <tr>
                             <td class="pgnviewer-variation-cell" colSpan={3}>
-                                <ReviewTree
-                                    movesTree={() => variation}
-                                />
+                                <ReviewTree movesTree={() => variation} />
                             </td>
                         </tr>
                     )}

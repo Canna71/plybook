@@ -10,18 +10,15 @@ type BreadCrumbProps = {
 const BreadCrumb = (props: BreadCrumbProps) => {
     // const [segments, setSegments] = createSignal<string[]>([]);
 
-
     const segments = () => {
         // returns segments, each with its local name and partial path
-        const path = props.path() || '';
+        const path = props.path() || "";
         const folders = path.split(sep());
         return folders.map((folder, index) => {
-            return (
-                {   
-                    path: folders.slice(0, index + 1).join(sep()),
-                    name: folder
-                }
-            )
+            return {
+                path: folders.slice(0, index + 1).join(sep()),
+                name: folder,
+            };
         });
     };
 
@@ -31,7 +28,9 @@ const BreadCrumb = (props: BreadCrumbProps) => {
                 <For each={segments()}>
                     {(segment) => (
                         <li>
-                            <a href={`/library?path=${segment.path}`}>{segment.name}</a>
+                            <a href={`/library?path=${segment.path}`}>
+                                {segment.name}
+                            </a>
                         </li>
                     )}
                 </For>

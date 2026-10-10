@@ -50,7 +50,7 @@ const GameView = () => {
     const location = useLocation();
     const { refresh } = useContentContext();
     const navigate = useNavigate();
-    
+
     const displayedName = () => {
         const path = searchParams.path;
         if (path && typeof path === "string") {
@@ -71,7 +71,7 @@ const GameView = () => {
         if (path) {
             return path.substring(0, path.lastIndexOf(sep()));
         }
-    }
+    };
 
     const fetchStudy = async (path: string) => {
         const studyId = path;
@@ -228,7 +228,12 @@ const GameView = () => {
                 <Show when={isEditable() || isPuzzleMode()}>
                     <Show when={isPuzzleMode()}>
                         <div class="navbar-item">
-                            <Button class="is-primary is-outlined" onClick={onNextPuzzle}>Next Puzzle</Button>
+                            <Button
+                                class="is-primary is-outlined"
+                                onClick={onNextPuzzle}
+                            >
+                                Next Puzzle
+                            </Button>
                         </div>
                     </Show>
 

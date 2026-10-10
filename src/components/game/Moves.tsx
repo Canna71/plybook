@@ -15,7 +15,6 @@ export type MovesProps = {
     // squareHovered?: (square: string | undefined) => void;
 };
 
-
 const CommentsRows: Component<{
     path: Path;
     starting?: boolean;
@@ -42,7 +41,9 @@ const CommentsRows: Component<{
 };
 
 const MoveLine: Component<MoveProps> = ({ move }) => {
-    const { currentPathSignal: [] } = useContext(GameContext)!;
+    const {
+        currentPathSignal: [],
+    } = useContext(GameContext)!;
     const startingComments =
         move.white?.startingComments || move.black?.startingComments || [];
     const startingPath = move.white?.startingComments
@@ -150,12 +151,11 @@ const MovesTree: Component<MovesTreeProps> = ({
 };
 
 const Moves: Component<MovesProps> = () => {
-
     const {
         currentPathSignal: [, setCurrentPath],
         gameSignal: [game],
-        playingEngine    } = useContext(GameContext)!;
-
+        playingEngine,
+    } = useContext(GameContext)!;
 
     const onClick = (e: Event) => {
         if (playingEngine()) return;
@@ -174,9 +174,9 @@ const Moves: Component<MovesProps> = () => {
 
     const movesTree = (): HierarchicalMoveData[] => {
         const g = game();
-        if(!g) return [];
+        if (!g) return [];
         let moves = g.moves;
-        
+
         const tree = moves && makeTree(moves);
         return tree || [];
     };
@@ -187,8 +187,8 @@ const Moves: Component<MovesProps> = () => {
 
     const classList = {
         "pgnviewer-moves-panel": true,
-        "readonly": playingEngine(),
-        "editable": !playingEngine(),
+        readonly: playingEngine(),
+        editable: !playingEngine(),
     };
 
     return (

@@ -17,55 +17,52 @@ export class ExecutableUCIInterface implements IUCIInterface {
     }
 
     private async getEngineCommand() {
-        if(isWindows()) {
-            return  Command.create("exec-cmd", ["/c", `${this.enginePath}`]);
+        if (isWindows()) {
+            return Command.create("exec-cmd", ["/c", `${this.enginePath}`]);
         } else {
-            return  Command.create("exec-sh", ["-c", `"${this.enginePath}"`]);
+            return Command.create("exec-sh", ["-c", `"${this.enginePath}"`]);
         }
-
-        
     }
 
     async init(): Promise<void> {
-
         if (this.isReady) return;
 
         this.command = await this.getEngineCommand();
-        
-        this.command.stdout.on('data', (line: string) => {
-            if (line.includes('uciok')) {
+
+        this.command.stdout.on("data", (line: string) => {
+            if (line.includes("uciok")) {
                 this.isReady = true;
             }
 
             this.responseCallback?.(line);
         });
 
-        this.command.stderr.on('data', (line: string) => {
+        this.command.stderr.on("data", (line: string) => {
             log.error(`Engine error: ${line}`);
         });
 
-        this.command.on('close', (_code) => {
+        this.command.on("close", (_code) => {
             this.isReady = false;
             this.exited = true;
         });
 
-        this.command.on('error', (err) => {
+        this.command.on("error", (err) => {
             log.error(`error: ${err}`);
         });
 
         this.child = await this.command.spawn();
 
-        this.sendCommand('uci');
+        this.sendCommand("uci");
 
         // Wait for the engine to be ready
         while (!this.isReady && !this.exited) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
         }
     }
 
     sendCommand(command: string): void {
         log.debug(`Sending command: ${command}`);
-        this.child?.write(command + '\n');
+        this.child?.write(command + "\n");
     }
 
     onResponse(callback: (line: string) => void): void {

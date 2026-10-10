@@ -10,7 +10,7 @@ export function useTooltip() {
 
     const showTooltip = (
         anchor: Element | undefined,
-        plyData: PlyData | undefined
+        plyData: PlyData | undefined,
     ) => {
         setPly(plyData);
         setReference(anchor);

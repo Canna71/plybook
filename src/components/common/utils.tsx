@@ -69,13 +69,17 @@ export function toShapes(
     _highlightedMoves: Accessor<string[]>,
     data: Initial | PlyData,
 ) {
-    let autoShapes = highlightedSquares().length>0
-        ? highlightedSquares().map(hs => ({ orig: hs as Key, brush: "green" }))
-        : [];
+    let autoShapes =
+        highlightedSquares().length > 0
+            ? highlightedSquares().map((hs) => ({
+                  orig: hs as Key,
+                  brush: "green",
+              }))
+            : [];
     // TODO: how can we display moves regardless of the position?
     // autoShapes = autoShapes.concat(
     //     highlightedMoves().map((hm) => {
-    //         const move = 
+    //         const move =
     //         const [from, to] = hm.split("-");
     //         return { orig: from as Key, dest: to as Key, brush: "green" };
     //     }),
@@ -306,14 +310,13 @@ export function initFromGameModel(
     context: GameContextType,
     gameModel: GameModel,
 ) {
-
-    const { gameSignal: [, setGame], 
-        viewModeSignal:[, setViewMode] ,
+    const {
+        gameSignal: [, setGame],
+        viewModeSignal: [, setViewMode],
         descriptionSignal: [, setDescription],
         startingPositionSignal: [, setStartingPosition],
         hintMoveSignal: [, setHintMove],
     } = context;
-    
 
     batch(() => {
         setGame(gameModel);
@@ -323,12 +326,10 @@ export function initFromGameModel(
             if (setup.isOk) {
                 setStartingPosition(makeFen(setup.value));
             }
-        } 
+        }
         // context.currentPathSignal[1](gameModel.pathAtMainlinePly(0));
         setViewMode(ViewMode.MOVES);
-        setDescription(
-            gameModel.headers.get("Description") || "",
-        );
+        setDescription(gameModel.headers.get("Description") || "");
     });
 }
 
@@ -392,10 +393,9 @@ const figurineMap: Record<string, () => JSXElement> = {
 };
 
 export function getFigurine(piece: string) {
-    
-    if(getTheme() === "light"){
+    if (getTheme() === "light") {
         // invert the casing of piece
-        if(piece === piece.toUpperCase()){
+        if (piece === piece.toUpperCase()) {
             piece = piece.toLowerCase();
         } else {
             piece = piece.toUpperCase();
@@ -429,9 +429,11 @@ export function useFen(
     currentPath: Accessor<Path | undefined>,
 ) {
     const position = usePosition(game, currentPath);
-    const fen = createMemo(() => makeFen(position().toSetup(), {
-        epd: false,
-    }));
+    const fen = createMemo(() =>
+        makeFen(position().toSetup(), {
+            epd: false,
+        }),
+    );
     return fen;
 }
 
@@ -440,14 +442,14 @@ export function moveEquals(pos: Position, a: NormalMove, b: NormalMove) {
     const asan = makeSan(pos, a);
     const bsan = makeSan(pos, b);
     return asan === bsan;
-} 
+}
 
 export const formatDate = (date?: string) => {
-    return date && new Date(date).toLocaleDateString() || "";
-}
+    return (date && new Date(date).toLocaleDateString()) || "";
+};
 
 // round a number to a given number of decimal places
 export function round(value: number | undefined, decimals: number) {
-    if(typeof value !== "number") return value;
+    if (typeof value !== "number") return value;
     return Number(Math.round(Number(value + "e" + decimals)) + "e-" + decimals);
 }

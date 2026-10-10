@@ -14,7 +14,7 @@ const PgnTextArea: Component<PgnTextAreaProps> = (props) => {
 
     const onInput = (_e: Event) => {
         let value = div!.value;
-        value = value.replace(/[“”]/g, "\"");
+        value = value.replace(/[“”]/g, '"');
         setPgn(value);
     };
 

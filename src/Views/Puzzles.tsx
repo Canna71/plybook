@@ -1,9 +1,5 @@
 import { Component, createResource, For } from "solid-js";
-import {
-    listPuzzles,
-    pickPuzzle,
-    Study,
-} from "../storage/db";
+import { listPuzzles, pickPuzzle, Study } from "../storage/db";
 import Button from "../components/common/Button";
 import { formatDate, round } from "../components/common/utils";
 import "./Puzzles.scss";
@@ -11,9 +7,7 @@ import { useNavigate } from "@solidjs/router";
 import { NameWithoutExtension } from "../storage/fs";
 
 const Puzzles: Component = () => {
-    const [puzzles] = createResource<Study[] | undefined>(
-        listPuzzles,
-    );
+    const [puzzles] = createResource<Study[] | undefined>(listPuzzles);
     const navigate = useNavigate();
 
     const nextPuzzle = async () => {
@@ -29,7 +23,9 @@ const Puzzles: Component = () => {
     return (
         <div class="puzzles_view ">
             <div class="buttons-bar">
-                <Button class="is-primary" onClick={nextPuzzle}>Pick Puzzle</Button>
+                <Button class="is-primary" onClick={nextPuzzle}>
+                    Pick Puzzle
+                </Button>
             </div>
             {/* <Button onClick={onUpdateWeights}>Update Cached Weights</Button> */}
             <div class="table-container">
@@ -56,7 +52,9 @@ const Puzzles: Component = () => {
                                         <a
                                             href={`/puzzle?path=${study.file_path}`}
                                         >
-                                            {NameWithoutExtension(study.file_path)}
+                                            {NameWithoutExtension(
+                                                study.file_path,
+                                            )}
                                         </a>
                                     </td>
                                     <td>

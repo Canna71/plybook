@@ -24,19 +24,19 @@ const PlayerName: Component<{
     const userIcon = (color: Color) => {
         const theme = getTheme();
         // return icon filled if color is white and theme black, or color is black and theme is white
-        const filled = (color === "white" && theme === "dark") || (color === "black" && theme === "light");
-        if(filled) return <IconUserFilled />
-        else return <IconUser />
-    }
+        const filled =
+            (color === "white" && theme === "dark") ||
+            (color === "black" && theme === "light");
+        if (filled) return <IconUserFilled />;
+        else return <IconUser />;
+    };
 
     return (
         <div class="player-name">
             <Show when={engineColor() === color}>
                 <IconCpu />
             </Show>
-            <Show when={engineColor() !== color}>
-                {userIcon(color)}
-            </Show>
+            <Show when={engineColor() !== color}>{userIcon(color)}</Show>
 
             <Editable
                 initialValue={name()}

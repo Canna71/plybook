@@ -11,11 +11,7 @@ import { Api } from "chessground/api";
 import { PiecesToolbar } from "./PiecesToolbar";
 import { Piece, Role } from "chessground/types";
 import ToggleSwitch from "../common/ToggleSwitch";
-import {
-    INITIAL_FEN,
-    makeFen,
-    parseFen,
-} from "chessops/fen";
+import { INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
 import { makeSquare, parseSquare, squareFromCoords } from "chessops/util";
 import Select from "../common/Select";
 import { getEnPassantSquares } from "../common/utils";

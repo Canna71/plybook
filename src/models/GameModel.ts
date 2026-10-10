@@ -1,9 +1,33 @@
-import { Move, Chess, parseSquare  } from "chessops";
+import { Move, Chess, parseSquare } from "chessops";
 import { scalachessCharPair } from "chessops/compat";
 import { parseFen } from "chessops/fen";
-import { Game, PgnNodeData, Node, isChildNode, extend, makePgn, CommentShapeColor, CommentShape, Evaluation } from "chessops/pgn";
+import {
+    Game,
+    PgnNodeData,
+    Node,
+    isChildNode,
+    extend,
+    makePgn,
+    CommentShapeColor,
+    CommentShape,
+    Evaluation,
+} from "chessops/pgn";
 import { makeSan, parseSan } from "chessops/san";
-import { PlyData, AnyNode, Initial, Players, Metadata, Path, nodeAtPathFrom, isMoveNode, Ply, makeGameInternal, EMPTY_COMMENT, makeComment2, parseComment2 } from "./pgn";
+import {
+    PlyData,
+    AnyNode,
+    Initial,
+    Players,
+    Metadata,
+    Path,
+    nodeAtPathFrom,
+    isMoveNode,
+    Ply,
+    makeGameInternal,
+    EMPTY_COMMENT,
+    makeComment2,
+    parseComment2,
+} from "./pgn";
 import { DrawShape } from "chessground/draw";
 
 // immutable ?
@@ -16,42 +40,59 @@ export class GameModel {
         moves: AnyNode,
         readonly players: Players,
         readonly metadata: Metadata,
-        readonly game: Game<PgnNodeData>
+        readonly game: Game<PgnNodeData>,
     ) {
         this.moves = moves;
         this.mainline = Array.from(this.moves.mainline());
     }
 
     clone(): GameModel {
-        return new GameModel(this.initial, this.moves, this.players, this.metadata, this.game);
+        return new GameModel(
+            this.initial,
+            this.moves,
+            this.players,
+            this.metadata,
+            this.game,
+        );
     }
 
-    nodeAt = (path: Path): AnyNode | undefined => nodeAtPathFrom(this.moves, path);
+    nodeAt = (path: Path): AnyNode | undefined =>
+        nodeAtPathFrom(this.moves, path);
 
     dataAt = (path: Path): PlyData | Initial | undefined => {
         const node = this.nodeAt(path);
         return node ? (isMoveNode(node) ? node.data : this.initial) : undefined;
     };
 
-    title = () => this.players.white.name
-        ? [
-            this.players.white.title,
-            this.players.white.name,
-            'vs',
-            this.players.black.title,
-            this.players.black.name,
-        ]
-            .filter(x => x && !!x.trim())
-            .join('_')
-            .replace(' ', '-')
-        : 'lichess-pgn-viewer';
+    title = () =>
+        this.players.white.name
+            ? [
+                  this.players.white.title,
+                  this.players.white.name,
+                  "vs",
+                  this.players.black.title,
+                  this.players.black.name,
+              ]
+                  .filter((x) => x && !!x.trim())
+                  .join("_")
+                  .replace(" ", "-")
+            : "lichess-pgn-viewer";
 
-    pathAtMainlinePly = (ply: Ply | 'last') => ply == 0
-        ? Path.root
-        : this.mainline[Math.max(0, Math.min(this.mainline.length - 1, ply == 'last' ? 9999 : ply - 1))]
-            ?.path || Path.root;
+    pathAtMainlinePly = (ply: Ply | "last") =>
+        ply == 0
+            ? Path.root
+            : this.mainline[
+                  Math.max(
+                      0,
+                      Math.min(
+                          this.mainline.length - 1,
+                          ply == "last" ? 9999 : ply - 1,
+                      ),
+                  )
+              ]?.path || Path.root;
 
-    hasPlayerName = () => !!(this.players.white?.name || this.players.black?.name);
+    hasPlayerName = () =>
+        !!(this.players.white?.name || this.players.black?.name);
 
     findPgnNode = (path: Path): Node<PgnNodeData> | undefined => {
         const node = nodeAtPathFrom(this.moves, path);
@@ -68,7 +109,6 @@ export class GameModel {
         } else {
             return n;
         }
-
     };
 
     *allPgnNodes(n: Node<PgnNodeData>): Iterable<Node<PgnNodeData>> {
@@ -78,13 +118,12 @@ export class GameModel {
         }
     }
 
-
     applyMoves(path: Path, moves: Move[]): [GameModel, Path] {
         const pos = this.getPosition(path).clone();
         const pgnNode = this.findPgnNode(path);
         let node = pgnNode;
         let p = path;
-        for(let i=0; i<moves.length; i++) {
+        for (let i = 0; i < moves.length; i++) {
             const move = moves[i];
             const san = makeSan(pos, move);
             // Note: this is to avoid different Ids for castling moves
@@ -94,11 +133,11 @@ export class GameModel {
             p = p.append(moveId);
             // extend(node!, [{ san }]);
             const children = node!.children;
-            const existing = children.find(c => c.data.san === san);
-            if(existing) {
+            const existing = children.find((c) => c.data.san === san);
+            if (existing) {
                 node = existing;
             } else {
-               node = extend(node!, [{ san }]);
+                node = extend(node!, [{ san }]);
             }
         }
         const newGameModel = this.getNewGameModel();
@@ -107,7 +146,6 @@ export class GameModel {
     }
 
     private getNewGameModel(): GameModel {
-
         // const moves = this.updateMoves();
         // return new GameModel(this.initial, moves, this.players, this.metadata, this.game);
         return makeGameInternal(this.game);
@@ -131,23 +169,29 @@ export class GameModel {
     private changeCommentText(comment: string, text: string): string {
         const c = parseComment2(comment);
         c.text = text;
-        
+
         return makeComment2(c);
     }
 
-    updateComment(path: Path, index: number, comment: string, starting: boolean = false): GameModel {
+    updateComment(
+        path: Path,
+        index: number,
+        comment: string,
+        starting: boolean = false,
+    ): GameModel {
         const pgnNode = this.findPgnNode(path);
         if (!pgnNode) return this;
         if (isChildNode(pgnNode)) {
-            const comments = (starting ? pgnNode.data.startingComments : pgnNode.data.comments) || []
+            const comments =
+                (starting
+                    ? pgnNode.data.startingComments
+                    : pgnNode.data.comments) || [];
             comments[index] = this.changeCommentText(comments[index], comment);
-
         } else {
             const comments = this.game.comments || [];
             comments[index] = this.changeCommentText(comments[index], comment);
         }
         return this.getNewGameModel();
-
     }
 
     insertComment(path: Path, comment: string, before: boolean = false) {
@@ -157,33 +201,50 @@ export class GameModel {
         let pgnNode = this.findPgnNode(path);
         let node = nodeAtPathFrom(this.moves, path);
         if (!pgnNode || !node) return this;
-        const isVariation = node?.children.length > 1 && !node.children[0].data.path.equals(originalPath);
+        const isVariation =
+            node?.children.length > 1 &&
+            !node.children[0].data.path.equals(originalPath);
         if (isVariation) {
             pgnNode = this.findPgnNode(originalPath);
             node = nodeAtPathFrom(this.moves, originalPath);
-            if(before) isStarting = true;
+            if (before) isStarting = true;
             if (!pgnNode || !node) return this;
         }
-        const shapes = isChildNode(node) ? node.data.shapes : this.initial.shapes;
-        const evaluation = isChildNode(node) ? node.data.evaluation : this.initial.evaluation;
+        const shapes = isChildNode(node)
+            ? node.data.shapes
+            : this.initial.shapes;
+        const evaluation = isChildNode(node)
+            ? node.data.evaluation
+            : this.initial.evaluation;
         const field = isStarting ? "startingComments" : "comments";
         if (isChildNode(pgnNode) && isChildNode(node)) {
-            const comments = node.data[field].filter(t => t !== EMPTY_COMMENT) || [];
-            if(before) {
+            const comments =
+                node.data[field].filter((t) => t !== EMPTY_COMMENT) || [];
+            if (before) {
                 comments.push(comment);
             } else {
                 comments.splice(0, 0, comment);
             }
-            pgnNode.data[field] = this.mergeShapes(comments,shapes,true,evaluation);
+            pgnNode.data[field] = this.mergeShapes(
+                comments,
+                shapes,
+                true,
+                evaluation,
+            );
             // pgnNode.data.comments = this.insertCommentInternal(node.data.comments, comment, shapes);
-        } else {    
+        } else {
             const comments = this.game.comments || [];
-            if(before) {
+            if (before) {
                 comments.push(comment);
             } else {
                 comments.splice(0, 0, comment);
             }
-            this.game.comments = this.mergeShapes(comments,shapes,true, evaluation);
+            this.game.comments = this.mergeShapes(
+                comments,
+                shapes,
+                true,
+                evaluation,
+            );
             // this.game.comments = this.insertCommentInternal(this.initial.comments, comment, shapes);
         }
         return this.getNewGameModel();
@@ -200,15 +261,30 @@ export class GameModel {
         const node = nodeAtPathFrom(this.moves, path);
 
         if (!pgnNode || !node) return this;
-        const shapes = isChildNode(node) ? node.data.shapes : this.initial.shapes;
-        const evaluation = isChildNode(node) ? node.data.evaluation : this.initial.evaluation;
+        const shapes = isChildNode(node)
+            ? node.data.shapes
+            : this.initial.shapes;
+        const evaluation = isChildNode(node)
+            ? node.data.evaluation
+            : this.initial.evaluation;
         if (isChildNode(pgnNode)) {
-            let comments = pgnNode.data[starting ? "startingComments" : "comments"] || [];
-            comments = this.removeCommentAtIndex(comments, index, shapes, evaluation);
+            let comments =
+                pgnNode.data[starting ? "startingComments" : "comments"] || [];
+            comments = this.removeCommentAtIndex(
+                comments,
+                index,
+                shapes,
+                evaluation,
+            );
             pgnNode.data[starting ? "startingComments" : "comments"] = comments;
         } else {
             let comments = this.game.comments || [];
-            comments = this.removeCommentAtIndex(comments, index, shapes, evaluation);
+            comments = this.removeCommentAtIndex(
+                comments,
+                index,
+                shapes,
+                evaluation,
+            );
             this.game.comments = comments;
         }
         return this.getNewGameModel();
@@ -223,7 +299,12 @@ export class GameModel {
     //     });
     // }
 
-    private removeCommentAtIndex(comments: string[], index: number, shapes: CommentShape[], evaluation?: Evaluation) {
+    private removeCommentAtIndex(
+        comments: string[],
+        index: number,
+        shapes: CommentShape[],
+        evaluation?: Evaluation,
+    ) {
         comments = this.mergeShapes(comments, [], false, evaluation);
         comments.splice(index, 1);
         comments = this.mergeShapes(comments, shapes, false, evaluation);
@@ -236,7 +317,7 @@ export class GameModel {
         if (isChildNode(pgnNode)) {
             const parent = this.findPgnNode(path.previous());
             if (!parent) return this;
-            parent.children = parent.children.filter(c => c !== pgnNode);
+            parent.children = parent.children.filter((c) => c !== pgnNode);
         } else {
             return this;
         }
@@ -252,7 +333,9 @@ export class GameModel {
                 if (!pgnNode.data.nags.includes(nag)) {
                     pgnNode.data.nags.push(nag);
                 } else {
-                    pgnNode.data.nags = pgnNode.data.nags.filter(n => n !== nag);
+                    pgnNode.data.nags = pgnNode.data.nags.filter(
+                        (n) => n !== nag,
+                    );
                 }
             } else {
                 pgnNode.data.nags = [];
@@ -262,7 +345,7 @@ export class GameModel {
     }
 
     private toCommentShapes(shapes: DrawShape[]): CommentShape[] {
-        return shapes.map(s => {
+        return shapes.map((s) => {
             const from = parseSquare(s.orig)!;
             const to = s.dest && parseSquare(s.dest)!;
             const color = s.brush! as CommentShapeColor;
@@ -270,18 +353,20 @@ export class GameModel {
         });
     }
 
-    private  mergeShapes(oldComments: string[] | undefined, shapes: CommentShape[], allowEmpty:boolean=false, evaluation?: Evaluation):string[] {
+    private mergeShapes(
+        oldComments: string[] | undefined,
+        shapes: CommentShape[],
+        allowEmpty: boolean = false,
+        evaluation?: Evaluation,
+    ): string[] {
         // FIX: processing comments with already only empty comment, will discard the shapes and/or evaluation
-        let comments = (oldComments || [""])
-            .map(parseComment2);
-        if(comments.length > 1) {
-            comments = comments.filter(c => c.text !== EMPTY_COMMENT);
+        let comments = (oldComments || [""]).map(parseComment2);
+        if (comments.length > 1) {
+            comments = comments.filter((c) => c.text !== EMPTY_COMMENT);
         }
         const tc = comments.map((c, i) => {
             c.shapes = i === 0 ? shapes : [];
-            c.text = (i > 0 || allowEmpty) ? c.text : (
-                c.text || EMPTY_COMMENT
-            );
+            c.text = i > 0 || allowEmpty ? c.text : c.text || EMPTY_COMMENT;
             c.evaluation = i === 0 ? evaluation : undefined;
             return makeComment2(c);
         });
@@ -291,13 +376,22 @@ export class GameModel {
     public updateShapes(path: Path, shapes: DrawShape[]): GameModel {
         const pgnNode = this.findPgnNode(path);
         const node = nodeAtPathFrom(this.moves, path);
-        ;
         if (!pgnNode || !node) return this;
-        
-        if (isChildNode(node) && isChildNode(pgnNode)) {    
-            pgnNode.data.comments = this.mergeShapes(pgnNode.data.comments, this.toCommentShapes(shapes),false, node.data.evaluation);
+
+        if (isChildNode(node) && isChildNode(pgnNode)) {
+            pgnNode.data.comments = this.mergeShapes(
+                pgnNode.data.comments,
+                this.toCommentShapes(shapes),
+                false,
+                node.data.evaluation,
+            );
         } else {
-            this.game.comments = this.mergeShapes(this.game.comments, this.toCommentShapes(shapes),false, this.initial.evaluation);
+            this.game.comments = this.mergeShapes(
+                this.game.comments,
+                this.toCommentShapes(shapes),
+                false,
+                this.initial.evaluation,
+            );
         }
         return this.getNewGameModel();
     }
@@ -307,9 +401,19 @@ export class GameModel {
         const node = nodeAtPathFrom(this.moves, path);
         if (!pgnNode || !node) return this;
         if (isChildNode(node) && isChildNode(pgnNode)) {
-            pgnNode.data.comments = this.mergeShapes(pgnNode.data.comments, node.data.shapes, false, evaluation);
+            pgnNode.data.comments = this.mergeShapes(
+                pgnNode.data.comments,
+                node.data.shapes,
+                false,
+                evaluation,
+            );
         } else {
-            this.game.comments = this.mergeShapes(this.game.comments, this.initial.shapes, false, evaluation);
+            this.game.comments = this.mergeShapes(
+                this.game.comments,
+                this.initial.shapes,
+                false,
+                evaluation,
+            );
         }
         return this.getNewGameModel();
     }
@@ -337,7 +441,4 @@ export class GameModel {
     get headers() {
         return this.game.headers;
     }
-    
 }
-
-

@@ -28,7 +28,9 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
     // let div: HTMLDivElement | null = null;
     let textarea: HTMLDivElement | null = null;
     const gameContext = useContext(GameContext)!;
-    const { gameSignal:[game] } = gameContext;
+    const {
+        gameSignal: [game],
+    } = gameContext;
 
     onMount(() => {
         // textarea!.style.height = "";
@@ -41,23 +43,20 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
         let text = value();
         text = text.replaceAll(SEPARATOR, "\n");
         return text;
-    }
+    };
 
     const encodeText = (text: string) => {
         text = text.replace(/\r\n/g, SEPARATOR);
         text = text.replace(/\n/g, SEPARATOR);
         return text;
-    }
+    };
 
     const onBlur = () => {
         let value = textarea!.innerText;
         value = encodeText(value);
-        
-        
+
         const newGame = game()?.updateHeaders(
-            new Map([
-                ["Description", value || ""],
-            ]),
+            new Map([["Description", value || ""]]),
         );
 
         batch(() => {
