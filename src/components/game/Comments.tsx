@@ -10,10 +10,8 @@ export const squareRegex = /(?<!<|")([a-h][1-8])(?!<|")/g;
 const squareSubst = `<span class="square" data-square="$1">$1</span>`;
 
 // regex for moves, like 1. e4 or 1... e5 or 12. Nf3+
-export const moveRegex = /(\d+\.+\s*)([a-h][1-8][\+\#]?)/g;
+export const moveRegex = /(\d+\.+\s*)([a-h][1-8][+#]?)/g;
 const moveSubst = `<span class="move" data-move="$2">$&</span>`;
-
-
 
 export type CommentsViewProps = {
     comments: Accessor<string>;
@@ -43,7 +41,6 @@ export const CommentsView: Component<CommentsViewProps> = ({
         // const matches = line.match(squareRegex);
         line = line.replace(moveRegex, moveSubst);
         line = line.replace(squareRegex, squareSubst);
-        
 
         return line;
     };
@@ -55,7 +52,7 @@ export const CommentsView: Component<CommentsViewProps> = ({
         } else {
             setHighlightedSquares?.([]);
         }
-        if(target.dataset.move) {
+        if (target.dataset.move) {
             setHighlightedMoves?.([target.dataset.move]);
         } else {
             setHighlightedMoves?.([]);
@@ -109,7 +106,7 @@ export const CommentsView: Component<CommentsViewProps> = ({
         }
     };
 
-    const onPaste = (e:ClipboardEvent) => safePaste(ref!, e);
+    const onPaste = (e: ClipboardEvent) => safePaste(ref!, e);
 
     return (
         <div

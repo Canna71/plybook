@@ -245,8 +245,7 @@ function makeMove(
     };
 }
 
-//@ts-ignore
-function makePlayers(headers: Headers, metadata: Metadata): Players {
+function makePlayers(headers: Headers, _metadata: Metadata): Players {
     const get = (color: Color, field: string): string | undefined => {
         const raw = headers.get(`${color}${field}`);
         return raw == "?" || raw == "" ? undefined : raw;
@@ -271,7 +270,7 @@ function parseComments(strings: string[]): Comments {
     const comments = strings.map(parseComment2);
     const reduceTimes = (times: Array<number | undefined>) =>
         times.reduce<number | undefined>(
-            (last, time) => (typeof time == undefined ? last : time),
+            (last, time) => (time === undefined ? last : time),
             undefined,
         );
     return {

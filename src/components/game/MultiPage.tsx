@@ -29,7 +29,6 @@ const PageNavigator: Component = () => {
     });
 
     const onNewPage = () => {
-        
         batch(() => {
             setGameIndex(gameIndex() + 1);
             setCurrentPath(new Path(""));
@@ -45,7 +44,7 @@ const PageNavigator: Component = () => {
             setGameIndex(index);
             setCurrentPath(new Path(""));
         });
-    }
+    };
 
     const onDeletePage = () => {
         if (numOfPages() === 1) {
@@ -53,16 +52,15 @@ const PageNavigator: Component = () => {
         }
         let games = parsePgn(fullPgn()!);
         games = games.filter((_, i) => i !== gameIndex());
-        let newIndex = Math.max(gameIndex()-1, 0);
-        let newPgn = games.map((g) => makePgn(g)).join("\n\n");
+        const newIndex = Math.max(gameIndex() - 1, 0);
+        const newPgn = games.map((g) => makePgn(g)).join("\n\n");
         batch(() => {
             setFullPgn(newPgn);
             setGameIndex(newIndex);
             setCurrentPath(new Path(""));
             // setGame(makeGame(newPgn));
         });
-    }
-
+    };
 
     return (
         <div class="buttons-bar page-navigation">
@@ -73,7 +71,7 @@ const PageNavigator: Component = () => {
             </Show>
             <div class="current-page">
                 {gameIndex() + 1} / {numOfPages()}
-            </div>      
+            </div>
             <Show when={numOfPages() > gameIndex() + 1}>
                 <Button onClick={() => onChangePage(gameIndex() + 1)}>
                     <IconCaretRightFilled />

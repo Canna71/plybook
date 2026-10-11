@@ -22,8 +22,8 @@ import { EvaluationExt, Path } from "../../models/pgn";
 import { Box, isChildNode, walk } from "chessops/pgn";
 import { makeFen, parseFen } from "chessops/fen";
 import { ReviewProgress } from "./GameContext";
-import anylogger from 'anylogger'
-const log = anylogger('usechessengine')
+import anylogger from "anylogger";
+const log = anylogger("usechessengine");
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
@@ -67,16 +67,18 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     const needEngine = () => {
         return (
-            (engineAnalysisOn() ||
-                options.playingEngine() ||
-                isReviewing() 
-                || options.wrongPuzzleMove()
-            )
+            engineAnalysisOn() ||
+            options.playingEngine() ||
+            isReviewing() ||
+            options.wrongPuzzleMove()
         );
-    }
+    };
 
     const shouldCallEngineAnalysis = createMemo(() => {
-        if (engine() && (engineAnalysisOn() || isReviewing() || options.wrongPuzzleMove())) {
+        if (
+            engine() &&
+            (engineAnalysisOn() || isReviewing() || options.wrongPuzzleMove())
+        ) {
             return true;
         }
 
@@ -99,10 +101,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     });
 
     const shouldInitEngine = () => {
-        const shouldInit =
-            (needEngine()) &&
-            engineFolder() &&
-            !engine();
+        const shouldInit = needEngine() && engineFolder() && !engine();
         return shouldInit;
     };
 
@@ -123,7 +122,6 @@ export function useChessEngine(options: ChessEngineOptions) {
                 setEngine(engine);
                 // setEngineAnalysisOn(true);
             });
-        } else {
         }
     });
 
@@ -158,14 +156,14 @@ export function useChessEngine(options: ChessEngineOptions) {
                 ? { current: p.current + 1, total: p.total }
                 : { current: 1, total: 1 },
         );
-    }
+    };
 
     // Add this function inside useChessEngine before onEngineBestMove
     const handleReviewPosition = (bestMove: string, g: GameModel) => {
         const path = reviewPositionPath() || Path.root;
-        let ext = bestMove;
+        const ext = bestMove;
 
-        let score = engineInfo[0]?.score;
+        const score = engineInfo[0]?.score;
         const depth = engineInfo[0]?.depth;
         const evaluation: EvaluationExt =
             score!.type === "cp"
@@ -206,10 +204,9 @@ export function useChessEngine(options: ChessEngineOptions) {
                     } else {
                         cn = parent.children[parent.children.indexOf(cn) + 1];
                         if (isChildNode(cn)) {
-
                             setReviewPositionPath(cn.data.path);
                             incrementReviewProgress();
-                            
+
                             return;
                         }
                     }
@@ -264,7 +261,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
         // computes the total number of positions in the game
         let total = 0;
-        walk(game()!.moves, new Box(0), (ctx, node, idx) => {
+        walk(game()!.moves, new Box(0), () => {
             total++;
             return true;
         });
@@ -273,7 +270,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             // setIsReviewing(true);
             setReviewPositionPath(Path.root);
             setAnnotatedGame(game());
-            setReviewProgress({ current: 0, total});
+            setReviewProgress({ current: 0, total });
         });
     };
 
@@ -293,7 +290,9 @@ export function useChessEngine(options: ChessEngineOptions) {
         if (isReviewing()) {
             fenStr = game()!.dataAt(reviewPositionPath() || Path.root)!.fen;
         } else if (options.wrongPuzzleMove()) {
-            const pos = game()!.dataAt(options.path() || Path.root)?.pos.clone()!;
+            const pos = game()!
+                .dataAt(options.path() || Path.root)!
+                .pos.clone();
             pos?.play(options.wrongPuzzleMove()!);
             fenStr = makeFen(pos?.toSetup(), { epd: false });
             log.debug("wrongPuzzleMove", fenStr);
@@ -303,7 +302,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     createEffect(() => {
         engine()?.stop();
-        let fenStr = analyzeFen();
+        const fenStr = analyzeFen();
         setEngineInfo([]);
         let opts = undefined;
 

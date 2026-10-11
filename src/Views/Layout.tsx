@@ -5,33 +5,26 @@ import { VDivider } from "../components/common/VDivider";
 import { useSplitter } from "../components/common/utils";
 import { getSettingValue, setSettingValue } from "../models/settings";
 
-const Layout : ParentComponent = (props) => {
+const Layout: ParentComponent = (props) => {
+    const divider = useSplitter((layout) => {
+        setSettingValue("layout.columnsTemplate", layout);
+    });
 
-    const divider = useSplitter(
-        (layout) => {
-                    setSettingValue("layout.columnsTemplate", layout);
-                }
-    );
-
-    const gridTemplateColumns = () => getSettingValue("layout.columnsTemplate", "180px 5px 1fr");
+    const gridTemplateColumns = () =>
+        getSettingValue("layout.columnsTemplate", "180px 5px 1fr");
 
     return (
-        <main class="layout-container" style={{"grid-template-columns": gridTemplateColumns()}} >
-
+        <main
+            class="layout-container"
+            style={{ "grid-template-columns": gridTemplateColumns() }}
+        >
             <aside class="sidebar">
                 <Sidebar />
             </aside>
 
             <VDivider ref={divider} />
 
-            <main class="main-content">
-                
-                {props.children}
-            </main>
-
-
-
-
+            <main class="main-content">{props.children}</main>
         </main>
     );
 };

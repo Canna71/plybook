@@ -26,9 +26,12 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
     const [value, setValue] = props.valueSignal;
     const [isEditing, setIsEditing] = props.isEditingSignal;
     // let div: HTMLDivElement | null = null;
+    // eslint-disable-next-line prefer-const -- assigned by Solid via ref={...}
     let textarea: HTMLDivElement | null = null;
     const gameContext = useContext(GameContext)!;
-    const { gameSignal:[game] } = gameContext;
+    const {
+        gameSignal: [game],
+    } = gameContext;
 
     onMount(() => {
         // textarea!.style.height = "";
@@ -41,23 +44,20 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
         let text = value();
         text = text.replaceAll(SEPARATOR, "\n");
         return text;
-    }
+    };
 
     const encodeText = (text: string) => {
         text = text.replace(/\r\n/g, SEPARATOR);
         text = text.replace(/\n/g, SEPARATOR);
         return text;
-    }
+    };
 
     const onBlur = () => {
         let value = textarea!.innerText;
         value = encodeText(value);
-        
-        
+
         const newGame = game()?.updateHeaders(
-            new Map([
-                ["Description", value || ""],
-            ]),
+            new Map([["Description", value || ""]]),
         );
 
         batch(() => {

@@ -1,4 +1,4 @@
-import { Component, JSX } from 'solid-js';
+import { Component, JSX } from "solid-js";
 
 interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
     // variant?: 'primary' | 'secondary' | 'outline';
@@ -32,12 +32,7 @@ const Button: Component<ButtonProps> = (props) => {
     // };
 
     return (
-        <button
-            {...props}
-            class={`button ${
-                props.class || ''
-            }`}
-        >
+        <button {...props} class={`button ${props.class || ""}`}>
             {props.children}
         </button>
     );

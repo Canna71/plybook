@@ -1,11 +1,5 @@
 import { MenuItemOptions } from "@tauri-apps/api/menu";
-import {
-    batch,
-    Component,
-    Show,
-    Signal,
-    useContext,
-} from "solid-js";
+import { batch, Component, Show, Signal, useContext } from "solid-js";
 import { ContentContext } from "../common/ContentContext";
 import { TreeNode } from "../common/TreeView";
 import { FileBrowserFile } from "./FileBrowser";
@@ -25,12 +19,17 @@ type FileBrowserItemProps = {
     expandedNodesSignal: Signal<Set<string>>;
 };
 
-const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesSignal }) => {
+const FileBrowserItem: Component<FileBrowserItemProps> = ({
+    node,
+    expandedNodesSignal,
+}) => {
     const { renaming, setRenaming, refresh } = useContext(ContentContext)!;
     const [expandedNodes, setExpandedNodes] = expandedNodesSignal;
 
-
-    const onNewFolder = async (_id: string, node: TreeNode<FileBrowserFile>) => {
+    const onNewFolder = async (
+        _id: string,
+        node: TreeNode<FileBrowserFile>,
+    ) => {
         const newPath = await createNewDataFolder(node.data!.path, "Untitled");
         batch(() => {
             setExpandedNodes(new Set(expandedNodes()).add(node.id));
@@ -71,14 +70,13 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
         });
     };
 
-    const onOpenInDesktop = async  (node: TreeNode<FileBrowserFile>) => {
+    const onOpenInDesktop = async (node: TreeNode<FileBrowserFile>) => {
         try {
             await openDataPath(node.data!.path);
         } catch (e) {
             log.error(e);
         }
-    }
-    
+    };
 
     const onContextMenuInternal = (
         e: MouseEvent,
@@ -141,9 +139,9 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
         <>
             <Show when={!isRenaming()}>
                 <div class="file-browser-item-content">
-                <span onContextMenu={(e) => onContextMenuInternal(e, node)}>
-                    {node.label}
-                </span>
+                    <span onContextMenu={(e) => onContextMenuInternal(e, node)}>
+                        {node.label}
+                    </span>
                 </div>
             </Show>
             <Show when={isRenaming()}>
@@ -159,4 +157,3 @@ const FileBrowserItem: Component<FileBrowserItemProps> = ({ node, expandedNodesS
 };
 
 export default FileBrowserItem;
-

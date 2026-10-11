@@ -10,7 +10,6 @@
 // 101 - queen
 // 110 - king
 
-
 // turns a UInt8Array into a string of characters in order to be stored in a database
 
 export function encodeUint8Array(array: Uint8Array): string {
@@ -214,7 +213,3 @@ export class ChessPositionEncoder {
         return `${position} ${activeColor} ${castling} ${enPassant} ${halfmove} ${fullmove}`;
     }
 }
-
-
-
-
