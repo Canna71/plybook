@@ -24,14 +24,13 @@ export class ExecutableUCIInterface implements IUCIInterface {
     }
 
     async init(): Promise<void> {
-
         if (this.isReady) return;
 
         const onEvent = new Channel<EngineEvent>();
         onEvent.onmessage = (message) => {
             switch (message.event) {
                 case "stdout":
-                    if (message.data.includes('uciok')) {
+                    if (message.data.includes("uciok")) {
                         this.isReady = true;
                     }
                     this.responseCallback?.(message.data);
@@ -60,18 +59,18 @@ export class ExecutableUCIInterface implements IUCIInterface {
             return;
         }
 
-        this.sendCommand('uci');
+        this.sendCommand("uci");
 
         // Wait for the engine to be ready
         while (!this.isReady && !this.exited) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
         }
     }
 
     sendCommand(command: string): void {
         log.debug(`Sending command: ${command}`);
         if (this.pid === undefined) return;
-        invoke("engine_write", { pid: this.pid, data: command + '\n' }).catch(
+        invoke("engine_write", { pid: this.pid, data: command + "\n" }).catch(
             (e) => log.error(`cannot write to engine: ${e}`),
         );
     }
@@ -82,8 +81,8 @@ export class ExecutableUCIInterface implements IUCIInterface {
 
     close(): void {
         if (this.pid === undefined) return;
-        invoke("engine_kill", { pid: this.pid }).catch(
-            (e) => log.error(`cannot stop engine: ${e}`),
+        invoke("engine_kill", { pid: this.pid }).catch((e) =>
+            log.error(`cannot stop engine: ${e}`),
         );
     }
 }

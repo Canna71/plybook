@@ -1,8 +1,7 @@
 import Logo from "../assets/Logo.svg";
 import "./Home.scss";
 const Home = () => {
-
-    console.timeEnd("appinit")
+    console.timeEnd("appinit");
 
     return (
         <div>

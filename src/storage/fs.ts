@@ -74,7 +74,6 @@ async function ensureFolderExists(folderPath: string): Promise<void> {
 
         if (!folderExists) {
             await mkdir(folderPath, { recursive: true });
-        } else {
         }
     } catch (error) {
         log.error(`Error ensuring folder exists at ${folderPath}:`, error);
@@ -136,7 +135,7 @@ export async function renameOrCreateDataFile(
     content?: string,
 ) {
     const path = basePath(oldName || newName);
-    const oldExt =  oldName ? fileOrFolderExtension(oldName) : "";
+    const oldExt = oldName ? fileOrFolderExtension(oldName) : "";
     const newExt = fileOrFolderExtension(newName);
     if (oldExt && !newExt) {
         newName = `${newName}.${oldExt}`;
@@ -151,7 +150,7 @@ export async function renameOrCreateDataFile(
             newPathBaseDir: BaseDirectory.AppLocalData,
         });
     } else {
-        await writeDataFile(newFullPath, content||"");
+        await writeDataFile(newFullPath, content || "");
         return newFullPath;
     }
 }
@@ -166,12 +165,15 @@ export async function createNewDataFile(
     let i = 1;
     let fullPath = "";
     // let fullPath = await join(folder, newName);
-    while (fullPath = await join(folder, newName), await exists(fullPath, { baseDir: BaseDirectory.AppLocalData })) {
+    while (
+        ((fullPath = await join(folder, newName)),
+        await exists(fullPath, { baseDir: BaseDirectory.AppLocalData }))
+    ) {
         // the name can and with an extension, we should add a prgressive number but before the extension
         newName = createIncrementedName(name, newName, i);
         i++;
     }
-    
+
     await writeDataFile(fullPath, content);
     return fullPath;
 }
@@ -195,7 +197,10 @@ export async function createNewDataFolder(folder: string, name: string) {
     let i = 1;
     let fullPath = "";
     // let fullPath = await join(folder, newName);
-    while (fullPath = await join(folder, newName), await exists(fullPath, { baseDir: BaseDirectory.AppLocalData })) {
+    while (
+        ((fullPath = await join(folder, newName)),
+        await exists(fullPath, { baseDir: BaseDirectory.AppLocalData }))
+    ) {
         // the name can and with an extension, we should add a prgressive number but before the extension
         // let base = name;
         // let ext = "";
@@ -210,7 +215,7 @@ export async function createNewDataFolder(folder: string, name: string) {
         newName = createIncrementedName(name, newName, i);
         i++;
     }
-    
+
     await mkdir(fullPath, { baseDir: BaseDirectory.AppLocalData });
     return fullPath;
 }
@@ -218,12 +223,15 @@ export async function createNewDataFolder(folder: string, name: string) {
 export async function deleteDataFileOrFolder(path: string) {
     const ex = await exists(path, { baseDir: BaseDirectory.AppLocalData });
     if (ex) {
-        await remove(path, { baseDir: BaseDirectory.AppLocalData, recursive: true });
+        await remove(path, {
+            baseDir: BaseDirectory.AppLocalData,
+            recursive: true,
+        });
     }
 }
 
 export function NameWithoutExtension(name: string) {
-    const dotIndex = name.lastIndexOf('.');
+    const dotIndex = name.lastIndexOf(".");
     const ret = dotIndex !== -1 ? name.substring(0, dotIndex) : name;
     return ret;
 }
@@ -238,8 +246,8 @@ export function basePath(name: string) {
 
 export function fileOrFolderExtension(name: string) {
     const base = baseName(name);
-    const dotIndex = base.lastIndexOf('.');
-    return dotIndex !== -1 ? base.substring(dotIndex+1) : "";
+    const dotIndex = base.lastIndexOf(".");
+    return dotIndex !== -1 ? base.substring(dotIndex + 1) : "";
 }
 
 export function getDefaultStudyContent() {

@@ -102,7 +102,10 @@ type EngineInfoLineProps = {
 };
 
 const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
-    const { currentPathSignal: [currentPath, setCurrentPath], gameSignal: [game, setGame] } = useContext(GameContext)!;
+    const {
+        currentPathSignal: [currentPath, setCurrentPath],
+        gameSignal: [game, setGame],
+    } = useContext(GameContext)!;
     const [isExpanded, setIsExpanded] = createSignal(false);
 
     const line = createMemo(() => {
@@ -113,8 +116,11 @@ const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
         const l = line();
         // gets the moves in l until and included move using es-toolkit
         const moves = [...takeWhile(l, (m) => m !== move), move];
-        
-        const [newGameModel, newPath] = game()!.applyMoves(currentPath()!, moves.map((m) => m.move));
+
+        const [newGameModel, newPath] = game()!.applyMoves(
+            currentPath()!,
+            moves.map((m) => m.move),
+        );
         batch(() => {
             setGame(newGameModel);
             setCurrentPath(newPath);
@@ -132,7 +138,7 @@ const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
         } else {
             return `#${info.score?.value}`;
         }
-    }
+    };
 
     return (
         <div classList={classList()}>

@@ -92,14 +92,13 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
     };
 
     const fen = useFen(game, currentPath);
-    
 
     const onPlayAgainstEngine = () => {
         // Toggle the playing engine state (commented out for now)
         const currentFen = fen();
         const playUrl = `/play?fen=${currentFen}`;
         navigate(playUrl);
-    }
+    };
 
     return (
         <div class="buttons-bar are-small">
@@ -129,10 +128,12 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
                     <Button onClick={onEditPgn} title="Edit PGN">
                         <IconBrackets />
                     </Button>
-                    <Button title="Play Against Engine" onClick={onPlayAgainstEngine}>
+                    <Button
+                        title="Play Against Engine"
+                        onClick={onPlayAgainstEngine}
+                    >
                         <IconCpu />
                     </Button>
-
                 </Show>
             </Show>
 

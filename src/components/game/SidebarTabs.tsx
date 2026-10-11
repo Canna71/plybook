@@ -1,4 +1,11 @@
-import { Switch, Match, createSignal, Show, useContext, createEffect } from "solid-js";
+import {
+    Switch,
+    Match,
+    createSignal,
+    Show,
+    useContext,
+    createEffect,
+} from "solid-js";
 import Moves from "./Moves";
 import Review from "./Review";
 import { GameContext } from "./GameContext";
@@ -9,13 +16,11 @@ const SidebarTabs = () => {
 
     const updateTab = (index: number) => setTab(index);
 
-
     createEffect(() => {
-        if(isReviewing() && tab() === 0) {
+        if (isReviewing() && tab() === 0) {
             setTab(1);
         }
     });
-
 
     return (
         <div class="sidebar-tabs">

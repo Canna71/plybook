@@ -5,12 +5,9 @@ import { HintType } from "./GameContext";
 
 export type HintButtonsProps = {
     setHintType: (hintType: HintType) => void;
-
 };
 
-const HintButtons : Component<HintButtonsProps> = (props) => {
-
-    
+const HintButtons: Component<HintButtonsProps> = (props) => {
     const onHintPiece = () => {
         // setModalVisible(!modalVisible());
         props.setHintType(HintType.Piece);
@@ -21,17 +18,16 @@ const HintButtons : Component<HintButtonsProps> = (props) => {
     };
 
     return (
-        
-            <div class="pgnviewer-buttonbar are-small">
-                <Button onClick={onHintPiece} title="Suggest Piece">
-                    <IconBulbFilled />
-                    <span>Piece</span>
-                </Button>
-                <Button onClick={onHintMove} title="Suggest Move">
-                    <IconBulbFilled />
-                    <span>Move</span>
-                </Button>
-            </div>
+        <div class="pgnviewer-buttonbar are-small">
+            <Button onClick={onHintPiece} title="Suggest Piece">
+                <IconBulbFilled />
+                <span>Piece</span>
+            </Button>
+            <Button onClick={onHintMove} title="Suggest Move">
+                <IconBulbFilled />
+                <span>Move</span>
+            </Button>
+        </div>
     );
 };
 

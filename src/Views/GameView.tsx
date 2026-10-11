@@ -50,7 +50,7 @@ const GameView = () => {
     const location = useLocation();
     const { refresh } = useContentContext();
     const navigate = useNavigate();
-    
+
     const displayedName = () => {
         const path = searchParams.path;
         if (path && typeof path === "string") {
@@ -71,13 +71,13 @@ const GameView = () => {
         if (path) {
             return path.substring(0, path.lastIndexOf(sep()));
         }
-    }
+    };
 
     const fetchStudy = async (path: string) => {
         const studyId = path;
         try {
             return await getStudy(studyId);
-        } catch (e) {
+        } catch {
             return undefined;
         }
     };
@@ -97,7 +97,6 @@ const GameView = () => {
                 });
                 log.error(e);
             }
-        } else {
         }
         batch(() => {
             setNewPgn(pgnText); // this is to avoid detecting changes on the new pgn
@@ -228,7 +227,12 @@ const GameView = () => {
                 <Show when={isEditable() || isPuzzleMode()}>
                     <Show when={isPuzzleMode()}>
                         <div class="navbar-item">
-                            <Button class="is-primary is-outlined" onClick={onNextPuzzle}>Next Puzzle</Button>
+                            <Button
+                                class="is-primary is-outlined"
+                                onClick={onNextPuzzle}
+                            >
+                                Next Puzzle
+                            </Button>
                         </div>
                     </Show>
 

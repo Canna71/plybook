@@ -32,7 +32,7 @@ type TreeViewProps<T> = {
     indentSize?: number;
     renaming?: Accessor<string | undefined>;
     selectedNodeSignal: Signal<TreeNode<T> | null>;
-    expandedNodesSignal: Signal<Set<string>>; 
+    expandedNodesSignal: Signal<Set<string>>;
 };
 
 type TreeViewNodeProps<T> = {
@@ -49,7 +49,6 @@ type TreeViewNodeProps<T> = {
     level: number;
     indentSize: number;
     renaming?: Accessor<string | undefined>;
-
 };
 
 const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
@@ -61,13 +60,13 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
         renderExpandedIndicator,
         selectedNode,
         level,
-        renaming
+        renaming,
     } = props;
     const [children, setChildren] = createSignal<TreeNode<T>[] | undefined>(
         node().children,
     );
     const [expandedNodes, setExpandedNodes] = expandedNodesSignal;
-    
+
     const refreshNode = async () => {
         if (node().loadChildren) {
             node().children = await node().loadChildren?.();
@@ -94,7 +93,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
     };
 
     const handleNodeClick = (e: MouseEvent) => {
-        if(isRenaming()) {
+        if (isRenaming()) {
             e.preventDefault();
             return;
         }
@@ -108,28 +107,31 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
 
     const isExpandable = () => node().children || node().loadChildren;
 
-    const isExpanded = () => !!(isExpandable() && expandedNodes().has(node().id));
+    const isExpanded = () =>
+        !!(isExpandable() && expandedNodes().has(node().id));
 
     const isSelected = () => {
         return selectedNode()?.id === node().id;
     };
 
-    const isRenaming = () => { 
+    const isRenaming = () => {
         return renaming?.() === node().id;
-    }
+    };
 
     const classList = () => {
         const classes = {
             ["treeview-row"]: true,
             ["selected"]: isSelected(),
-        }; 
+        };
         return classes;
     };
 
     return (
         <>
             <div classList={classList()} onClick={handleNodeClick}>
-                <div style={{ width: `${level * (props.indentSize??20)}px` }}></div>
+                <div
+                    style={{ width: `${level * (props.indentSize ?? 20)}px` }}
+                ></div>
 
                 <Show when={isExpandable()}>
                     {renderExpandedIndicator?.(isExpanded(), node()) ||
@@ -151,7 +153,7 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
                 <Index each={children()}>
                     {(child) => (
                         <Node
-                            indentSize={props.indentSize??20}
+                            indentSize={props.indentSize ?? 20}
                             node={child}
                             onNodeClick={onNodeClick}
                             expandedNodesSignal={expandedNodesSignal}
@@ -171,7 +173,6 @@ const Node = <T,>(props: TreeViewNodeProps<T>): JSX.Element => {
 
 const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
     const [selectedNode, setSelectedNode] = props.selectedNodeSignal;
-    
 
     const handleNodeClick = (node: TreeNode<T>) => {
         setSelectedNode(node);
@@ -183,7 +184,7 @@ const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
     return (
         <div class="treeview">
             <Node
-                indentSize={props.indentSize??20}
+                indentSize={props.indentSize ?? 20}
                 node={props.root}
                 onNodeClick={handleNodeClick}
                 expandedNodesSignal={props.expandedNodesSignal}
@@ -192,7 +193,7 @@ const TreeView = <T,>(props: TreeViewProps<T>): JSX.Element => {
                 renderExpandedIndicator={props.renderExpandedIndicator}
                 selectedNode={selectedNode}
                 level={0}
-                renaming={props.renaming || (()=>undefined)}
+                renaming={props.renaming || (() => undefined)}
             />
         </div>
     );
