@@ -35,6 +35,8 @@ import {
     updatePerformanceScore,
 } from "../storage/db";
 import { historyTitle } from "../models/history";
+import { mistakesFolder } from "../storage/mistakes";
+import { makeToast } from "../components/common/Toast";
 import { calculatePerformanceScore } from "../models/puzzles";
 import Select, { Option } from "../components/common/Select";
 import Button from "../components/common/Button";
@@ -235,7 +237,14 @@ const GameView = () => {
     };
 
     const onNextPuzzle = async () => {
-        const puzzle = await pickPuzzle();
+        // training mistakes from reviewed games stays within them
+        const mistakes = await mistakesFolder();
+        const inMistakes = filePath()?.startsWith(mistakes);
+        const puzzle = await pickPuzzle(inMistakes ? mistakes : undefined);
+        if (!puzzle) {
+            makeToast("No more puzzles");
+            return;
+        }
         navigate(`/puzzle?path=${encodeURIComponent(puzzle.file_path)}`, {
             replace: true,
         });

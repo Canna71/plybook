@@ -5,13 +5,23 @@ import { formatDate, round } from "../components/common/utils";
 import "./Puzzles.scss";
 import { useNavigate } from "@solidjs/router";
 import { NameWithoutExtension } from "../storage/fs";
+import { mistakesFolder } from "../storage/mistakes";
+import { makeToast } from "../components/common/Toast";
 
 const Puzzles: Component = () => {
     const [puzzles] = createResource<Study[] | undefined>(listPuzzles);
     const navigate = useNavigate();
 
-    const nextPuzzle = async () => {
-        const puzzle = await pickPuzzle();
+    const nextPuzzle = async (folder?: string) => {
+        const puzzle = await pickPuzzle(folder);
+        if (!puzzle) {
+            makeToast(
+                folder
+                    ? "No mistakes to train yet: review a game and create puzzles from it"
+                    : "No puzzles yet",
+            );
+            return;
+        }
         navigate(`/puzzle?path=${encodeURIComponent(puzzle.file_path)}`);
     };
 
@@ -23,8 +33,15 @@ const Puzzles: Component = () => {
     return (
         <div class="puzzles_view ">
             <div class="buttons-bar">
-                <Button class="is-primary" onClick={nextPuzzle}>
+                <Button class="is-primary" onClick={() => nextPuzzle()}>
                     Pick Puzzle
+                </Button>
+                <Button
+                    class="is-primary is-outlined"
+                    title="Puzzles made from the mistakes in your reviewed games"
+                    onClick={async () => nextPuzzle(await mistakesFolder())}
+                >
+                    Train my mistakes
                 </Button>
             </div>
             {/* <Button onClick={onUpdateWeights}>Update Cached Weights</Button> */}

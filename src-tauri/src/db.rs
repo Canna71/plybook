@@ -425,53 +425,39 @@ pub async fn get_study(
 
 
 // fetch all puzzles weights
+/// Picks a puzzle at random, favouring higher weights. With `folder`, only puzzles whose file is
+/// inside it (e.g. the Mistakes folder) are considered.
+async fn pick_puzzle_in(db: &Surreal<Db>, folder: Option<String>) -> Result<Option<Study>, String> {
+    let query = r#"
+SELECT (puzzle.cached_weight OR puzzle.base_weight) as weight, id from studies
+WHERE puzzle AND ($folder IS NONE OR string::starts_with(file_path, $folder))
+"#;
+    let weights: Vec<PuzzleWeight> = db
+        .query(query)
+        .bind(("folder", folder))
+        .await
+        .map_err(|e| e.to_string())?
+        .take(0)
+        .map_err(|e| e.to_string())?;
+
+    let selected = weights
+        .into_iter()
+        .map(|p| (rand::random::<f64>() * p.weight, p.id))
+        .max_by(|a, b| a.0.total_cmp(&b.0));
+    match selected {
+        Some((_, id)) => db.select(id).await.map_err(|e| e.to_string()),
+        None => Ok(None),
+    }
+}
+
 #[tauri::command]
 pub async fn pick_puzzle(
-    db_state: State<'_, DatabaseConnection>, 
-    limit: Option<i32>
+    db_state: State<'_, DatabaseConnection>,
+    folder: Option<String>,
 ) -> Result<Option<Study>, String> {
     let db = db_state.0.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
-    let limit = limit.unwrap_or(100000); // Default value of 10 if none provided
-
-    let query = r#"
-SELECT (puzzle.cached_weight OR puzzle.base_weight) as weight, id from studies 
-
-WHERE puzzle
-ORDER BY weight desc
-LIMIT $limit
-"#;
-
-    let mut result = db.query(query)
-        .bind(("limit", limit))
-        .await
-        .map_err(|e| e.to_string())?;
-
-    let res: Vec<PuzzleWeight> = result.take(0)
-        .map_err(|e| e.to_string())?;
-
-    let mut selected: Option<PuzzleWeight> = None;
-
-    for puzzle in res.iter() {
-        // Create new RNG for each iteration
-        let random_value = rand::random::<f64>();
-        let score: f64 = random_value * puzzle.weight;
-        if selected.is_none() || score > selected.as_ref().unwrap().weight {
-            selected = Some(PuzzleWeight {
-                weight: score,
-                id: puzzle.id.clone(),
-            });
-        }
-    }
-
-    // is selected has value gets corresponding study
-    if let Some(puzzle_weight) = selected {
-        let id = puzzle_weight.id.clone();
-        db.select(id).await.map_err(|e| e.to_string())
-    } else {
-        return Ok(None);
-    }
-    
+    pick_puzzle_in(db, folder).await
 }
 
 
@@ -527,6 +513,37 @@ mod tests {
         assert_eq!(game.pgn, finished);
         assert!(history_get(&db, "unknown").await.unwrap().is_none());
         assert!(history_save(&db, "bad id", PGN.to_string()).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn puzzles_can_be_picked_from_a_folder() {
+        let db = temp_db("puzzles").await;
+        assert!(pick_puzzle_in(&db, None).await.unwrap().is_none());
+        for (path, weight) in [("Library/Mistakes/a.pgn", 300.0), ("Library/Other/b.pgn", 500.0)] {
+            let _: Option<Study> = db
+                .upsert(("studies", path))
+                .content(Study {
+                    file_path: path.to_string(),
+                    puzzle: Some(Puzzle {
+                        current_interval: Some(1.0),
+                        last_played_date: None,
+                        base_weight: weight,
+                        cached_weight: None,
+                        weight_cached_at: None,
+                        performance_score: None,
+                    }),
+                    created_at: "2026-10-24T00:00:00Z".to_string(),
+                })
+                .await
+                .unwrap();
+        }
+        for _ in 0..10 {
+            let picked = pick_puzzle_in(&db, Some("Library/Mistakes".into())).await.unwrap();
+            assert_eq!(picked.unwrap().file_path, "Library/Mistakes/a.pgn");
+        }
+        let any = pick_puzzle_in(&db, None).await.unwrap().unwrap();
+        assert!(any.file_path.starts_with("Library/"));
+        assert!(pick_puzzle_in(&db, Some("Library/None".into())).await.unwrap().is_none());
     }
 
     #[tokio::test]

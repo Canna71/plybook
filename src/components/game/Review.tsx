@@ -1,4 +1,12 @@
-import { Component, createMemo, For, Show, useContext } from "solid-js";
+import {
+    Component,
+    createMemo,
+    createSignal,
+    For,
+    Show,
+    useContext,
+} from "solid-js";
+import { useNavigate } from "@solidjs/router";
 import { Color } from "chessops";
 import { isMate, isPawns } from "chessops/pgn";
 import { HierarchicalMoveData, makeTree } from "../../models/tree";
@@ -16,6 +24,16 @@ import {
 import { GameContext } from "./GameContext";
 import { NagIcon } from "./Ply";
 import { PlyFan } from "../common/PlyFan";
+import Button from "../common/Button";
+import { makeErrorToast, makeToast } from "../common/Toast";
+import {
+    GameInfo,
+    mistakePuzzles,
+    playerSide,
+    trainableMistakes,
+} from "../../models/mistakes";
+import { saveMistakePuzzles } from "../../storage/mistakes";
+import { getAccounts } from "../../online/onlinegames";
 import "./Review.scss";
 
 const CLASS_LABELS: Record<MoveClass, string> = {
@@ -68,6 +86,58 @@ const Review: Component = () => {
 
     const player = (color: Color) =>
         game()?.players[color].name ?? (color === "white" ? "White" : "Black");
+
+    // #region puzzles from mistakes
+    const navigate = useNavigate();
+    const info = createMemo((): GameInfo => {
+        const headers = game()?.headers;
+        const site = headers?.get("Site");
+        return {
+            white: game()?.players.white.name,
+            black: game()?.players.black.name,
+            date: headers?.get("UTCDate") ?? headers?.get("Date"),
+            // chess.com puts the game URL in Link, Lichess in Site
+            site:
+                headers?.get("Link") ??
+                (site?.startsWith("http") ? site : undefined),
+        };
+    });
+    const [chosenSide, setChosenSide] = createSignal<Color>();
+    const trainSide = () =>
+        chosenSide() ??
+        playerSide(info(), [
+            ...getAccounts().map((a) => a.username),
+            "Player",
+        ]) ??
+        "white";
+    const trainable = createMemo(() =>
+        trainableMistakes(reviewed(), trainSide()),
+    );
+    // mistakes without a best move: evaluations imported without one
+    const withoutBest = () =>
+        moments().filter(
+            (m) =>
+                m.color === trainSide() &&
+                m.class !== "inaccuracy" &&
+                !m.bestSan,
+        ).length;
+    const [createdPuzzles, setCreatedPuzzles] = createSignal<string[]>([]);
+
+    const createPuzzles = async () => {
+        try {
+            const { created, skipped } = await saveMistakePuzzles(
+                mistakePuzzles(reviewed(), info(), trainSide()),
+            );
+            setCreatedPuzzles(created);
+            makeToast(
+                `${created.length} puzzles created in Library/Mistakes` +
+                    (skipped ? `, ${skipped} already there` : ""),
+            );
+        } catch (err) {
+            makeErrorToast(err instanceof Error ? err.message : String(err));
+        }
+    };
+    // #endregion
 
     const MoveCell: Component<{ data?: PlyData }> = (props) => {
         const review = () => props.data && byPath().get(props.data.path.path);
@@ -197,6 +267,48 @@ const Review: Component = () => {
                             )}
                         </For>
                     </ul>
+                </Show>
+
+                <div class="train-mistakes">
+                    <div class="select is-small">
+                        <select
+                            title="Whose mistakes to train"
+                            value={trainSide()}
+                            onChange={(e) => {
+                                setChosenSide(e.currentTarget.value as Color);
+                                setCreatedPuzzles([]);
+                            }}
+                        >
+                            <option value="white">{player("white")}</option>
+                            <option value="black">{player("black")}</option>
+                        </select>
+                    </div>
+                    <Button
+                        class="is-small is-primary"
+                        title="Each mistake or blunder becomes a 'find the better move' puzzle"
+                        disabled={trainable().length === 0}
+                        onClick={createPuzzles}
+                    >
+                        Make {trainable().length} puzzles from mistakes
+                    </Button>
+                    <Show when={createdPuzzles().length > 0}>
+                        <Button
+                            class="is-small"
+                            onClick={() =>
+                                navigate(
+                                    `/puzzle?path=${encodeURIComponent(createdPuzzles()[0])}`,
+                                )
+                            }
+                        >
+                            Train them
+                        </Button>
+                    </Show>
+                </div>
+                <Show when={withoutBest() > 0}>
+                    <p class="train-hint">
+                        {withoutBest()} mistakes have no better move yet. Click
+                        Analyze Game to find them.
+                    </p>
                 </Show>
 
                 <table class="pgnviewer-moves review-moves">

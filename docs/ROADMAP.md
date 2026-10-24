@@ -36,7 +36,7 @@ How this file is used:
   - Refactor: Settings page split into sections (`components/settings/EngineSettings`,
     `OnlineAccounts`).
   - Known limits: no progress bar during a long first sync; no cancel.
-- [~] **P1.2 Whole-game review** (`feature/game-review`)
+- [x] **P1.2 Whole-game review** (`feature/game-review`; owner review pending)
   - Background review of a game with the active engine: eval graph, accuracy per side,
     move classification by **win-probability loss** (Lichess formula), list of key moments.
   - Done when: a 40-move game reviews in under a minute at a modest depth, labels match
@@ -46,17 +46,26 @@ How this file is used:
   - Status: implemented in `src/models/review.ts` (Lichess win %, accuracy, mate rules) and the
     Evaluation tab. Labels agree with Lichess's own on 99.8% of 4,048 moves (50 analysed
     games, same evals). Review runs the mainline only, depth 18 / 1 s per position
-    (`engine.review.*`). Waiting for an in-app test of speed and UI before marking done.
+    (`engine.review.*`).
   - Fixed on the way: `[%eval 0.18]` without depth was not parsed, so Lichess evals were
     ignored; the standard start position gets +0.2 since exports never evaluate it.
   - Known limits: re-reviewing keeps NAGs added by an earlier review; a Maia-style (1 node)
     engine cannot review, the user must select a full-strength one.
-- [ ] **P1.3 Mistakes become puzzles**
+- [x] **P1.3 Mistakes become puzzles** (`feature/mistake-puzzles`; owner review pending)
   - Blunders and mistakes from reviewed games are added to the existing spaced-repetition puzzles
     ("find the better move"), linking back to the game.
   - Done when: after a review, a "Train my mistakes" set exists and uses the current scoring.
+  - Status: the Evaluation tab makes one PGN per mistake/blunder in `Library/Mistakes` (position
+    before the move, engine's move as the solution, Site links the original game) and registers
+    it as a puzzle (blunders weigh 400, mistakes 300). The side defaults to the player's (online
+    account name or "Player"). Puzzles view: "Train my mistakes"; Next Puzzle stays in the set.
+  - Known limits: only the engine's exact move is accepted (another equally good move counts as
+    wrong); evals imported without a best move need Analyze Game first.
 - [ ] **P1.4 Auto sync and review** (optional): sync accounts on startup and review new games
   in the background.
+
+- [x] **Fix: played games in History** (`feature/play-history`): saved after every move under
+  the game's Timestamp, openable from History, result written at checkmate/stalemate.
 
 ## Phase 2: understand why
 

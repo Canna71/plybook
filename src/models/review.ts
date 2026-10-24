@@ -50,6 +50,8 @@ export type ReviewedMove = {
     class: MoveClass;
     /** The engine's choice in the position before the move, in SAN */
     bestSan?: string;
+    /** The position before the move */
+    fenBefore?: string;
 };
 
 /**
@@ -192,6 +194,7 @@ export function reviewLine(nodes: ReviewNode[]): ReviewedMove[] {
                       color,
                   ) ?? classify(loss, false)),
             bestSan,
+            fenBefore: before.fen,
         });
     }
     return moves;
