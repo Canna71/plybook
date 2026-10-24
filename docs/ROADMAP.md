@@ -246,10 +246,19 @@ How this file is used:
       layer (invisible, selectable text) over each visible page; Cmd/Ctrl+C copies. It scales
       with the page through `--total-scale-factor`, so zooming needs no redraw. Scanned
       (image-only) PDFs have no text to select.
-    - [ ] **P4.4c Copy text into annotations**: selected text into a comment of the position
-      being studied.
-    - [ ] **P4.4d Edit the PGN associated with a position**: each diagram gets its own game
-      (moves, variations, comments) saved with the book and reopened from the diagram.
+    - [x] **P4.4c Copy text into annotations** (`feature/reader-notes`; owner review pending):
+      with a diagram selected, "Add selected text to notes" appends the last text selected on
+      the pages as a comment before the moves of that diagram's PGN, on one line (line-end
+      hyphenation undone) with "(p. N)". The quote is previewed under the buttons.
+    - [x] **P4.4d Edit the PGN associated with a position** (`feature/reader-notes`; owner
+      review pending): "Start notes" / "Notes" opens the diagram's own PGN
+      (`Library/Scanned/<book>/pNNN-i.pgn`, the same file "Scan a whole book" writes, so the
+      two share notes) in analysis, created from the position shown (with the chosen side to
+      move) the first time. Diagrams with notes get a corner mark on the page.
+      Known limits: notes are matched by page and diagram order on the page, so a change in
+      recognition that finds an extra diagram on a page shifts the numbering; a misread
+      position must be corrected in the notes' editor (the reader's Edit opens the board
+      editor, which is not linked back).
     - [ ] **P4.4e Recognize positions and moves from the text**: whose move from captions
       ("White to play", "1...") and move sequences in the text (SAN/figurine notation) played
       from the diagram's position into its PGN.

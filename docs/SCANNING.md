@@ -89,6 +89,12 @@ Each page costs a few model runs (64 tiles each); a framed diagram usually needs
   `.textLayer`. Diagram buttons sit above it (`z-index: 2`).
 - Clicking a box shows the board in a side panel with whose move (defaults to the side at the
   bottom), Analyze, Play from here, Find in databases, Edit (`/boardeditor?fen=`).
+- Notes (P4.4c/d): a diagram's notes are `Library/Scanned/<collectionName(book)>/pNNN-i.pgn`
+  (`diagramFileName`, `diagramPgn` in `src/models/scancollection.ts`), shared with "Scan a
+  whole book". `notesFile` creates it on first use; "Notes" opens it at `/analysis?path=`.
+  Selected text is tracked with a `selectionchange` listener (the last non-empty selection
+  inside the pages, with its page), so clicking a button doesn't lose it; `bookQuote` +
+  `addStartingComment` add it as a starting comment.
 - Library: "Add PDF…" in a folder copies the file into the Library (`writeDataFile` takes
   bytes); `.pdf` files open in the reader from the folder view and the sidebar tree.
 

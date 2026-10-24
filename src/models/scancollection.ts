@@ -3,6 +3,7 @@
 
 import { Chess, parseUci } from "chessops";
 import { parseFen } from "chessops/fen";
+import { makePgn, parsePgn } from "chessops/pgn";
 import { makeSanAndPlay } from "chessops/san";
 
 export type ScannedDiagram = {
@@ -27,6 +28,31 @@ export const collectionName = (fileName: string) =>
 /** "p012-2.pgn": sorts in book order. */
 export const diagramFileName = (d: ScannedDiagram) =>
     `p${String(d.page).padStart(3, "0")}-${d.index}.pgn`;
+
+/**
+ * Text selected in a book, as a comment: on one line (PDF text breaks at every line end, with
+ * hyphenated words split), with the page it came from.
+ */
+export function bookQuote(text: string, page: number): string {
+    const quote = text
+        // a word broken at the line end, else a hyphen that belongs ("f7-square")
+        .replace(/([a-z])-[ \t]*\n\s*([a-z])/g, "$1$2")
+        .replace(/-[ \t]*\n\s*/g, "-")
+        .replace(/\s+/g, " ")
+        .trim();
+    return quote ? `${quote} (p. ${page})` : "";
+}
+
+/**
+ * Adds a comment to the start of a diagram's game (before its moves), after any already
+ * there; the rest of the game is kept as it is.
+ */
+export function addStartingComment(pgn: string, comment: string): string {
+    const [game] = parsePgn(pgn);
+    if (!game || !comment) return pgn;
+    game.comments = [...(game.comments ?? []), comment];
+    return makePgn(game);
+}
 
 /** The diagram as a PGN game; the solution, if any, as its moves. */
 export function diagramPgn(book: string, d: ScannedDiagram): string {
