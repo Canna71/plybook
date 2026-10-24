@@ -69,8 +69,14 @@ How this file is used:
 
 ## Phase 2: understand why
 
-- [ ] **P2.1 What-if mode**: play a candidate move in analysis and see the refutation line,
-  with the material or mate it leads to.
+- [x] **P2.1 What-if mode** (`feature/what-if`; owner review pending): play a candidate move in
+  analysis and see the refutation line, with the material or mate it leads to.
+  - Status: a card above the engine lines judges the move just played against the engine's view
+    of the position before it (review rules: lost winning chances, label, preferred move) and
+    sums up where the engine line goes ("Then Nxe5 Qg5: White wins material (+1)"), counting
+    material only once captures are over. Analysed positions are remembered for the session
+    (deepest main line per position); review evals in the PGN are used as a fallback.
+  - Known limits: the move before must have been analysed (step back once) or reviewed.
 - [x] **P2.2 Show the threat** (`feature/threat`; owner review pending): what the opponent would
   do if it were their move (null-move analysis), as an arrow and a line.
   - Status: the warning-triangle button next to the analysis switch searches the position with

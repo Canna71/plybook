@@ -28,6 +28,13 @@ import { makeFen, parseFen } from "chessops/fen";
 import { ReviewProgress } from "./GameContext";
 import { CLASS_NAGS, mainline, reviewLine } from "../../models/review";
 import { nullMoveFen } from "../../models/threat";
+import { scoreToEvaluation } from "../../models/whatif";
+import { parseUci } from "chessops";
+import { Chess } from "chessops/chess";
+
+/** Positions are remembered without the move counters */
+const fenKey = (fen: string) => fen.split(" ").slice(0, 4).join(" ");
+type Remembered = { evaluation: EvaluationExt; depth: number };
 import anylogger from "anylogger";
 const log = anylogger("usechessengine");
 
@@ -80,6 +87,10 @@ export function useChessEngine(options: ChessEngineOptions) {
     const [isPlayingOn, setIsPlayingOn] = createSignal(false);
     // analysis of what the opponent would play if it were their move
     const [threatOn, setThreatOn] = createSignal(false);
+    // the deepest main line seen for each analysed position, to judge moves played from it
+    const [remembered, setRemembered] = createStore<Record<string, Remembered>>(
+        {},
+    );
 
     const isReviewing = () => !!reviewPositionPath();
 
@@ -306,8 +317,30 @@ export function useChessEngine(options: ChessEngineOptions) {
                 }
             }
             setEngineInfo(info.multipv - 1, info);
+            if (info.multipv === 1) remember(info);
         }
     };
+
+    const remember = (info: EngineInfo) => {
+        const fen = analyzeFen();
+        const first = info.pv?.[0] && parseUci(info.pv[0]);
+        if (!info.score || !first || threatFen() || isReviewing()) return;
+        // an info that arrives late belongs to the previous position
+        const setup = parseFen(fen);
+        const pos = setup.isOk ? Chess.fromSetup(setup.value) : undefined;
+        if (!pos?.isOk || !pos.value.isLegal(first)) return;
+        const key = fenKey(fen);
+        const depth = info.depth ?? 0;
+        if ((remembered[key]?.depth ?? -1) > depth) return;
+        setRemembered(key, {
+            evaluation: scoreToEvaluation(info.score, info.pv![0]),
+            depth,
+        });
+    };
+
+    /** The engine's view of a position analysed earlier in this session */
+    const evaluationAt = (fen: string): EvaluationExt | undefined =>
+        remembered[fenKey(fen)]?.evaluation;
 
     const startReview = () => {
         if (profile()?.singleNode) {
@@ -449,5 +482,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         threatOnSignal: [threatOn, setThreatOn] as Signal<boolean>,
         threatFen,
         analyzedFen: analyzeFen,
+        evaluationAt,
     };
 }

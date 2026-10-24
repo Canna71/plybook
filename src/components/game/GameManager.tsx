@@ -44,6 +44,7 @@ import { PiecesPopup } from "./PiecesPopup";
 import { makeSquare, NormalMove, parseUci } from "chessops";
 import "./GameManager.scss";
 import EngineInfoViewer from "./EngineInfoViewer";
+import WhatIf from "./WhatIf";
 import { Tooltip } from "../common/Tooltip";
 import PgnEditBar, { ViewMode } from "./PgnEditBar";
 import PgnTextArea from "./PgnTextArea";
@@ -623,6 +624,7 @@ const GameManager: Component<GameManagerOptions> = ({
         threatOnSignal,
         threatFen,
         analyzedFen,
+        evaluationAt,
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -673,6 +675,7 @@ const GameManager: Component<GameManagerOptions> = ({
         threatOnSignal,
         threatFen,
         analyzedFen,
+        evaluationAt,
         onGameFinished,
     } as GameContextType;
     // #endregion
@@ -797,6 +800,9 @@ const GameManager: Component<GameManagerOptions> = ({
                                     !isPuzzleMode()
                                 }
                             >
+                                <Show when={!threatFen()}>
+                                    <WhatIf engineInfo={engineInfo} />
+                                </Show>
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
 
