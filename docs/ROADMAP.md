@@ -97,8 +97,13 @@ How this file is used:
 - [ ] **P2.4 Explanations in words** (its own topic; decided 2026-10-24: not tied to one paid
   provider). Facts (P2.3), threats (P2.2), what-if (P2.1) and human moves (P2.5) phrased as a
   short paragraph per move; a model never calculates.
-  - [ ] **P2.4a Programmatic explanation** (free, offline, default): templates over the
-    computed facts and engine lines.
+  - [x] **P2.4a Programmatic explanation** (`feature/explanations`; owner review pending):
+    templates over the computed facts and engine lines (`models/explain.ts`). Shown in the
+    what-if card and for the selected key moment in the review, e.g. "Qg4 is a blunder: it gives
+    away 40% of White's winning chances. It leaves the queen on g4 undefended and attacked.
+    Black answers Bxg4. After Bxg4 f3: Black wins material (+9). Better was exd5."
+    Known limits: from review data alone (no engine lines) only ~1 in 6 mistakes gets a
+    reason beyond the verdict; static facts only (no tactics deeper than the lines played).
   - [ ] **P2.4b Optional model provider**: OpenAI-compatible endpoint (free local models via
     Ollama / LM Studio, or cheap hosted ones) and Anthropic; key stored outside the webview.
 - [x] **P2.5 Human vs best** (`feature/human-moves`; owner review pending): Maia's most likely

@@ -49,8 +49,9 @@ export type ReviewedMove = {
     loss: number;
     accuracy: number;
     class: MoveClass;
-    /** The engine's choice in the position before the move, in SAN */
+    /** The engine's choice in the position before the move, in SAN and UCI */
     bestSan?: string;
+    bestUci?: string;
     /** The position before the move */
     fenBefore?: string;
 };
@@ -206,6 +207,7 @@ export function reviewLine(nodes: ReviewNode[]): ReviewedMove[] {
                       color,
                   ) ?? classify(loss, false)),
             bestSan,
+            bestUci: bestSan ? (before.evaluation?.ext as string) : undefined,
             fenBefore: before.fen,
         });
     }

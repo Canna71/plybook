@@ -22,6 +22,15 @@ export type Fact = {
     /** Identifies the fact, to tell which ones a move created */
     key: string;
     text: string;
+    /** The piece the fact is about, e.g. "knight on f3" (the forking piece for a fork) */
+    subject?: string;
+    /** hanging: whether something defends it (then a cheaper piece attacks it) */
+    defended?: boolean;
+    /** pinned: the pinning piece, e.g. "bishop on b5" */
+    by?: string;
+    /** fork: what is attacked, e.g. "the king and the rook", and where */
+    targets?: string;
+    targetSquares?: string[];
     /** About a pawn: worth showing only when a move just caused it */
     minor?: boolean;
 };
@@ -36,8 +45,10 @@ const VALUES: Record<Role, number> = {
 };
 const SIDE = { white: "White", black: "Black" };
 
+const named = (piece: Piece, square: Square) =>
+    `${piece.role} on ${makeSquare(square)}`;
 const describe = (piece: Piece, square: Square) =>
-    `${SIDE[piece.color]}'s ${piece.role} on ${makeSquare(square)}`;
+    `${SIDE[piece.color]}'s ${named(piece, square)}`;
 
 /** Squares of `color`'s pieces that attack `square`. */
 function attackersOf(pos: Position, square: Square, color: Color): Square[] {
@@ -75,6 +86,8 @@ function hanging(pos: Position): Fact[] {
             victim: piece.color,
             key: `hanging:${makeSquare(square)}`,
             minor: piece.role === "pawn",
+            subject: named(piece, square),
+            defended,
             text: `${describe(piece, square)} ${defended ? "is attacked by a cheaper piece" : "is attacked and not defended"}`,
         });
     }
@@ -100,6 +113,8 @@ function pins(pos: Position): Fact[] {
                 victim: color,
                 key: `pinned:${makeSquare(pinned)}`,
                 minor: piece.role === "pawn",
+                subject: named(piece, pinned),
+                by: named(slider, from),
                 text: `${describe(piece, pinned)} is pinned to its king by the ${slider.role} on ${makeSquare(from)}`,
             });
         }
@@ -133,11 +148,15 @@ function forks(pos: Position): Fact[] {
             .map((sq) => pos.board.get(sq)!)
             .sort((a, b) => VALUES[b.role] - VALUES[a.role])
             .map((t) => t.role);
+        const targetList = `the ${names.slice(0, -1).join(", the ")} and the ${names.at(-1)}`;
         facts.push({
             kind: "fork",
             victim: enemy,
             key: `fork:${makeSquare(from)}`,
-            text: `${describe(piece, from)} attacks the ${names.slice(0, -1).join(", ")} and the ${names.at(-1)}`,
+            subject: named(piece, from),
+            targets: targetList,
+            targetSquares: targets.map(makeSquare),
+            text: `${describe(piece, from)} attacks ${targetList}`,
         });
     }
     return facts;

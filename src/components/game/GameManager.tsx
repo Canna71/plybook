@@ -628,6 +628,7 @@ const GameManager: Component<GameManagerOptions> = ({
         threatFen,
         analyzedFen,
         evaluationAt,
+        lineAt,
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -690,6 +691,7 @@ const GameManager: Component<GameManagerOptions> = ({
         threatFen,
         analyzedFen,
         evaluationAt,
+        lineAt,
         onGameFinished,
     } as GameContextType;
     // #endregion

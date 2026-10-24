@@ -1,7 +1,7 @@
 import { Component, Show, useContext } from "solid-js";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import { PlyData } from "../../models/pgn";
-import { CLASS_NAGS, MoveClass, ReviewedMove } from "../../models/review";
+import { CLASS_NAGS, ReviewedMove } from "../../models/review";
 import {
     describeOutcome,
     judgeMove,
@@ -10,15 +10,8 @@ import {
 } from "../../models/whatif";
 import { GameContext } from "./GameContext";
 import { NagIcon } from "./Ply";
+import { explainMove } from "../../models/explain";
 import "./WhatIf.scss";
-
-const VERDICTS: Record<MoveClass, string> = {
-    best: "is the engine's choice",
-    good: "keeps the balance",
-    inaccuracy: "is an inaccuracy",
-    mistake: "is a mistake",
-    blunder: "is a blunder",
-};
 
 const sameFen = (a?: string, b?: string) =>
     !!a &&
@@ -35,6 +28,7 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
         currentPathSignal: [currentPath],
         analyzedFen,
         evaluationAt,
+        lineAt,
     } = useContext(GameContext)!;
 
     const move = () => {
@@ -71,25 +65,30 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
         return m && pv && mover ? lineOutcome(m.fen, pv, mover) : undefined;
     };
 
-    const text = () => {
+    // why, in words: facts, the opponent's answer and the better move
+    const explanation = () => {
+        const m = move();
+        const b = before();
         const v = verdict();
-        if (!v) return undefined;
-        const loss =
-            v.class === "best" || v.loss < 1
-                ? ""
-                : ` (−${v.loss.toFixed(0)}% winning chances)`;
-        const preferred =
-            v.class !== "best" && v.bestSan
-                ? `. The engine preferred ${v.bestSan}`
-                : "";
-        return `${v.san} ${VERDICTS[v.class]}${loss}${preferred}.`;
+        if (!m || !b || !v) return [];
+        const bestUci = (evaluationAt(b.fen) ?? b.evaluation)?.ext;
+        return explainMove({
+            fenBefore: b.fen,
+            uci: m.uci,
+            verdict: v,
+            bestUci: typeof bestUci === "string" ? bestUci : undefined,
+            bestPv: lineAt(b.fen),
+            replyPv: best()?.pv,
+        });
     };
+    const isBad = () =>
+        ["inaccuracy", "mistake", "blunder"].includes(verdict()?.class ?? "");
 
     return (
         <Show when={move()}>
             <div class="what-if">
                 <Show
-                    when={text()}
+                    when={explanation().length}
                     fallback={
                         <div class="what-if-hint">
                             Step back one move and let the engine look at the
@@ -101,10 +100,11 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
                         <Show when={CLASS_NAGS[verdict()!.class]}>
                             {(nag) => <NagIcon nag={nag()} />}
                         </Show>
-                        {text()}
+                        <span>{explanation().join(" ")}</span>
                     </div>
                 </Show>
-                <Show when={outcome()?.sans.length}>
+                {/* a bad move's explanation already follows the reply line */}
+                <Show when={!isBad() && outcome()?.sans.length}>
                     <div class="what-if-line">
                         Then {outcome()!.sans.join(" ")}:{" "}
                         <strong>{describeOutcome(outcome()!)}</strong>
