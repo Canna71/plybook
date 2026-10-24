@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use shakmaty::{
     fen::Fen,
     uci::UciMove,
-    zobrist::{Zobrist64, ZobristHash},
+    zobrist::Zobrist64,
     CastlingMode, Chess, EnPassantMode, Position,
 };
 use std::io::{self, Read};

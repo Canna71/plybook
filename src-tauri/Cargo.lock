@@ -2554,13 +2554,13 @@ dependencies = [
 
 [[package]]
 name = "pgn-reader"
-version = "0.28.0"
+version = "0.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0e07db84c19e093741643903738788e6f773237c7eeb60f9a40191afc2a815a"
+checksum = "50e9c8c7d9654b31768477ec2712b9e40682ad1dd323db2867dfeefa94651c6a"
 dependencies = [
  "btoi 0.5.0",
  "memchr",
- "shakmaty 0.29.4",
+ "shakmaty 0.30.2",
 ]
 
 [[package]]
@@ -3013,14 +3013,14 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "open",
- "pgn-reader 0.28.0",
+ "pgn-reader 0.29.1",
  "pgnparse",
  "rand 0.8.5",
  "reqwest",
  "rusqlite",
  "serde",
  "serde_json",
- "shakmaty 0.29.4",
+ "shakmaty 0.30.2",
  "tauri",
  "tauri-build",
  "tauri-plugin-clipboard-manager",
@@ -3506,9 +3506,9 @@ dependencies = [
 
 [[package]]
 name = "shakmaty"
-version = "0.29.4"
+version = "0.30.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d0941d24adb219ae06d990af92633dea7486831ca00d6c3988c371e4e575035"
+checksum = "d465a6a07031a8c60d92dc9b656cc8f59f8c1640493576d5d88f898883b4bd67"
 dependencies = [
  "arrayvec 0.7.8",
  "bitflags 2.6.0",
