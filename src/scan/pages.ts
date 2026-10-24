@@ -4,10 +4,12 @@
 import {
     BoardCorners,
     BoardScanResult,
+    CONFIDENCE_FLOOR,
     extractTiles,
     GrayImage,
     probsToPlacement,
     recognizeGray,
+    snapCorners,
     TileClassifier,
 } from "@scoriiu/fenshot";
 
@@ -246,13 +248,175 @@ export function resize(
     return { data, width, height };
 }
 
+/** A frame line is an unbroken dark run at least this share of the region long */
+const FRAME_RUN = 0.6;
+/** Frame lines this close (a share of the region) belong to one frame: a thick or double one */
+const FRAME_GAP = 0.02;
+/** Frames, coordinates and captions are looked for this far into the region from each side */
+const FRAME_DEPTH = 0.3;
+
+function isLine(
+    gray: GrayImage,
+    at: number,
+    from: number,
+    to: number,
+    vertical: boolean,
+) {
+    let run = 0;
+    let longest = 0;
+    for (let i = from; i < to; i++) {
+        const v = vertical
+            ? gray.data[i * gray.width + at]
+            : gray.data[at * gray.width + i];
+        run = v < INK ? run + 1 : 0;
+        longest = Math.max(longest, run);
+    }
+    return longest >= FRAME_RUN * (to - from);
+}
+
+/** Ink in the middle half of a row or column: coordinates stay outside it */
+function hasInk(
+    gray: GrayImage,
+    at: number,
+    from: number,
+    to: number,
+    vertical: boolean,
+) {
+    const side = Math.round((to - from) * 0.25);
+    for (let i = from + side; i < to - side; i++) {
+        const v = vertical
+            ? gray.data[i * gray.width + at]
+            : gray.data[at * gray.width + i];
+        if (v < INK) return true;
+    }
+    return false;
+}
+
+/**
+ * Coming in from one side of a region, the first row or column inside its frame (past
+ * coordinates and captions outside it); undefined when that side has no frame.
+ */
+function insideFrame(
+    line: (i: number) => boolean,
+    start: number,
+    step: 1 | -1,
+    extent: number,
+) {
+    const depth = Math.round(extent * FRAME_DEPTH);
+    const gap = Math.max(2, Math.round(extent * FRAME_GAP));
+    let i = start;
+    while (Math.abs(i - start) < depth && !line(i)) i += step;
+    if (Math.abs(i - start) >= depth) return undefined;
+    // a frame is thin: a dark board's rows must not pass for one
+    let last = i;
+    for (
+        let j = i + step;
+        Math.abs(j - last) <= gap && Math.abs(j - i) <= 3 * gap;
+        j += step
+    ) {
+        if (line(j)) last = j;
+    }
+    return last + step;
+}
+
+/** From `start` inward, the first row or column with ink, looking at most `limit` far. */
+function firstInk(
+    ink: (i: number) => boolean,
+    start: number,
+    step: 1 | -1,
+    limit: number,
+) {
+    for (let i = start; Math.abs(i - start) <= limit; i += step) {
+        if (ink(i)) return i;
+    }
+    return start;
+}
+
+/**
+ * The board inside a diagram region. Books frame their diagrams, often with coordinates and a
+ * caption around them; the detector's grid search is thrown off by the frame lines, so the
+ * frame itself gives the board. Without a frame, the board is where the ink starts.
+ */
+export function boardInFrame(
+    gray: GrayImage,
+    region: BoardCorners,
+): BoardCorners {
+    const { x0, y0, x1, y1 } = region;
+    const w = x1 - x0;
+    const h = y1 - y0;
+    const row = (y: number) => isLine(gray, y, x0, x1, false);
+    const col = (x: number) => isLine(gray, x, y0, y1, true);
+    const top = insideFrame(row, y0, 1, h);
+    const bottom = insideFrame(row, y1 - 1, -1, h);
+    const left = insideFrame(col, x0, 1, w);
+    const right = insideFrame(col, x1 - 1, -1, w);
+    // within the frame, skip any paper before the squares
+    const t = top ?? y0;
+    const b = (bottom ?? y1 - 1) + 1;
+    const l = left ?? x0;
+    const r = (right ?? x1 - 1) + 1;
+    const rowInk = (y: number) => hasInk(gray, y, l, r, false);
+    const colInk = (x: number) => hasInk(gray, x, t, b, true);
+    const gap = Math.max(2, Math.round(Math.max(w, h) * FRAME_GAP));
+    const limit = (framed: number | undefined, extent: number) =>
+        framed === undefined ? Math.round(extent * FRAME_DEPTH) : gap;
+    return {
+        x0: firstInk(colInk, l, 1, limit(left, w)),
+        y0: firstInk(rowInk, t, 1, limit(top, h)),
+        x1: firstInk(colInk, r - 1, -1, limit(right, w)) + 1,
+        y1: firstInk(rowInk, b - 1, -1, limit(bottom, h)) + 1,
+    };
+}
+
+const isPosition = (placement: string) =>
+    [...placement].filter((c) => c === "K").length === 1 &&
+    [...placement].filter((c) => c === "k").length === 1;
+
+/** The grid snap must beat the frame by this much mean confidence: the frame is usually exact */
+const SNAP_MARGIN = 0.005;
+
+/** The board in a frame, read in place and grid-snapped; the more confident read wins. */
+async function readInFrame(
+    gray: GrayImage,
+    box: BoardCorners,
+    model: TileModel,
+): Promise<BoardScanResult | undefined> {
+    const classify = classifierFor(gray, model);
+    let best: BoardScanResult | undefined;
+    for (const corners of [box, snapCorners(gray, box)]) {
+        const read = await classify(corners);
+        if (!isPosition(read.placement)) continue;
+        if (best && best.meanConfidence + SNAP_MARGIN >= read.meanConfidence)
+            continue;
+        best = {
+            ...read,
+            corners,
+            reliable: read.minConfidence >= CONFIDENCE_FLOOR,
+            plausible: true,
+        };
+    }
+    return best;
+}
+
+const scaleBox = (b: BoardCorners, s: number, dx = 0, dy = 0) => ({
+    x0: b.x0 * s + dx,
+    y0: b.y0 * s + dy,
+    x1: b.x1 * s + dx,
+    y1: b.y1 * s + dy,
+});
+
 /** Diagram width the detector reads best; each region is scaled to it before reading. */
 export const DIAGRAM_WIDTH = 520;
 
+/** The more confident of two reads, either of which may be missing. */
+const moreConfident = (a?: BoardScanResult, b?: BoardScanResult) =>
+    !a || (b && b.meanConfidence > a.meanConfidence) ? b : a;
+
 /**
- * Every diagram on a book page: each square-ish blob of ink is scaled to DIAGRAM_WIDTH and
- * scanned on its own, so diagram size and print resolution matter little; a page without such
- * blobs (a screenshot, say) is scanned as a whole.
+ * Every diagram on a book page: the board inside each square-ish blob of ink is read where its
+ * frame puts it, and the blob is also scanned by the detector, both as rendered and scaled to
+ * DIAGRAM_WIDTH, so frames, diagram size and print resolution matter little. A page without
+ * such blobs (a screenshot, say) is scanned as a whole.
  */
 export async function findDiagramsOnPage(
     gray: GrayImage,
@@ -263,32 +427,45 @@ export async function findDiagramsOnPage(
     const found: BoardScanResult[] = [];
     for (const region of regions.slice(0, MAX_DIAGRAMS_PER_PAGE)) {
         const { image, x, y } = crop(gray, region);
-        let scale = DIAGRAM_WIDTH / (region.x1 - region.x0);
+        const scale = DIAGRAM_WIDTH / (region.x1 - region.x0);
         const scaled = resize(
             image,
             Math.round(image.width * scale),
             Math.round(image.height * scale),
         );
-        // a blob can hold two boards that touch
-        let reads = await findDiagrams(scaled, model, 2);
+        // reads in the crop's own pixels
+        const unscale = (d: BoardScanResult) => ({
+            ...d,
+            corners: scaleBox(d.corners, 1 / scale),
+        });
+        const box = boardInFrame(image, scaleBox(region, 1, -x, -y));
         // finely hatched diagrams read best as rendered: resampling turns hatching into moiré
-        if (!reads.some((r) => r.reliable)) {
-            const asRendered = await findDiagrams(image, model, 2);
-            if (asRendered.some((r) => r.reliable) || reads.length === 0) {
-                reads = asRendered;
-                scale = 1;
+        let framed = await readInFrame(image, box, model);
+        if (!framed?.reliable) {
+            const read = await readInFrame(scaled, scaleBox(box, scale), model);
+            framed = moreConfident(framed, read && unscale(read));
+        }
+        let reads: BoardScanResult[] = framed?.reliable ? [framed] : [];
+        if (reads.length === 0) {
+            // a blob can hold two boards that touch, which only the detector separates
+            reads = (await findDiagrams(scaled, model, 2)).map(unscale);
+            if (!reads.some((r) => r.reliable)) {
+                const asRendered = await findDiagrams(image, model, 2);
+                if (asRendered.some((r) => r.reliable) || reads.length === 0) {
+                    reads = asRendered;
+                }
+            }
+            const single = reads.length === 1 ? reads[0] : undefined;
+            if (
+                reads.length < 2 &&
+                framed &&
+                moreConfident(single, framed) === framed
+            ) {
+                reads = [framed];
             }
         }
         for (const d of reads) {
-            found.push({
-                ...d,
-                corners: {
-                    x0: d.corners.x0 / scale + x,
-                    x1: d.corners.x1 / scale + x,
-                    y0: d.corners.y0 / scale + y,
-                    y1: d.corners.y1 / scale + y,
-                },
-            });
+            found.push({ ...d, corners: scaleBox(d.corners, 1, x, y) });
         }
     }
     return readingOrder(found);
