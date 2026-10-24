@@ -104,8 +104,9 @@ How this file is used:
     Black answers Bxg4. After Bxg4 f3: Black wins material (+9). Better was exd5."
     Known limits: from review data alone (no engine lines) only ~1 in 6 mistakes gets a
     reason beyond the verdict; static facts only (no tactics deeper than the lines played).
-  - [ ] **P2.4b Optional model provider**: OpenAI-compatible endpoint (free local models via
-    Ollama / LM Studio, or cheap hosted ones) and Anthropic; key stored outside the webview.
+  - [ ] **P2.4b Optional model provider** (deferred by the owner on 2026-10-24; keep for
+    later): OpenAI-compatible endpoint (free local models via Ollama / LM Studio, or cheap
+    hosted ones) and Anthropic. The key goes in the keychain with S.1 (a new `Secret` variant).
 - [x] **P2.5 Human vs best** (`feature/human-moves`; owner review pending): Maia's most likely
   move next to the engine's best, to show traps and "natural but wrong" moves.
   - Status: a Maia profile runs next to the analysis engine (`useHumanMoves`, Lc0
