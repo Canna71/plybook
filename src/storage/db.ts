@@ -1,5 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import anylogger from "anylogger";
+import { historyId } from "../models/history";
+import { makeGame } from "../models/pgn";
 const log = anylogger("db");
 
 export type Puzzle = {
@@ -162,21 +164,28 @@ export async function getHistoryGames(): Promise<Game[]> {
         log.debug("getHistoryGames", games);
         return games;
     } catch (e) {
-        console.error("Failed to get history games", e);
+        log.error("Failed to get history games", e);
         return [];
     }
 }
 
-(window as any).getHistoryGames = getHistoryGames;
-
-export async function addToHistory(pgn: string): Promise<Game | undefined> {
+/**
+ * Saves a played game, by default under its Timestamp id (older records have random ids).
+ * Games without an id or without moves are skipped.
+ */
+export async function saveHistoryGame(
+    pgn: string,
+    id = historyId(pgn),
+): Promise<Game | undefined> {
+    if (!id || makeGame(pgn).mainline.length === 0) return undefined;
     try {
-        const game = (await invoke("add_to_history", { pgn })) as Game;
-        return game;
+        return await invoke<Game>("save_history_game", { id, pgn });
     } catch (e) {
-        console.error("Failed to add game to history", e);
+        log.error("Failed to save game to history", e);
         return undefined;
     }
 }
 
-setTimeout(initDB, 10);
+export async function getHistoryGame(id: string): Promise<Game | undefined> {
+    return (await invoke<Game | null>("get_history_game", { id })) ?? undefined;
+}

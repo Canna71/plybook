@@ -210,38 +210,66 @@ pub async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) ->
     Ok(created)
 }
 
-#[tauri::command]
-// #[tokio::main]
-pub async fn add_to_history(db_state: State<'_, DatabaseConnection>, pgn: String) -> Result<Game, String> {
-    let db = db_state.0.lock().await;
-    let db = db.as_ref().ok_or("Database not initialized")?;
-
-    println!("Received PGN: {}", pgn);
-
-    let game = pgn_to_game(pgn);
-    
-
-    let created: Game = db
-        .create(HISTORY_TABLE)
-        .content(game)
-        .await
-        .map_err(|e| e.to_string())?
-        .ok_or("Failed to create record")?;
-
-    println!("Game: {:?}", created);
-
-    Ok(created)
+/// History record ids come from the game's Timestamp header without separators.
+fn valid_history_id(id: &str) -> bool {
+    !id.is_empty() && id.len() <= 64 && id.chars().all(|c| c.is_ascii_alphanumeric())
 }
 
-// return all games in the history
+async fn history_save(db: &Surreal<Db>, id: &str, pgn: String) -> Result<Game, String> {
+    if !valid_history_id(id) {
+        return Err(format!("Invalid history id {id:?}"));
+    }
+    db.upsert((HISTORY_TABLE, id))
+        .content(pgn_to_game(pgn))
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "Failed to save the game".to_string())
+}
+
+async fn history_get(db: &Surreal<Db>, id: &str) -> Result<Option<Game>, String> {
+    if !valid_history_id(id) {
+        return Err(format!("Invalid history id {id:?}"));
+    }
+    db.select((HISTORY_TABLE, id)).await.map_err(|e| e.to_string())
+}
+
+async fn history_list(db: &Surreal<Db>) -> Result<Vec<Game>, String> {
+    db.query("SELECT * FROM type::table($table) ORDER BY eventDate DESC, id DESC")
+        .bind(("table", HISTORY_TABLE))
+        .await
+        .map_err(|e| e.to_string())?
+        .take(0)
+        .map_err(|e| e.to_string())
+}
+
+/// Creates or replaces a played game; the play view saves after every move.
+#[tauri::command]
+pub async fn save_history_game(
+    db_state: State<'_, DatabaseConnection>,
+    id: String,
+    pgn: String,
+) -> Result<Game, String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+    history_save(db, &id, pgn).await
+}
+
+#[tauri::command]
+pub async fn get_history_game(
+    db_state: State<'_, DatabaseConnection>,
+    id: String,
+) -> Result<Option<Game>, String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+    history_get(db, &id).await
+}
+
+/// All played games, newest first.
 #[tauri::command]
 pub async fn list_history(db_state: State<'_, DatabaseConnection>) -> Result<Vec<Game>, String> {
     let db = db_state.0.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
-
-    let games: Vec<Game> = db.select(HISTORY_TABLE).await.map_err(|e| e.to_string())?;
-
-    Ok(games)
+    history_list(db).await
 }
 
 
@@ -446,3 +474,73 @@ LIMIT $limit
     
 }
 
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const PGN: &str = "[White \"Player\"]\n[Black \"maia-1100\"]\n[Result \"*\"]\n\
+        [Date \"2026-10-24\"]\n[TimeControl \"300+5\"]\n\n1. e4 e5 *\n";
+
+    async fn temp_db(name: &str) -> Surreal<Db> {
+        let dir = std::env::temp_dir().join(format!(
+            "rechess-test-{name}-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&dir);
+        let db = Surreal::new::<RocksDb>(dir).await.unwrap();
+        db.use_ns("test").use_db("test").await.unwrap();
+        db
+    }
+
+    #[test]
+    fn pgn_headers_become_fields() {
+        let game = pgn_to_game(PGN.to_string());
+        assert_eq!(game.whiteName, "Player");
+        assert_eq!(game.blackName, "maia-1100");
+        assert_eq!(game.result, "*");
+        assert_eq!(game.eventDate, "2026-10-24");
+        assert_eq!((game.timeControlInitial, game.timeControlIncrement), (300, 5));
+        assert_eq!(game.whiteRating, -1);
+    }
+
+    #[test]
+    fn history_ids_are_validated() {
+        assert!(valid_history_id("20261024T141526208Z"));
+        assert!(!valid_history_id(""));
+        assert!(!valid_history_id("a:b"));
+        assert!(!valid_history_id("history:x"));
+    }
+
+    #[tokio::test]
+    async fn saving_twice_updates_one_game() {
+        let db = temp_db("history").await;
+        let id = "20261024T141526208Z";
+        history_save(&db, id, PGN.to_string()).await.unwrap();
+        let finished = PGN.replace("*", "1-0");
+        history_save(&db, id, finished.clone()).await.unwrap();
+
+        let all = history_list(&db).await.unwrap();
+        assert_eq!(all.len(), 1);
+        let game = history_get(&db, id).await.unwrap().unwrap();
+        assert_eq!(game.result, "1-0");
+        assert_eq!(game.pgn, finished);
+        assert!(history_get(&db, "unknown").await.unwrap().is_none());
+        assert!(history_save(&db, "bad id", PGN.to_string()).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn history_is_newest_first() {
+        let db = temp_db("order").await;
+        for (id, date) in [("a1", "2026-10-01"), ("a2", "2026-10-24"), ("a3", "2026-09-30")] {
+            history_save(&db, id, PGN.replace("2026-10-24", date)).await.unwrap();
+        }
+        let dates: Vec<String> = history_list(&db)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|g| g.eventDate)
+            .collect();
+        assert_eq!(dates, ["2026-10-24", "2026-10-01", "2026-09-30"]);
+    }
+}

@@ -27,11 +27,14 @@ import { message } from "@tauri-apps/plugin-dialog";
 import {
     createPuzzle,
     deletePuzzle,
+    getHistoryGame,
     getStudy,
     pickPuzzle,
+    saveHistoryGame,
     updateBaseWeight,
     updatePerformanceScore,
 } from "../storage/db";
+import { historyTitle } from "../models/history";
 import { calculatePerformanceScore } from "../models/puzzles";
 import Select, { Option } from "../components/common/Select";
 import Button from "../components/common/Button";
@@ -51,12 +54,19 @@ const GameView = () => {
     const { refresh } = useContentContext();
     const navigate = useNavigate();
 
+    /** A game played against the engine, opened from History */
+    const historyId = () =>
+        searchParams.source === "history" && typeof searchParams.id === "string"
+            ? searchParams.id
+            : undefined;
+    const [historyName, setHistoryName] = createSignal<string>();
+
     const displayedName = () => {
         const path = searchParams.path;
         if (path && typeof path === "string") {
             return NameWithoutExtension(baseName(path));
         }
-        return "Untitled";
+        return historyName() ?? "Untitled";
     };
 
     const filePath = () => {
@@ -86,7 +96,21 @@ const GameView = () => {
     createEffect(async () => {
         // onRefresh();
         let pgnText = getDefaultStudyContent();
-        if (typeof searchParams.path === "string") {
+        const id = historyId();
+        if (id) {
+            try {
+                const game = await getHistoryGame(id);
+                if (!game) throw new Error(`Game ${id} not found in history`);
+                pgnText = game.pgn;
+                setHistoryName(historyTitle(game.whiteName, game.blackName));
+            } catch (e) {
+                message("Error reading game from history: \n" + String(e), {
+                    title: "Re:Chess",
+                    kind: "error",
+                });
+                log.error(e);
+            }
+        } else if (typeof searchParams.path === "string") {
             try {
                 pgnText = await readDataFile(searchParams.path);
             } catch (e) {
@@ -133,7 +157,10 @@ const GameView = () => {
     const onSave = async () => {
         const pgnText = newPgn();
         if (pgnText) {
-            if (typeof searchParams.path === "string") {
+            if (historyId()) {
+                if (await saveHistoryGame(pgnText, historyId()))
+                    setModified(false);
+            } else if (typeof searchParams.path === "string") {
                 await writeDataFile(searchParams.path, pgnText);
                 // await writeDataFile("test.pgn", pgnText);
                 setModified(false);
@@ -238,16 +265,18 @@ const GameView = () => {
                         </div>
                     </Show>
 
-                    <div class="navbar-item">
-                        <Select
-                            title={"Puzzle Priority"}
-                            options={puzzlePriorities}
-                            selectedValue={puzzlePriority}
-                            setSelectedValue={
-                                onChangePuzzlePriority as Setter<string>
-                            }
-                        />
-                    </div>
+                    <Show when={filePath()}>
+                        <div class="navbar-item">
+                            <Select
+                                title={"Puzzle Priority"}
+                                options={puzzlePriorities}
+                                selectedValue={puzzlePriority}
+                                setSelectedValue={
+                                    onChangePuzzlePriority as Setter<string>
+                                }
+                            />
+                        </div>
+                    </Show>
 
                     <div class="navbar-item">
                         <button

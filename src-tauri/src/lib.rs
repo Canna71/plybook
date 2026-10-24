@@ -49,7 +49,7 @@ pub fn run() {
             greet, init_db, index_game, list_games, upload_pgn, upsert_study,
             list_studies, list_puzzles, update_puzzle_score, pick_puzzle, 
             update_cached_weights, update_puzzle_base_weight, delete_puzzle, get_study,
-            add_to_history, list_history,
+            save_history_game, get_history_game, list_history,
             engine_list, engine_save_profile, engine_remove_profile, engine_pick_executable, engine_pick_weights,
             engine_folder, engine_open_folder, engine_weights,
             engine_spawn, engine_write, engine_kill, open_library_path,

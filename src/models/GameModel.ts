@@ -158,7 +158,7 @@ export class GameModel {
         return makeGameInternal(this.game);
     }
 
-    private getPosition(path: Path) {
+    getPosition(path: Path) {
         const data = this.dataAt(path);
         const fen = data?.fen;
         const setup = parseFen(fen!).unwrap();
