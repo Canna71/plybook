@@ -164,7 +164,11 @@ How this file is used:
     "Lichess: online games" in the Explorer's source list. Its API needs the user's personal
     Lichess token (401 without one since 2025-26), saved in Settings and kept by S.1.
 - [ ] **P3.4 Opening books**: Polyglot `.bin` support in analysis and as engine-play book.
-- [ ] **P3.5 Endgame tablebase** lookups (Lichess tablebase API).
+- [x] **P3.5 Endgame tablebase** lookups (`feature/tablebase`; owner review pending): with 7
+  pieces or fewer, the analysis shows the exact result ("White wins: mate in 11", draws under
+  the 50-move rule explained) and every move coloured win / draw / loss for the side playing it,
+  click to play. Lichess tablebase (Syzygy, free, no token), cached per position; needs the
+  network. `models/tablebase.ts` with tests.
 - [x] **P3.6 Repertoire builder and trainer** (`feature/repertoire`; owner review pending):
   spaced repetition over your own lines (Chessable-style), fed from PGN.
   - Status: any Library PGN (all its games/chapters, with variations) becomes a repertoire via

@@ -47,6 +47,7 @@ import EngineInfoViewer from "./EngineInfoViewer";
 import WhatIf from "./WhatIf";
 import PositionFacts from "./PositionFacts";
 import HumanMoves from "./HumanMoves";
+import TablebaseInfo from "./TablebaseInfo";
 import { useHumanMoves } from "./useHumanMoves";
 import { Tooltip } from "../common/Tooltip";
 import PgnEditBar, { ViewMode } from "./PgnEditBar";
@@ -826,6 +827,7 @@ const GameManager: Component<GameManagerOptions> = ({
                                     fen={fen()}
                                     engineInfo={engineInfo}
                                 />
+                                <TablebaseInfo />
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
 
