@@ -26,6 +26,9 @@ serde_json = "^1.0.136"
 rusqlite = { version = "0.32", features = ["bundled"] }
 chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
 pgnparse = "0.1.15"
+pgn-reader = "0.28"
+shakmaty = "0.29"
+zstd = "0.13"
 tauri-plugin-process = "2.2.0"
 tauri-plugin-dialog = "2"
 tauri-plugin-clipboard-manager = "2.2.0"

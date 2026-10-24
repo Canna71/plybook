@@ -19,7 +19,8 @@ const DB_FILE: &str = "rechess.sqlite";
 const SURREAL_EXPORT: &str = "surreal-export.json";
 
 /// Schema steps; `PRAGMA user_version` counts the ones applied. Append, never edit.
-const SCHEMA: &[&str] = &[r#"
+const SCHEMA: &[&str] = &[
+    r#"
 CREATE TABLE puzzles (
     file_path TEXT PRIMARY KEY,
     base_weight REAL NOT NULL,
@@ -40,7 +41,47 @@ CREATE TABLE history (
     time_control_initial INTEGER NOT NULL,
     time_control_increment INTEGER NOT NULL
 );
-"#];
+"#,
+    r#"
+CREATE TABLE databases (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    source TEXT NOT NULL,
+    imported_at TEXT NOT NULL,
+    game_count INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE games (
+    id INTEGER PRIMARY KEY,
+    database_id INTEGER NOT NULL,
+    white TEXT NOT NULL,
+    black TEXT NOT NULL,
+    white_elo INTEGER,
+    black_elo INTEGER,
+    result TEXT NOT NULL,
+    date TEXT NOT NULL,
+    event TEXT NOT NULL,
+    site TEXT NOT NULL,
+    eco TEXT NOT NULL,
+    opening TEXT NOT NULL,
+    plies INTEGER NOT NULL,
+    pgn TEXT NOT NULL
+);
+CREATE INDEX games_database ON games (database_id);
+CREATE INDEX games_white ON games (white COLLATE NOCASE);
+CREATE INDEX games_black ON games (black COLLATE NOCASE);
+CREATE INDEX games_eco ON games (eco);
+CREATE INDEX games_date ON games (date);
+-- the opening positions of every game (see games.rs); database_id makes deleting cheap
+CREATE TABLE positions (
+    hash INTEGER NOT NULL,
+    game_id INTEGER NOT NULL,
+    database_id INTEGER NOT NULL,
+    ply INTEGER NOT NULL,
+    next_move TEXT
+);
+CREATE INDEX positions_hash ON positions (hash);
+"#,
+];
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Puzzle {
@@ -76,14 +117,25 @@ pub struct Game {
     round: i64,
 }
 
+/// Where the database lives; game imports open their own connection to it.
+pub fn db_path<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<std::path::PathBuf, String> {
+    Ok(app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| format!("Cannot resolve app data folder: {e}"))?
+        .join(DB_FILE))
+}
+
 fn open(path: &Path) -> rusqlite::Result<Connection> {
     let conn = Connection::open(path)?;
     conn.pragma_update(None, "journal_mode", "WAL")?;
+    // a game import writes from its own connection
+    conn.busy_timeout(std::time::Duration::from_secs(10))?;
     migrate(&conn)?;
     Ok(conn)
 }
 
-fn migrate(conn: &Connection) -> rusqlite::Result<()> {
+pub(crate) fn migrate(conn: &Connection) -> rusqlite::Result<()> {
     let applied: usize = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
     for (step, sql) in SCHEMA.iter().enumerate().skip(applied) {
         let tx = conn.unchecked_transaction()?;

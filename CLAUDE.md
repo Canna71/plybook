@@ -30,6 +30,7 @@ cd src-tauri && cargo clippy
 cd src-tauri && cargo fmt --check
 ```
 
+Rust is 1.96 here; pgn-reader is pinned to 0.28 / shakmaty 0.29 because newer ones need 1.97.
 Building the Rust side needs a C compiler for the bundled SQLite: the Xcode command line tools on
 macOS, the MSVC build tools on Windows. (No LLVM/libclang since SurrealDB was removed.)
 
@@ -58,7 +59,7 @@ Rust changed.
 
 ```
 src/
-  index.tsx, App.tsx       router: / /game /analysis /play /puzzles /puzzle /library /history /boardeditor /settings /guess
+  index.tsx, App.tsx       router: / /game /analysis /play /puzzles /puzzle /library /history /boardeditor /settings /guess /databases
   Views/                   route pages. GameView = file load/save/puzzle wrapper around GameManager.
                            Play, Puzzles, History, LibraryFolder, Sidebar, Layout. obsoleted/ is dead code.
   components/game/         GameManager.tsx (the hub, ~870 lines), GameContext.tsx (shared signals),
@@ -77,6 +78,7 @@ src-tauri/src/
   lib.rs                   plugin setup, setup hook, command registration (generate_handler!)
   db.rs                    SQLite: puzzles (weights, pick_puzzle) and history; schema steps in SCHEMA
                            (PRAGMA user_version), one-time import of tools/surreal-export output
+  games.rs                 game databases: PGN import (pgn-reader/shakmaty), search, position index
   net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts
   engine.rs                engine process management (engine_list/spawn/write/kill) + open_library_path
   migrate.rs               one-time move of user data from the old "rechess" identifier folders

@@ -99,6 +99,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 
 [[package]]
+name = "arrayvec"
+version = "0.7.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3fb67a6e08acf24fdeccbac2cb6ac4305825bd1f117462e0e6f2f193345ad56"
+
+[[package]]
 name = "ashpd"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -290,6 +296,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "btoi"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b5ab9db53bcda568284df0fd39f6eac24ad6f7ba7ff1168b9e76eba6576b976"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -395,6 +410,8 @@ version = "1.1.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2e7962b54006dcfcc61cb72735f4d89bb97061dd6a7ed882ec6b8ee53714c6f"
 dependencies = [
+ "jobserver",
+ "libc",
  "shlex",
 ]
 
@@ -1805,6 +1822,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8eaf4bc02d17cbdd7ff4c7438cafcdf7fb9a4613313ad11b4f8fefe7d3fa0130"
 
 [[package]]
+name = "jobserver"
+version = "0.1.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48d1dbcbbeb6a7fec7e059840aa538bd62aaccf972c7346c4d9d2059312853d0"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "jpeg-decoder"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2125,6 +2151,12 @@ name = "nodrop"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72ef4a56884ca558e5ddb05a1d1e7e1bfd9a68d9ed024c21704cc98872dae1bb"
+
+[[package]]
+name = "nohash-hasher"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
 
 [[package]]
 name = "num-conv"
@@ -2514,10 +2546,21 @@ version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb706a31f5787abc5236a2a1545c2cbf5a6be85a4d12c5cb00cd79cb5d5fa6ea"
 dependencies = [
- "btoi",
+ "btoi 0.4.3",
  "memchr",
- "shakmaty",
+ "shakmaty 0.17.2",
  "slice-deque",
+]
+
+[[package]]
+name = "pgn-reader"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d0e07db84c19e093741643903738788e6f773237c7eeb60f9a40191afc2a815a"
+dependencies = [
+ "btoi 0.5.0",
+ "memchr",
+ "shakmaty 0.29.4",
 ]
 
 [[package]]
@@ -2528,11 +2571,11 @@ checksum = "da5233154d9f72481a71e0b4a87013c730e53856ee33b2b57e2611a498f3f0a8"
 dependencies = [
  "env_logger",
  "log",
- "pgn-reader",
+ "pgn-reader 0.16.0",
  "rand 0.8.5",
  "serde",
  "serde_json",
- "shakmaty",
+ "shakmaty 0.17.2",
 ]
 
 [[package]]
@@ -2970,12 +3013,14 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "open",
+ "pgn-reader 0.28.0",
  "pgnparse",
  "rand 0.8.5",
  "reqwest",
  "rusqlite",
  "serde",
  "serde_json",
+ "shakmaty 0.29.4",
  "tauri",
  "tauri-build",
  "tauri-plugin-clipboard-manager",
@@ -2984,6 +3029,7 @@ dependencies = [
  "tauri-plugin-process",
  "tauri-plugin-shell",
  "tauri-plugin-window-state",
+ "zstd",
 ]
 
 [[package]]
@@ -3453,9 +3499,22 @@ version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e0115b8620f67015c63a1850a05ed40952e8e0f0c1986a8a4056c1ebd927136"
 dependencies = [
- "arrayvec",
+ "arrayvec 0.5.2",
  "bitflags 1.3.2",
- "btoi",
+ "btoi 0.4.3",
+]
+
+[[package]]
+name = "shakmaty"
+version = "0.29.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d0941d24adb219ae06d990af92633dea7486831ca00d6c3988c371e4e575035"
+dependencies = [
+ "arrayvec 0.7.8",
+ "bitflags 2.6.0",
+ "btoi 0.5.0",
+ "nohash-hasher",
+ "serde",
 ]
 
 [[package]]
@@ -5386,6 +5445,34 @@ name = "zeroize"
 version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ced3678a2879b30306d323f4542626697a464a97c0a07c9aebf7ebca65cd4dde"
+
+[[package]]
+name = "zstd"
+version = "0.13.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e91ee311a569c327171651566e07972200e76fcfe2242a4fa446149a3881c08a"
+dependencies = [
+ "zstd-safe",
+]
+
+[[package]]
+name = "zstd-safe"
+version = "7.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64d80649ab6db9d9f6f9c80a40becd948eda4714a0a5ac8c4d157a32231c7882"
+dependencies = [
+ "zstd-sys",
+]
+
+[[package]]
+name = "zstd-sys"
+version = "2.1.2+zstd.1.5.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "481ada9c543b2323cbb7bbdbb5249177fbf0188ed959ed2c15e4b22421c84ed3"
+dependencies = [
+ "cc",
+ "pkg-config",
+]
 
 [[package]]
 name = "zvariant"
