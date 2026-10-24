@@ -171,7 +171,8 @@ const GameManager: Component<GameManagerOptions> = ({
     >(undefined);
 
     // #region Layout
-    const chessBoardDiv: HTMLDivElement | null = null;
+    // eslint-disable-next-line prefer-const -- assigned by Solid via ref={...}
+    let chessBoardDiv: HTMLDivElement | null = null;
 
     const divider = useSplitter((layout) => {
         setSettingValue("layout.playing.columnsTemplate", layout);
