@@ -171,6 +171,9 @@ User data locations (resolved by Tauri from the bundle identifier):
 
 `docs/ROADMAP.md` tracks planned features by ID (`P1.1`, ...) with status and acceptance criteria.
 Read it before starting feature work, and update an item's status in the same branch that changes it.
+`docs/SCANNING.md` explains position recognition, book scanning and the PDF reader (`src/scan`,
+`BookScanView`, `PdfReader`): the pipeline, why each step exists, how to test it, and known limits.
+Read it before touching recognition, and keep it current.
 
 ## Claude Code setup in this repo
 

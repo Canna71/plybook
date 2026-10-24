@@ -234,6 +234,20 @@ How this file is used:
     in databases and Edit (the board editor now takes `?fen=`).
   - Known limits: scanned (image-only) PDFs have no text to find; pages are assumed to share
     the first page's shape for the placeholders.
+  - Fix (`fix/book-diagrams`; confirmed by the owner 2026-10-25): framed book diagrams were
+    missed or outlined a few pixels off with misread pieces; the board is now also taken from
+    inside its frame. How recognition works and what to improve: `docs/SCANNING.md`.
+  - Follow-ups (requested 2026-10-25):
+    - [ ] **P4.4a Remember the reading position** exactly: page and place on the page, zoom,
+      per book (today only the page).
+    - [ ] **P4.4b Select text** on pages (pdf.js text layer over the canvas).
+    - [ ] **P4.4c Copy text into annotations**: selected text into a comment of the position
+      being studied.
+    - [ ] **P4.4d Edit the PGN associated with a position**: each diagram gets its own game
+      (moves, variations, comments) saved with the book and reopened from the diagram.
+    - [ ] **P4.4e Recognize positions and moves from the text**: whose move from captions
+      ("White to play", "1...") and move sequences in the text (SAN/figurine notation) played
+      from the diagram's position into its PGN.
 
 ## Integrations
 
