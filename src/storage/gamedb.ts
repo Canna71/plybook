@@ -88,3 +88,7 @@ export type ExplorerMove = {
 /** Moves played from `fen` in the imported games, most played first. */
 export const exploreDatabases = (fen: string, databaseId?: number) =>
     invoke<ExplorerMove[]>("gamedb_explore", { fen, databaseId });
+
+/** The Lichess opening explorer (needs the Lichess token saved in Settings). */
+export const exploreLichess = (fen: string, source: "masters" | "lichess") =>
+    invoke<ExplorerMove[]>("online_lichess_explorer", { fen, source });

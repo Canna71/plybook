@@ -218,9 +218,126 @@ pub async fn online_lichess_game(id: String) -> Result<String, String> {
     }
 }
 
+#[derive(Deserialize, Clone, Copy, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum ExplorerSource {
+    /// Over-the-board games of titled players
+    Masters,
+    /// Games played on Lichess
+    Lichess,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LichessExplorerMove {
+    uci: String,
+    san: String,
+    average_rating: Option<i64>,
+    white: i64,
+    draws: i64,
+    black: i64,
+}
+
+#[derive(Deserialize)]
+struct LichessExplorer {
+    moves: Vec<LichessExplorerMove>,
+}
+
+/// A FEN as sent to the explorer: the characters of a FEN, and not too long.
+fn plausible_fen(fen: &str) -> bool {
+    !fen.is_empty()
+        && fen.len() <= 100
+        && fen
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '/' || c == ' ' || c == '-')
+}
+
+fn explorer_moves(json: &str) -> Result<Vec<crate::games::ExplorerMove>, String> {
+    let parsed: LichessExplorer = serde_json::from_str(json).map_err(|e| e.to_string())?;
+    Ok(parsed
+        .moves
+        .into_iter()
+        .map(|m| crate::games::ExplorerMove {
+            uci: m.uci,
+            san: m.san,
+            games: m.white + m.draws + m.black,
+            white_wins: m.white,
+            draws: m.draws,
+            black_wins: m.black,
+            average_elo: m.average_rating,
+        })
+        .collect())
+}
+
+/// The Lichess opening explorer for a position. It needs the user's Lichess token, which Rust
+/// takes from the keychain: the webview never handles it.
+#[tauri::command]
+pub async fn online_lichess_explorer(
+    secrets: tauri::State<'_, crate::secrets::Secrets>,
+    fen: String,
+    source: ExplorerSource,
+) -> Result<Vec<crate::games::ExplorerMove>, String> {
+    if !plausible_fen(&fen) {
+        return Err("Invalid position".to_string());
+    }
+    let token = secrets
+        .get(crate::secrets::Secret::LichessToken)?
+        .ok_or("Add your Lichess token in Settings → Online accounts to use its explorer")?;
+    let path = match source {
+        ExplorerSource::Masters => "masters",
+        ExplorerSource::Lichess => "lichess",
+    };
+    let response = client()?
+        .get(format!("https://explorer.lichess.ovh/{path}"))
+        .bearer_auth(token)
+        .query(&[("fen", fen.as_str()), ("moves", "20")])
+        .send()
+        .await
+        .map_err(|e| format!("Could not reach the Lichess explorer: {e}"))?;
+    match response.status().as_u16() {
+        200 => explorer_moves(&response.text().await.map_err(|e| e.to_string())?),
+        401 => Err(
+            "Lichess did not accept the token: create a new one and save it in Settings"
+                .to_string(),
+        ),
+        429 => Err("The Lichess explorer is rate limiting requests, wait a minute".to_string()),
+        code => Err(format!("The Lichess explorer answered with HTTP {code}")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reads_the_explorer_answer() {
+        // shape of explorer.lichess.ovh answers (fields not used are left out)
+        let json = r#"{
+            "white": 10, "draws": 5, "black": 7,
+            "moves": [
+                {"uci": "e7e5", "san": "e5", "averageRating": 2410,
+                 "white": 6, "draws": 3, "black": 4, "game": null},
+                {"uci": "c7c5", "san": "c5", "averageRating": null,
+                 "white": 4, "draws": 2, "black": 3, "game": null}
+            ],
+            "topGames": [], "opening": {"eco": "B00", "name": "King's Pawn"}
+        }"#;
+        let moves = explorer_moves(json).unwrap();
+        assert_eq!(moves.len(), 2);
+        assert_eq!((moves[0].san.as_str(), moves[0].games), ("e5", 13));
+        assert_eq!(moves[0].average_elo, Some(2410));
+        assert_eq!(moves[1].average_elo, None);
+        assert!(explorer_moves("<html>").is_err());
+    }
+
+    #[test]
+    fn explorer_positions_are_checked() {
+        assert!(plausible_fen(
+            "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
+        ));
+        assert!(!plausible_fen("x&callback=evil"));
+        assert!(!plausible_fen(""));
+    }
 
     #[test]
     fn game_ids_are_validated() {

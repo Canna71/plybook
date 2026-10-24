@@ -8,6 +8,7 @@ mod lichess_puzzles;
 mod migrate;
 mod net;
 mod repertoire;
+mod secrets;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -22,6 +23,7 @@ use games::*;
 use lichess_puzzles::*;
 use net::*;
 use repertoire::*;
+use secrets::*;
 
 // use add_capability to enable an arbitrary engine to run
 // #[tauri::command]
@@ -41,6 +43,7 @@ pub fn run() {
         .manage(Database::default())
         .manage(EngineProcesses::default())
         .manage(ApprovedExecutables::default())
+        .manage(Secrets::default())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .setup(|app| {
@@ -93,7 +96,12 @@ pub fn run() {
             repertoire_list,
             repertoire_set,
             repertoire_cards,
-            repertoire_save_card
+            repertoire_save_card,
+            secret_set,
+            secret_delete,
+            secret_status,
+            open_lichess_token_page,
+            online_lichess_explorer
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

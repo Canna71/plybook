@@ -501,14 +501,14 @@ fn search_games(conn: &Connection, q: &GameQuery) -> Result<SearchResult, String
 #[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExplorerMove {
-    uci: String,
-    san: String,
-    games: i64,
-    white_wins: i64,
-    draws: i64,
-    black_wins: i64,
+    pub(crate) uci: String,
+    pub(crate) san: String,
+    pub(crate) games: i64,
+    pub(crate) white_wins: i64,
+    pub(crate) draws: i64,
+    pub(crate) black_wins: i64,
     /// Average rating of the players, where known
-    average_elo: Option<i64>,
+    pub(crate) average_elo: Option<i64>,
 }
 
 /// The moves played from a position in the imported games, most played first. A game counts
