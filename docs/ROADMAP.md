@@ -107,9 +107,16 @@ How this file is used:
     a separate UCI event; UCIEngine has tests with a fake process.
   - Known limits: a trap is only detected when the natural move is among the engine's MultiPV
     lines; otherwise the panel says the engine does not rank it.
-- [ ] **P2.6 Candidate-move trainer**: commit to 2-3 candidates before the reveal; track how
-  often the best move was among them.
-- [ ] **P2.7 Guess the move** through master games or your own.
+- [x] **P2.6 Candidate-move trainer** and **P2.7 Guess the move** (`feature/guess-the-move`;
+  owner review pending): commit to up to 3 candidates before the reveal; track how often the
+  best move was among them.
+  - Status: "Guess the move" in the game toolbar opens `/guess` for the file (pick the game and
+    side; the side defaults to yours). Moving a piece adds a candidate (blue arrow); Reveal shows
+    the game move, the engine's best and each candidate's score and loss (UCI `searchmoves`);
+    a candidate within 2 win-% points of the best counts as finding it. The score line counts
+    best and game moves found. `models/guess.ts`, `engine/search.ts` with tests.
+  - Known limits: scores are kept for the session only (no history of training results);
+    promotion candidates are always queens.
 
 ## Phase 3: databases and imports
 

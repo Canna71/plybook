@@ -8,6 +8,7 @@ import { INITIAL_FEN } from "chessops/fen";
 import { Evaluation, isMate } from "chessops/pgn";
 import { EvaluationExt, Path } from "./pgn";
 import type { GameModel } from "./GameModel";
+import type { Score } from "../engine/engineinterfaces";
 
 export type MoveClass = "best" | "good" | "inaccuracy" | "mistake" | "blunder";
 
@@ -71,6 +72,17 @@ export function whiteCp(evaluation: Evaluation, turn: Color): number {
 export function winPercent(cp: number): number {
     const clamped = Math.max(-1000, Math.min(1000, cp));
     return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * clamped)) - 1);
+}
+
+/** Win % for `color` from an engine score given from White's point of view, in a position
+ * where `turn` is to move (needed for mate 0). */
+export function scoreWin(score: Score, turn: Color, color: Color): number {
+    const evaluation: Evaluation =
+        score.type === "cp"
+            ? { pawns: score.value / 100 }
+            : { mate: score.value };
+    const white = winPercent(whiteCp(evaluation, turn));
+    return color === "white" ? white : 100 - white;
 }
 
 /** Lichess move accuracy from the mover's win % before and after the move. */

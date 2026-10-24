@@ -3,7 +3,7 @@
 
 import { Color } from "chessops";
 import { Score } from "../engine/engineinterfaces";
-import { whiteCp, winPercent } from "./review";
+import { scoreWin } from "./review";
 
 export type EngineLine = { pv?: string[]; score?: Score };
 
@@ -30,17 +30,9 @@ export function judgeHumanMove(
     if (best.pv[0] === uci) return { kind: "best" };
     const line = lines.find((l) => l.pv?.[0] === uci);
     if (!line?.score) return { kind: "unranked" };
-    const win = (score: Score) => {
-        const w = winPercent(
-            whiteCp(
-                score.type === "cp"
-                    ? { pawns: score.value / 100 }
-                    : { mate: score.value },
-                turn,
-            ),
-        );
-        return turn === "white" ? w : 100 - w;
-    };
-    const loss = Math.max(0, win(best.score) - win(line.score));
+    const loss = Math.max(
+        0,
+        scoreWin(best.score, turn, turn) - scoreWin(line.score, turn, turn),
+    );
     return loss >= TRAP_LOSS ? { kind: "trap", loss } : { kind: "fine" };
 }

@@ -65,6 +65,10 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
         if (options.multipv) {
             this.setOption("MultiPV", options.multipv);
         }
+        // last: searchmoves takes every move that follows it
+        if (options.searchmoves?.length) {
+            goCommand += ` searchmoves ${options.searchmoves.join(" ")}`;
+        }
         // wait 10 ms
         setTimeout(() => {
             this.uciInterface.sendCommand(goCommand);
