@@ -5,7 +5,7 @@ use surrealdb::engine::local::RocksDb;
 use surrealdb::RecordId;
 // use surrealdb::RecordId;
 use surrealdb::Surreal;
-use tauri::State;
+use tauri::{AppHandle, Manager, State};
 
 use pgnparse::parser::*;
 use tokio::sync::Mutex;
@@ -56,11 +56,26 @@ struct Puzzle {
     performance_score: Option<f64>,
 }
 
+/// Opens the puzzle database in the app's local data folder. The process
+/// working directory is not writable in an installed app (`/` for a macOS
+/// .app launched from Finder, Program Files on Windows), so a relative path
+/// only worked under `tauri dev`.
 #[tauri::command]
-// #[tokio::main]
-pub async fn init_db(db_state: State<'_, DatabaseConnection>) -> Result<String, String> {
+pub async fn init_db(app: AppHandle, db_state: State<'_, DatabaseConnection>) -> Result<String, String> {
+    if db_state.0.lock().await.is_some() {
+        return Ok("Database already initialized".to_string());
+    }
+
+    let db_dir = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| format!("Cannot resolve app data folder: {}", e))?
+        .join("db");
+    std::fs::create_dir_all(&db_dir)
+        .map_err(|e| format!("Cannot create database folder {}: {}", db_dir.display(), e))?;
+
     // Create database connection using RocksDB
-    let db = Surreal::new::<RocksDb>("db")
+    let db = Surreal::new::<RocksDb>(db_dir)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -73,9 +88,7 @@ pub async fn init_db(db_state: State<'_, DatabaseConnection>) -> Result<String, 
     // Store the database connection
     *db_state.0.lock().await = Some(db);
 
-    // run this in the background
-
-    update_cached_weights(db_state).await.unwrap();
+    update_cached_weights(db_state).await?;
 
     Ok("Database initialized successfully".to_string())
 }

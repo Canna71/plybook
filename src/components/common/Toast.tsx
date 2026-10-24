@@ -12,3 +12,10 @@ export function makeToast(message: string) {
         },
     });
 }
+
+export function makeErrorToast(message: string) {
+    toast.error(message, {
+        duration: 15000,
+        position: "top-right",
+    });
+}

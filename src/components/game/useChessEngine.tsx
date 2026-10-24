@@ -15,6 +15,7 @@ import { ExecutableUCIInterface } from "../../engine/executableuci";
 import { UCIEngine } from "../../engine/uciengine";
 import { getEnginePath } from "../../storage/fs";
 import { makeMove } from "../common/utils";
+import { makeErrorToast } from "../common/Toast";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue } from "../../models/settings";
@@ -111,7 +112,15 @@ export function useChessEngine(options: ChessEngineOptions) {
                 new ExecutableUCIInterface(engineName()!),
             );
 
-            await engine.init();
+            try {
+                await engine.init();
+            } catch (err) {
+                log.error("engine failed to start", err);
+                makeErrorToast(
+                    err instanceof Error ? err.message : String(err),
+                );
+                return;
+            }
 
             log.debug("engine initialized", engine.getOptions());
             // Add this function inside useChessEngine before onEngineBestMov

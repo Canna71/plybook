@@ -25,7 +25,11 @@ pub enum EngineEvent {
     Stdout(String),
     Stderr(String),
     Error(String),
-    Terminated { code: Option<i32> },
+    #[serde(rename_all = "camelCase")]
+    Terminated {
+        code: Option<i32>,
+        signal: Option<i32>,
+    },
 }
 
 fn app_local_dir<R: Runtime>(app: &AppHandle<R>, folder: &str) -> Result<PathBuf, String> {
@@ -46,6 +50,41 @@ fn resolve_inside(root: &Path, relative: &str) -> Result<PathBuf, String> {
         return Err(format!("{relative} is outside {}", root.display()));
     }
     Ok(path)
+}
+
+/// Engines downloaded as archives often lose the execute bit.
+#[cfg(unix)]
+fn ensure_executable(path: &Path) -> Result<(), String> {
+    use std::os::unix::fs::PermissionsExt;
+    let mut perms = std::fs::metadata(path)
+        .map_err(|e| e.to_string())?
+        .permissions();
+    if perms.mode() & 0o111 == 0 {
+        perms.set_mode(perms.mode() | 0o755);
+        std::fs::set_permissions(path, perms)
+            .map_err(|e| format!("{} is not executable and cannot be made so: {e}", path.display()))?;
+    }
+    Ok(())
+}
+
+#[cfg(not(unix))]
+fn ensure_executable(_path: &Path) -> Result<(), String> {
+    Ok(())
+}
+
+fn spawn_error_message(name: &str, err: &tauri_plugin_shell::Error) -> String {
+    let mut msg = format!("Could not start engine {name}: {err}");
+    if cfg!(target_os = "macos") {
+        msg.push_str(
+            ". If you downloaded this engine, macOS may be blocking it: open it once from Finder \
+             (right-click > Open), or allow it in System Settings > Privacy & Security.",
+        );
+    } else if cfg!(windows) {
+        msg.push_str(
+            ". Make sure the file is a Windows executable (.exe) and is not blocked by your antivirus.",
+        );
+    }
+    msg
 }
 
 pub fn ensure_engines_folder<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
@@ -84,13 +123,14 @@ pub fn engine_spawn<R: Runtime>(
     if !path.is_file() {
         return Err(format!("{name} is not a file"));
     }
+    ensure_executable(&path)?;
 
     let (mut rx, child) = app
         .shell()
         .command(&path)
         .current_dir(&dir)
         .spawn()
-        .map_err(|e| format!("cannot start {name}: {e}"))?;
+        .map_err(|e| spawn_error_message(&name, &e))?;
     let pid = child.pid();
     processes.0.lock().unwrap().insert(pid, child);
 
@@ -107,7 +147,10 @@ pub fn engine_spawn<R: Runtime>(
                 CommandEvent::Error(err) => EngineEvent::Error(err),
                 CommandEvent::Terminated(payload) => {
                     app.state::<EngineProcesses>().0.lock().unwrap().remove(&pid);
-                    EngineEvent::Terminated { code: payload.code }
+                    EngineEvent::Terminated {
+                        code: payload.code,
+                        signal: payload.signal,
+                    }
                 }
                 _ => continue,
             };
