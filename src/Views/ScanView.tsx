@@ -13,6 +13,7 @@ import BoardEditor from "../components/boardeditor/BoardEditor";
 import Button from "../components/common/Button";
 import { pendingScan, setPendingScan } from "../scan/pendingScan";
 import { scanImage, warmUpScanner } from "../scan/recognizer";
+import { captureScreenRegion } from "../scan/capture";
 import "./ScanView.scss";
 const log = anylogger("scan");
 
@@ -66,6 +67,15 @@ const ScanView: Component = () => {
         }
     });
 
+    const fromScreen = async () => {
+        try {
+            const image = await captureScreenRegion();
+            if (image) scan(image);
+        } catch (err) {
+            setWarnings([String(err)]);
+        }
+    };
+
     const onFile = (e: Event) => {
         const file = (e.currentTarget as HTMLInputElement).files?.[0];
         if (file) scan(file);
@@ -81,10 +91,19 @@ const ScanView: Component = () => {
             <div class="scan-panel">
                 <h1 class="title is-5">Scan a position</h1>
                 <p class="block">
-                    Paste a screenshot or a book diagram (⌘V) anywhere in
-                    ReChess, or choose an image. Everything is read on this
-                    computer.
+                    Capture a board from the screen (any app or website), paste
+                    a screenshot or a book diagram (⌘V) anywhere in ReChess, or
+                    choose an image. Everything is read on this computer.
                 </p>
+                <div class="buttons block">
+                    <Button
+                        class="is-primary"
+                        title="ReChess hides: drag a rectangle around the board, Esc to cancel"
+                        onClick={fromScreen}
+                    >
+                        Capture from screen
+                    </Button>
+                </div>
                 <div class="file is-small block">
                     <label class="file-label">
                         <input

@@ -81,6 +81,7 @@ src-tauri/src/
                            (PRAGMA user_version), one-time import of tools/surreal-export output
   games.rs                 game databases: PGN import (pgn-reader/shakmaty), search, position index
   lichess_puzzles.rs       Lichess puzzle CSV import/download, pick by theme and rating, puzzle Elo
+  capture.rs               "Capture from screen" for the scanner (macOS screencapture -i, hides the window)
   net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts
   engine.rs                engine process management (engine_list/spawn/write/kill) + open_library_path
   migrate.rs               one-time move of user data from the old "rechess" identifier folders

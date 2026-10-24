@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 // use tauri::Manager;
+mod capture;
 mod db;
 mod engine;
 mod games;
@@ -13,6 +14,7 @@ fn greet(name: &str) -> String {
 }
 
 // use serde::{Deserialize, Serialize};
+use capture::*;
 use db::*;
 use engine::*;
 use games::*;
@@ -83,7 +85,8 @@ pub fn run() {
             lichess_puzzle_get,
             lichess_puzzle_attempt,
             lichess_puzzle_download,
-            lichess_puzzle_import_file
+            lichess_puzzle_import_file,
+            scan_capture_screen
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
