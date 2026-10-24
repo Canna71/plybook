@@ -141,6 +141,14 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
             }
 
             case "info": {
+                if (tokens[1] === "string") {
+                    // free text: Lc0 move stats, engine messages
+                    this.emit(
+                        "string",
+                        line.trim().slice("info string ".length),
+                    );
+                    break;
+                }
                 const info = this.parseInfoMessage(tokens.slice(1));
                 if (info) {
                     this.emit("info", info);

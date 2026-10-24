@@ -1,6 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { createResource } from "solid-js";
 import { getSettingValue, setSettingValue } from "../models/settings";
+import { ExecutableUCIInterface } from "./executableuci";
+import { UCIEngine } from "./uciengine";
 
 // Mirrors EngineProfile in src-tauri/src/engine.rs
 export type UciOption = { name: string; value: string };
@@ -92,4 +94,31 @@ export function newProfileId() {
 /** Values of UCI options may refer to the Engines folder as {engines}. */
 export function expandEnginesFolder(value: string, enginesFolder: string) {
     return value.split(ENGINES_PLACEHOLDER).join(enginesFolder);
+}
+
+/** Starts a profile's engine and applies its UCI options; rejects if it fails to start. */
+export async function startEngine(profile: EngineProfile): Promise<UCIEngine> {
+    const engine = new UCIEngine(
+        new ExecutableUCIInterface(profile.id, profile.name),
+    );
+    await engine.init();
+    const enginesFolder = await getEnginesFolder();
+    for (const option of profile.options) {
+        engine.setOption(
+            option.name,
+            expandEnginesFolder(option.value, enginesFolder),
+        );
+    }
+    return engine;
+}
+
+/** "off" disables the human-move hints; empty picks the first Maia-style profile. */
+export const HUMAN_SETTING = "engine.human";
+
+/** The Maia-style (one node) profile that shows what humans would play, if any. */
+export function humanProfile(): EngineProfile | undefined {
+    const wanted = getSettingValue<string>(HUMAN_SETTING, "");
+    if (wanted === "off") return undefined;
+    const candidates = profiles().filter((p) => p.singleNode && !p.missing);
+    return candidates.find((p) => p.id === wanted) ?? candidates[0];
 }

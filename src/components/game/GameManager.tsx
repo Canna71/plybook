@@ -46,6 +46,8 @@ import "./GameManager.scss";
 import EngineInfoViewer from "./EngineInfoViewer";
 import WhatIf from "./WhatIf";
 import PositionFacts from "./PositionFacts";
+import HumanMoves from "./HumanMoves";
+import { useHumanMoves } from "./useHumanMoves";
 import { Tooltip } from "../common/Tooltip";
 import PgnEditBar, { ViewMode } from "./PgnEditBar";
 import PgnTextArea from "./PgnTextArea";
@@ -639,6 +641,17 @@ const GameManager: Component<GameManagerOptions> = ({
         wrongPuzzleMove,
     });
 
+    // what players at the Maia net's level would play, during plain analysis only
+    const { humanMoves, humanProfileName } = useHumanMoves(() =>
+        engineCallable() &&
+        !playingEngine &&
+        !isReviewing() &&
+        !isPuzzleMode() &&
+        !threatFen()
+            ? fen()
+            : undefined,
+    );
+
     const gameContext = {
         // pgn: pgn,
         fullPgnSignal: [fullPgn, setFullPgn],
@@ -805,6 +818,12 @@ const GameManager: Component<GameManagerOptions> = ({
                                     <WhatIf engineInfo={engineInfo} />
                                 </Show>
                                 <PositionFacts />
+                                <HumanMoves
+                                    moves={humanMoves()}
+                                    name={humanProfileName()}
+                                    fen={fen()}
+                                    engineInfo={engineInfo}
+                                />
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
 

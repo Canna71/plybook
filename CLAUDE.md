@@ -69,7 +69,8 @@ src/
   components/sidebar/      Library file browser
   models/                  pgn.ts (chessops tree -> view model, Path type), GameModel.ts (immutable game ops),
                            settings.ts (JSON settings in AppConfig, Solid store), puzzles.ts (score formula)
-  engine/                  uciengine.ts (UCI protocol parser) over executableuci.ts (talks to Rust engine_* commands)
+  engine/                  uciengine.ts (UCI protocol parser) over executableuci.ts (talks to Rust engine_* commands),
+                           engineprofiles.ts (profiles, startEngine, humanProfile), lc0.ts (Maia move stats)
   storage/                 fs.ts (Tauri fs wrappers: Library, settings, themes), db.ts (invoke() wrappers for db.rs)
   theming/                 dynamic CSS loading for board/piece themes (src/assets/styles)
 src-tauri/src/
