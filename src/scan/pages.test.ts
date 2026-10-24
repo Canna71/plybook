@@ -6,6 +6,7 @@ import { PNG } from "pngjs";
 import * as ort from "onnxruntime-web";
 import { GrayImage, rgbaToGray } from "@scoriiu/fenshot";
 import {
+    boardInFrame,
     diagramRegions,
     findDiagrams,
     findDiagramsOnPage,
@@ -84,6 +85,47 @@ describe("findDiagramsOnPage", () => {
         expect(tops[2][1]).toBeGreaterThan(tops[0][1]);
     }, 60_000);
 
+    it("reads a framed diagram and covers the whole board", async () => {
+        // as books print them: a 456px board in a frame with a gap inside, coordinates
+        // and a caption; the detector alone finds no board here
+        const size = 456;
+        const W = 1400;
+        const data = new Float32Array(W * 2000).fill(255);
+        const fill = (x0: number, y0: number, w: number, h: number) => {
+            for (let y = y0; y < y0 + h; y++)
+                data.fill(0, y * W + x0, y * W + x0 + w);
+        };
+        const d = resize(diagram(), size, size);
+        for (let y = 0; y < size; y++)
+            data.set(
+                d.data.subarray(y * size, (y + 1) * size),
+                (300 + y) * W + 500,
+            );
+        fill(490, 290, size + 20, 6);
+        fill(490, 300 + size + 4, size + 20, 6);
+        fill(490, 290, 6, size + 20);
+        fill(500 + size + 4, 290, 6, size + 20);
+        for (let i = 0; i < 8; i++) {
+            fill(472, 300 + (i + 0.4) * (size / 8), 8, 12);
+            fill(500 + (i + 0.4) * (size / 8), 300 + size + 16, 8, 12);
+        }
+        fill(540, 300 + size + 50, size - 80, 14);
+        const found = await findDiagramsOnPage(
+            { data, width: W, height: 2000 },
+            model,
+        );
+        expect(found.map((f) => f.placement)).toEqual([ITALIAN]);
+        const { x0, y0, x1, y1 } = found[0].corners;
+        for (const [got, want] of [
+            [x0, 500],
+            [y0, 300],
+            [x1, 500 + size],
+            [y1, 300 + size],
+        ]) {
+            expect(Math.abs(got - want)).toBeLessThanOrEqual(2);
+        }
+    }, 60_000);
+
     it("finds nothing on a blank page", async () => {
         expect(await findDiagramsOnPage(page(600, 800, []), model)).toEqual([]);
     }, 20_000);
@@ -111,6 +153,52 @@ describe("diagramRegions", () => {
             { x0: 48, y0: 48, x1: 256, y1: 256 },
             { x0: 448, y0: 296, x1: 600, y1: 464 },
         ]);
+    });
+});
+
+describe("boardInFrame", () => {
+    const W = 120;
+    const H = 140;
+    const image = () => {
+        const data = new Float32Array(W * H).fill(255);
+        const fill = (x0: number, y0: number, w: number, h: number) => {
+            for (let y = y0; y < y0 + h; y++)
+                data.fill(0, y * W + x0, y * W + x0 + w);
+        };
+        // a board of 10px squares from 20 to 100, its dark squares grey
+        for (let y = 20; y < 100; y++) {
+            for (let x = 20; x < 100; x++) {
+                if ((Math.floor(x / 10) + Math.floor(y / 10)) % 2)
+                    data[y * W + x] = 100;
+            }
+        }
+        return { img: { data, width: W, height: H }, fill };
+    };
+    const region = { x0: 0, y0: 0, x1: W, y1: H };
+
+    it("finds the board inside a frame, past its gap, coordinates and caption", () => {
+        const { img, fill } = image();
+        fill(14, 14, 92, 4);
+        fill(14, 102, 92, 4);
+        fill(14, 14, 4, 92);
+        fill(102, 14, 4, 92);
+        fill(4, 50, 4, 6); // a rank number
+        fill(30, 120, 60, 6); // a caption
+        expect(boardInFrame(img, region)).toEqual({
+            x0: 20,
+            y0: 20,
+            x1: 100,
+            y1: 100,
+        });
+    });
+
+    it("takes the ink's edges when there is no frame", () => {
+        expect(boardInFrame(image().img, region)).toEqual({
+            x0: 20,
+            y0: 20,
+            x1: 100,
+            y1: 100,
+        });
     });
 });
 
