@@ -431,7 +431,7 @@ export const parseComment2 = (comment: string): Comment => {
             },
         )
         .replace(
-            /\s?\[%eval\s(?:#([+-]?\d{1,5})|([+-]?(?:\d{1,5}|\d{0,5}\.\d{1,2})))(?:,(\d{1,5}))?,([^\]]*)?\]\s?/g,
+            /\s?\[%eval\s(?:#([+-]?\d{1,5})|([+-]?(?:\d{1,5}|\d{0,5}\.\d{1,2})))(?:,(\d{1,5}))?(?:,([^\]]*))?\]\s?/g,
             (_, mate, pawns, d, ext) => {
                 const depth = d && parseInt(d, 10);
                 evaluation = mate

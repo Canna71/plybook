@@ -23,6 +23,10 @@ export interface AppSettings {
             depth?: number;
             elo?: number;
         };
+        review?: {
+            depth?: number;
+            movetime?: number;
+        };
     };
     online?: {
         accounts: OnlineAccount[];
@@ -51,6 +55,11 @@ const DEFAULT: AppSettings = {
         playing: {
             depth: 30,
             elo: 1000,
+        },
+        // per position: a 40-move game takes about a minute
+        review: {
+            depth: 18,
+            movetime: 1000,
         },
     },
     online: {
