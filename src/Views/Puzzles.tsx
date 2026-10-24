@@ -12,7 +12,7 @@ const Puzzles: Component = () => {
 
     const nextPuzzle = async () => {
         const puzzle = await pickPuzzle();
-        navigate(`/puzzle?path=${puzzle.file_path}`);
+        navigate(`/puzzle?path=${encodeURIComponent(puzzle.file_path)}`);
     };
 
     // const onUpdateWeights = async () => {
@@ -50,7 +50,7 @@ const Puzzles: Component = () => {
                                 <tr class=" ">
                                     <td>
                                         <a
-                                            href={`/puzzle?path=${study.file_path}`}
+                                            href={`/puzzle?path=${encodeURIComponent(study.file_path)}`}
                                         >
                                             {NameWithoutExtension(
                                                 study.file_path,

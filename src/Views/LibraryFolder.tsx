@@ -132,7 +132,7 @@ const LibraryFolder = () => {
                                     <td>
                                         <Show when={!isRenaming(file.name)}>
                                             <a
-                                                href={`/game?path=${getFullPath(file.name)}&source=library`}
+                                                href={`/game?path=${encodeURIComponent(getFullPath(file.name))}&source=library`}
                                             >
                                                 {NameWithoutExtension(
                                                     file.name,

@@ -209,7 +209,9 @@ const GameView = () => {
 
     const onNextPuzzle = async () => {
         const puzzle = await pickPuzzle();
-        navigate(`/puzzle?path=${puzzle.file_path}`, { replace: true });
+        navigate(`/puzzle?path=${encodeURIComponent(puzzle.file_path)}`, {
+            replace: true,
+        });
     };
 
     return (
