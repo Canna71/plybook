@@ -5,3 +5,6 @@ dist
 
 # Claude Code personal settings
 .claude/settings.local.json
+
+# tool build output (it can also share src-tauri/target)
+tools/surreal-export/target

@@ -239,7 +239,7 @@ const GameView = () => {
     const onNextPuzzle = async () => {
         // training mistakes from reviewed games stays within them
         const mistakes = await mistakesFolder();
-        const inMistakes = filePath()?.startsWith(mistakes);
+        const inMistakes = filePath()?.startsWith(mistakes + sep());
         const puzzle = await pickPuzzle(inMistakes ? mistakes : undefined);
         if (!puzzle) {
             makeToast("No more puzzles");

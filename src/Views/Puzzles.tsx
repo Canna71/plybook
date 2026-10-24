@@ -25,11 +25,6 @@ const Puzzles: Component = () => {
         navigate(`/puzzle?path=${encodeURIComponent(puzzle.file_path)}`);
     };
 
-    // const onUpdateWeights = async () => {
-    //     await updateCachedWeights();
-    //     refetch();
-    // };
-
     return (
         <div class="puzzles_view ">
             <div class="buttons-bar">
@@ -44,7 +39,6 @@ const Puzzles: Component = () => {
                     Train my mistakes
                 </Button>
             </div>
-            {/* <Button onClick={onUpdateWeights}>Update Cached Weights</Button> */}
             <div class="table-container">
                 <table class="table puzzles_table is-hoverable">
                     <thead>

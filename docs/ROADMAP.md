@@ -94,8 +94,13 @@ How this file is used:
     mate threats in P2.2.
   - Known limits: attacks only (no exchange evaluation, no x-rays, no relative pins); no king
     safety yet; shown only while engine analysis is on.
-- [ ] **P2.4 Natural-language explanation** (optional, needs an API key): Claude phrases P2.3
-  facts and engine lines; never asked to calculate. **Decision**: provider and key handling.
+- [ ] **P2.4 Explanations in words** (its own topic; decided 2026-10-24: not tied to one paid
+  provider). Facts (P2.3), threats (P2.2), what-if (P2.1) and human moves (P2.5) phrased as a
+  short paragraph per move; a model never calculates.
+  - [ ] **P2.4a Programmatic explanation** (free, offline, default): templates over the
+    computed facts and engine lines.
+  - [ ] **P2.4b Optional model provider**: OpenAI-compatible endpoint (free local models via
+    Ollama / LM Studio, or cheap hosted ones) and Anthropic; key stored outside the webview.
 - [x] **P2.5 Human vs best** (`feature/human-moves`; owner review pending): Maia's most likely
   move next to the engine's best, to show traps and "natural but wrong" moves.
   - Status: a Maia profile runs next to the analysis engine (`useHumanMoves`, Lc0
@@ -120,9 +125,14 @@ How this file is used:
 
 ## Phase 3: databases and imports
 
-- [ ] **P3.1 Game database** for large PGN files (TWIC, Lichess elite, Lumbra), with search by
-  player, opening and position. **Decision**: SQLite with a position index (recommended) or
-  SurrealDB. Replaces the `upload_pgn` / `index_game` stubs.
+- [~] **P3.1 Game database** for large PGN files (TWIC, Lichess elite, Lumbra), with search by
+  player, opening and position. Decided 2026-10-24: SQLite for everything, SurrealDB removed.
+  - [x] **P3.1a Move storage to SQLite** (`feature/sqlite`): puzzles and history in
+    `rechess.sqlite`, versioned schema, weights computed on pick (same formula, no hourly cache);
+    `tools/surreal-export` + one-time import keep old data (done for the owner's data: 1 game).
+    The SurrealDB-only stubs and the `/db` test page are gone; no more LLVM to build.
+  - [ ] **P3.1b Game database**: import large PGN files, search by player/opening/position
+    (position index by Zobrist hash).
 - [ ] **P3.2 Lichess puzzle database** (CC0 CSV): import by theme and rating range into the
   puzzle trainer.
 - [ ] **P3.3 Opening explorer**: own database first, Lichess explorer online (check whether its

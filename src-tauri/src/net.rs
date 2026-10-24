@@ -55,17 +55,6 @@ fn parse_month(month: &str) -> Result<(i64, u32), String> {
     Ok((y, m))
 }
 
-/// Days since 1970-01-01 of a proleptic Gregorian date (Howard Hinnant's algorithm).
-fn days_from_civil(y: i64, m: u32, d: u32) -> i64 {
-    let y = if m <= 2 { y - 1 } else { y };
-    let era = y.div_euclid(400);
-    let yoe = y - era * 400;
-    let m = m as i64;
-    let doy = (153 * (if m > 2 { m - 3 } else { m + 9 }) + 2) / 5 + d as i64 - 1;
-    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-    era * 146097 + doe - 719468
-}
-
 async fn get_text(
     request: reqwest::RequestBuilder,
     site: Site,
@@ -137,7 +126,11 @@ async fn lichess_games(username: &str, since: Option<(i64, u32)>) -> Result<Stri
         .header("Accept", "application/x-chess-pgn")
         .query(&[("clocks", "true"), ("evals", "true"), ("opening", "true")]);
     if let Some((y, m)) = since {
-        let ms = days_from_civil(y, m, 1) * 86_400_000;
+        let ms = chrono::NaiveDate::from_ymd_opt(y as i32, m, 1)
+            .and_then(|d| d.and_hms_opt(0, 0, 0))
+            .ok_or("Invalid month")?
+            .and_utc()
+            .timestamp_millis();
         request = request.query(&[("since", ms.to_string())]);
     }
     get_text(request, Site::Lichess, username).await
@@ -165,13 +158,6 @@ pub async fn online_fetch_games(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn days_from_civil_known_dates() {
-        assert_eq!(days_from_civil(1970, 1, 1), 0);
-        assert_eq!(days_from_civil(2000, 3, 1), 11_017);
-        assert_eq!(days_from_civil(2026, 10, 1), 20_727);
-    }
 
     #[test]
     fn usernames_and_months_are_validated() {

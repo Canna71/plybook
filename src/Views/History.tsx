@@ -1,5 +1,5 @@
 import { Component, createResource, For } from "solid-js";
-import { getHistoryGames, getIdValue } from "../storage/db";
+import { getHistoryGames } from "../storage/db";
 import Button from "../components/common/Button";
 import { formatDate } from "../components/common/utils";
 import { useNavigate } from "@solidjs/router";
@@ -45,9 +45,7 @@ const History: Component = () => {
                             {(game) => (
                                 <tr
                                     class="history-row"
-                                    onClick={() =>
-                                        viewGame(getIdValue(game.id?.id))
-                                    }
+                                    onClick={() => viewGame(game.id)}
                                 >
                                     <td>{formatDate(game.eventDate)}</td>
                                     <td>{game.whiteName || "Player"}</td>

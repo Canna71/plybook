@@ -3,7 +3,6 @@ import { Router, Route } from "@solidjs/router";
 import Home from "./Views/Home";
 import Layout from "./Views/Layout";
 import BoardEditorView from "./Views/BoardEditorView";
-import DBTest from "./Views/DBTest";
 import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
@@ -42,7 +41,6 @@ function App() {
                     info={{ engine: false }}
                 />
                 <Route path="/boardeditor" component={BoardEditorView} />
-                <Route path="/db" component={DBTest} />
                 <Route path="/play" component={Play} />
                 <Route path="/library" component={LibraryFolder} />
                 <Route path="/history" component={History} />

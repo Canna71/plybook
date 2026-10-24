@@ -42,9 +42,19 @@ pnpm tauri icon ./tools/Logo.png
 
 ## Dependencies
 
-LLVM 
-https://releases.llvm.org/
-https://users.rust-lang.org/t/unable-to-find-libclang-the-libclang-issue/70746
+A C compiler for the bundled SQLite: Xcode command line tools on macOS, MSVC build tools on Windows.
+
+### Data from older versions (SurrealDB)
+
+Versions before the SQLite move kept puzzles and played games in `<AppLocalData>/db`. To bring
+them over, close ReChess and run once (this needs LLVM/libclang to build):
+
+```bash
+cd tools/surreal-export
+cargo run --release -- "$HOME/Library/Application Support/com.canna71.rechess"
+```
+
+The next start imports `surreal-export.json`; the old `db` folder is left alone and can be deleted.
 
 ## Links
 
