@@ -20,17 +20,19 @@ const SIGKILL = 9;
 
 // ExecutableUCIInterface.ts
 // The engine process is owned by the Rust side (see src-tauri/src/engine.rs);
-// the webview only refers to it by file name in the Engines folder.
+// the webview only refers to it by the id of an engine profile.
 export class ExecutableUCIInterface implements IUCIInterface {
     private pid?: number;
     private responseCallback?: (line: string) => void;
+    private engineId: string;
     private engineName: string;
     private isReady = false;
     private exited = false;
     private exitInfo?: { code: number | null; signal: number | null };
     private lastStderr: string[] = [];
 
-    constructor(engineName: string) {
+    constructor(engineId: string, engineName: string) {
+        this.engineId = engineId;
         this.engineName = engineName;
     }
 
@@ -84,7 +86,7 @@ export class ExecutableUCIInterface implements IUCIInterface {
 
         // Rejects with a readable message if the engine is missing or cannot be started.
         this.pid = await invoke<number>("engine_spawn", {
-            name: this.engineName,
+            id: this.engineId,
             onEvent,
         });
 

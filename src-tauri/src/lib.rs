@@ -47,7 +47,9 @@ pub fn run() {
             list_studies, list_puzzles, update_puzzle_score, pick_puzzle, 
             update_cached_weights, update_puzzle_base_weight, delete_puzzle, get_study,
             add_to_history, list_history,
-            engine_list, engine_spawn, engine_write, engine_kill, open_library_path
+            engine_list, engine_save_profile, engine_remove_profile, engine_add_external,
+            engine_folder, engine_open_folder, engine_weights,
+            engine_spawn, engine_write, engine_kill, open_library_path
         ])
         
         .run(tauri::generate_context!())
