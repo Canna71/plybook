@@ -153,14 +153,15 @@ How this file is used:
     Puzzles play in the puzzle screen (set-up move automatic, board facing the solver).
   - Known limits: only Lichess's exact solution is accepted (Lichess also accepts any mate in
     mate-in-1 puzzles); no cancel during download.
-- [~] **P3.3 Opening explorer**: own database first, Lichess explorer online.
+- [x] **P3.3 Opening explorer**: own database first, Lichess explorer online.
   - [x] Own databases (`feature/explorer`; owner review pending): Explorer tab next to Moves and
     Evaluation; moves played from the current position with counts, a White/draw/Black bar and
     average Elo, click to play; the games that reached the position underneath. Transpositions
     by hash; a game counts once per move. 5 ms at the start position for 7,641 games (grows
     linearly: about 0.5 s for a million). Only the first 30 plies of each game are indexed.
-  - [ ] Lichess explorer: its API answers 401 without a token since 2025-26, so it needs the
-    user's personal Lichess token, stored with S.1.
+  - [x] Lichess explorer (`feature/secrets`; owner review pending): "Lichess: masters" and
+    "Lichess: online games" in the Explorer's source list. Its API needs the user's personal
+    Lichess token (401 without one since 2025-26), saved in Settings and kept by S.1.
 - [ ] **P3.4 Opening books**: Polyglot `.bin` support in analysis and as engine-play book.
 - [ ] **P3.5 Endgame tablebase** lookups (Lichess tablebase API).
 - [x] **P3.6 Repertoire builder and trainer** (`feature/repertoire`; owner review pending):
@@ -216,8 +217,11 @@ How this file is used:
 
 ## Shared foundations
 
-- [ ] **S.1 Secret storage** for the Lichess token (P3.3) and model API keys (P2.4b): kept by
-  Rust (OS keychain or a file outside the webview's fs scope), never readable by the webview.
+- [x] **S.1 Secret storage** (`feature/secrets`; owner review pending) for the Lichess token
+  (P3.3) and model API keys (P2.4b): `secrets.rs` keeps them in the OS keychain (macOS Keychain,
+  Windows Credential Manager, `keyring` 3.6). The webview can save, delete and ask whether one is
+  set, never read one; Rust adds them to requests. Only named secrets (`lichess_token`; add the
+  model key with P2.4b). Unsigned builds may get one keychain prompt per build.
 
 ## Other
 
@@ -236,3 +240,23 @@ How this file is used:
 - Typed settings schema (when adding new settings).
 - Split `components/common/utils.tsx`.
 - Delete dead code listed in CLAUDE.md.
+
+## UX overhaul (requested 2026-10-24, after the feature work above)
+
+- [ ] **U.1 UI overhaul for a better user experience.** Many features were added quickly, each
+  in its own corner; this pass makes the app feel like one product. Proposed scope, to agree on
+  before starting (a short design doc with mock-ups first):
+  - **Information architecture**: a home/dashboard with what to do today (repertoire reviews
+    due, mistakes to train, new synced games to review), and a sidebar grouped by purpose
+    (Play · Train · Study · Games) instead of one flat list.
+  - **One analysis screen**: engine lines, what-if, threats, facts, human moves and explorer
+    as coherent, collapsible panels with sensible defaults, instead of stacked boxes.
+  - **Consistency**: one design for toolbars, buttons, forms, empty states, loading and errors;
+    toasts styled (also in builds); dark and light themes checked.
+  - **Board**: responsive sizing everywhere (several pages size it by hand), drag-and-drop and
+    click-to-move everywhere, move/arrow animations, sound settings.
+  - **Discoverability**: onboarding for first start (engine setup, sync an account, import
+    puzzles), tooltips/shortcuts help (with O.2), clear naming (e.g. "studies" vs files).
+  - **Accessibility**: keyboard navigation, focus states, contrast, screen-reader labels.
+  - **Cleanup on the way**: split `GameManager.tsx`, the old `Views/obsoleted` pages, unused
+    routes and dead code.

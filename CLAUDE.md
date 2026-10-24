@@ -84,6 +84,8 @@ src-tauri/src/
   games.rs                 game databases: PGN import (pgn-reader/shakmaty), search, position index
   lichess_puzzles.rs       Lichess puzzle CSV import/download, pick by theme and rating, puzzle Elo
   capture.rs               "Capture from screen" for the scanner (macOS screencapture -i, hides the window)
+  repertoire.rs            repertoire files and their spaced-repetition cards
+  secrets.rs               API tokens in the OS keychain, never returned to the webview
   net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts
   engine.rs                engine process management (engine_list/spawn/write/kill) + open_library_path
   migrate.rs               one-time move of user data from the old "rechess" identifier folders
@@ -125,6 +127,10 @@ User data locations (resolved by Tauri from the bundle identifier):
 - **The webview has no shell access.** Engines are spawned only by Rust (`engine.rs`) and only
   from the Engines folder, which the webview's fs scope denies. Do not add `shell:*` permissions or
   widen `fs` scopes in `capabilities/`; add a narrow Rust command instead.
+- **Secrets** (API tokens) live in the OS keychain via `secrets.rs`. Commands may store, delete
+  or report whether a secret is set, never return its value; Rust code that calls an API reads
+  it with `Secrets::get` and attaches it (e.g. `bearer_auth`). New secrets are new `Secret`
+  variants, so the webview cannot name arbitrary keychain entries.
 - Adding a command: write it in the right module with `#[tauri::command]`, register it in
   `lib.rs` `generate_handler![...]`, wrap the `invoke()` in `src/storage/db.ts` (or the engine
   module), and keep TS types in sync with Rust structs (e.g. `EngineEvent` is mirrored in
