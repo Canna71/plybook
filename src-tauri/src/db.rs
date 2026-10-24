@@ -1,11 +1,13 @@
 #![allow(non_snake_case)]
 
+use std::string;
+
 use surrealdb::engine::local::Db;
 use surrealdb::engine::local::RocksDb;
 use surrealdb::RecordId;
 // use surrealdb::RecordId;
 use surrealdb::Surreal;
-use tauri::State;
+use tauri::{AppHandle, Manager, State};
 
 use pgnparse::parser::*;
 use tokio::sync::Mutex;
@@ -31,7 +33,8 @@ pub struct Study {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Game {
     // id: RecordId,  // Primary key
-    study_id: RecordId,  // Foreign key to the study
+    id: Option<RecordId>,  // Foreign key to the study
+    pgn: String,  // PGN string
     timeControlInitial: i16,
     timeControlIncrement: i16,
     // orientation: String,
@@ -56,11 +59,27 @@ struct Puzzle {
     performance_score: Option<f64>,
 }
 
+
+/// Opens the puzzle database in the app's local data folder. The process
+/// working directory is not writable in an installed app (`/` for a macOS
+/// .app launched from Finder, Program Files on Windows), so a relative path
+/// only worked under `tauri dev`.
 #[tauri::command]
-// #[tokio::main]
-pub async fn init_db(db_state: State<'_, DatabaseConnection>) -> Result<String, String> {
+pub async fn init_db(app: AppHandle, db_state: State<'_, DatabaseConnection>) -> Result<String, String> {
+    if db_state.0.lock().await.is_some() {
+        return Ok("Database already initialized".to_string());
+    }
+
+    let db_dir = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| format!("Cannot resolve app data folder: {}", e))?
+        .join("db");
+    std::fs::create_dir_all(&db_dir)
+        .map_err(|e| format!("Cannot create database folder {}: {}", db_dir.display(), e))?;
+
     // Create database connection using RocksDB
-    let db = Surreal::new::<RocksDb>("db")
+    let db = Surreal::new::<RocksDb>(db_dir)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -73,9 +92,7 @@ pub async fn init_db(db_state: State<'_, DatabaseConnection>) -> Result<String, 
     // Store the database connection
     *db_state.0.lock().await = Some(db);
 
-    // run this in the background
-
-    update_cached_weights(db_state).await.unwrap();
+    update_cached_weights(db_state).await?;
 
     Ok("Database initialized successfully".to_string())
 }
@@ -113,6 +130,8 @@ OR puzzle.weight_cached_at < (time::now() - 1h)) ;
 
 // define a string constant for the table name
 const GAMES_TABLE: &str = "games";
+const HISTORY_TABLE: &str = "history";
+const STUDIES_TABLE: &str = "studies";
 
 #[tauri::command]
 // #[tokio::main]
@@ -147,6 +166,27 @@ struct Record {
     id: RecordId,
 }
 
+fn pgn_to_game(pgn: String) -> Game {
+    let mut parsedPgn = parse_pgn_to_rust_struct(pgn.clone());
+    
+    let timeControl = parsedPgn.get_header("TimeControl");
+    let timeControlParts: Vec<&str> = timeControl.split("+").collect();
+    
+    Game {
+        id: None,
+        pgn,
+        timeControlInitial: timeControlParts.get(0).unwrap_or(&"").parse().unwrap_or(-1),
+        timeControlIncrement: timeControlParts.get(1).unwrap_or(&"").parse().unwrap_or(-1),
+        result: parsedPgn.get_header("Result").to_string(),
+        whiteName: parsedPgn.get_header("White").to_string(),
+        whiteRating: parsedPgn.get_header("WhiteElo").parse().unwrap_or(-1),
+        blackName: parsedPgn.get_header("Black").to_string(),
+        blackRating: parsedPgn.get_header("BlackElo").parse().unwrap_or(-1),
+        eventDate: parsedPgn.get_header("Date").to_string(),
+        round: parsedPgn.get_header("Round").parse().unwrap_or(-1),
+    }
+}
+
 #[tauri::command]
 // #[tokio::main]
 pub async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) -> Result<Game, String> {
@@ -155,63 +195,55 @@ pub async fn upload_pgn(db_state: State<'_, DatabaseConnection>, pgn: String) ->
 
     println!("Received PGN: {}", pgn);
 
-    let mut parsedPgn = parse_pgn_to_rust_struct(pgn);
+    let game = pgn_to_game(pgn);
+    
 
-    println!("Parsed PGN: {:?}", parsedPgn);
-
-    // first create the study
-    let study: Study = Study {
-        // id: -1,
-        file_path: "todo".to_string(),
-        puzzle: None,
-        created_at: "todo".to_string(),
-    };
-
-    let study:Option<Record> = db
-        .create("studies")
-        .content(study)
+    let created: Game = db
+        .create(GAMES_TABLE)
+        .content(game)
         .await
-        .unwrap()
-        ;
-    let study_id = study.unwrap().id;
-    // dbg!(&study_id);
+        .map_err(|e| e.to_string())?
+        .ok_or("Failed to create record")?;
 
-    let timeControl = parsedPgn.get_header("TimeControl");
-    let timeControlParts: Vec<&str> = timeControl.split("+").collect();
-    // let orientation = parsedPgn.get_header("FEN");
-    let result = parsedPgn.get_header("Result");
-    let whiteName = parsedPgn.get_header("White");
-    let whiteRating = parsedPgn.get_header("WhiteElo");
-    // let whiteTitle = parsedPgn.get_header("WhiteTitle");
-    let blackName = parsedPgn.get_header("Black");
-    let blackRating = parsedPgn.get_header("BlackElo");
-    // let blackTitle = parsedPgn.get_header("BlackTitle");
-    let eventDate = parsedPgn.get_header("Date");
-    let round = parsedPgn.get_header("Round");
+    println!("Game: {:?}", created);
 
-    println!("{:?}", parsedPgn.headers);
-
-    let game: Game = Game {
-        study_id: study_id,
-        // file: "todo".to_string(),
-        timeControlInitial: timeControlParts.get(0).unwrap_or(&"").parse().unwrap_or(-1),
-        timeControlIncrement: timeControlParts.get(1).unwrap_or(&"").parse().unwrap_or(-1),
-        // orientation: String::new(),
-        result: result.to_string(),
-        whiteName: whiteName.to_string(),
-        whiteRating: whiteRating.parse().unwrap_or(-1),
-        // whiteTitle: whiteTitle.to_string(),
-        blackName: blackName.to_string(),
-        blackRating: blackRating.parse().unwrap_or(-1),
-        // blackTitle: blackTitle.to_string(),
-        eventDate: eventDate.to_string(),
-        round: round.parse().unwrap_or(-1),
-    };
-
-    println!("Game: {:?}", game);
-
-    Ok(game)
+    Ok(created)
 }
+
+#[tauri::command]
+// #[tokio::main]
+pub async fn add_to_history(db_state: State<'_, DatabaseConnection>, pgn: String) -> Result<Game, String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    println!("Received PGN: {}", pgn);
+
+    let game = pgn_to_game(pgn);
+    
+
+    let created: Game = db
+        .create(HISTORY_TABLE)
+        .content(game)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("Failed to create record")?;
+
+    println!("Game: {:?}", created);
+
+    Ok(created)
+}
+
+// return all games in the history
+#[tauri::command]
+pub async fn list_history(db_state: State<'_, DatabaseConnection>) -> Result<Vec<Game>, String> {
+    let db = db_state.0.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let games: Vec<Game> = db.select(HISTORY_TABLE).await.map_err(|e| e.to_string())?;
+
+    Ok(games)
+}
+
 
 #[tauri::command]
 pub async fn upsert_study(db_state: State<'_, DatabaseConnection>, study: Study) -> Result<Study, String> {
@@ -236,7 +268,7 @@ pub async fn list_studies(db_state: State<'_, DatabaseConnection>) -> Result<Vec
     let db = db_state.0.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
 
-    let studies: Vec<Study> = db.select("studies").await.map_err(|e| e.to_string())?;
+    let studies: Vec<Study> = db.select(STUDIES_TABLE).await.map_err(|e| e.to_string())?;
 
     Ok(studies)
 }
@@ -355,7 +387,7 @@ pub async fn get_study(
     let db = db_state.0.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
 
-    let study: Option<Study> = db.select(("studies",study_id))
+    let study: Option<Study> = db.select((STUDIES_TABLE,study_id))
         .await
         .map_err(|e| e.to_string())?;
     let ret = study.ok_or("Study not found")?;

@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "license": "MIT",
   "dependencies": {
@@ -21,12 +23,13 @@
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "@tauri-apps/plugin-fs": "^2.0.0",
     "@tauri-apps/plugin-process": "^2.2.0",
-    "@tauri-apps/plugin-shell": "^2.0.0",
     "@tauri-apps/plugin-window-state": "^2.2.0",
+    "animate.css": "^4.1.1",
     "anylogger": "^1.0.11",
     "bulma": "1.0.3",
     "chessground": "^9.1.1",
     "chessops": "^0.14.1",
+    "dompurify": "3.2.4",
     "es-toolkit": "^1.27.0",
     "loadcss": "^0.0.2",
     "showdown": "^2.1.0",
@@ -40,12 +43,14 @@
     "vite-plugin-solid-svg": "^0.8.1"
   },
   "devDependencies": {
+    "@eslint/js": "9.17.0",
     "@tauri-apps/cli": "^2",
     "@types/showdown": "^2.0.6",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "globals": "^15.14.0",
+    "prettier": "3.4.2",
     "sass": "^1.80.3",
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.18.2",

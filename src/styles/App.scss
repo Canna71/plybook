@@ -8,6 +8,7 @@
 @use "./DBTest.scss";
 // @use "./BoardEdit.scss";
 @use "bulma/bulma";
+@use "animate.css/animate";
 
 .chess-container {
     width: 100%;
@@ -166,4 +167,8 @@ html, body {
     button {
         padding: 4px;
     }
+}
+
+.modal-card-head .modal-icon {
+    margin-right: 1em;
 }

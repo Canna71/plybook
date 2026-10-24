@@ -9,18 +9,12 @@ import Button from "../common/Button";
 import { GameContext } from "./GameContext";
 import HintButtons from "./HintButtons";
 
-export type ButtonBarProps = {
-    // game: Accessor<GameModel | undefined>;
-    // currentPath: Accessor<Path | undefined>;
-    // setCurrentPath: Setter<Path | undefined>;
-};
-
-const ButtonBar: Component<ButtonBarProps> = ({}) => {
+const ButtonBar: Component = () => {
     const {
         gameSignal: [game],
         currentPathSignal: [currentPath, setCurrentPath],
         hintMoveSignal: [hintMove],
-        playingEngine,
+        isPlayingOnSignal: [isPlayingOn],
         hintTypeSignal: [_hintType, setHintType],
     } = useContext(GameContext)!;
 
@@ -112,10 +106,8 @@ const ButtonBar: Component<ButtonBarProps> = ({}) => {
                     </Button>
                 </div>
             </Show>
-            <Show when={playingEngine() && hintMove()}>
-                <HintButtons 
-                    setHintType={setHintType}
-                />
+            <Show when={isPlayingOn() && hintMove()}>
+                <HintButtons setHintType={setHintType} />
             </Show>
         </>
     );

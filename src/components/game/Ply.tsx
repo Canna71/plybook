@@ -265,8 +265,6 @@ const mainNags: ValidComponent[] = [
     Inaccuracy,
 ];
 
-
-
 const nagNames = [
     "Good Move",
     "Good Move",
@@ -463,26 +461,27 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
     const {
         currentPathSignal: [currentPath, _setCurrentPath],
         editable,
-        gameSignal: [game, setGame]    } = useContext(GameContext)!;
+        gameSignal: [game, setGame],
+    } = useContext(GameContext)!;
     // const { showTooltip } = useContext(TooltipContext)!;
 
     const onAddComment = (before: boolean) => {
-        const ng = game()?.insertComment(plyData?.path!, "", before);
+        const ng = game()?.insertComment(plyData!.path, "", before);
         setGame(ng);
     };
 
     const onDelete = () => {
-        const ng = game()?.deleteFrom(plyData?.path!);
+        const ng = game()?.deleteFrom(plyData!.path);
         setGame(ng);
     };
 
     const onAnnotate = (nag: number) => {
-        const ng = game()?.annotate(plyData?.path!, nag);
+        const ng = game()?.annotate(plyData!.path, nag);
         setGame(ng);
     };
 
     const onClearAnnotation = () => {
-        const ng = game()?.annotate(plyData?.path!, -1);
+        const ng = game()?.annotate(plyData!.path, -1);
         setGame(ng);
     };
     // context menu functions
@@ -576,11 +575,13 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
     createEffect(() => {
         if (isCurrent() && ref) {
             ref.scrollIntoView({ block: "nearest" });
-        } else if (currentPath?.()?.equals(Path.root) && plyData?.path.size() === 1) {
+        } else if (
+            currentPath?.()?.equals(Path.root) &&
+            plyData?.path.size() === 1
+        ) {
             // scroll to the top of the game if the current path is root
             ref?.scrollIntoView({ block: "nearest" });
         }
-
     });
 
     return (
@@ -599,7 +600,7 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
             <span class="pgnviewer-movecontent">
                 {/* {(color && line[color]?.fan) || "..."} */}
                 <Show when={isValid()} fallback="...">
-                    <PlyFan san={plyData?.san!} color={color!} />
+                    <PlyFan san={plyData!.san} color={color!} />
                 </Show>
                 {secondaryNagSymbol()}
             </span>

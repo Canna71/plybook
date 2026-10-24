@@ -12,8 +12,8 @@ import { GameContext, ReviewProgress } from "./GameContext";
 import "./EngineControl.scss";
 import {
     IconCpu,
+    IconFlag,
     IconPlayerPlayFilled,
-    IconPlayerStopFilled,
     IconSettingsFilled,
 } from "@tabler/icons-solidjs";
 import ToggleSwitch from "../common/ToggleSwitch";
@@ -24,29 +24,35 @@ import Button from "../common/Button";
 import { makeGame } from "../../models/pgn";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import Modal from "../common/Modal";
+import { StartingPositionIcon } from "../common/Icons";
+import { activeProfile } from "../../engine/engineprofiles";
 
 const EngineControl = () => {
     const {
         playingEngine,
-        gameSignal: [, setGame],
+        gameSignal: [game, setGame],
         engineAnalysisOnSignal,
         engineColorSignal: [engineColor, setEngineColor],
-        viewModeSignal: [viewMode],
+        isPlayingOnSignal: [isPlayingOn, setIsPlayingOn],
+        viewModeSignal: [viewMode, setViewMode],
         isEditingDescriptionSignal: [isEditingDescription],
-        fullPgnSignal: [],
         startingPositionSignal: [startingPosition],
         // isReviewModeSignal: [isReviewing, setIsReviewing],
-        startReview,
+        // startReview,
         isReviewing,
-        reviewProgress
+        reviewProgress,
+        onGameFinished,
     } = useContext(GameContext)!;
 
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
         engineColor() || "random",
     );
 
-    const modalSignal = createSignal(false),
-        [settingsModalVisible, setSettingsModalVisible] = modalSignal;
+    const settingsModalSignal = createSignal(false),
+        [_settingsModalVisible, setSettingsModalVisible] = settingsModalSignal;
+
+    const playSettingsModal = createSignal(false),
+        [_playSettingsVisible, setPlaySettingsVisible] = playSettingsModal;
 
     const canEnableEngine = () => {
         return (
@@ -55,6 +61,10 @@ const EngineControl = () => {
             !playingEngine()
         );
     };
+
+    // const position = usePosition(game, currentPath);
+
+    // const turn = createMemo(() => position().turn as Color);
 
     const engineColors = () => {
         return [
@@ -74,10 +84,22 @@ const EngineControl = () => {
     };
 
     const toggleGame = () => {
-        if (engineColor()) {
+        if (isPlayingOn()) {
             batch(() => {
-                setEngineColor(undefined);
-                setGame(makeGame("[]"));
+                // setEngineColor(undefined);
+                // setGame(makeGame("[]"));
+                const score = engineColor() === "white" ? "1-0" : "0-1";
+
+                const newGameModel = game()!.updateHeaders(
+                    new Map([["Result", score]]),
+                );
+                batch(() => {
+                    setIsPlayingOn(false);
+                    setGame(newGameModel);
+                });
+                setTimeout(() => {
+                    onGameFinished?.();
+                }, 100);
             });
         } else {
             let c = internalColor();
@@ -91,29 +113,38 @@ const EngineControl = () => {
 
                 const playerColor = c === "white" ? "Black" : "White";
 
-                let newGame = makeGame("[]").updateHeaders(
-                    new Map([
-                        [engineColorTitleCase, "Engine"],
-                        [playerColor, "Player"],
-                    ]),
-                );
+                const profile = activeProfile();
+                const engineElo = getSettingValue("engine.playing.elo", 1000)!;
+                const currentDate = new Date().toISOString();
+                const headers = new Map([
+                    [engineColorTitleCase, profile?.name ?? "Engine"],
+                    // the Elo setting only means something to engines that limit their strength
+                    ...(profile?.limitStrength !== false
+                        ? [
+                              [
+                                  engineColorTitleCase + "Elo",
+                                  engineElo.toString(),
+                              ] as [string, string],
+                          ]
+                        : []),
+                    [playerColor, "Player"],
+                    ["Date", currentDate.split("T")[0]],
+                    ["Timestamp", currentDate],
+                ]);
+                let newGame = makeGame("[]").updateHeaders(headers);
                 newGame = newGame.withStartingPosition(
                     startingPosition() || "",
                 );
                 setGame(newGame);
                 setEngineColor(c);
                 setInternalColor(c);
-                // setFullPgn(getDefaultStudyContent());
+                setIsPlayingOn(true);
             });
         }
     };
 
     const onShowSettingsModal = () => {
         setSettingsModalVisible(true);
-    };
-
-    const reviewGame = () => {
-        startReview();
     };
 
     return (
@@ -135,9 +166,6 @@ const EngineControl = () => {
                             >
                                 <IconSettingsFilled />
                             </Button>
-                            <Button onClick={reviewGame} title="Review Game">
-                                Review
-                            </Button>
                         </div>
                     </Show>
                     <Show when={isReviewing()}>
@@ -156,14 +184,30 @@ const EngineControl = () => {
                                 options={engineColors}
                             />
                         </div>
-                        <Show when={!!engineColor()}>
-                            <Button onClick={toggleGame} title="Stop Game">
-                                <IconPlayerStopFilled />
+                        <Button
+                            onClick={() => setPlaySettingsVisible(true)}
+                            title="Playing Settings"
+                        >
+                            <IconSettingsFilled />
+                        </Button>
+                        <Show when={isPlayingOn()}>
+                            <Button onClick={toggleGame} title="Resign">
+                                <IconFlag />
                             </Button>
                         </Show>
-                        <Show when={!engineColor()}>
+                        <Show when={!isPlayingOn()}>
                             <Button onClick={toggleGame} title="New Game">
                                 <IconPlayerPlayFilled />
+                            </Button>
+                        </Show>
+                        <Show when={viewMode() === ViewMode.MOVES}>
+                            <Button
+                                onClick={() =>
+                                    setViewMode(ViewMode.STARTING_POSITION)
+                                }
+                                title="Change Starting Position"
+                            >
+                                <StartingPositionIcon />
                             </Button>
                         </Show>
                         {/* <Select
@@ -173,14 +217,24 @@ const EngineControl = () => {
                 /> */}
                     </Show>
                 </div>
-
-                <Show when={playingEngine()}>
-                    <div class="engine-control-row">
-                        ELO:{" "}
-                        <EngineLevel
-                            
-                        />
-                    </div>
+            </div>
+            <Modal
+                isOpen={playSettingsModal}
+                onClose={() => setPlaySettingsVisible(false)}
+                title={() => "Playing Settings"}
+            >
+                <div>
+                    <Show when={activeProfile()?.limitStrength !== false}>
+                        <div class="engine-control-row">
+                            ELO: <EngineLevel />
+                        </div>
+                    </Show>
+                    <Show when={activeProfile()?.singleNode}>
+                        <div class="engine-control-row">
+                            {activeProfile()?.name} plays its first choice (one
+                            node), so depth and time do not apply.
+                        </div>
+                    </Show>
                     <div class="engine-control-row">
                         Depth: <DepthLevel />
                     </div>
@@ -190,10 +244,10 @@ const EngineControl = () => {
                     <div class="engine-control-row">
                         Threads: <Threads />
                     </div>
-                </Show>
-            </div>
+                </div>
+            </Modal>
             <Modal
-                isOpen={[settingsModalVisible, setSettingsModalVisible]}
+                isOpen={settingsModalSignal}
                 onClose={() => setSettingsModalVisible(false)}
                 title={() => "Analysis Settings"}
             >
@@ -228,11 +282,11 @@ const EngineLevel = () => {
     const onEngineLevelChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
         const level = parseInt(target.value);
-        setSettingValue("engine.playing.level", level);
+        setSettingValue("engine.playing.elo", level);
     };
 
     const engineLevel = () => {
-        return getSettingValue("engine.playing.level", 1000);
+        return getSettingValue("engine.playing.elo", 1000);
     };
 
     return (
@@ -350,7 +404,7 @@ const Threads = () => {
             <span class="slide-value">{threads()}</span>
         </div>
     );
-}
+};
 
 const AnalysisMoveTime = () => {
     const onMoveTimeChange = (e: Event) => {
@@ -418,12 +472,19 @@ const ShowErrorToggle = () => {
     );
 };
 
-const ReviewProgressIndicator = ({reviewProgress}:{reviewProgress: Accessor<ReviewProgress>}) => {
+const ReviewProgressIndicator = ({
+    reviewProgress,
+}: {
+    reviewProgress: Accessor<ReviewProgress>;
+}) => {
     return (
         <div class="review-progress">
             Reviewing...
-            <progress id="file" max={reviewProgress()?.total} value={reviewProgress()?.current}></progress>
-
+            <progress
+                id="file"
+                max={reviewProgress()?.total}
+                value={reviewProgress()?.current}
+            ></progress>
         </div>
     );
 };

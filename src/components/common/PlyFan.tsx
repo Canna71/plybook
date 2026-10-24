@@ -5,10 +5,9 @@ import { isPiece } from "../../models/pgn";
 
 import { getFigurine } from "./utils";
 
-
-
-export const PlyFan: Component<{ san: string; color: Color; }> = ({
-    san, color,
+export const PlyFan: Component<{ san: string; color: Color }> = ({
+    san,
+    color,
 }) => {
     const piece = isPiece(san[0])
         ? color === "white"
@@ -22,8 +21,6 @@ export const PlyFan: Component<{ san: string; color: Color; }> = ({
         promotion = content[3];
         content = content.slice(0, 2);
     }
-
-
 
     return (
         <>

@@ -1,0 +1,40 @@
+.settings_view {
+    height: 100%;
+    overflow: auto;
+    padding: 16px;
+
+    .buttons-bar {
+        margin-bottom: 10px;
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+
+    .settings-help {
+        margin-bottom: 10px;
+        opacity: 0.8;
+    }
+
+    .engines-table {
+        width: 100%;
+
+        .location {
+            word-break: break-all;
+        }
+
+        .actions {
+            white-space: nowrap;
+            display: flex;
+            gap: 5px;
+        }
+
+        tr.missing {
+            opacity: 0.5;
+        }
+    }
+
+    .settings-panel {
+        margin-top: 16px;
+        max-width: 640px;
+    }
+}

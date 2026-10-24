@@ -1,0 +1,27 @@
+.history_view {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .table-container {
+        flex: 1;
+        overflow: auto;
+    }
+    
+    .history_table {
+        width: 100%;
+        
+        .history-row {
+            cursor: pointer;
+            
+            &:hover {
+                background-color: var(--hover-color);
+            }
+        }
+    }
+}
+
+.buttons-bar {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 5px;
+}

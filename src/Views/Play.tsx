@@ -1,42 +1,49 @@
-import { createEffect } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
 import { useSearchParams } from "@solidjs/router";
+import anylogger from "anylogger";
+import { addToHistory } from "../storage/db";
+const log = anylogger("play");
 
 const PlayView = () => {
-
-   
     const [searchParams, _setSearchParams] = useSearchParams();
-    
+    const [newPgn, setNewPgn] = createSignal<string | undefined>(undefined);
+
     createEffect(async () => {
-        if(typeof(searchParams.fen) === "string") {
-            
-        } else {
-            
-        }
+        // TODO: start from searchParams.fen when provided
     });
 
+    const save = async () => {
+        log.debug("onSave", newPgn());
+        const pgn = newPgn();
+        if (typeof pgn !== "string") {
+            return;
+        }
+        await addToHistory(pgn);
+    };
+
     const initialFen = () => {
-        if(typeof(searchParams.fen) === "string") {
+        if (typeof searchParams.fen === "string") {
             return searchParams.fen;
         }
         return undefined;
-    }
-
-   
+    };
 
     return (
         <>
-            <div class="playarea-header">
-                TODO:  | Time Control  | Save Game | Load Game
-            </div>
-            <GameManager 
+            <nav class="game-header buttons buttons-bar" role="navigation">
+                TODO: | Time Control | Save Game | Draw
+            </nav>
+            <GameManager
                 initialFen={initialFen()}
                 playingEngine={true}
+                setPgn={setNewPgn}
+                onGameFinished={save}
             />
         </>
     );
-}
+};
 
 export default PlayView;

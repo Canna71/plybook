@@ -11,11 +11,7 @@ import { Api } from "chessground/api";
 import { PiecesToolbar } from "./PiecesToolbar";
 import { Piece, Role } from "chessground/types";
 import ToggleSwitch from "../common/ToggleSwitch";
-import {
-    INITIAL_FEN,
-    makeFen,
-    parseFen,
-} from "chessops/fen";
+import { INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
 import { makeSquare, parseSquare, squareFromCoords } from "chessops/util";
 import Select from "../common/Select";
 import { getEnPassantSquares } from "../common/utils";
@@ -92,7 +88,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     };
 
     const onChange = () => {
-        let fen = api()?.getFen();
+        const fen = api()?.getFen();
         props.setFen(fen);
     };
 
@@ -147,15 +143,12 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
         return "";
     };
 
-    const setEnPassant: Setter<string> = (value) => {
-        const v = typeof value === "function" ? value(enPassant()) : value;
-
+    const setEnPassant = (value: string) => {
         const setup = position();
         if (setup) {
-            setup.epSquare = parseSquare(v);
+            setup.epSquare = parseSquare(value);
             props.setFen(makeFen(setup));
         }
-        return value;
     };
 
     const onClear = () => {

@@ -6,36 +6,35 @@ import { createSignal, For } from "solid-js";
 import { Study } from "../storage/db";
 
 type IGame = {
-    file: string,
-    timeControlInitial: number,
-    timeControlIncrement: number,
+    file: string;
+    timeControlInitial: number;
+    timeControlIncrement: number;
     // orientation: string,
-    result: string,
-    whiteName: string,
-    whiteRating: number,
+    result: string;
+    whiteName: string;
+    whiteRating: number;
     // whiteTitle: string,
-    blackName: string,
-    blackRating: number,
+    blackName: string;
+    blackRating: number;
     // blackTitle: string,
-    eventDate: string,
-    round: number
-}
+    eventDate: string;
+    round: number;
+};
 
 const DBTest = () => {
-
     let pgnTextArea!: HTMLTextAreaElement;
     const [studies, setStudies] = createSignal<Study[]>([]);
 
     const createRecord = async () => {
-        const pgnString = await readTextFile('testdata/01.pgn',
-            {
-                baseDir: BaseDirectory.Resource
-            });
+        const pgnString = await readTextFile("testdata/01.pgn", {
+            baseDir: BaseDirectory.Resource,
+        });
         const gameModel = makeGame(pgnString);
         const game: IGame = {
             file: "01.pgn",
             timeControlInitial: gameModel.metadata.timeControl?.initial || -1,
-            timeControlIncrement: gameModel.metadata.timeControl?.increment || -1,
+            timeControlIncrement:
+                gameModel.metadata.timeControl?.increment || -1,
             // orientation: gameModel.metadata.orientation || "",
             result: gameModel.metadata.result || "",
             whiteName: gameModel.players.white.name || "",
@@ -45,40 +44,36 @@ const DBTest = () => {
             // blackTitle: gameModel.players.black.title || "",
             blackRating: gameModel.players.black.rating || -1,
             eventDate: "",
-            round:  -1
+            round: -1,
         };
         await invoke("index_game", {
-            game
+            game,
         });
-    }
+    };
 
-    const listGames = async () => {
-    }
+    const listGames = async () => {};
 
     const uploadPgn = async (_e: MouseEvent) => {
-        const pgnText = (pgnTextArea?.value);
+        const pgnText = pgnTextArea?.value;
         await invoke("upload_pgn", {
-            pgn: pgnText
+            pgn: pgnText,
         });
-    }
+    };
 
     const listStudies = async () => {
-        const studies = await invoke("list_studies") as Study[];
+        const studies = (await invoke("list_studies")) as Study[];
         setStudies(studies);
-    }
+    };
 
     return (
         <div class="dbtest-container">
             <div>
-               
                 <Button onClick={createRecord}>Index Game</Button>
                 <Button onClick={listGames}>List Games</Button>
                 <Button onClick={uploadPgn}>Upload PGN</Button>
                 <Button onClick={listStudies}>List Studies</Button>
-
             </div>
             <div>
-
                 <textarea ref={pgnTextArea} name="pgn" id="pgnText">
                     {`
 [Event "Sample Analysis Game"]
@@ -133,18 +128,22 @@ Alternatively capturing with the queen, maintaining flexibility in the center.
 }
 )
     `}
-                    
-
-
                 </textarea>
             </div>
-            <div><ul>
-                <For each={studies()}>
-                    {study=><li>{study.created_at}, {study.file_path}, {study.puzzle?.current_interval}</li>}
-                </For></ul>
+            <div>
+                <ul>
+                    <For each={studies()}>
+                        {(study) => (
+                            <li>
+                                {study.created_at}, {study.file_path},{" "}
+                                {study.puzzle?.current_interval}
+                            </li>
+                        )}
+                    </For>
+                </ul>
             </div>
         </div>
     );
-}
+};
 
 export default DBTest;

@@ -6,7 +6,7 @@ import { StartingPositionIcon } from "../common/Icons";
 import {
     IconBrackets,
     IconCheck,
-    IconCpu,
+    IconPlayerPlayFilled,
     IconSwitchVertical,
     IconTextPlus,
 } from "@tabler/icons-solidjs";
@@ -92,14 +92,13 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
     };
 
     const fen = useFen(game, currentPath);
-    
 
     const onPlayAgainstEngine = () => {
         // Toggle the playing engine state (commented out for now)
         const currentFen = fen();
-        const playUrl = `/play?fen=${currentFen}`;
+        const playUrl = `/play?fen=${encodeURIComponent(currentFen)}`;
         navigate(playUrl);
-    }
+    };
 
     return (
         <div class="buttons-bar are-small">
@@ -129,20 +128,21 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
                     <Button onClick={onEditPgn} title="Edit PGN">
                         <IconBrackets />
                     </Button>
-                    <Button title="Play Against Engine" onClick={onPlayAgainstEngine}>
-                        <IconCpu />
+                    <Button
+                        title="Play Against Engine"
+                        onClick={onPlayAgainstEngine}
+                    >
+                        <IconPlayerPlayFilled />
                     </Button>
-
                 </Show>
-            </Show>
-
-            <Show when={viewMode() === ViewMode.MOVES}>
-                <Button
-                    onClick={onEditStartingPosition}
-                    title="Change Starting Position"
-                >
-                    <StartingPositionIcon />
-                </Button>
+                <Show when={viewMode() === ViewMode.MOVES}>
+                    <Button
+                        onClick={onEditStartingPosition}
+                        title="Change Starting Position"
+                    >
+                        <StartingPositionIcon />
+                    </Button>
+                </Show>
             </Show>
 
             <Show when={viewMode() === ViewMode.STARTING_POSITION}>

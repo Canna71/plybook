@@ -11,6 +11,7 @@ export type EditableProps = {
 
 const Editable: Component<EditableProps> = (props) => {
     const [value, setValue] = createSignal(props.initialValue);
+    // eslint-disable-next-line prefer-const -- assigned by Solid via ref={...}
     let ref: HTMLSpanElement | null = null;
 
     const handleInput = (e: InputEvent) => {

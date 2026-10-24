@@ -1,8 +1,8 @@
 import { NormalMove } from "chessops";
 import {
     createSignal,
-    createResource,
     createEffect,
+    on,
     batch,
     onCleanup,
     Accessor,
@@ -13,8 +13,13 @@ import { createStore } from "solid-js/store";
 import { IChessEngine, EngineInfo } from "../../engine/engineinterfaces";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
 import { UCIEngine } from "../../engine/uciengine";
-import { getEnginePath } from "../../storage/fs";
+import {
+    activeProfile,
+    expandEnginesFolder,
+    getEnginesFolder,
+} from "../../engine/engineprofiles";
 import { makeMove } from "../common/utils";
+import { makeErrorToast } from "../common/Toast";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue } from "../../models/settings";
@@ -22,8 +27,12 @@ import { EvaluationExt, Path } from "../../models/pgn";
 import { Box, isChildNode, walk } from "chessops/pgn";
 import { makeFen, parseFen } from "chessops/fen";
 import { ReviewProgress } from "./GameContext";
-import anylogger from 'anylogger'
-const log = anylogger('usechessengine')
+import anylogger from "anylogger";
+const log = anylogger("usechessengine");
+
+// UCI engines answer "bestmove (none)" (or "0000") when there is no legal move
+const isNoMove = (move: string | undefined) =>
+    !move || move === "(none)" || move === "0000";
 
 export type ChessEngineOptions = {
     defaultEngineAnalysisOn: boolean;
@@ -43,11 +52,15 @@ export function useChessEngine(options: ChessEngineOptions) {
     const [engineAnalysisOn, setEngineAnalysisOn] = createSignal<boolean>(
         options.defaultEngineAnalysisOn,
     );
-    const [engineFolder, _others] = createResource(() => getEnginePath());
+    const profile = activeProfile;
     const [engine, setEngine] = createSignal<IChessEngine | undefined>(
         undefined,
     );
     const [engineInfo, setEngineInfo] = createStore<EngineInfo[]>([]);
+    // searches started but not yet answered with a bestmove; a bestmove that
+    // arrives while a newer search is pending belongs to a stopped search
+    let pendingSearches = 0;
+
     const [hintMove, setHintMove] = options.hintMoveSignal;
     // const [isReviewing, setIsReviewing] = createSignal(false);
     const [reviewPositionPath, setReviewPositionPath] = createSignal<
@@ -63,20 +76,24 @@ export function useChessEngine(options: ChessEngineOptions) {
         ReviewProgress | undefined
     >(undefined);
 
+    const [isPlayingOn, setIsPlayingOn] = createSignal(false);
+
     const isReviewing = () => !!reviewPositionPath();
 
     const needEngine = () => {
         return (
-            (engineAnalysisOn() ||
-                options.playingEngine() ||
-                isReviewing() 
-                || options.wrongPuzzleMove()
-            )
+            engineAnalysisOn() ||
+            options.playingEngine() ||
+            isReviewing() ||
+            options.wrongPuzzleMove()
         );
-    }
+    };
 
     const shouldCallEngineAnalysis = createMemo(() => {
-        if (engine() && (engineAnalysisOn() || isReviewing() || options.wrongPuzzleMove())) {
+        if (
+            engine() &&
+            (engineAnalysisOn() || isReviewing() || options.wrongPuzzleMove())
+        ) {
             return true;
         }
 
@@ -84,11 +101,13 @@ export function useChessEngine(options: ChessEngineOptions) {
     });
 
     const shouldCallEngineMove = createMemo(() => {
-        let tmp =
-            engine() &&
+        // when playing, the engine also thinks on the player's turn: that
+        // bestmove becomes the hint (see onEngineBestMove)
+        const tmp =
+            !!engine() &&
             options.playingEngine() &&
-            options.engineColor?.() == options.turn();
-        tmp ||= !!options.engineColor?.();
+            isPlayingOn() &&
+            !!options.engineColor?.();
         // check if the current position is the last one
         if (!tmp) return false;
         const node = game()?.nodeAt(options.path() || Path.root);
@@ -99,20 +118,33 @@ export function useChessEngine(options: ChessEngineOptions) {
     });
 
     const shouldInitEngine = () => {
-        const shouldInit =
-            (needEngine()) &&
-            engineFolder() &&
-            !engine();
+        const shouldInit = needEngine() && profile() && !engine();
         return shouldInit;
     };
 
     createEffect(async () => {
         if (shouldInitEngine()) {
+            const p = profile()!;
             const engine = new UCIEngine(
-                new ExecutableUCIInterface(engineFolder()!),
+                new ExecutableUCIInterface(p.id, p.name),
             );
 
-            await engine.init();
+            try {
+                await engine.init();
+                const enginesFolder = await getEnginesFolder();
+                for (const option of p.options) {
+                    engine.setOption(
+                        option.name,
+                        expandEnginesFolder(option.value, enginesFolder),
+                    );
+                }
+            } catch (err) {
+                log.error("engine failed to start", err);
+                makeErrorToast(
+                    err instanceof Error ? err.message : String(err),
+                );
+                return;
+            }
 
             log.debug("engine initialized", engine.getOptions());
             // Add this function inside useChessEngine before onEngineBestMov
@@ -123,12 +155,11 @@ export function useChessEngine(options: ChessEngineOptions) {
                 setEngine(engine);
                 // setEngineAnalysisOn(true);
             });
-        } else {
         }
     });
 
     createEffect(() => {
-        if (engine() && !options.engineColor()) {
+        if (engine() && !isPlayingOn()) {
             engine()!.stop();
         }
     });
@@ -139,6 +170,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             eng.quit();
             eng.off("bestmove", onEngineBestMove);
             setEngine(undefined);
+            pendingSearches = 0;
         }
     };
 
@@ -147,6 +179,16 @@ export function useChessEngine(options: ChessEngineOptions) {
             cleanup();
         }
     });
+
+    // switching engine in the settings: drop the running one, the next
+    // request for an engine starts the newly selected one
+    createEffect(
+        on(
+            () => profile()?.id,
+            () => cleanup(),
+            { defer: true },
+        ),
+    );
 
     onCleanup(() => {
         cleanup();
@@ -158,31 +200,36 @@ export function useChessEngine(options: ChessEngineOptions) {
                 ? { current: p.current + 1, total: p.total }
                 : { current: 1, total: 1 },
         );
-    }
+    };
 
     // Add this function inside useChessEngine before onEngineBestMove
     const handleReviewPosition = (bestMove: string, g: GameModel) => {
         const path = reviewPositionPath() || Path.root;
-        let ext = bestMove;
+        // at checkmate/stalemate the engine answers "bestmove (none)"
+        const ext = isNoMove(bestMove) ? undefined : bestMove;
 
-        let score = engineInfo[0]?.score;
+        const score = engineInfo[0]?.score;
         const depth = engineInfo[0]?.depth;
-        const evaluation: EvaluationExt =
-            score!.type === "cp"
-                ? {
-                      depth: depth,
-                      pawns: score!.value / 100,
-                      ext: ext,
-                  }
-                : {
-                      depth: depth,
-                      mate: score!.value,
-                      ext: ext,
-                  };
-        const ng = annotatedGame()!.updateEvaluation(path, {
-            ...evaluation,
-        });
-        setAnnotatedGame(ng);
+        let evaluation: EvaluationExt | undefined;
+        if (score) {
+            evaluation =
+                score.type === "cp"
+                    ? { depth, pawns: score.value / 100, ext }
+                    : { depth, mate: score.value, ext };
+        } else {
+            // some engines send no "info score" for terminal positions
+            const pos = g.dataAt(path)?.pos;
+            if (pos?.isCheckmate()) {
+                evaluation = { depth: 0, mate: 0 };
+            } else if (pos?.isEnd()) {
+                evaluation = { depth: 0, pawns: 0 };
+            }
+        }
+        let ng = annotatedGame()!;
+        if (evaluation) {
+            ng = ng.updateEvaluation(path, { ...evaluation });
+            setAnnotatedGame(ng);
+        }
 
         const node = g.nodeAt(path);
         if (node) {
@@ -206,10 +253,9 @@ export function useChessEngine(options: ChessEngineOptions) {
                     } else {
                         cn = parent.children[parent.children.indexOf(cn) + 1];
                         if (isChildNode(cn)) {
-
                             setReviewPositionPath(cn.data.path);
                             incrementReviewProgress();
-                            
+
                             return;
                         }
                     }
@@ -226,33 +272,40 @@ export function useChessEngine(options: ChessEngineOptions) {
     };
 
     const onEngineBestMove = (bestMove: string, _ponder: string) => {
+        pendingSearches = Math.max(0, pendingSearches - 1);
+        if (pendingSearches > 0) {
+            log.debug("Ignoring stale bestmove", bestMove);
+            return;
+        }
         const g = game();
         if (!g) {
             return;
         }
-        const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
-        const move: NormalMove = makeMove(m.from, m.to);
-        if (
-            !options.engineColor?.() ||
-            options.engineColor?.() != options.turn()
-        ) {
+        if (!isPlayingOn() || options.engineColor?.() != options.turn()) {
             if (isReviewing()) {
                 handleReviewPosition(bestMove, g);
             }
-            log.debug("Engine move", bestMove);
-            setHintMove(bestMove);
+            log.debug("Hint move", bestMove);
+            setHintMove(isNoMove(bestMove) ? undefined : bestMove);
             return;
         }
 
+        if (isNoMove(bestMove)) {
+            // game is over, nothing to play
+            return;
+        }
+        log.debug("Engine move", bestMove);
+        const m = { from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) };
+        const move: NormalMove = makeMove(m.from, m.to);
         options.applyMove(move);
     };
 
     const onEngineInfo = (info: EngineInfo) => {
         if (info.multipv) {
             const pos = parseFen(analyzeFen());
-            if (pos.isOk) {
+            if (pos.isOk && info.score) {
                 if (pos.value.turn === "black") {
-                    info.score!.value = -info.score!.value;
+                    info.score.value = -info.score.value;
                 }
             }
             setEngineInfo(info.multipv - 1, info);
@@ -264,7 +317,7 @@ export function useChessEngine(options: ChessEngineOptions) {
 
         // computes the total number of positions in the game
         let total = 0;
-        walk(game()!.moves, new Box(0), (ctx, node, idx) => {
+        walk(game()!.moves, new Box(0), () => {
             total++;
             return true;
         });
@@ -273,7 +326,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             // setIsReviewing(true);
             setReviewPositionPath(Path.root);
             setAnnotatedGame(game());
-            setReviewProgress({ current: 0, total});
+            setReviewProgress({ current: 0, total });
         });
     };
 
@@ -293,7 +346,9 @@ export function useChessEngine(options: ChessEngineOptions) {
         if (isReviewing()) {
             fenStr = game()!.dataAt(reviewPositionPath() || Path.root)!.fen;
         } else if (options.wrongPuzzleMove()) {
-            const pos = game()!.dataAt(options.path() || Path.root)?.pos.clone()!;
+            const pos = game()!
+                .dataAt(options.path() || Path.root)!
+                .pos.clone();
             pos?.play(options.wrongPuzzleMove()!);
             fenStr = makeFen(pos?.toSetup(), { epd: false });
             log.debug("wrongPuzzleMove", fenStr);
@@ -303,17 +358,23 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     createEffect(() => {
         engine()?.stop();
-        let fenStr = analyzeFen();
+        const fenStr = analyzeFen();
         setEngineInfo([]);
         let opts = undefined;
+
+        const eng = engine();
+        if (!eng) return;
 
         if (shouldCallEngineAnalysis()) {
             setHintMove(undefined);
 
-            engine()!.setOption("UCI_LimitStrength", "false");
-            engine()!.setOption("UCI_Elo", 3200);
+            if (profile()?.limitStrength) {
+                eng.setOption("UCI_LimitStrength", "false");
+                eng.setOption("UCI_Elo", 3200);
+            }
 
             opts = {
+                nodes: profile()?.singleNode ? 1 : undefined,
                 depth: getSettingValue("engine.analysis.depth", 15),
                 movetime: getSettingValue("engine.analysis.movetime", 10000),
                 multipv: getSettingValue("engine.analysis.multipv", 3),
@@ -323,13 +384,23 @@ export function useChessEngine(options: ChessEngineOptions) {
             setHintMove(undefined);
 
             // engine()!.setOption("UCI_AnalyseMode", 0);
-            engine()!.setOption("UCI_LimitStrength", "true");
-            engine()!.setOption(
-                "UCI_Elo",
-                getSettingValue("engine.playing.elo", 1000),
-            );
+            const enginesTurn = options.engineColor() === options.turn();
+            // limit strength for the engine's own moves, not for hints
+            if (profile()?.limitStrength) {
+                eng.setOption(
+                    "UCI_LimitStrength",
+                    enginesTurn ? "true" : "false",
+                );
+                eng.setOption(
+                    "UCI_Elo",
+                    enginesTurn
+                        ? getSettingValue("engine.playing.elo", 1000)
+                        : 3200,
+                );
+            }
 
             opts = {
+                nodes: profile()?.singleNode && enginesTurn ? 1 : undefined,
                 depth: getSettingValue("engine.playing.depth", 15),
                 movetime: getSettingValue("engine.playing.movetime", 10000),
                 multipv: 1,
@@ -338,7 +409,8 @@ export function useChessEngine(options: ChessEngineOptions) {
         }
         if (opts) {
             log.debug("Analyzing", fenStr, opts);
-            engine()!.analyzeFromFenOrMoves(fenStr, opts);
+            pendingSearches++;
+            eng.analyzeFromFenOrMoves(fenStr, opts);
         }
     });
 
@@ -354,5 +426,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         isReviewing,
         startReview,
         reviewProgress,
+        isPlayingOnSignal: [isPlayingOn, setIsPlayingOn] as Signal<boolean>,
     };
 }

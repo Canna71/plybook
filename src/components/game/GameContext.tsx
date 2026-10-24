@@ -5,46 +5,51 @@ import { ViewMode } from "./PgnEditBar";
 import { Color } from "chessops";
 
 export enum HintType {
-	None,
-	Piece,
-	Move,
+    None,
+    Piece,
+    Move,
 }
 
 export interface GameContextType {
-	// fi?: Accessor<string | undefined>;
-	fullPgnSignal: Signal<string | undefined>;
-	gameSignal: Signal<GameModel | undefined>;
-	currentPathSignal: Signal<Path | undefined>;
-	startingPositionSignal: Signal<string | undefined>;
-	viewModeSignal: Signal<ViewMode>;
-	editPgnSignal: Signal<string | undefined>;
-	engineAnalysisOnSignal: Signal<boolean>;
-	descriptionSignal: Signal<string | undefined>;
-	isEditingDescriptionSignal: Signal<boolean>;
-	gameIndexSignal: Signal<number>;
-	orientation: Accessor<Color>;
-	engineColorSignal: Signal<Color | undefined>;
-	hintMoveSignal: Signal<string | undefined>;
-	playingEngine: Accessor<boolean>;
-	highlightedSquaresSignal: Signal<string[]>;
-	highlightedMovesSignal: Signal<string[]>;
-	editable: Accessor<boolean>;
-	isPuzzleMode: Accessor<boolean>;
-	hintTypeSignal: Signal<HintType>;
-	isReviewing: Accessor<boolean>;
-	startReview: () => void;
-	reviewProgress: Accessor<ReviewProgress>;
+    // fi?: Accessor<string | undefined>;
+    fullPgnSignal: Signal<string | undefined>;
+    gameSignal: Signal<GameModel | undefined>;
+    currentPathSignal: Signal<Path | undefined>;
+    startingPositionSignal: Signal<string | undefined>;
+    viewModeSignal: Signal<ViewMode>;
+    editPgnSignal: Signal<string | undefined>;
+    engineAnalysisOnSignal: Signal<boolean>;
+    descriptionSignal: Signal<string | undefined>;
+    isEditingDescriptionSignal: Signal<boolean>;
+    gameIndexSignal: Signal<number>;
+    orientation: Accessor<Color>;
+    engineColorSignal: Signal<Color | undefined>;
+    isPlayingOnSignal: Signal<boolean>;
+    hintMoveSignal: Signal<string | undefined>;
+    playingEngine: Accessor<boolean>;
+    highlightedSquaresSignal: Signal<string[]>;
+    highlightedMovesSignal: Signal<string[]>;
+    editable: Accessor<boolean>;
+    isPuzzleMode: Accessor<boolean>;
+    hintTypeSignal: Signal<HintType>;
+    isReviewing: Accessor<boolean>;
+    startReview: () => void;
+    reviewProgress: Accessor<ReviewProgress>;
+    onGameFinished?: () => void;
 }
 
 export const GameContext = createContext<GameContextType>();
 
 export interface TooltipContextType {
-	showTooltip: (anchor: Element | undefined, plyData: PlyData | undefined) => void;
+    showTooltip: (
+        anchor: Element | undefined,
+        plyData: PlyData | undefined,
+    ) => void;
 }
 
 export const TooltipContext = createContext<TooltipContextType>();
 
 export interface ReviewProgress {
-	total: number;
-	current: number;
+    total: number;
+    current: number;
 }

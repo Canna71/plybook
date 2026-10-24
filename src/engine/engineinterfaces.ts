@@ -4,6 +4,8 @@ export interface AnalysisOptions {
     movetime?: number;
     multipv?: number;
     threads?: number;
+    /** Fixed number of nodes; with 1 an Lc0/Maia net plays its raw first choice */
+    nodes?: number;
 }
 
 // Types for the parsed information

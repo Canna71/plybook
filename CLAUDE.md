@@ -1,0 +1,145 @@
+# ReChess
+
+Desktop chess study app: play vs engine, analysis, game review, PGN library and puzzles.
+**Tauri 2** (Rust, `src-tauri/`) + **SolidJS + TypeScript + Vite** (`src/`), using lichess
+`chessground` (board) and `chessops` (rules/PGN). Bulma + SCSS. Puzzles and game history live
+in an embedded **SurrealDB** (RocksDB backend).
+
+Target platforms: **macOS first, then Windows. Linux is not a target**, so Linux-only
+build issues are not bugs (e.g. case-sensitive file names) and CI runs on macOS and Windows only.
+
+## Commands
+
+Package manager is **pnpm** (lockfile committed; CI uses pnpm 10, Node 22).
+
+```bash
+pnpm install              # install JS deps
+pnpm tauri dev            # run the desktop app (starts Vite on :1420 + the Rust app)
+pnpm dev                  # frontend only in a browser; Tauri APIs (invoke, fs) will fail
+pnpm typecheck            # tsc --noEmit  (Vite does NOT typecheck, so run this)
+pnpm lint                 # ESLint 9 flat config, prettier enforced as a rule
+pnpm lint --fix           # autofix formatting (see the Solid ref gotcha below)
+pnpm build                # vite build -> dist/
+pnpm tauri build          # packaged app (.app/.dmg on macOS, .msi/.exe on Windows)
+pnpm tauri icon ./tools/Logo.png   # regenerate app icons
+
+# Rust: NOT checked by CI. Run these locally whenever src-tauri/ changes.
+cd src-tauri && cargo check
+cd src-tauri && cargo clippy
+cd src-tauri && cargo fmt --check
+```
+
+Building the Rust side needs LLVM/libclang (SurrealDB's RocksDB backend compiles C++).
+On macOS the Xcode command line tools are enough; on Windows install LLVM and set `LIBCLANG_PATH`.
+
+There are **no automated tests yet** (no Vitest, no `cargo test` suites). Verify by typecheck,
+lint, build, `cargo check`, and by running the app. Good first candidates for tests are the pure
+modules `src/models/pgn.ts`, `src/models/GameModel.ts` and `src/engine/uciengine.ts`.
+
+Before pushing: `pnpm typecheck && pnpm lint && pnpm build`, plus `cargo check` if Rust changed.
+`/check` runs all of it.
+
+## Branches and PRs
+
+- **`develop` is the working branch.** Branch from `develop` and open PRs against `develop`.
+  `main` is behind and only receives merges from `develop`.
+- CI (`.github/workflows/ci.yml`) runs on every PR and on pushes to `main`: typecheck, lint, build
+  on `macos-latest` and `windows-latest`. It does not build or check Rust.
+- Feature branches are named `feature/<topic>`. Commit messages loosely follow Conventional
+  Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `style:`, `build:`).
+- The prettier reformat commit is listed in `.git-blame-ignore-revs`
+  (`git config blame.ignoreRevsFile .git-blame-ignore-revs`).
+
+## Architecture
+
+```
+src/
+  index.tsx, App.tsx       router: / /game /analysis /play /puzzles /puzzle /library /history /boardeditor /db
+  Views/                   route pages. GameView = file load/save/puzzle wrapper around GameManager.
+                           Play, Puzzles, History, LibraryFolder, Sidebar, Layout. obsoleted/ is dead code.
+  components/game/         GameManager.tsx (the hub, ~870 lines), GameContext.tsx (shared signals),
+                           useChessEngine.tsx (engine state), Moves/Ply (move tree), Review,
+                           EngineControl, EngineInfoViewer, Comments, PgnEditBar, SidebarTabs
+  components/common/       chessboard wrapper, TreeView, Modal, Alert, Select, MarkdownEditor, utils.tsx
+  components/boardeditor/  position editor
+  components/sidebar/      Library file browser
+  models/                  pgn.ts (chessops tree -> view model, Path type), GameModel.ts (immutable game ops),
+                           settings.ts (JSON settings in AppConfig, Solid store), puzzles.ts (score formula)
+  engine/                  uciengine.ts (UCI protocol parser) over executableuci.ts (talks to Rust engine_* commands)
+  storage/                 fs.ts (Tauri fs wrappers: Library, settings, themes), db.ts (invoke() wrappers for db.rs)
+  theming/                 dynamic CSS loading for board/piece themes (src/assets/styles)
+src-tauri/src/
+  lib.rs                   plugin setup, setup hook, command registration (generate_handler!)
+  db.rs                    SurrealDB commands: studies/puzzles CRUD, weights, pick_puzzle, history, games
+  engine.rs                engine process management (engine_list/spawn/write/kill) + open_library_path
+  migrate.rs               one-time move of user data from the old "rechess" identifier folders
+src-tauri/capabilities/    webview permissions (default.json, desktop.json)
+```
+
+Data flow: the **PGN string is the source of truth** for a game. Edits go through `GameModel`
+(immutable) and re-serialize the whole multi-game PGN. UI state lives in Solid signals in
+`GameManager`, shared to children via `GameContext`.
+
+User data locations (resolved by Tauri from the bundle identifier):
+- `<AppLocalData>/Library` user PGN files and folders
+- `<AppLocalData>/Engines` UCI engine binaries (the first one found is used)
+- `<AppLocalData>/db` SurrealDB database
+- `<AppConfig>` settings JSON
+
+## Conventions
+
+- Formatting: prettier, 4 spaces, semicolons, trailing commas; LF line endings (`.gitattributes`).
+  Lint fails on formatting, so let prettier/`eslint --fix` do it.
+- Unused names: prefix with `_` to mark them intentional. `no-explicit-any` is a warning, not an
+  error; avoid adding new ones.
+- Logging: use `anylogger` (`const log = anylogger("module")`), not `console.log`.
+- Imports are relative; there are no path aliases.
+- Settings keys are dotted strings (e.g. `engine.playing.elo`). Read and write the exact same key
+  and keep defaults in `settings.ts` DEFAULT rather than scattering fallbacks.
+
+### SolidJS
+
+- Do not destructure `props`; it breaks reactivity. Use `props.x` or `splitProps`.
+- Element refs are assigned by Solid via `ref={el}`, so they must stay `let el`. `eslint --fix`
+  wants `prefer-const` there; such lines carry an inline `// eslint-disable-next-line prefer-const`.
+  Never let an autofix turn them into `const`.
+- Signals are called: `value()`, not `value`.
+
+### Tauri / Rust
+
+- **The webview has no shell access.** Engines are spawned only by Rust (`engine.rs`) and only
+  from the Engines folder, which the webview's fs scope denies. Do not add `shell:*` permissions or
+  widen `fs` scopes in `capabilities/`; add a narrow Rust command instead.
+- Adding a command: write it in the right module with `#[tauri::command]`, register it in
+  `lib.rs` `generate_handler![...]`, wrap the `invoke()` in `src/storage/db.ts` (or the engine
+  module), and keep TS types in sync with Rust structs (e.g. `EngineEvent` is mirrored in
+  `executableuci.ts`). Commands return `Result<T, String>`; avoid `unwrap()` in command paths.
+- Resolve file locations with `app.path().app_local_data_dir()` / `app_config_dir()`, never with
+  relative paths (a packaged app's working directory is `/` on macOS or `Program Files` on Windows).
+- The CSP in `tauri.conf.json` is the backstop against injected HTML. Anything from a PGN or user
+  input rendered through `innerHTML` (Comments, MarkdownEditor) must be escaped or sanitized
+  with DOMPurify.
+
+## Gotchas
+
+- **Bundle identifier is `com.canna71.rechess`** (decided). Changing it moves every user's
+  Library, settings and DB; `migrate.rs` exists to move data from the old `rechess` identifier.
+- `src-tauri/gen/schemas` and `src-tauri/db` are generated/ignored. The capability `$schema`
+  points at `gen/schemas`, which appears after the first `cargo build`/`tauri dev`.
+- On macOS, a downloaded engine binary may be quarantined or not executable (`chmod +x`,
+  `xattr -d com.apple.quarantine`). Engine start failures mostly surface in the log only.
+- Paths in routes must be URL-encoded (`encodeURIComponent`) because file names can contain `&#?+`.
+- `/db` (DBTest) is a dev harness; `upload_pgn` / `index_game` in `db.rs` are stubs.
+- Dead code you can ignore or delete: `src/Views/obsoleted/`, `Views/GameEditView.tsx`,
+  `components/Analysis.tsx`, `models/FENcoder.ts`, Rust `greet`.
+- Known refactor targets: split `GameManager.tsx`, make `useChessEngine` an explicit state machine,
+  a typed settings schema, split `components/common/utils.tsx`, add Vitest + Rust CI.
+
+## Claude Code setup in this repo
+
+- `.claude/agents/`: `reviewer` (reviews a diff against these rules), `tauri-rust` (Rust backend,
+  commands, capabilities, packaging), `solid-frontend` (SolidJS/TS UI and chess logic).
+- `.claude/commands/`: `/check` (all local checks), `/new-feature <topic>` (branch from develop),
+  `/pr` (verify and open a PR against develop), `/add-command <name>` (new Tauri command end to end).
+- `.claude/settings.json`: allows the routine build/check commands without prompting.
+  Put personal overrides in `.claude/settings.local.json` (git-ignored).

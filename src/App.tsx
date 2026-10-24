@@ -7,11 +7,15 @@ import DBTest from "./Views/DBTest";
 import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
-import { ContentContext, useContentContext } from "./components/common/ContentContext";
+import {
+    ContentContext,
+    useContentContext,
+} from "./components/common/ContentContext";
 import { Toaster } from "solid-toast";
 import Puzzles from "./Views/Puzzles";
 import LibraryFolder from "./Views/LibraryFolder";
-
+import History from "./Views/History";
+import Settings from "./Views/Settings";
 
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
@@ -21,7 +25,6 @@ function App() {
     //   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     //   setGreetMsg(await invoke("greet", { name: name() }));
     // }
-
 
     // dynamically load css in assets folder
     useThemes();
@@ -41,13 +44,15 @@ function App() {
                 <Route path="/db" component={DBTest} />
                 <Route path="/play" component={Play} />
                 <Route path="/library" component={LibraryFolder} />
+                <Route path="/history" component={History} />
+                <Route path="/settings" component={Settings} />
 
                 <Route
                     path="/analysis"
                     component={GameView}
                     info={{ engine: true }}
                 />
-                 <Route
+                <Route
                     path="/puzzles"
                     component={Puzzles}
                     info={{ puzzle: true }}
@@ -58,9 +63,7 @@ function App() {
                     info={{ puzzle: true }}
                 />
             </Router>
-            <Toaster 
-                containerClassName='toaster-container'
-            />
+            <Toaster containerClassName="toaster-container" />
         </ContentContext.Provider>
     );
 }

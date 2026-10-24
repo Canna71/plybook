@@ -13,7 +13,7 @@ import {
     Switch,
     untrack,
 } from "solid-js";
-import { makeGameInternal, Path, PlyData } from "../../models/pgn";
+import { makeGameInternal, Path } from "../../models/pgn";
 import { GameModel } from "../../models/GameModel";
 import ButtonBar from "./Buttonbar";
 import {
@@ -58,25 +58,24 @@ import { getSettingValue, setSettingValue } from "../../models/settings";
 import { Config } from "chessground/config";
 import Button from "../common/Button";
 import { IconCircleXFilled } from "@tabler/icons-solidjs";
-import Modal from "../common/Modal";
 import HintButtons from "./HintButtons";
 import SidebarTabs from "./SidebarTabs";
 import anylogger from "anylogger";
+import { showAlert } from "../common/Alert";
 const log = anylogger("gamemanager");
 
 export type GameManagerOptions = {
     initalPgn?: Accessor<string | undefined>;
     setPgn?: (pgn: string) => void;
-    // engineColor?: Accessor<Color | undefined>;
     playingEngine?: boolean;
     defaultEngineAnalysisOn?: boolean;
     initialFen?: string;
-    // puzzleMode?: boolean;
     onPuzzleFinished?: (
         solved: boolean,
         hintUsed: number,
         retries: number,
     ) => void;
+    onGameFinished?: () => void;
     editable?: Accessor<boolean>;
 };
 
@@ -123,6 +122,7 @@ const GameManager: Component<GameManagerOptions> = ({
     onPuzzleFinished,
     editable,
     defaultEngineAnalysisOn = false,
+    onGameFinished,
 }) => {
     // #region Game State
     const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
@@ -161,17 +161,17 @@ const GameManager: Component<GameManagerOptions> = ({
     const [hintUsed, setHintUsed] = createSignal(0);
     const [retries, setRetries] = createSignal(0);
 
-    const successModalSignal = createSignal(false),
-        [, setSuccessModalOpen] = successModalSignal;
-
     // #endregion
     const isEditable = () => {
         return !!editable?.();
     };
 
-    const [wrongPuzzleMove, setWrongPuzzleMove] = createSignal<NormalMove | undefined>(undefined);
+    const [wrongPuzzleMove, setWrongPuzzleMove] = createSignal<
+        NormalMove | undefined
+    >(undefined);
 
     // #region Layout
+    // eslint-disable-next-line prefer-const -- assigned by Solid via ref={...}
     let chessBoardDiv: HTMLDivElement | null = null;
 
     const divider = useSplitter((layout) => {
@@ -272,11 +272,6 @@ const GameManager: Component<GameManagerOptions> = ({
     const orientation = createMemo(() => {
         const engCol = engineColor?.();
         if (playingEngine) {
-            // if(engCol === "white") {
-            //     return "black";
-            // } else {
-            //     return "white";
-            // }
             return otherColor(engCol);
         }
         const g = game();
@@ -295,8 +290,6 @@ const GameManager: Component<GameManagerOptions> = ({
         return typeof onPuzzleFinished === "function";
     });
 
-    // const playingEngine = () => !!engineColor?.();
-
     const config = () => {
         const baseConfig: Config = makeConfig(
             game,
@@ -307,10 +300,10 @@ const GameManager: Component<GameManagerOptions> = ({
         )();
         let pos = position();
 
-        if(wrongPuzzleMove()) {
+        if (wrongPuzzleMove()) {
             pos = pos.clone();
             pos.play(wrongPuzzleMove()!);
-            baseConfig.fen = makeFen(pos.toSetup(),{ epd: false });
+            baseConfig.fen = makeFen(pos.toSetup(), { epd: false });
         }
 
         const isCheck = pos.isCheck();
@@ -319,7 +312,7 @@ const GameManager: Component<GameManagerOptions> = ({
         // movable color is current color if not playing against engine
         let movableColor = undefined;
 
-        if (!!playingEngine) {
+        if (playingEngine) {
             if (engineColor?.() && pos.turn !== engineColor?.()) {
                 movableColor = pos.turn;
             }
@@ -328,19 +321,17 @@ const GameManager: Component<GameManagerOptions> = ({
         }
 
         const showArrows =
-            (!playingEngine &&
+            !playingEngine &&
             !isPuzzleMode() &&
-            getSettingValue("engine.analysis.showArrows", false)) 
-            // ||
-            // isPuzzleMode() && !!wrongPuzzleMove()
-            ;
-        
+            getSettingValue("engine.analysis.showArrows", false);
+        // ||
+        // isPuzzleMode() && !!wrongPuzzleMove()
         const shapes = baseConfig.drawable?.shapes || [];
 
         const hints: SquareClasses = new Map();
         const moveHint = hintMove();
-        if (moveHint) {
-            const move = parseUci(moveHint) as NormalMove;
+        const move = moveHint && (parseUci(moveHint) as NormalMove);
+        if (move) {
             const from = makeSquare(move.from);
             const to = makeSquare(move.to);
             if (hintType() === HintType.Piece) {
@@ -355,7 +346,7 @@ const GameManager: Component<GameManagerOptions> = ({
             }
         } else {
             if (engineInfo.length > 0 && showArrows) {
-                for (let info of engineInfo) {
+                for (const info of engineInfo) {
                     if (info.pv) {
                         const move = parseUci(info.pv[0]) as NormalMove;
                         const from = makeSquare(move.from);
@@ -430,11 +421,54 @@ const GameManager: Component<GameManagerOptions> = ({
             return;
         }
         const path = currentPath() || Path.root;
-        const [newGameModel, newPath] = g.applyMoves(path, [move]);
+        log.debug("Current move", move);
+        const isLegal = g.isLegal(path, move);
+        if (!isLegal) {
+            log.warn("Illegal move, considering it a late hint", move);
+            return;
+        }
+
+        const [appliedGame, newPath] = g.applyMoves(path, [move]);
+        let newGameModel = appliedGame;
+        const isMate = newGameModel.isMate(newPath);
         batch(() => {
             setHintType(HintType.None);
-            setGame(newGameModel);
+
+            if (isMate) {
+                if (turn() === engineColor?.()) {
+                    setTimeout(
+                        () =>
+                            showAlert({
+                                icon: "failure",
+                                title: "Checkmate",
+                                message: "You lost the game",
+                            }),
+                        500,
+                    );
+                } else {
+                    setTimeout(
+                        () =>
+                            showAlert({
+                                icon: "successfailure",
+                                title: "Checkmate",
+                                message: "You won the game",
+                            }),
+                        500,
+                    );
+                }
+                // TODO: double check this
+                const score = turn() === "white" ? "1-0" : "0-1";
+
+                newGameModel = newGameModel.updateHeaders(
+                    new Map([["Result", score]]),
+                );
+                setIsPlayingOn(false);
+            }
             setCurrentPath(newPath);
+            setGame(newGameModel);
+            if (isMate) {
+                onGameFinished?.();
+            }
         });
     };
 
@@ -443,7 +477,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // #region Effects
 
     createEffect(() => {
-        let pgnString = initialPgn?.();
+        const pgnString = initialPgn?.();
         // if (!pgnString) {
         //     pgnString = getDefaultStudyContent();
         // }
@@ -513,13 +547,22 @@ const GameManager: Component<GameManagerOptions> = ({
                     // Puzzle finished
                     // track the performance
                     onPuzzleFinished?.(true, hintUsed(), retries());
-                    setSuccessModalOpen(true);
+                    // setSuccessModalOpen(true);
+                    showAlert({
+                        icon: "success",
+                        title: "Puzzle Solved",
+                        message: "Great, you solved it!",
+                    });
                 }
             } else {
                 setHintMove(next?.data.uci);
                 if (!next) {
                     onPuzzleFinished?.(true, hintUsed(), retries());
-                    setSuccessModalOpen(true);
+                    showAlert({
+                        icon: "success",
+                        title: "Puzzle Solved",
+                        message: "Great, you solved it!",
+                    });
                 }
             }
         }
@@ -582,6 +625,7 @@ const GameManager: Component<GameManagerOptions> = ({
         isReviewing,
         startReview,
         reviewProgress,
+        isPlayingOnSignal: [isPlayingOn, setIsPlayingOn],
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -592,7 +636,7 @@ const GameManager: Component<GameManagerOptions> = ({
         fen,
         playingEngine: () => !!playingEngine,
         hintMoveSignal: [hintMove, setHintMove],
-        wrongPuzzleMove
+        wrongPuzzleMove,
     });
 
     const gameContext = {
@@ -623,11 +667,13 @@ const GameManager: Component<GameManagerOptions> = ({
         editable: isEditable,
         isPuzzleMode: isPuzzleMode,
         engineColorSignal: [engineColor, setEngineColor],
+        isPlayingOnSignal: [isPlayingOn, setIsPlayingOn],
         hintMoveSignal: [hintMove, setHintMove],
         hintTypeSignal: [hintType, setHintType],
         isReviewing,
         startReview,
         reviewProgress,
+        onGameFinished,
     } as GameContextType;
     // #endregion
 
@@ -735,10 +781,22 @@ const GameManager: Component<GameManagerOptions> = ({
                             <Show when={!isPuzzleMode()}>
                                 <PgnEditBar isEditable={isEditable} />
                             </Show>
-                            <Show when={!isPuzzleMode()}>
+                            <Show
+                                when={
+                                    !isPuzzleMode() &&
+                                    viewMode() === ViewMode.MOVES
+                                }
+                            >
                                 <EngineControl />
                             </Show>
-                            <Show when={engineCallable() && !playingEngine && !isReviewing() && !isPuzzleMode()}>
+                            <Show
+                                when={
+                                    engineCallable() &&
+                                    !playingEngine &&
+                                    !isReviewing() &&
+                                    !isPuzzleMode()
+                                }
+                            >
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
 
@@ -788,15 +846,20 @@ const GameManager: Component<GameManagerOptions> = ({
                 </TooltipContext.Provider>
             </GameContext.Provider>
             <Show when={reference()}>
-                <Tooltip plyData={ply} reference={reference} orientation={orientation} />
+                <Tooltip
+                    plyData={ply}
+                    reference={reference}
+                    orientation={orientation}
+                />
             </Show>
-            <Modal
+            {/* <Modal
+                icon={() => "success"}
                 isOpen={successModalSignal}
                 onClose={() => setSuccessModalOpen(false)}
                 title={() => "Puzzle Solved"}
             >
                 <div>Great, you solved it!</div>
-            </Modal>
+            </Modal> */}
         </>
     );
 };
