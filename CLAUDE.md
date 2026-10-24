@@ -22,6 +22,8 @@ pnpm lint --fix           # autofix formatting (see the Solid ref gotcha below)
 pnpm test                 # Vitest unit tests (src/**/*.test.ts, Node environment)
 pnpm build                # vite build -> dist/
 pnpm tauri build          # packaged app (.app/.dmg on macOS, .msi/.exe on Windows)
+pnpm build:mac            # signed macOS .app; needs APPLE_SIGNING_IDENTITY (see README): ad-hoc
+                          # builds lose macOS permissions (Screen Recording) on every rebuild
 pnpm tauri icon ./tools/Logo.png   # regenerate app icons
 
 # Rust: NOT checked by CI. Run these locally whenever src-tauri/ changes.

@@ -168,7 +168,7 @@ How this file is used:
 
 ## Phase 4: recognize positions
 
-- [x] **P4.1 Paste a screenshot** (`feature/scan-position`; owner review pending): Cmd+V or an
+- [x] **P4.1 Paste a screenshot** (`feature/scan-position`; confirmed by the owner): Cmd+V or an
   image file → FEN → board editor for correction.
   - Status: fenshot 0.1.5 (MIT, CNN tile classifier, 1.3 MB) under onnxruntime-web 1.26,
     entirely local and single-threaded. Pasting an image anywhere outside a text field opens
@@ -177,13 +177,13 @@ How this file is used:
     the side at the bottom moves by default. Tested end to end on two real images (a diagram,
     a Lichess screenshot from Black's side) with the real model.
   - CSP: added `script-src 'self' 'wasm-unsafe-eval'` (WebAssembly) and `blob:` images.
-  - Known limits: 2D boards only (no photos of real boards, no 3D sets); not yet confirmed in
-    the macOS webview itself.
-- [x] **P4.1b Scan from screen** (`feature/screen-capture`; owner review pending): "Capture from
+  - Known limits: 2D boards only (no photos of real boards, no 3D sets).
+- [x] **P4.1b Scan from screen** (`feature/screen-capture`; confirmed by the owner): "Capture from
   screen" on the Scan page; drag a rectangle over any board on screen (any app or website) and it
   opens recognized. macOS: the system region capture (`screencapture -i`) while ReChess hides;
   checks the Screen Recording permission first and explains how to grant it. Windows: later
-  (Win+Shift+S and paste meanwhile).
+  (Win+Shift+S and paste meanwhile). macOS keeps the permission only for signed builds
+  (`pnpm build:mac`, see README); ad-hoc builds are new apps to it after every rebuild.
 - [ ] **P4.2 FEN / PGN from pasted text** (web pages, chat).
 - [ ] **P4.3 Books and PDFs**: detect diagrams on pages and batch-convert them into a puzzle
   collection.
