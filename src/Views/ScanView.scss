@@ -1,0 +1,22 @@
+.scan_view {
+    display: flex;
+    gap: 16px;
+    height: 100%;
+    padding: 16px;
+    overflow: auto;
+
+    .scan-panel {
+        flex: 0 0 320px;
+
+        .scan-image {
+            max-width: 100%;
+            max-height: 40vh;
+            border: 1px solid rgba(127, 127, 127, 0.3);
+        }
+    }
+
+    .scan-editor {
+        flex: 1;
+        min-width: 300px;
+    }
+}
