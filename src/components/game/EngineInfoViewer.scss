@@ -6,6 +6,16 @@
     overflow: hidden;
     padding: 0.5em;
 
+    &.is-threat {
+        border-left: 3px solid hsl(348, 86%, 61%);
+    }
+
+    .engine-info-threat {
+        font-weight: bold;
+        color: hsl(348, 86%, 61%);
+        white-space: normal;
+    }
+
     .engine-info-row {
         // display: flex;
         // flex-direction: row;

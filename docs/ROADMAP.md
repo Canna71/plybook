@@ -71,8 +71,13 @@ How this file is used:
 
 - [ ] **P2.1 What-if mode**: play a candidate move in analysis and see the refutation line,
   with the material or mate it leads to.
-- [ ] **P2.2 Show the threat**: what the opponent would do if it were their move (null-move
-  analysis), as an arrow and a line.
+- [x] **P2.2 Show the threat** (`feature/threat`; owner review pending): what the opponent would
+  do if it were their move (null-move analysis), as an arrow and a line.
+  - Status: the warning-triangle button next to the analysis switch searches the position with
+    the other side to move; red arrows and a sentence ("Black threatens Nxf3+ (check, takes the
+    knight on f3)"). Not available in check. `src/models/threat.ts` with tests.
+  - Refactor: engine lines are built from the position the engine searched (`analyzedFen`), not
+    the board, so stale infos no longer produce illegal lines; props destructuring fixed.
 - [ ] **P2.3 Position facts**: hanging pieces, forks, pins, mate threats, king safety, material at
   the end of the PV, computed with chessops. Shown as short bullet points per move.
 - [ ] **P2.4 Natural-language explanation** (optional, needs an API key): Claude phrases P2.3
