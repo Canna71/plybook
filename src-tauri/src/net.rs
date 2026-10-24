@@ -1,7 +1,7 @@
 //! The only place that talks to the network. The webview's CSP blocks requests, so each online
 //! source is a command here with a fixed host and validated parameters.
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::Path;
 use std::time::Duration;
@@ -305,9 +305,98 @@ pub async fn online_lichess_explorer(
     }
 }
 
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
+pub struct TablebaseMove {
+    uci: String,
+    san: String,
+    /// From the point of view of the side to move after this move
+    category: String,
+    dtz: Option<i64>,
+    dtm: Option<i64>,
+}
+
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
+pub struct Tablebase {
+    /// For the side to move: win, loss, draw, cursed-win, blessed-loss, maybe-*, unknown
+    category: String,
+    dtz: Option<i64>,
+    dtm: Option<i64>,
+    checkmate: bool,
+    stalemate: bool,
+    moves: Vec<TablebaseMove>,
+}
+
+/// Pieces on the board of a FEN.
+fn piece_count(fen: &str) -> usize {
+    fen.split(' ')
+        .next()
+        .unwrap_or("")
+        .chars()
+        .filter(char::is_ascii_alphabetic)
+        .count()
+}
+
+/// The Lichess tablebase (Syzygy, up to 7 pieces): the exact result and the result of every
+/// move. Free, no token.
+#[tauri::command]
+pub async fn online_tablebase(fen: String) -> Result<Tablebase, String> {
+    if !plausible_fen(&fen) {
+        return Err("Invalid position".to_string());
+    }
+    if piece_count(&fen) > 7 {
+        return Err("Tablebases cover positions with up to 7 pieces".to_string());
+    }
+    let response = client()?
+        .get("https://tablebase.lichess.ovh/standard")
+        .query(&[("fen", fen.as_str())])
+        .send()
+        .await
+        .map_err(|e| format!("Could not reach the Lichess tablebase: {e}"))?;
+    match response.status().as_u16() {
+        200 => serde_json::from_str(&response.text().await.map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string()),
+        429 => Err("The tablebase is rate limiting requests, wait a minute".to_string()),
+        code => Err(format!("The Lichess tablebase answered with HTTP {code}")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reads_the_tablebase_answer() {
+        // trimmed answer of tablebase.lichess.ovh for king and rook against king
+        let json = r#"{
+            "checkmate": false, "stalemate": false, "variant_win": false,
+            "variant_loss": false, "insufficient_material": false,
+            "dtz": null, "precise_dtz": null, "dtm": null, "dtw": null, "dtc": null,
+            "category": "win",
+            "moves": [
+                {"uci": "a1a7", "san": "Ra7", "zeroing": false, "conversion": false,
+                 "checkmate": false, "stalemate": false, "dtz": -22, "precise_dtz": -22,
+                 "dtm": -22, "dtw": null, "dtc": null, "category": "loss"}
+            ]
+        }"#;
+        let tb: Tablebase = serde_json::from_str(json).unwrap();
+        assert_eq!(tb.category, "win");
+        assert_eq!(tb.dtm, None);
+        assert_eq!(
+            tb.moves[0],
+            TablebaseMove {
+                uci: "a1a7".into(),
+                san: "Ra7".into(),
+                category: "loss".into(),
+                dtz: Some(-22),
+                dtm: Some(-22),
+            }
+        );
+        assert_eq!(piece_count("4k3/8/8/8/8/8/8/R3K3 w Q - 0 1"), 3);
+        assert_eq!(
+            piece_count("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+            32
+        );
+    }
 
     #[test]
     fn reads_the_explorer_answer() {

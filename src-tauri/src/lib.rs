@@ -101,7 +101,8 @@ pub fn run() {
             secret_delete,
             secret_status,
             open_lichess_token_page,
-            online_lichess_explorer
+            online_lichess_explorer,
+            online_tablebase
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
