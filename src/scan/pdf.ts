@@ -1,12 +1,18 @@
 // Rendering PDF pages in the webview with pdf.js. The worker is a bundled asset; image decoders
 // and standard fonts are served from /pdfjs (copied there by tools/copy-pdfjs-assets.mjs).
 
-import { getDocument, GlobalWorkerOptions, PDFDocumentProxy } from "pdfjs-dist";
+import {
+    getDocument,
+    GlobalWorkerOptions,
+    PDFDocumentProxy,
+    TextLayer,
+} from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
 export type PdfDocument = PDFDocumentProxy;
+export type PdfTextLayer = TextLayer;
 
 /** Opens a PDF the user picked (its bytes stay in memory; nothing is uploaded). */
 export async function openPdf(file: Blob): Promise<PdfDocument> {
@@ -27,6 +33,25 @@ export const renderPageWidth = (
     number: number,
     width: number,
 ) => render(pdf, number, (w) => width / w);
+
+/**
+ * Lays the page's text, invisible but selectable, over its canvas in `container`. Sized by the
+ * container's `--total-scale-factor` (CSS pixels per PDF point), so zooming needs no new layer.
+ */
+export async function renderTextLayer(
+    pdf: PdfDocument,
+    number: number,
+    container: HTMLElement,
+): Promise<TextLayer> {
+    const page = await pdf.getPage(number);
+    const layer = new TextLayer({
+        textContentSource: page.streamTextContent(),
+        container,
+        viewport: page.getViewport({ scale: 1 }),
+    });
+    await layer.render();
+    return layer;
+}
 
 /** Height / width of a page. */
 export async function pageAspect(pdf: PdfDocument, number: number) {

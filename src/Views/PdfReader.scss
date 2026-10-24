@@ -45,7 +45,78 @@
                 height: 100%;
             }
 
+            // pdf.js text layer (after web/pdf_viewer.css): invisible text, selectable
+            .textLayer {
+                --scale-round-x: 1px;
+                --scale-round-y: 1px;
+                --min-font-size: 1;
+                --text-scale-factor: calc(
+                    var(--total-scale-factor) * var(--min-font-size)
+                );
+                --min-font-size-inv: calc(1 / var(--min-font-size));
+                position: absolute;
+                inset: 0;
+                overflow: clip;
+                line-height: 1;
+                text-align: initial;
+                letter-spacing: normal;
+                word-spacing: normal;
+                text-size-adjust: none;
+                forced-color-adjust: none;
+                transform-origin: 0 0;
+                z-index: 0;
+
+                :is(span, br) {
+                    color: transparent;
+                    position: absolute;
+                    white-space: pre;
+                    cursor: text;
+                    transform-origin: 0% 0%;
+                    user-select: text;
+                }
+
+                > :not(.markedContent),
+                .markedContent span:not(.markedContent) {
+                    z-index: 1;
+                    --font-height: 0;
+                    font-size: calc(
+                        var(--text-scale-factor) * var(--font-height)
+                    );
+                    --scale-x: 1;
+                    --rotate: 0deg;
+                    transform: rotate(var(--rotate)) scaleX(var(--scale-x))
+                        scale(var(--min-font-size-inv));
+                }
+
+                .markedContent {
+                    display: contents;
+                }
+
+                ::selection {
+                    background: hsla(217, 71%, 53%, 0.3);
+                    color: transparent;
+                }
+
+                br::selection {
+                    background: transparent;
+                }
+
+                .endOfContent {
+                    display: block;
+                    position: absolute;
+                    inset: 100% 0 0;
+                    z-index: 0;
+                    cursor: default;
+                    user-select: none;
+                }
+
+                &.selecting .endOfContent {
+                    top: 0;
+                }
+            }
+
             .reader-diagram {
+                z-index: 2;
                 position: absolute;
                 border: 2px solid hsla(171, 100%, 41%, 0.8);
                 border-radius: 3px;

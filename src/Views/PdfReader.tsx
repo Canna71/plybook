@@ -29,8 +29,10 @@ import {
     openPdf,
     pageAspect,
     PdfDocument,
+    PdfTextLayer,
     renderPage,
     renderPageWidth,
+    renderTextLayer,
 } from "../scan/pdf";
 import { imageToGray, scanPage, warmUpScanner } from "../scan/recognizer";
 import { ScanRead, scannedPosition } from "../scan/scan";
@@ -522,6 +524,35 @@ const ReaderPage: Component<{
             .catch((err) => log.warn("page render failed", props.number, err));
     });
 
+    // selectable text over the canvas, sized by --total-scale-factor so zoom needs no redraw
+    const [pointsWide] = createResource(
+        async () =>
+            (await props.doc.getPage(props.number)).getViewport({ scale: 1 })
+                .width,
+    );
+    type PageText = { div: HTMLDivElement; layer?: PdfTextLayer };
+    let text: PageText | undefined;
+    createEffect(() => {
+        if (!visible()) {
+            text?.layer?.cancel();
+            text?.div.remove();
+            text = undefined;
+            return;
+        }
+        if (text) return;
+        const div = document.createElement("div");
+        div.className = "textLayer";
+        el.append(div);
+        const shown: PageText = { div };
+        text = shown;
+        renderTextLayer(props.doc, props.number, div)
+            .then((layer) => {
+                if (text === shown) shown.layer = layer;
+                else layer.cancel();
+            })
+            .catch((err) => log.warn("text layer failed", props.number, err));
+    });
+
     return (
         <div
             ref={el}
@@ -529,6 +560,7 @@ const ReaderPage: Component<{
             style={{
                 width: `${props.width()}px`,
                 height: `${props.width() * props.aspect}px`,
+                "--total-scale-factor": `${props.width() / (pointsWide() || props.width())}`,
             }}
         >
             <For each={props.diagrams()}>
