@@ -18,6 +18,8 @@ import Settings from "./Views/Settings";
 import GuessTheMove from "./Views/GuessTheMove";
 import Databases from "./Views/Databases";
 import ScanView from "./Views/ScanView";
+import Repertoires from "./Views/Repertoires";
+import RepertoireTrainer from "./Views/RepertoireTrainer";
 
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
@@ -50,6 +52,8 @@ function App() {
                 <Route path="/guess" component={GuessTheMove} />
                 <Route path="/databases" component={Databases} />
                 <Route path="/scan" component={ScanView} />
+                <Route path="/repertoires" component={Repertoires} />
+                <Route path="/repertoire" component={RepertoireTrainer} />
 
                 <Route
                     path="/analysis"

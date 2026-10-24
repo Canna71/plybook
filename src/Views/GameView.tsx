@@ -53,6 +53,8 @@ import { BaseDirectory, mkdir } from "@tauri-apps/plugin-fs";
 import { getDatabaseGame } from "../storage/gamedb";
 import { makeGame } from "../models/pgn";
 import { pendingPgn } from "../paste/pending";
+import { listRepertoires, setRepertoire } from "../storage/repertoire";
+import { Color } from "chessops";
 import anylogger from "anylogger";
 const log = anylogger("gameview");
 
@@ -120,6 +122,24 @@ const GameView = () => {
             return path.substring(0, path.lastIndexOf(sep()));
         }
     };
+
+    // #region repertoire
+    const [repertoire, { refetch: refetchRepertoire }] = createResource(
+        filePath,
+        async (path) =>
+            (await listRepertoires()).find((r) => r.filePath === path) ?? null,
+    );
+    const repertoireOptions = () =>
+        [
+            { value: "", label: "Not a repertoire" },
+            { value: "white", label: "Repertoire for White" },
+            { value: "black", label: "Repertoire for Black" },
+        ] as Option[];
+    const onChangeRepertoire = async (value: string) => {
+        await setRepertoire(filePath()!, (value || undefined) as Color);
+        refetchRepertoire();
+    };
+    // #endregion
 
     const fetchStudy = async (path: string) => {
         const studyId = path;
@@ -407,6 +427,30 @@ const GameView = () => {
                                 Guess the move
                             </Button>
                         </div>
+                    </Show>
+                    <Show when={filePath() && !isPuzzleMode()}>
+                        <div class="navbar-item">
+                            <Select
+                                title="Drill this file's lines with spaced repetition"
+                                options={repertoireOptions}
+                                selectedValue={() => repertoire()?.side ?? ""}
+                                setSelectedValue={onChangeRepertoire}
+                            />
+                        </div>
+                        <Show when={repertoire()}>
+                            <div class="navbar-item">
+                                <Button
+                                    class="is-primary is-outlined"
+                                    onClick={() =>
+                                        navigate(
+                                            `/repertoire?path=${encodeURIComponent(filePath()!)}`,
+                                        )
+                                    }
+                                >
+                                    Train
+                                </Button>
+                            </div>
+                        </Show>
                     </Show>
                     <Show when={filePath()}>
                         <div class="navbar-item">

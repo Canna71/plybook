@@ -163,8 +163,16 @@ How this file is used:
     user's personal Lichess token, stored with S.1.
 - [ ] **P3.4 Opening books**: Polyglot `.bin` support in analysis and as engine-play book.
 - [ ] **P3.5 Endgame tablebase** lookups (Lichess tablebase API).
-- [ ] **P3.6 Repertoire builder and trainer**: spaced repetition over your own lines
-  (Chessable-style), fed from PGN.
+- [x] **P3.6 Repertoire builder and trainer** (`feature/repertoire`; owner review pending):
+  spaced repetition over your own lines (Chessable-style), fed from PGN.
+  - Status: any Library PGN (all its games/chapters, with variations) becomes a repertoire via
+    "Repertoire for White/Black" in its toolbar. Every position where it is your move is a card
+    (any repertoire move there counts); Leitner boxes 1, 3, 7, 14, 30, 90 days, a mistake goes
+    back to box 1. Training goes line by line: opponent moves play themselves, new moves are
+    shown with an arrow, a wrong move shows the right one; lines with most due cards first.
+    Repertoires page lists due/new counts. `models/repertoire.ts`, `repertoire.rs` with tests.
+  - Known limits: cards are keyed by file path (renaming the file restarts its training); the
+    editor is the normal game editor (no dedicated "add move to repertoire" mode yet).
 
 ## Phase 4: recognize positions
 

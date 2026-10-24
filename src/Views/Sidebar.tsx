@@ -37,6 +37,9 @@ const Sidebar = () => {
                         <a href="/puzzles">Puzzles</a>
                     </li>
                     <li>
+                        <a href="/repertoires">Repertoires</a>
+                    </li>
+                    <li>
                         <a href="/history">History</a>
                     </li>
                     {/* <li><a href="/puzzle?path=/Users/gcannata/Library/Application Support/rechess/Library/pgn/Four Pieces.pgn">Puzzle</a></li> */}

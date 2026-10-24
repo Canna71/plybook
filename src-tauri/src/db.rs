@@ -102,6 +102,22 @@ CREATE TABLE puzzle_attempts (
 );
 CREATE INDEX puzzle_attempts_puzzle ON puzzle_attempts (puzzle_id);
 "#,
+    r#"
+CREATE TABLE repertoires (
+    file_path TEXT PRIMARY KEY,
+    side TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE TABLE repertoire_cards (
+    file_path TEXT NOT NULL,
+    fen TEXT NOT NULL,
+    box INTEGER NOT NULL,
+    due TEXT NOT NULL,
+    reviews INTEGER NOT NULL,
+    lapses INTEGER NOT NULL,
+    PRIMARY KEY (file_path, fen)
+);
+"#,
 ];
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
