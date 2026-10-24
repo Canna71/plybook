@@ -1,7 +1,15 @@
 import { onCleanup, onMount, ParentComponent } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import Sidebar from "./Sidebar";
-import { pastedImage, setPendingScan } from "../scan/pendingScan";
+import { invoke } from "@tauri-apps/api/core";
+import {
+    pastedImage,
+    pastedText,
+    setPendingPgn,
+    setPendingScan,
+} from "../paste/pending";
+import { parsePasted } from "../paste/pasted";
+import { makeErrorToast } from "../components/common/Toast";
 import "./Layout.scss";
 import { VDivider } from "../components/common/VDivider";
 import { useSplitter } from "../components/common/utils";
@@ -12,14 +20,43 @@ const Layout: ParentComponent = (props) => {
         setSettingValue("layout.columnsTemplate", layout);
     });
 
-    // a screenshot pasted anywhere (outside text fields) is scanned for a position
+    // pasted anywhere outside text fields: a screenshot is scanned for a position; a FEN, PGN
+    // or Lichess game link opens in analysis
     const navigate = useNavigate();
-    const onPaste = (e: ClipboardEvent) => {
+    const openGames = (pgn: string) => {
+        setPendingPgn(pgn);
+        navigate("/analysis?source=pasted");
+    };
+    const onPaste = async (e: ClipboardEvent) => {
         const image = pastedImage(e);
-        if (!image) return;
+        if (image) {
+            e.preventDefault();
+            setPendingScan(image);
+            navigate("/scan");
+            return;
+        }
+        const pasted = parsePasted(pastedText(e) ?? "");
+        if (!pasted) return;
         e.preventDefault();
-        setPendingScan(image);
-        navigate("/scan");
+        switch (pasted.kind) {
+            case "fen":
+                navigate(`/analysis?fen=${encodeURIComponent(pasted.fen)}`);
+                break;
+            case "pgn":
+                openGames(pasted.pgn);
+                break;
+            case "lichess":
+                try {
+                    openGames(
+                        await invoke<string>("online_lichess_game", {
+                            id: pasted.gameId,
+                        }),
+                    );
+                } catch (err) {
+                    makeErrorToast(String(err));
+                }
+                break;
+        }
     };
     onMount(() => document.addEventListener("paste", onPaste));
     onCleanup(() => document.removeEventListener("paste", onPaste));

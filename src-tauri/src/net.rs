@@ -192,9 +192,43 @@ pub async fn online_fetch_games(
     }
 }
 
+/// Lichess game ids are 8 letters and digits.
+fn valid_game_id(id: &str) -> bool {
+    id.len() == 8 && id.chars().all(|c| c.is_ascii_alphanumeric())
+}
+
+/// One Lichess game as PGN, with clocks and the analysis evals when it was analysed.
+#[tauri::command]
+pub async fn online_lichess_game(id: String) -> Result<String, String> {
+    if !valid_game_id(&id) {
+        return Err(format!("Invalid Lichess game id {id:?}"));
+    }
+    let response = client()?
+        .get(format!("https://lichess.org/game/export/{id}"))
+        .header("Accept", "application/x-chess-pgn")
+        .query(&[("clocks", "true"), ("evals", "true"), ("opening", "true")])
+        .send()
+        .await
+        .map_err(|e| format!("Could not reach Lichess: {e}"))?;
+    match response.status().as_u16() {
+        200 => response.text().await.map_err(|e| e.to_string()),
+        404 => Err(format!("Lichess game {id} not found")),
+        429 => Err("Lichess is rate limiting requests, try again in a minute".to_string()),
+        code => Err(format!("Lichess answered with HTTP {code}")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn game_ids_are_validated() {
+        assert!(valid_game_id("k8OVq8Y5"));
+        assert!(!valid_game_id("k8OVq8Y5abcd"));
+        assert!(!valid_game_id("../x/abc"));
+        assert!(!valid_game_id(""));
+    }
 
     #[test]
     fn usernames_and_months_are_validated() {
