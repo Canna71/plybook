@@ -427,7 +427,8 @@ const GameManager: Component<GameManagerOptions> = ({
             return;
         }
 
-        let [newGameModel, newPath] = g.applyMoves(path, [move]);
+        const [appliedGame, newPath] = g.applyMoves(path, [move]);
+        let newGameModel = appliedGame;
         const isMate = newGameModel.isMate(newPath);
         batch(() => {
             setHintType(HintType.None);

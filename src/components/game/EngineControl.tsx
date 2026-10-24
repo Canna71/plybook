@@ -1,7 +1,6 @@
 import {
     Accessor,
     batch,
-    createMemo,
     createSignal,
     Setter,
     Show,
@@ -15,7 +14,6 @@ import {
     IconCpu,
     IconFlag,
     IconPlayerPlayFilled,
-    IconPlayerStopFilled,
     IconSettingsFilled,
 } from "@tabler/icons-solidjs";
 import ToggleSwitch from "../common/ToggleSwitch";
@@ -27,7 +25,6 @@ import { makeGame } from "../../models/pgn";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import Modal from "../common/Modal";
 import { StartingPositionIcon } from "../common/Icons";
-import { usePosition } from "../common/utils";
 
 const EngineControl = () => {
     const {
@@ -43,7 +40,6 @@ const EngineControl = () => {
         // startReview,
         isReviewing,
         reviewProgress,
-        currentPathSignal: [currentPath],
         onGameFinished,
     } = useContext(GameContext)!;
 
@@ -93,7 +89,7 @@ const EngineControl = () => {
                 // setGame(makeGame("[]"));
                 const score = engineColor() === "white" ? "1-0" : "0-1";
 
-                var newGameModel = game()!.updateHeaders(
+                const newGameModel = game()!.updateHeaders(
                     new Map([["Result", score]]),
                 );
                 batch(() => {

@@ -3,9 +3,7 @@ import { createEffect, createSignal } from "solid-js";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
 import { useSearchParams } from "@solidjs/router";
-import { IconDeviceFloppy } from "@tabler/icons-solidjs";
 import anylogger from "anylogger";
-import { saveGameToHistory } from "../storage/fs";
 import { addToHistory } from "../storage/db";
 const log = anylogger("play");
 
