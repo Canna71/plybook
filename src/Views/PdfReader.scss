@@ -194,6 +194,17 @@
             cursor: pointer;
         }
 
+        .reader-text-moves {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+
+            span {
+                flex: 1;
+            }
+        }
+
         .reader-quote {
             font-size: 0.85em;
             font-style: italic;

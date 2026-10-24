@@ -8,6 +8,7 @@ import {
     TextLayer,
 } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import type { TextItem } from "../models/booktext";
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -51,6 +52,34 @@ export async function renderTextLayer(
     });
     await layer.render();
     return layer;
+}
+
+/** The text runs of a page, with their boxes in fractions of the page (from the top left). */
+export async function pageTextItems(
+    pdf: PdfDocument,
+    number: number,
+): Promise<TextItem[]> {
+    const page = await pdf.getPage(number);
+    const viewport = page.getViewport({ scale: 1 });
+    const content = await page.getTextContent();
+    const items: TextItem[] = [];
+    for (const item of content.items) {
+        if (!("str" in item) || !item.str.trim()) continue;
+        const [, , , , x, y] = item.transform;
+        const [ax, ay] = viewport.convertToViewportPoint(x, y);
+        const [bx, by] = viewport.convertToViewportPoint(
+            x + item.width,
+            y + item.height,
+        );
+        items.push({
+            str: item.str,
+            x0: Math.min(ax, bx) / viewport.width,
+            x1: Math.max(ax, bx) / viewport.width,
+            y0: Math.min(ay, by) / viewport.height,
+            y1: Math.max(ay, by) / viewport.height,
+        });
+    }
+    return items;
 }
 
 /** Height / width of a page. */

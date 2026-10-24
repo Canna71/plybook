@@ -12,8 +12,15 @@ import {
 } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useNavigate, useSearchParams } from "@solidjs/router";
-import { Color } from "chessops";
+import { Chess, Color } from "chessops";
 import { parseFen } from "chessops/fen";
+import { makeSanVariation } from "chessops/san";
+import {
+    movesFromText,
+    TextItem,
+    textNearDiagram,
+    turnFromText,
+} from "../models/booktext";
 import { Config } from "chessground/config";
 import anylogger from "anylogger";
 import { Chessboard } from "../components/common/chessboard";
@@ -32,6 +39,7 @@ import {
     PdfTextLayer,
     renderPage,
     renderPageWidth,
+    pageTextItems,
     renderTextLayer,
 } from "../scan/pdf";
 import { imageToGray, scanPage, warmUpScanner } from "../scan/recognizer";
@@ -99,7 +107,11 @@ const PdfReader: Component = () => {
     );
     const [showDiagrams, setShowDiagrams] = createSignal(true);
     const [selected, setSelected] = createSignal<
-        PageDiagram & { turn: Color }
+        PageDiagram & {
+            turn: Color;
+            /** The text below the diagram, which may give its moves */
+            following?: string;
+        }
     >();
     const [query, setQuery] = createSignal("");
     const [matches, setMatches] = createSignal<number[]>();
@@ -405,6 +417,47 @@ const PdfReader: Component = () => {
             document.removeEventListener("selectionchange", onSelection),
         );
     });
+    // #region chess in the text: whose move, and the moves that follow a diagram
+    const pageTexts = new Map<number, Promise<TextItem[]>>();
+    const textOf = (page: number) => {
+        const d = doc();
+        if (!d) return Promise.resolve([]);
+        if (!pageTexts.has(page))
+            pageTexts.set(
+                page,
+                pageTextItems(d, page).catch(() => [] as TextItem[]),
+            );
+        return pageTexts.get(page)!;
+    };
+    /** Opens a diagram, its side to move from the caption ("White to play") if it says. */
+    const pickDiagram = async (d: PageDiagram) => {
+        const near = textNearDiagram(await textOf(d.page), d.box);
+        const turn =
+            turnFromText(near.caption) ??
+            turnFromText(near.following) ??
+            d.orientation;
+        setSelected({ ...d, turn, following: near.following });
+    };
+    /** The moves the text gives from the diagram, numbered ("4.c3 Nf6 5.d4"). */
+    const textLine = () => {
+        const s = selected();
+        const fen = position()?.legal ? position()!.fen : undefined;
+        if (!s?.following || !fen) return undefined;
+        const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+        const { moves } = movesFromText(s.following, pos);
+        return moves.length ? makeSanVariation(pos, moves) : undefined;
+    };
+    const addTextMoves = (text: string) => {
+        const added = notesApi?.addMovesFromText(text) ?? 0;
+        makeToast(
+            added
+                ? `Added ${added} moves to the notes`
+                : "No moves in that text fit the position shown",
+        );
+        return added;
+    };
+    // #endregion
+
     /** The selected text, as a comment on the move shown in the notes. */
     const addQuote = () => {
         const q = quote();
@@ -516,12 +569,7 @@ const PdfReader: Component = () => {
                                         if (ratio > 0) scan(n, isVisible);
                                     }}
                                     hasNotes={hasNotes}
-                                    onPick={(d) =>
-                                        setSelected({
-                                            ...d,
-                                            turn: d.orientation,
-                                        })
-                                    }
+                                    onPick={pickDiagram}
                                 />
                             )}
                         </For>
@@ -626,6 +674,22 @@ const PdfReader: Component = () => {
                                 </div>
                             )}
                         </Show>
+                        <Show when={notesGame() && textLine()}>
+                            <div class="reader-text-moves">
+                                <span>
+                                    From the text: <strong>{textLine()}</strong>
+                                </span>
+                                <Button
+                                    class="is-small is-info is-light"
+                                    title="Play these moves in the notes, from the move shown or from the diagram"
+                                    onClick={() =>
+                                        addTextMoves(selected()!.following!)
+                                    }
+                                >
+                                    Add these moves
+                                </Button>
+                            </div>
+                        </Show>
                         <div class="buttons">
                             <Button
                                 class="is-small"
@@ -634,6 +698,21 @@ const PdfReader: Component = () => {
                                 onClick={addQuote}
                             >
                                 Add selected text as a comment
+                            </Button>
+                            <Button
+                                class="is-small"
+                                disabled={!notesGame() || !quote()}
+                                title="Select moves in the text first (e.g. 12...Nf6 13.Bd3): they are played from the move shown"
+                                onClick={() => {
+                                    if (addTextMoves(quote()!.text)) {
+                                        setQuote(undefined);
+                                        document
+                                            .getSelection()
+                                            ?.removeAllRanges();
+                                    }
+                                }}
+                            >
+                                Add selected moves
                             </Button>
                         </div>
                         <Show when={quote()}>

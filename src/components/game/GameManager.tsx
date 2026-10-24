@@ -14,6 +14,7 @@ import {
     untrack,
 } from "solid-js";
 import { makeGameInternal, Path } from "../../models/pgn";
+import { movesFromText } from "../../models/booktext";
 import { GameModel } from "../../models/GameModel";
 import ButtonBar from "./Buttonbar";
 import {
@@ -92,6 +93,11 @@ export type GameManagerOptions = {
 export type GameManagerApi = {
     /** Adds a comment after the move shown (or before the first move) */
     addComment: (text: string) => void;
+    /**
+     * Plays the moves found in `text` from the move shown, or else from the start, as a new
+     * line where they differ from the game; how many moves were added.
+     */
+    addMovesFromText: (text: string) => number;
 };
 
 type PromotionData = {
@@ -713,6 +719,21 @@ const GameManager: Component<GameManagerOptions> = ({
             const path = currentPath();
             const g = game();
             if (g && path) setGame(g.insertComment(path, text, false, true));
+        },
+        addMovesFromText: (text) => {
+            const g = game();
+            if (!g) return 0;
+            for (const from of [currentPath() ?? Path.root, Path.root]) {
+                const { moves } = movesFromText(text, g.getPosition(from));
+                if (!moves.length) continue;
+                const [next, path] = g.applyMoves(from, moves);
+                batch(() => {
+                    setCurrentPath(path);
+                    setGame(next);
+                });
+                return moves.length;
+            }
+            return 0;
         },
     });
 

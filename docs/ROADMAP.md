@@ -246,22 +246,32 @@ How this file is used:
       layer (invisible, selectable text) over each visible page; Cmd/Ctrl+C copies. It scales
       with the page through `--total-scale-factor`, so zooming needs no redraw. Scanned
       (image-only) PDFs have no text to select.
-    - [x] **P4.4c Copy text into annotations** (`feature/reader-notes`; owner review pending):
-      with a diagram selected, "Add selected text to notes" appends the last text selected on
-      the pages as a comment before the moves of that diagram's PGN, on one line (line-end
-      hyphenation undone) with "(p. N)". The quote is previewed under the buttons.
-    - [x] **P4.4d Edit the PGN associated with a position** (`feature/reader-notes`; owner
-      review pending): "Start notes" / "Notes" opens the diagram's own PGN
-      (`Library/Scanned/<book>/pNNN-i.pgn`, the same file "Scan a whole book" writes, so the
-      two share notes) in analysis, created from the position shown (with the chosen side to
-      move) the first time. Diagrams with notes get a corner mark on the page.
-      Known limits: notes are matched by page and diagram order on the page, so a change in
-      recognition that finds an extra diagram on a page shifts the numbering; a misread
-      position must be corrected in the notes' editor (the reader's Edit opens the board
-      editor, which is not linked back).
-    - [ ] **P4.4e Recognize positions and moves from the text**: whose move from captions
-      ("White to play", "1...") and move sequences in the text (SAN/figurine notation) played
-      from the diagram's position into its PGN.
+    - [x] **P4.4d Edit the PGN associated with a position** (`feature/reader-notes`, reworked
+      in `feature/reader-side-notes` after owner feedback 2026-10-25: notes beside the book,
+      in the PGN editor): clicking a diagram opens its notes in the reader's side panel, in
+      the same editor as PGN files (`GameManager` with `compact`: board above the moves). The
+      notes are the diagram's own PGN (`Library/Scanned/<book>/pNNN-i.pgn`, the same file
+      "Scan a whole book" writes), saved automatically once something is added; until then
+      the side to move can be changed. Diagrams with notes get a corner mark. The app leaves
+      the book only for Analyze (the notes file once there is one), Play from here, Find in
+      databases and Edit. Known limits: notes are matched by page and diagram order on the
+      page, so recognition that finds an extra diagram on a page shifts the numbering; a
+      misread (illegal) position gets no notes until corrected.
+    - [x] **P4.4c Copy text into annotations** (same branches): "Add selected text as a
+      comment" adds the last text selected on the pages as a comment on the move shown in
+      the notes, on one line (line-end hyphenation undone) with "(p. N)".
+    - [x] **P4.4e Positions and moves from the text** (`feature/reader-side-notes`; owner
+      review pending; `src/models/booktext.ts` with tests): the side to move comes from the
+      caption under the diagram ("White to play", "Black wins") or the first move number in
+      the text below ("12...Nf6" → Black), falling back to the side at the bottom. Moves in
+      the text below the diagram that can be played from it are shown ("From the text: 4.c3
+      Nf6 5.d4") with "Add these moves"; "Add selected moves" plays a selected move sequence
+      from the move shown in the notes (or from the diagram). SAN with figurines, castling
+      with zeros, evaluation signs; bracketed side lines are left out; words between moves
+      end a line, so squares in sentences aren't taken for moves. Known limits: chess fonts
+      that map figurines to arbitrary letters in the PDF's text extract won't parse; the
+      "text below" is the diagram's column down to 30% of the page, so text continuing on
+      the next column or page is not read.
 
 ## Integrations
 
