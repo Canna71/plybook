@@ -242,7 +242,10 @@ How this file is used:
       pending): the page, how far down it the view starts and the zoom, per book, in the
       `reader.places` setting (older `reader.pages` entries are still honoured). Zooming and
       resizing the window keep the same place at the top instead of jumping.
-    - [ ] **P4.4b Select text** on pages (pdf.js text layer over the canvas).
+    - [x] **P4.4b Select text** (`feature/reader-text`; owner review pending): pdf.js's text
+      layer (invisible, selectable text) over each visible page; Cmd/Ctrl+C copies. It scales
+      with the page through `--total-scale-factor`, so zooming needs no redraw. Scanned
+      (image-only) PDFs have no text to select.
     - [ ] **P4.4c Copy text into annotations**: selected text into a comment of the position
       being studied.
     - [ ] **P4.4d Edit the PGN associated with a position**: each diagram gets its own game

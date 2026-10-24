@@ -82,6 +82,11 @@ Each page costs a few model runs (64 tiles each); a framed diagram usually needs
   rendered again at `PAGE_SIZE` for scanning (independent of zoom). Results are kept per page
   as boxes in page fractions (0–1), so the overlay survives zoom; dashed outline = not
   reliable. Results are not persisted: reopening a book scans again.
+- Text: `renderTextLayer` (pdf.js `TextLayer`) puts invisible, selectable text over each
+  visible page. The layer is sized with CSS `round(down, var(--total-scale-factor) * Wpx, …)`,
+  so the page element sets `--total-scale-factor` (CSS px per PDF point) and the SCSS defines
+  `--scale-round-x/y`; the rules are a trimmed copy of `pdfjs-dist/web/pdf_viewer.css`
+  `.textLayer`. Diagram buttons sit above it (`z-index: 2`).
 - Clicking a box shows the board in a side panel with whose move (defaults to the side at the
   bottom), Analyze, Play from here, Find in databases, Edit (`/boardeditor?fen=`).
 - Library: "Add PDF…" in a folder copies the file into the Library (`writeDataFile` takes
