@@ -83,6 +83,15 @@ export type GameManagerOptions = {
     ) => void;
     onGameFinished?: () => void;
     editable?: Accessor<boolean>;
+    /** Board above the moves, for a side panel (the PDF reader's notes) */
+    compact?: boolean;
+    /** Hands the parent what it may do to the game being edited */
+    onReady?: (api: GameManagerApi) => void;
+};
+
+export type GameManagerApi = {
+    /** Adds a comment after the move shown (or before the first move) */
+    addComment: (text: string) => void;
 };
 
 type PromotionData = {
@@ -129,6 +138,8 @@ const GameManager: Component<GameManagerOptions> = ({
     editable,
     defaultEngineAnalysisOn = false,
     onGameFinished,
+    compact,
+    onReady,
 }) => {
     // #region Game State
     const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
@@ -697,6 +708,14 @@ const GameManager: Component<GameManagerOptions> = ({
     } as GameContextType;
     // #endregion
 
+    onReady?.({
+        addComment: (text) => {
+            const path = currentPath();
+            const g = game();
+            if (g && path) setGame(g.insertComment(path, text, false, true));
+        },
+    });
+
     // #region tooltip
     const { reference, ply, showTooltip } = useTooltip();
 
@@ -708,12 +727,17 @@ const GameManager: Component<GameManagerOptions> = ({
                 <TooltipContext.Provider value={{ showTooltip }}>
                     <div
                         class="pgnviewer-container"
-                        style={{
-                            "grid-template-columns": getSettingValue(
-                                "layout.playing.columnsTemplate",
-                                "400px 5px 1fr",
-                            ),
-                        }}
+                        classList={{ compact }}
+                        style={
+                            compact
+                                ? undefined
+                                : {
+                                      "grid-template-columns": getSettingValue(
+                                          "layout.playing.columnsTemplate",
+                                          "400px 5px 1fr",
+                                      ),
+                                  }
+                        }
                     >
                         <div class="pgnviewer-content">
                             <Show
@@ -796,7 +820,9 @@ const GameManager: Component<GameManagerOptions> = ({
                                 />
                             </Show>
                         </div>
-                        <VDivider ref={divider!} />
+                        <Show when={!compact}>
+                            <VDivider ref={divider!} />
+                        </Show>
                         <div class="pgnviewer-sidebar">
                             <Show when={!isPuzzleMode()}>
                                 <PgnEditBar isEditable={isEditable} />

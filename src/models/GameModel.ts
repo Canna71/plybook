@@ -201,7 +201,13 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
-    insertComment(path: Path, comment: string, before: boolean = false) {
+    /** `atEnd` puts the comment after the ones already there (else first). */
+    insertComment(
+        path: Path,
+        comment: string,
+        before: boolean = false,
+        atEnd: boolean = false,
+    ) {
         let isStarting = false;
         const originalPath = path;
         if (before) path = path.previous();
@@ -227,7 +233,7 @@ export class GameModel {
         if (isChildNode(pgnNode) && isChildNode(node)) {
             const comments =
                 node.data[field].filter((t) => t !== EMPTY_COMMENT) || [];
-            if (before) {
+            if (before || atEnd) {
                 comments.push(comment);
             } else {
                 comments.splice(0, 0, comment);
@@ -241,7 +247,7 @@ export class GameModel {
             // pgnNode.data.comments = this.insertCommentInternal(node.data.comments, comment, shapes);
         } else {
             const comments = this.game.comments || [];
-            if (before) {
+            if (before || atEnd) {
                 comments.push(comment);
             } else {
                 comments.splice(0, 0, comment);
