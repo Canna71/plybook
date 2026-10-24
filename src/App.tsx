@@ -18,6 +18,7 @@ import Settings from "./Views/Settings";
 import GuessTheMove from "./Views/GuessTheMove";
 import Databases from "./Views/Databases";
 import ScanView from "./Views/ScanView";
+import BookScanView from "./Views/BookScanView";
 import Repertoires from "./Views/Repertoires";
 import RepertoireTrainer from "./Views/RepertoireTrainer";
 
@@ -52,6 +53,7 @@ function App() {
                 <Route path="/guess" component={GuessTheMove} />
                 <Route path="/databases" component={Databases} />
                 <Route path="/scan" component={ScanView} />
+                <Route path="/scan-book" component={BookScanView} />
                 <Route path="/repertoires" component={Repertoires} />
                 <Route path="/repertoire" component={RepertoireTrainer} />
 

@@ -209,8 +209,24 @@ How this file is used:
   games) opens in analysis with Save copying it to `Library/Pasted`, and a Lichess game link
   downloads that game (with clocks and evals when analysed). `src/paste/` with tests.
   chess.com game links are not supported (no public single-game API).
-- [ ] **P4.3 Books and PDFs**: detect diagrams on pages and batch-convert them into a puzzle
-  collection.
+- [x] **P4.3 Books and PDFs** (`feature/scan-book`; owner review pending): detect diagrams on
+  pages and batch-convert them into a puzzle collection.
+  - Status: Scan → "Scan a whole book…": a PDF (pdf.js 6, rendered in the webview) or page
+    images, a page range, then every diagram per page: square blobs of ink are found first and
+    each is read on its own, scaled to ~520 px (fenshot's line search alone pairs one board's
+    columns with another's rows on multi-diagram pages). Review cards (thumbnail, page,
+    warnings, whose move, include); Save writes `Library/Scanned/<book>/pNNN-i.pgn`, optionally
+    solved by the engine (best move) and registered as puzzles; "Train these puzzles".
+  - Checked end to end in Node (pdf.js + @napi-rs/canvas + the real model) on generated A4
+    PDFs: flat-coloured diagrams read at any render size 1400–2800 px; finely hatched
+    diagrams only near their native size, so pages render at 2000 px with a fallback read at
+    the rendered size.
+  - Known limits: the side to move is a guess (the side at the bottom); the engine solution is
+    one move; very ornate or 3D diagrams are not read.
+- [ ] **P4.4 Read PDFs in the app** (requested 2026-10-25): keep chess PDFs in the Library and
+  read them in a viewer (pages, zoom, search, bookmarks of the last page read), with "scan this
+  diagram" on a click and the board beside the page for analysis. Builds on P4.3's pdf.js
+  setup.
 
 ## Integrations
 

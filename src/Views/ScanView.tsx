@@ -103,6 +103,12 @@ const ScanView: Component = () => {
                     >
                         Capture from screen
                     </Button>
+                    <Button
+                        title="Every diagram of a PDF or of page images, saved as a collection"
+                        onClick={() => navigate("/scan-book")}
+                    >
+                        Scan a whole book…
+                    </Button>
                 </div>
                 <div class="file is-small block">
                     <label class="file-label">
