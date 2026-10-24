@@ -1,0 +1,46 @@
+.explorer {
+    padding: 4px;
+
+    .explorer-hint {
+        opacity: 0.8;
+        padding: 8px 0;
+    }
+
+    .explorer-move {
+        cursor: pointer;
+    }
+
+    .result-bar {
+        display: flex;
+        height: 1em;
+        min-width: 80px;
+        border-radius: 3px;
+        overflow: hidden;
+
+        .white {
+            background: #eee;
+        }
+
+        .draw {
+            background: #999;
+        }
+
+        .black {
+            background: #333;
+        }
+    }
+
+    .explorer-games li {
+        cursor: pointer;
+        padding: 2px 4px;
+
+        &:hover {
+            background: rgba(127, 127, 127, 0.2);
+        }
+    }
+
+    .explorer-date {
+        opacity: 0.7;
+        font-size: 0.85em;
+    }
+}

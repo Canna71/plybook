@@ -8,6 +8,7 @@ import {
 } from "solid-js";
 import Moves from "./Moves";
 import Review from "./Review";
+import Explorer from "./Explorer";
 import { GameContext } from "./GameContext";
 import Button from "../common/Button";
 import { IconDeviceAnalytics } from "@tabler/icons-solidjs";
@@ -45,6 +46,12 @@ const SidebarTabs = () => {
                             onClick={() => updateTab(1)}
                         >
                             <a>Evaluation</a>
+                        </li>
+                        <li
+                            classList={{ "is-active": tab() === 2 }}
+                            onClick={() => updateTab(2)}
+                        >
+                            <a>Explorer</a>
                         </li>
                     </Show>
                 </ul>
@@ -85,6 +92,11 @@ const SidebarTabs = () => {
                             >
                                 <Review />
                             </Show>
+                        </div>
+                    </Match>
+                    <Match when={tab() === 2}>
+                        <div class="pgnviewer-moves-wrapper">
+                            <Explorer />
                         </div>
                     </Match>
                 </Switch>

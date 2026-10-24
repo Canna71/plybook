@@ -54,7 +54,8 @@ pub fn run() {
             engine_folder, engine_open_folder, engine_weights,
             engine_spawn, engine_write, engine_kill, open_library_path,
             online_fetch_games,
-            gamedb_list, gamedb_delete, gamedb_search, gamedb_game, gamedb_import
+            gamedb_list, gamedb_delete, gamedb_search, gamedb_game, gamedb_import,
+            gamedb_explore
         ])
         
         .run(tauri::generate_context!())
