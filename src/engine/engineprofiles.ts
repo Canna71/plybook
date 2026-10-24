@@ -31,7 +31,7 @@ const [profiles, { refetch: refetchProfiles, mutate: setProfiles }] =
 
 export { profiles, refetchProfiles };
 
-/** The profile selected in the settings, or the first usable one. */
+/** The profile selected in the settings, or the first one that can run. */
 export function activeProfile(): EngineProfile | undefined {
     const all = profiles();
     const wanted = getSettingValue<string>("engine.lastUsed", "");
@@ -39,6 +39,24 @@ export function activeProfile(): EngineProfile | undefined {
         all.find((p) => p.id === wanted && !p.missing) ??
         all.find((p) => !p.missing)
     );
+}
+
+export type Executable = { path: string; external: boolean; label: string };
+
+/** The distinct programs the profiles start, to build new profiles from. */
+export function knownExecutables(all: EngineProfile[]): Executable[] {
+    const seen = new Map<string, Executable>();
+    for (const p of all) {
+        const key = `${p.external}:${p.path}`;
+        if (!seen.has(key) && !p.missing) {
+            seen.set(key, {
+                path: p.path,
+                external: p.external,
+                label: p.external ? p.path : `Engines/${p.path}`,
+            });
+        }
+    }
+    return [...seen.values()];
 }
 
 export function setActiveProfile(id: string) {
@@ -55,12 +73,13 @@ export async function removeProfile(id: string) {
     setProfiles(await invoke<EngineProfile[]>("engine_remove_profile", { id }));
 }
 
-/** Opens the native file dialog; resolves to the new profile, or undefined if cancelled. */
-export async function addExternalEngine() {
-    const profile = await invoke<EngineProfile | null>("engine_add_external");
-    await refetchProfiles();
-    return profile ?? undefined;
+/** Native dialog for an engine program; resolves to its path, or undefined if cancelled. */
+export async function pickExecutable() {
+    return (await invoke<string | null>("engine_pick_executable")) ?? undefined;
 }
+
+/** Native dialog for network weights anywhere on the machine (several can be picked). */
+export const pickWeights = () => invoke<string[]>("engine_pick_weights");
 
 export const getEnginesFolder = () => invoke<string>("engine_folder");
 export const openEnginesFolder = () => invoke<void>("engine_open_folder");

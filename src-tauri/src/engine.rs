@@ -7,7 +7,7 @@
 //! access to that folder, so it can neither plant a binary nor edit the registry.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use tauri::ipc::Channel;
@@ -25,6 +25,12 @@ pub const LIBRARY_FOLDER: &str = "Library";
 
 #[derive(Default)]
 pub struct EngineProcesses(Mutex<HashMap<u32, CommandChild>>);
+
+/// Executables the user picked with the file dialog in this session but that are not in a
+/// profile yet. `engine_save_profile` accepts an external path only if it is in here or
+/// already in the registry, so the webview can never make up a path.
+#[derive(Default)]
+pub struct ApprovedExecutables(Mutex<HashSet<String>>);
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "event", content = "data", rename_all = "camelCase")]
@@ -211,6 +217,7 @@ pub fn engine_list<R: Runtime>(app: AppHandle<R>) -> Result<Vec<EngineProfile>, 
 #[tauri::command]
 pub fn engine_save_profile<R: Runtime>(
     app: AppHandle<R>,
+    approved: State<'_, ApprovedExecutables>,
     mut profile: EngineProfile,
 ) -> Result<Vec<EngineProfile>, String> {
     profile.name = profile.name.trim().to_string();
@@ -229,9 +236,10 @@ pub fn engine_save_profile<R: Runtime>(
     let mut profiles = read_registry(&app)?;
     let existing = profiles.iter().position(|p| p.id == profile.id);
     if profile.external {
-        // the path must be one the user already picked with the file dialog
+        // the path must come from the file dialog: picked in this session or already saved
         // (a profile may be a copy of another one, e.g. Lc0 with a different net)
-        if !profiles.iter().any(|p| p.external && p.path == profile.path) {
+        let picked = approved.0.lock().unwrap().contains(&profile.path);
+        if !picked && !profiles.iter().any(|p| p.external && p.path == profile.path) {
             return Err(
                 "an engine outside the Engines folder can only be added with the file picker"
                     .to_string(),
@@ -262,12 +270,14 @@ pub fn engine_remove_profile<R: Runtime>(
     synced_profiles(&app)
 }
 
-/// Lets the user pick an engine executable anywhere on the machine. The dialog is opened
-/// here, so the webview never supplies the path. `None` when the dialog is cancelled.
+/// Lets the user pick an engine executable anywhere on the machine and approves it for
+/// `engine_save_profile`. The dialog is opened here, so the webview never supplies the path.
+/// `None` when the dialog is cancelled.
 #[tauri::command]
-pub async fn engine_add_external<R: Runtime>(
+pub async fn engine_pick_executable<R: Runtime>(
     app: AppHandle<R>,
-) -> Result<Option<EngineProfile>, String> {
+    approved: State<'_, ApprovedExecutables>,
+) -> Result<Option<String>, String> {
     let dialog_app = app.clone();
     let picked = tauri::async_runtime::spawn_blocking(move || {
         dialog_app
@@ -289,27 +299,31 @@ pub async fn engine_add_external<R: Runtime>(
         return Err(format!("{} is not a file", path.display()));
     }
     let path_text = path.to_string_lossy().to_string();
+    approved.0.lock().unwrap().insert(path_text.clone());
+    Ok(Some(path_text))
+}
 
-    synced_profiles(&app)?;
-    let mut profiles = read_registry(&app)?;
-    if let Some(known) = profiles.iter().find(|p| p.external && p.path == path_text) {
-        return Ok(Some(known.clone()));
-    }
-    let name = path
-        .file_name()
-        .map(|n| n.to_string_lossy().to_string())
-        .unwrap_or_else(|| path_text.clone());
-    let profile = EngineProfile {
-        id: format!("ext-{:08x}", rand::random::<u32>()),
-        name,
-        path: path_text,
-        external: true,
-        limit_strength: true,
-        ..Default::default()
-    };
-    profiles.push(profile.clone());
-    write_registry(&app, &profiles)?;
-    Ok(Some(profile))
+/// Lets the user pick one or more weights files (e.g. Maia nets) anywhere on the machine.
+/// Only returns the paths; they are used as an engine argument, never executed.
+#[tauri::command]
+pub async fn engine_pick_weights<R: Runtime>(app: AppHandle<R>) -> Result<Vec<String>, String> {
+    let picked = tauri::async_runtime::spawn_blocking(move || {
+        app.dialog()
+            .file()
+            .set_title("Choose network weights")
+            .blocking_pick_files()
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+    picked
+        .unwrap_or_default()
+        .into_iter()
+        .map(|f| {
+            f.into_path()
+                .map(|p| p.to_string_lossy().to_string())
+                .map_err(|e| e.to_string())
+        })
+        .collect()
 }
 
 /// Absolute path of the Engines folder, for display and for `{engines}` in options.

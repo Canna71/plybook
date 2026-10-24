@@ -1,5 +1,6 @@
 import {
     Component,
+    createMemo,
     createResource,
     createSignal,
     For,
@@ -13,12 +14,15 @@ import { ExecutableUCIInterface } from "../engine/executableuci";
 import { UCIEngine } from "../engine/uciengine";
 import {
     activeProfile,
-    addExternalEngine,
     EngineProfile,
+    Executable,
     getEnginesFolder,
+    knownExecutables,
     listWeights,
     newProfileId,
     openEnginesFolder,
+    pickExecutable,
+    pickWeights,
     profiles,
     refetchProfiles,
     removeProfile,
@@ -32,6 +36,13 @@ const TEST_TIMEOUT_MS = 20000;
 
 const errorText = (err: unknown) =>
     err instanceof Error ? err.message : String(err);
+
+const baseName = (path: string) => path.split(/[\\/]/).pop() ?? path;
+const netName = (path: string) => baseName(path).replace(/\.pb(\.gz)?$/, "");
+const executableKey = (e: Executable) => `${e.external}:${e.path}`;
+const isMaia = (net: string) => /maia/i.test(baseName(net));
+
+type Net = { value: string; label: string };
 
 /** One "Name=Value" per line; the value may itself contain "=". */
 const parseOptions = (text: string) =>
@@ -59,6 +70,134 @@ const Settings: Component = () => {
 
     const [enginesFolder] = createResource(getEnginesFolder);
     const [testing, setTesting] = createSignal<string>();
+
+    // #region add engine
+    const [addOpen, setAddOpen] = createSignal(false);
+    // programs picked with the file dialog but not saved in a profile yet
+    const [browsedExecutables, setBrowsedExecutables] = createSignal<
+        Executable[]
+    >([]);
+    const [executableChoice, setExecutableChoice] = createSignal("");
+    const [browsedNets, setBrowsedNets] = createSignal<Net[]>([]);
+    const [selectedNets, setSelectedNets] = createSignal<string[]>([]);
+    const [humanLikeChoice, setHumanLikeChoice] = createSignal<boolean>();
+    const [addName, setAddName] = createSignal("");
+    const [weights, { refetch: refetchWeights }] = createResource(listWeights, {
+        initialValue: [],
+    });
+
+    const executables = createMemo(() => {
+        const all = [...knownExecutables(profiles())];
+        for (const e of browsedExecutables()) {
+            if (!all.some((k) => executableKey(k) === executableKey(e))) {
+                all.push(e);
+            }
+        }
+        return all;
+    });
+    const chosenExecutable = () =>
+        executables().find((e) => executableKey(e) === executableChoice());
+
+    const nets = createMemo<Net[]>(() => [
+        ...weights().map((w) => ({
+            value: `{engines}/weights/${w}`,
+            label: w,
+        })),
+        ...browsedNets(),
+    ]);
+
+    // Maia nets play like a human: one node, no Elo limit
+    const humanLike = () =>
+        humanLikeChoice() ??
+        (selectedNets().length > 0 && selectedNets().every(isMaia));
+
+    const openAdd = async () => {
+        setBrowsedNets([]);
+        setSelectedNets([]);
+        setHumanLikeChoice(undefined);
+        setAddName("");
+        setExecutableChoice("");
+        await refetchWeights();
+        setAddOpen(true);
+    };
+
+    const browseExecutable = async () => {
+        try {
+            const path = await pickExecutable();
+            if (!path) return;
+            const executable = { path, external: true, label: path };
+            setBrowsedExecutables((all) => [...all, executable]);
+            setExecutableChoice(executableKey(executable));
+        } catch (err) {
+            makeErrorToast(errorText(err));
+        }
+    };
+
+    const browseNets = async () => {
+        try {
+            const paths = await pickWeights();
+            const added = paths.map((value) => ({
+                value,
+                label: baseName(value),
+            }));
+            setBrowsedNets((all) => [
+                ...all,
+                ...added.filter((a) => !all.some((n) => n.value === a.value)),
+            ]);
+            setSelectedNets((all) => [
+                ...all,
+                ...added.map((a) => a.value).filter((v) => !all.includes(v)),
+            ]);
+        } catch (err) {
+            makeErrorToast(errorText(err));
+        }
+    };
+
+    const toggleNet = (value: string, on: boolean) =>
+        setSelectedNets((all) =>
+            on ? [...all, value] : all.filter((v) => v !== value),
+        );
+
+    const createEngines = async () => {
+        const executable = chosenExecutable();
+        if (!executable) return;
+        const base = {
+            path: executable.path,
+            external: executable.external,
+            options: [],
+            missing: false,
+        };
+        try {
+            if (selectedNets().length === 0) {
+                // a plain engine such as Stockfish
+                await saveProfile({
+                    ...base,
+                    id: newProfileId(),
+                    name: addName().trim() || baseName(executable.path),
+                    args: [],
+                    limitStrength: true,
+                    singleNode: false,
+                });
+            } else {
+                // one entry per net: Lc0 loads its net when it starts
+                for (const net of selectedNets()) {
+                    await saveProfile({
+                        ...base,
+                        id: newProfileId(),
+                        name: netName(net),
+                        args: [`--weights=${net}`],
+                        limitStrength: false,
+                        singleNode: humanLike(),
+                    });
+                }
+            }
+            makeToast("Engine added");
+            setAddOpen(false);
+        } catch (err) {
+            makeErrorToast(errorText(err));
+        }
+    };
+    // #endregion
 
     // #region profile editor
     const [editing, setEditing] = createSignal<EngineProfile>();
@@ -92,58 +231,6 @@ const Settings: Component = () => {
     };
     // #endregion
 
-    // #region maia
-    const [maiaOpen, setMaiaOpen] = createSignal(false);
-    const [maiaBase, setMaiaBase] = createSignal("");
-    const [maiaWeights, setMaiaWeights] = createSignal("");
-    const [weights, { refetch: refetchWeights }] = createResource(listWeights, {
-        initialValue: [],
-    });
-
-    const openMaia = async () => {
-        const files = await refetchWeights();
-        setMaiaWeights(files?.[0] ?? "");
-        // never guess: a net handed to another engine (Stockfish) just makes it exit
-        const lc0 = profiles().find((p) => /lc0|leela/i.test(p.name));
-        setMaiaBase(lc0?.id ?? "");
-        setMaiaOpen(true);
-    };
-
-    const createMaia = async () => {
-        const base = profiles().find((p) => p.id === maiaBase());
-        if (!base || !maiaWeights()) return;
-        const net = maiaWeights().replace(/\.pb(\.gz)?$/, "");
-        try {
-            await saveProfile({
-                ...base,
-                id: newProfileId(),
-                name: net,
-                // Lc0 loads the net before the UCI handshake, which is what we need
-                args: [`--weights={engines}/weights/${maiaWeights()}`],
-                options: [],
-                limitStrength: false,
-                singleNode: true,
-                missing: false,
-            });
-            setMaiaOpen(false);
-            makeToast(`Added ${net}`);
-        } catch (err) {
-            makeErrorToast(errorText(err));
-        }
-    };
-    // #endregion
-
-    const addExternal = async () => {
-        try {
-            const added = await addExternalEngine();
-            if (added) {
-                makeToast(`Added ${added.name}`);
-            }
-        } catch (err) {
-            makeErrorToast(errorText(err));
-        }
-    };
-
     const remove = async (profile: EngineProfile) => {
         try {
             await removeProfile(profile.id);
@@ -165,7 +252,7 @@ const Settings: Component = () => {
                         () =>
                             reject(
                                 new Error(
-                                    `${profile.name} did not become ready in ${TEST_TIMEOUT_MS / 1000} seconds. Lc0 needs a weights file (see the arguments of this engine).`,
+                                    `${profile.name} did not become ready in ${TEST_TIMEOUT_MS / 1000} seconds. Lc0 needs a network (weights file) to start.`,
                                 ),
                             ),
                         TEST_TIMEOUT_MS,
@@ -190,17 +277,14 @@ const Settings: Component = () => {
             <h1 class="title is-4">Engines</h1>
 
             <p class="settings-help">
-                Engines are UCI programs such as Stockfish or Lc0. Put them in
-                the Engines folder, or add one from anywhere on your computer.
-                The selected engine is used for analysis, review and playing.
+                Engines are UCI programs such as Stockfish or Lc0. They can live
+                anywhere on your computer. The selected engine is used for
+                analysis, review and playing.
             </p>
 
             <div class="buttons-bar">
-                <Button class="is-primary" onClick={addExternal}>
-                    Add engine from computer…
-                </Button>
-                <Button class="is-primary is-outlined" onClick={openMaia}>
-                    Add Maia…
+                <Button class="is-primary" onClick={openAdd}>
+                    Add engine…
                 </Button>
                 <Button
                     class="is-primary is-outlined"
@@ -210,7 +294,8 @@ const Settings: Component = () => {
                 </Button>
             </div>
             <p class="settings-help">
-                Engines folder: <code>{enginesFolder()}</code>
+                Engines folder: <code>{enginesFolder()}</code>. Programs put
+                there are found automatically.
             </p>
 
             <div class="table-container">
@@ -299,89 +384,158 @@ const Settings: Component = () => {
                 </table>
             </div>
 
-            <Show when={maiaOpen()}>
+            <Show when={addOpen()}>
                 <div class="box settings-panel">
-                    <h2 class="title is-5">Add a Maia engine</h2>
-                    <p class="settings-help">
-                        Maia is a set of neural nets that play like humans of a
-                        given rating, run by Lc0. Add Lc0 first (for example
-                        with Homebrew: <code>brew install lc0</code>, then "Add
-                        engine from computer…"). Download a Maia net (for
-                        example maia-1500.pb.gz) and put it in the{" "}
-                        <code>weights</code> folder inside the Engines folder.
-                    </p>
+                    <h2 class="title is-5">Add engine</h2>
+
                     <div class="field">
-                        <label class="label">Lc0 engine</label>
-                        <div class="select">
-                            <select
-                                value={maiaBase()}
-                                onChange={(e) =>
-                                    setMaiaBase(e.currentTarget.value)
-                                }
-                            >
-                                <option
-                                    value=""
-                                    disabled
-                                    selected={!maiaBase()}
-                                >
-                                    Choose the Lc0 engine…
-                                </option>
-                                <For each={profiles()}>
-                                    {(p) => (
+                        <label class="label">Engine program</label>
+                        <div class="field has-addons">
+                            <div class="control is-expanded">
+                                <div class="select is-fullwidth">
+                                    <select
+                                        value={executableChoice()}
+                                        onChange={(e) =>
+                                            setExecutableChoice(
+                                                e.currentTarget.value,
+                                            )
+                                        }
+                                    >
                                         <option
-                                            value={p.id}
-                                            selected={p.id === maiaBase()}
+                                            value=""
+                                            disabled
+                                            selected={!executableChoice()}
                                         >
-                                            {p.name}
+                                            Choose…
                                         </option>
-                                    )}
-                                </For>
-                            </select>
+                                        <For each={executables()}>
+                                            {(e) => (
+                                                <option
+                                                    value={executableKey(e)}
+                                                    selected={
+                                                        executableKey(e) ===
+                                                        executableChoice()
+                                                    }
+                                                >
+                                                    {e.label}
+                                                </option>
+                                            )}
+                                        </For>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="control">
+                                <Button onClick={browseExecutable}>
+                                    Browse…
+                                </Button>
+                            </div>
                         </div>
+                        <p class="help">
+                            Anywhere on your computer, for example{" "}
+                            <code>/opt/homebrew/bin/lc0</code> (in the dialog,
+                            Cmd+Shift+G types a path).
+                        </p>
                     </div>
+
                     <div class="field">
-                        <label class="label">Net</label>
+                        <label class="label">
+                            Networks (only for Lc0, e.g. Maia)
+                        </label>
                         <Show
-                            when={weights().length > 0}
+                            when={nets().length > 0}
                             fallback={
-                                <p class="settings-help">
-                                    No nets found in the weights folder yet.
+                                <p class="help">
+                                    None yet. Use Browse to pick a file such as
+                                    maia-1500.pb.gz, or put nets in the{" "}
+                                    <code>weights</code> folder of the Engines
+                                    folder.
                                 </p>
                             }
                         >
-                            <div class="select">
-                                <select
-                                    value={maiaWeights()}
-                                    onChange={(e) =>
-                                        setMaiaWeights(e.currentTarget.value)
-                                    }
-                                >
-                                    <For each={weights()}>
-                                        {(w) => (
-                                            <option
-                                                value={w}
-                                                selected={w === maiaWeights()}
-                                            >
-                                                {w}
-                                            </option>
-                                        )}
-                                    </For>
-                                </select>
-                            </div>
+                            <For each={nets()}>
+                                {(net) => (
+                                    <div>
+                                        <label class="checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedNets().includes(
+                                                    net.value,
+                                                )}
+                                                onChange={(e) =>
+                                                    toggleNet(
+                                                        net.value,
+                                                        e.currentTarget.checked,
+                                                    )
+                                                }
+                                            />{" "}
+                                            {net.label}
+                                        </label>
+                                    </div>
+                                )}
+                            </For>
                         </Show>
+                        <div class="buttons mt-2">
+                            <Button class="is-small" onClick={browseNets}>
+                                Browse…
+                            </Button>
+                            <Button
+                                class="is-small"
+                                onClick={() => refetchWeights()}
+                            >
+                                Rescan weights folder
+                            </Button>
+                        </div>
+                        <p class="help">
+                            Each network you tick becomes its own engine entry.
+                        </p>
                     </div>
+
+                    <Show
+                        when={selectedNets().length > 0}
+                        fallback={
+                            <div class="field">
+                                <label class="label">Name</label>
+                                <input
+                                    class="input"
+                                    placeholder={
+                                        chosenExecutable()
+                                            ? baseName(chosenExecutable()!.path)
+                                            : ""
+                                    }
+                                    value={addName()}
+                                    onInput={(e) =>
+                                        setAddName(e.currentTarget.value)
+                                    }
+                                />
+                            </div>
+                        }
+                    >
+                        <div class="field">
+                            <label class="checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={humanLike()}
+                                    onChange={(e) =>
+                                        setHumanLikeChoice(
+                                            e.currentTarget.checked,
+                                        )
+                                    }
+                                />{" "}
+                                Human-like play (Maia): the net's first choice,
+                                no Elo limit
+                            </label>
+                        </div>
+                    </Show>
+
                     <div class="buttons">
                         <Button
                             class="is-primary"
-                            disabled={!maiaBase() || !maiaWeights()}
-                            onClick={createMaia}
+                            disabled={!chosenExecutable()}
+                            onClick={createEngines}
                         >
                             Add
                         </Button>
-                        <Button onClick={() => refetchWeights()}>
-                            Rescan nets
-                        </Button>
-                        <Button onClick={() => setMaiaOpen(false)}>
+                        <Button onClick={() => setAddOpen(false)}>
                             Cancel
                         </Button>
                     </div>
