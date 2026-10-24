@@ -41,6 +41,10 @@ export interface AppSettings {
             theme?: string;
         };
     };
+    reader?: {
+        /** The page each PDF was left at, by Library path (written as a whole: paths have dots) */
+        pages?: Record<string, number>;
+    };
     layout: {
         columnsTemplate?: string;
         playing: {
@@ -81,6 +85,9 @@ const DEFAULT: AppSettings = {
         lichess: {
             theme: "",
         },
+    },
+    reader: {
+        pages: {},
     },
     layout: {
         columnsTemplate: "180px 5px 1fr",

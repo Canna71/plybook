@@ -1,9 +1,14 @@
 import { createSignal } from "solid-js";
+import { useSearchParams } from "@solidjs/router";
 import BoardEditor from "../components/boardeditor/BoardEditor";
 import "./BoardEditorView.scss";
 
 const BoardEditorView = () => {
-    const [fen, setFen] = createSignal<string | undefined>(undefined);
+    // ?fen= starts from a given position (from the PDF reader, say)
+    const [params] = useSearchParams();
+    const [fen, setFen] = createSignal<string | undefined>(
+        typeof params.fen === "string" ? params.fen : undefined,
+    );
 
     return (
         <div class="board-editor-view">

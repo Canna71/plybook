@@ -40,10 +40,34 @@ const LibraryFolder = () => {
         return undefined;
     };
 
+    const isPdf = (name: string) => name.toLowerCase().endsWith(".pdf");
+
     const fetchFiles = async (path: string) => {
         const ret = await listAppData(path);
-        const arr = ret.filter((de) => de.isFile && de.name.endsWith(".pgn"));
+        const arr = ret.filter(
+            (de) => de.isFile && (de.name.endsWith(".pgn") || isPdf(de.name)),
+        );
         return arr;
+    };
+
+    /** PGN games open in the editor, PDF books in the reader. */
+    const openLink = (name: string) =>
+        isPdf(name)
+            ? `/reader?path=${encodeURIComponent(getFullPath(name))}`
+            : `/game?path=${encodeURIComponent(getFullPath(name))}&source=library`;
+
+    // a PDF chosen in the file picker is copied into this folder
+    const addPdf = async (e: Event) => {
+        const input = e.currentTarget as HTMLInputElement;
+        const file = input.files?.[0];
+        input.value = "";
+        if (!file) return;
+        await createNewDataFile(
+            folderPath()!,
+            file.name,
+            new Uint8Array(await file.arrayBuffer()),
+        );
+        refetch();
     };
 
     const [files, { refetch }] = createResource(folderPath, fetchFiles);
@@ -103,6 +127,19 @@ const LibraryFolder = () => {
                     <IconPlus />
                     New Study
                 </Button>
+                <label
+                    class="button is-primary is-outlined"
+                    title="Copy a PDF book into this folder, to read it in ReChess"
+                >
+                    <input
+                        type="file"
+                        accept="application/pdf,.pdf"
+                        hidden
+                        onChange={addPdf}
+                    />
+                    <IconPlus />
+                    Add PDF…
+                </label>
             </div>
 
             <BreadCrumb path={folderPath} />
@@ -131,12 +168,16 @@ const LibraryFolder = () => {
                                 <tr class=" ">
                                     <td>
                                         <Show when={!isRenaming(file.name)}>
-                                            <a
-                                                href={`/game?path=${encodeURIComponent(getFullPath(file.name))}&source=library`}
-                                            >
+                                            <a href={openLink(file.name)}>
                                                 {NameWithoutExtension(
                                                     file.name,
                                                 )}
+                                                <Show when={isPdf(file.name)}>
+                                                    {" "}
+                                                    <span class="tag is-light">
+                                                        PDF
+                                                    </span>
+                                                </Show>
                                             </a>
                                         </Show>
                                         <Show when={isRenaming(file.name)}>
