@@ -163,7 +163,13 @@ How this file is used:
   - [x] Lichess explorer (`feature/secrets`; owner review pending): "Lichess: masters" and
     "Lichess: online games" in the Explorer's source list. Its API needs the user's personal
     Lichess token (401 without one since 2025-26), saved in Settings and kept by S.1.
-- [ ] **P3.4 Opening books**: Polyglot `.bin` support in analysis and as engine-play book.
+- [x] **P3.4 Opening books** (`feature/opening-books`; owner review pending): Polyglot `.bin`
+  support in analysis and as engine-play book. Settings → Opening books imports books into
+  `<AppLocalData>/Books` (none shipped: licensing); each book is a source in the Explorer tab
+  (moves with their weight share, click to play); Playing Settings → Opening book makes the
+  engine play a weighted-random book move while the position is in the book. `books.rs` reads
+  books with a binary search on disk (Polyglot keys = shakmaty Zobrist64; castling stored as
+  king-takes-rook); checked on python-chess's performance.bin.
 - [x] **P3.5 Endgame tablebase** lookups (`feature/tablebase`; owner review pending): with 7
   pieces or fewer, the analysis shows the exact result ("White wins: mate in 11", draws under
   the 50-move rule explained) and every move coloured win / draw / loss for the side playing it,

@@ -86,6 +86,7 @@ src-tauri/src/
   capture.rs               "Capture from screen" for the scanner (macOS screencapture -i, hides the window)
   repertoire.rs            repertoire files and their spaced-repetition cards
   secrets.rs               API tokens in the OS keychain, never returned to the webview
+  books.rs                 Polyglot opening books (binary search on disk) in <AppLocalData>/Books
   net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts
   engine.rs                engine process management (engine_list/spawn/write/kill) + open_library_path
   migrate.rs               one-time move of user data from the old "rechess" identifier folders
@@ -99,6 +100,7 @@ Data flow: the **PGN string is the source of truth** for a game. Edits go throug
 User data locations (resolved by Tauri from the bundle identifier):
 - `<AppLocalData>/Library` user PGN files and folders
 - `<AppLocalData>/Engines` UCI engine binaries (the first one found is used)
+- `<AppLocalData>/Books` Polyglot opening books (imported in Settings)
 - `<AppLocalData>/rechess.sqlite` database (the old SurrealDB `db/` folder is no longer read;
   `tools/surreal-export` turns it into `surreal-export.json`, imported on the next start)
 - `<AppConfig>` settings JSON

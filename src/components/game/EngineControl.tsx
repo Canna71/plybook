@@ -1,7 +1,9 @@
 import {
     Accessor,
     batch,
+    createResource,
     createSignal,
+    For,
     Setter,
     Show,
     Signal,
@@ -30,6 +32,7 @@ import { getSettingValue, setSettingValue } from "../../models/settings";
 import Modal from "../common/Modal";
 import { StartingPositionIcon } from "../common/Icons";
 import { activeProfile } from "../../engine/engineprofiles";
+import { ENGINE_BOOK_SETTING, listBooks } from "../../storage/books";
 
 const EngineControl = () => {
     const {
@@ -76,7 +79,11 @@ const EngineControl = () => {
         [_settingsModalVisible, setSettingsModalVisible] = settingsModalSignal;
 
     const playSettingsModal = createSignal(false),
-        [_playSettingsVisible, setPlaySettingsVisible] = playSettingsModal;
+        [playSettingsVisible, setPlaySettingsVisible] = playSettingsModal;
+    // read when the playing settings open, so books added meanwhile show up
+    const [books] = createResource(playSettingsVisible, (open) =>
+        open ? listBooks() : [],
+    );
 
     const canEnableEngine = () => {
         return (
@@ -282,6 +289,33 @@ const EngineControl = () => {
                     </div>
                     <div class="engine-control-row">
                         Time: <MoveTime />
+                    </div>
+                    <div
+                        class="engine-control-row"
+                        title="While the position is in the book, the engine plays a book move (weighted at random)"
+                    >
+                        Opening book:{" "}
+                        <div class="select is-small">
+                            <select
+                                value={getSettingValue<string>(
+                                    ENGINE_BOOK_SETTING,
+                                    "",
+                                )}
+                                onChange={(e) =>
+                                    setSettingValue(
+                                        ENGINE_BOOK_SETTING,
+                                        e.currentTarget.value,
+                                    )
+                                }
+                            >
+                                <option value="">None</option>
+                                <For each={books()}>
+                                    {(name) => (
+                                        <option value={name}>{name}</option>
+                                    )}
+                                </For>
+                            </select>
+                        </div>
                     </div>
                     <div class="engine-control-row">
                         Threads: <Threads />

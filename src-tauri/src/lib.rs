@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 // use tauri::Manager;
+mod books;
 mod capture;
 mod db;
 mod engine;
@@ -16,6 +17,7 @@ fn greet(name: &str) -> String {
 }
 
 // use serde::{Deserialize, Serialize};
+use books::*;
 use capture::*;
 use db::*;
 use engine::*;
@@ -102,7 +104,11 @@ pub fn run() {
             secret_status,
             open_lichess_token_page,
             online_lichess_explorer,
-            online_tablebase
+            online_tablebase,
+            book_list,
+            book_import,
+            book_remove,
+            book_moves
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
