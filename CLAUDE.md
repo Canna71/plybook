@@ -133,6 +133,12 @@ User data locations (resolved by Tauri from the bundle identifier):
   input rendered through `innerHTML` (Comments, MarkdownEditor) must be escaped or sanitized
   with DOMPurify. `'wasm-unsafe-eval'` is there only for the screenshot scanner's ONNX runtime
   (`src/scan`), which runs single-threaded so no worker sources are needed.
+- The CSP is enforced only in built apps, not under `tauri dev`: check styling changes in a
+  build. Board and piece themes are injected `<style>` elements with `data:` images, and
+  solid-toast injects its styles too, hence `style-src 'unsafe-inline'` and `img-src data:`;
+  custom themes are fetched over the asset protocol (`connect-src asset:`). Tauri would add hashes
+  of index.html's inline `<style>` to `style-src`, and a hash makes browsers ignore
+  `'unsafe-inline'`, so `dangerousDisableAssetCspModification` is set for `style-src` only.
 
 ## Gotchas
 
