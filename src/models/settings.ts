@@ -7,6 +7,10 @@ import { get, toMerged } from "es-toolkit/compat";
 import { createStore } from "solid-js/store";
 import { createSignal } from "solid-js";
 import type { OnlineAccount } from "../online/onlinegames";
+
+/** A place in a PDF: a page, how far down it the view starts (0–1), and the zoom */
+export type ReaderPlace = { page: number; offset: number; zoom: number };
+
 export interface AppSettings {
     themes?: {
         board?: string;
@@ -42,7 +46,9 @@ export interface AppSettings {
         };
     };
     reader?: {
-        /** The page each PDF was left at, by Library path (written as a whole: paths have dots) */
+        /** Where each PDF was left, by Library path (written as a whole: paths have dots) */
+        places?: Record<string, ReaderPlace>;
+        /** The page each PDF was left at, before `places`; still read for older books */
         pages?: Record<string, number>;
     };
     layout: {
@@ -87,6 +93,7 @@ const DEFAULT: AppSettings = {
         },
     },
     reader: {
+        places: {},
         pages: {},
     },
     layout: {
