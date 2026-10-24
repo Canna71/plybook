@@ -128,6 +128,18 @@
                     background: hsla(171, 100%, 41%, 0.15);
                 }
 
+                // a corner mark: this diagram has notes
+                &.has-notes::after {
+                    content: "";
+                    position: absolute;
+                    top: -2px;
+                    right: -2px;
+                    border-style: solid;
+                    border-width: 0 14px 14px 0;
+                    border-color: transparent hsl(204, 86%, 53%) transparent
+                        transparent;
+                }
+
                 &.unsure {
                     border-color: hsla(36, 100%, 50%, 0.8);
                     border-style: dashed;
@@ -158,6 +170,14 @@
 
         .reader-matches a {
             cursor: pointer;
+        }
+
+        .reader-quote {
+            font-size: 0.85em;
+            font-style: italic;
+            opacity: 0.8;
+            max-height: 8em;
+            overflow: auto;
         }
 
         .reader-warning {

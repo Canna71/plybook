@@ -36,7 +36,24 @@ import {
 } from "../scan/pdf";
 import { imageToGray, scanPage, warmUpScanner } from "../scan/recognizer";
 import { ScanRead, scannedPosition } from "../scan/scan";
-import { baseName, NameWithoutExtension, readDataBytes } from "../storage/fs";
+import {
+    baseName,
+    listAppData,
+    NameWithoutExtension,
+    readDataBytes,
+    readDataFile,
+    writeDataFile,
+} from "../storage/fs";
+import {
+    addStartingComment,
+    bookQuote,
+    collectionName,
+    diagramFileName,
+    diagramPgn,
+} from "../models/scancollection";
+import { join } from "@tauri-apps/api/path";
+import { BaseDirectory, exists, mkdir } from "@tauri-apps/plugin-fs";
+import { makeToast } from "../components/common/Toast";
 import "./PdfReader.scss";
 const log = anylogger("reader");
 
@@ -47,6 +64,9 @@ const MAX_ZOOM = 3;
 
 /** A diagram on a page, its box in fractions of the page (0–1). */
 type PageDiagram = {
+    page: number;
+    /** Order on the page, from 1 */
+    index: number;
     read: ScanRead;
     box: { x0: number; y0: number; x1: number; y1: number };
     orientation: Color;
@@ -218,7 +238,9 @@ const PdfReader: Component = () => {
                 const found = await scanPage(imageToGray(canvas, PAGE_SIZE));
                 setDiagrams(
                     n,
-                    found.map((f) => ({
+                    found.map((f, i) => ({
+                        page: n,
+                        index: i + 1,
                         read: {
                             placement: f.placement,
                             reliable: f.reliable,
@@ -260,6 +282,93 @@ const PdfReader: Component = () => {
         const p = position();
         if (p) navigate(`${route}?fen=${encodeURIComponent(p.fen)}`);
     };
+    // #region notes: a PGN per diagram, the same files "Scan a whole book" saves
+    const notesFolder = () =>
+        join("Library", "Scanned", collectionName(baseName(path())));
+    const [notes, { refetch: refetchNotes }] = createResource(
+        path,
+        async () => {
+            try {
+                const files = await listAppData(await notesFolder());
+                return new Set(files.map((f) => f.name));
+            } catch {
+                return new Set<string>(); // no notes yet
+            }
+        },
+    );
+    const hasNotes = (d: PageDiagram) =>
+        !!notes()?.has(diagramFileName({ ...d, fen: "" }));
+
+    /** The diagram's notes file, written from the position shown when there is none yet. */
+    const notesFile = async (d: PageDiagram & { turn: Color }) => {
+        const folder = await notesFolder();
+        const file = await join(folder, diagramFileName({ ...d, fen: "" }));
+        if (!(await exists(file, { baseDir: BaseDirectory.AppLocalData }))) {
+            const fen = scannedPosition(d.read, d.turn).fen;
+            await mkdir(folder, {
+                baseDir: BaseDirectory.AppLocalData,
+                recursive: true,
+            });
+            await writeDataFile(
+                file,
+                diagramPgn(NameWithoutExtension(baseName(path())), {
+                    ...d,
+                    fen,
+                }),
+            );
+            refetchNotes();
+        }
+        return file;
+    };
+    const openNotes = async () => {
+        const d = selected();
+        if (!d) return;
+        const file = await notesFile(d);
+        navigate(`/analysis?path=${encodeURIComponent(file)}`);
+    };
+
+    // the last text selected on the pages: clicking a button must not lose it
+    const [quote, setQuote] = createSignal<{ text: string; page: number }>();
+    const onSelection = () => {
+        const s = document.getSelection();
+        const text = s?.toString().trim();
+        const node = s?.anchorNode;
+        if (!text || !node || !scroller.contains(node)) return;
+        const pageEl = (
+            node instanceof Element ? node : node.parentElement
+        )?.closest(".reader-page");
+        const page = pageElements.indexOf(pageEl as HTMLDivElement) + 1;
+        setQuote({ text, page: page || current() });
+    };
+    onMount(() => {
+        document.addEventListener("selectionchange", onSelection);
+        onCleanup(() =>
+            document.removeEventListener("selectionchange", onSelection),
+        );
+    });
+    const addQuote = async () => {
+        const d = selected();
+        const q = quote();
+        if (!d || !q) return;
+        try {
+            const file = await notesFile(d);
+            const pgn = addStartingComment(
+                await readDataFile(file),
+                bookQuote(q.text, q.page),
+            );
+            await writeDataFile(file, pgn);
+            setQuote(undefined);
+            document.getSelection()?.removeAllRanges();
+            makeToast(
+                `Added to the notes of page ${d.page}, diagram ${d.index}`,
+            );
+        } catch (err) {
+            log.error("adding the quote failed", err);
+            makeToast(`Could not add the text: ${String(err)}`);
+        }
+    };
+    // #endregion
+
     const boardConfig = (): Config => {
         const fen = position()?.fen;
         const setup = fen ? parseFen(fen) : undefined;
@@ -360,6 +469,7 @@ const PdfReader: Component = () => {
                                         onVisibility(n, ratio);
                                         if (ratio > 0) scan(n, isVisible);
                                     }}
+                                    hasNotes={hasNotes}
                                     onPick={(d) =>
                                         setSelected({
                                             ...d,
@@ -460,6 +570,29 @@ const PdfReader: Component = () => {
                                 Edit
                             </Button>
                         </div>
+                        <div class="buttons">
+                            <Button
+                                class="is-small is-info"
+                                disabled={!position()?.legal}
+                                title="Moves, variations and comments for this diagram, kept in Library/Scanned"
+                                onClick={openNotes}
+                            >
+                                {hasNotes(selected()!)
+                                    ? "Notes"
+                                    : "Start notes"}
+                            </Button>
+                            <Button
+                                class="is-small"
+                                disabled={!position()?.legal || !quote()}
+                                title="Select text on a page first"
+                                onClick={addQuote}
+                            >
+                                Add selected text to notes
+                            </Button>
+                        </div>
+                        <Show when={quote()}>
+                            <p class="reader-quote">“{quote()!.text}”</p>
+                        </Show>
                     </Show>
                 </div>
             </div>
@@ -477,6 +610,7 @@ const ReaderPage: Component<{
     diagrams: Accessor<PageDiagram[] | undefined>;
     onVisible: (ratio: number, isVisible: () => boolean) => void;
     onPick: (d: PageDiagram) => void;
+    hasNotes: (d: PageDiagram) => boolean;
 }> = (props) => {
     let el!: HTMLDivElement;
     const [visible, setVisible] = createSignal(false);
@@ -567,7 +701,10 @@ const ReaderPage: Component<{
                 {(d) => (
                     <button
                         class="reader-diagram"
-                        classList={{ unsure: !d.read.reliable }}
+                        classList={{
+                            unsure: !d.read.reliable,
+                            "has-notes": props.hasNotes(d),
+                        }}
                         title="Study this position"
                         style={{
                             left: `${d.box.x0 * 100}%`,

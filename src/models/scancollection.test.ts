@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { makeGame } from "./pgn";
-import { collectionName, diagramFileName, diagramPgn } from "./scancollection";
+import {
+    addStartingComment,
+    bookQuote,
+    collectionName,
+    diagramFileName,
+    diagramPgn,
+} from "./scancollection";
 
 // Black to move in the Italian: ...Nf6 is the engine's choice
 const FEN =
@@ -36,6 +42,32 @@ describe("scanned collections", () => {
         expect(pgn).toContain("3... Nf6 4. d3 *");
         const game = makeGame(pgn);
         expect(game.mainline.map((p) => p.san)).toEqual(["Nf6", "d3"]);
+    });
+
+    it("quotes book text on one line, with its page", () => {
+        expect(
+            bookQuote("White's bishop on c4\n eyes the weak f7-\nsquare.", 30),
+        ).toBe("White's bishop on c4 eyes the weak f7-square. (p. 30)");
+        expect(bookQuote("The open-\ning is sharp", 2)).toBe(
+            "The opening is sharp (p. 2)",
+        );
+        expect(bookQuote("  \n ", 2)).toBe("");
+    });
+
+    it("adds comments before the moves, keeping the game", () => {
+        const pgn = diagramPgn("T", {
+            page: 1,
+            index: 1,
+            fen: FEN,
+            solution: ["g8f6", "d2d3"],
+        });
+        const once = addStartingComment(pgn, "First note");
+        const twice = addStartingComment(once, "Second } note");
+        const game = makeGame(twice);
+        expect(game.initial.fen).toBe(FEN);
+        expect(game.mainline.map((p) => p.san)).toEqual(["Nf6", "d3"]);
+        expect(twice).toContain("{ First note } { Second  note }");
+        expect(game.headers.get("Event")).toBe("T, page 1");
     });
 
     it("stops the solution at a move that does not fit", () => {
