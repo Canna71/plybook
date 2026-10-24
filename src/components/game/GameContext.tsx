@@ -3,6 +3,7 @@ import { GameModel } from "../../models/GameModel";
 import { Path, PlyData } from "../../models/pgn";
 import { ViewMode } from "./PgnEditBar";
 import { Color } from "chessops";
+import { Evaluation } from "chessops/pgn";
 
 export enum HintType {
     None,
@@ -41,6 +42,8 @@ export interface GameContextType {
     threatFen: Accessor<string | undefined>;
     /** The position the engine lines belong to */
     analyzedFen: Accessor<string>;
+    /** The engine's evaluation (with its best move in `ext`) of a position analysed earlier */
+    evaluationAt: (fen: string) => (Evaluation & { ext?: string }) | undefined;
     onGameFinished?: () => void;
 }
 
