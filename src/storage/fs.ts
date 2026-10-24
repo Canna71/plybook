@@ -115,20 +115,6 @@ export async function listAppData(path: string) {
     });
 }
 
-// returns the file name of the engine to use, in the Engines folder
-export async function getEnginePath(name?: string) {
-    const engines = await getAvailableEngines();
-    if (name && engines.includes(name)) {
-        return name;
-    }
-    // select the first engine found
-    return engines[0];
-}
-
-export async function getAvailableEngines() {
-    return invoke<string[]>("engine_list");
-}
-
 export async function renameOrCreateDataFile(
     oldName: string | undefined,
     newName: string,

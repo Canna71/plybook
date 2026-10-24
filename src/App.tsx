@@ -15,6 +15,7 @@ import { Toaster } from "solid-toast";
 import Puzzles from "./Views/Puzzles";
 import LibraryFolder from "./Views/LibraryFolder";
 import History from "./Views/History";
+import Settings from "./Views/Settings";
 
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
@@ -44,6 +45,7 @@ function App() {
                 <Route path="/play" component={Play} />
                 <Route path="/library" component={LibraryFolder} />
                 <Route path="/history" component={History} />
+                <Route path="/settings" component={Settings} />
 
                 <Route
                     path="/analysis"

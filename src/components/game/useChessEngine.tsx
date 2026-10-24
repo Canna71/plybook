@@ -1,8 +1,8 @@
 import { NormalMove } from "chessops";
 import {
     createSignal,
-    createResource,
     createEffect,
+    on,
     batch,
     onCleanup,
     Accessor,
@@ -13,7 +13,11 @@ import { createStore } from "solid-js/store";
 import { IChessEngine, EngineInfo } from "../../engine/engineinterfaces";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
 import { UCIEngine } from "../../engine/uciengine";
-import { getEnginePath } from "../../storage/fs";
+import {
+    activeProfile,
+    expandEnginesFolder,
+    getEnginesFolder,
+} from "../../engine/engineprofiles";
 import { makeMove } from "../common/utils";
 import { makeErrorToast } from "../common/Toast";
 import { Color } from "chessground/types";
@@ -48,7 +52,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     const [engineAnalysisOn, setEngineAnalysisOn] = createSignal<boolean>(
         options.defaultEngineAnalysisOn,
     );
-    const [engineName, _others] = createResource(() => getEnginePath());
+    const profile = activeProfile;
     const [engine, setEngine] = createSignal<IChessEngine | undefined>(
         undefined,
     );
@@ -114,18 +118,26 @@ export function useChessEngine(options: ChessEngineOptions) {
     });
 
     const shouldInitEngine = () => {
-        const shouldInit = needEngine() && engineName() && !engine();
+        const shouldInit = needEngine() && profile() && !engine();
         return shouldInit;
     };
 
     createEffect(async () => {
         if (shouldInitEngine()) {
+            const p = profile()!;
             const engine = new UCIEngine(
-                new ExecutableUCIInterface(engineName()!),
+                new ExecutableUCIInterface(p.id, p.name),
             );
 
             try {
                 await engine.init();
+                const enginesFolder = await getEnginesFolder();
+                for (const option of p.options) {
+                    engine.setOption(
+                        option.name,
+                        expandEnginesFolder(option.value, enginesFolder),
+                    );
+                }
             } catch (err) {
                 log.error("engine failed to start", err);
                 makeErrorToast(
@@ -167,6 +179,16 @@ export function useChessEngine(options: ChessEngineOptions) {
             cleanup();
         }
     });
+
+    // switching engine in the settings: drop the running one, the next
+    // request for an engine starts the newly selected one
+    createEffect(
+        on(
+            () => profile()?.id,
+            () => cleanup(),
+            { defer: true },
+        ),
+    );
 
     onCleanup(() => {
         cleanup();
@@ -346,10 +368,13 @@ export function useChessEngine(options: ChessEngineOptions) {
         if (shouldCallEngineAnalysis()) {
             setHintMove(undefined);
 
-            eng.setOption("UCI_LimitStrength", "false");
-            eng.setOption("UCI_Elo", 3200);
+            if (profile()?.limitStrength) {
+                eng.setOption("UCI_LimitStrength", "false");
+                eng.setOption("UCI_Elo", 3200);
+            }
 
             opts = {
+                nodes: profile()?.singleNode ? 1 : undefined,
                 depth: getSettingValue("engine.analysis.depth", 15),
                 movetime: getSettingValue("engine.analysis.movetime", 10000),
                 multipv: getSettingValue("engine.analysis.multipv", 3),
@@ -361,15 +386,21 @@ export function useChessEngine(options: ChessEngineOptions) {
             // engine()!.setOption("UCI_AnalyseMode", 0);
             const enginesTurn = options.engineColor() === options.turn();
             // limit strength for the engine's own moves, not for hints
-            eng.setOption("UCI_LimitStrength", enginesTurn ? "true" : "false");
-            eng.setOption(
-                "UCI_Elo",
-                enginesTurn
-                    ? getSettingValue("engine.playing.elo", 1000)
-                    : 3200,
-            );
+            if (profile()?.limitStrength) {
+                eng.setOption(
+                    "UCI_LimitStrength",
+                    enginesTurn ? "true" : "false",
+                );
+                eng.setOption(
+                    "UCI_Elo",
+                    enginesTurn
+                        ? getSettingValue("engine.playing.elo", 1000)
+                        : 3200,
+                );
+            }
 
             opts = {
+                nodes: profile()?.singleNode && enginesTurn ? 1 : undefined,
                 depth: getSettingValue("engine.playing.depth", 15),
                 movetime: getSettingValue("engine.playing.movetime", 10000),
                 multipv: 1,

@@ -25,6 +25,7 @@ import { makeGame } from "../../models/pgn";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import Modal from "../common/Modal";
 import { StartingPositionIcon } from "../common/Icons";
+import { activeProfile } from "../../engine/engineprofiles";
 
 const EngineControl = () => {
     const {
@@ -112,11 +113,20 @@ const EngineControl = () => {
 
                 const playerColor = c === "white" ? "Black" : "White";
 
+                const profile = activeProfile();
                 const engineElo = getSettingValue("engine.playing.elo", 1000)!;
                 const currentDate = new Date().toISOString();
                 const headers = new Map([
-                    [engineColorTitleCase, "Engine"],
-                    [engineColorTitleCase + "Elo", engineElo.toString()],
+                    [engineColorTitleCase, profile?.name ?? "Engine"],
+                    // the Elo setting only means something to engines that limit their strength
+                    ...(profile?.limitStrength !== false
+                        ? [
+                              [
+                                  engineColorTitleCase + "Elo",
+                                  engineElo.toString(),
+                              ] as [string, string],
+                          ]
+                        : []),
                     [playerColor, "Player"],
                     ["Date", currentDate.split("T")[0]],
                     ["Timestamp", currentDate],
@@ -214,9 +224,17 @@ const EngineControl = () => {
                 title={() => "Playing Settings"}
             >
                 <div>
-                    <div class="engine-control-row">
-                        ELO: <EngineLevel />
-                    </div>
+                    <Show when={activeProfile()?.limitStrength !== false}>
+                        <div class="engine-control-row">
+                            ELO: <EngineLevel />
+                        </div>
+                    </Show>
+                    <Show when={activeProfile()?.singleNode}>
+                        <div class="engine-control-row">
+                            {activeProfile()?.name} plays its first choice (one
+                            node), so depth and time do not apply.
+                        </div>
+                    </Show>
                     <div class="engine-control-row">
                         Depth: <DepthLevel />
                     </div>
