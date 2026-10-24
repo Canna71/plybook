@@ -3,6 +3,7 @@
 mod db;
 mod engine;
 mod migrate;
+mod net;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -14,6 +15,7 @@ fn greet(name: &str) -> String {
 use tokio::sync::Mutex;
 use db::*;
 use engine::*;
+use net::*;
 
 
 // use add_capability to enable an arbitrary engine to run
@@ -50,7 +52,8 @@ pub fn run() {
             add_to_history, list_history,
             engine_list, engine_save_profile, engine_remove_profile, engine_pick_executable, engine_pick_weights,
             engine_folder, engine_open_folder, engine_weights,
-            engine_spawn, engine_write, engine_kill, open_library_path
+            engine_spawn, engine_write, engine_kill, open_library_path,
+            online_fetch_games
         ])
         
         .run(tauri::generate_context!())

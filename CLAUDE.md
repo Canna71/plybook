@@ -135,6 +135,11 @@ User data locations (resolved by Tauri from the bundle identifier):
 - Known refactor targets: split `GameManager.tsx`, make `useChessEngine` an explicit state machine,
   a typed settings schema, split `components/common/utils.tsx`, add Vitest + Rust CI.
 
+## Roadmap
+
+`docs/ROADMAP.md` tracks planned features by ID (`P1.1`, ...) with status and acceptance criteria.
+Read it before starting feature work, and update an item's status in the same branch that changes it.
+
 ## Claude Code setup in this repo
 
 - `.claude/agents/`: `reviewer` (reviews a diff against these rules), `tauri-rust` (Rust backend,
