@@ -18,5 +18,16 @@
     .scan-editor {
         flex: 1;
         min-width: 300px;
+
+        // the board is square: keep it within the window's height too, leaving room for the
+        // piece toolbars above and below it
+        .board-editor-container {
+            width: min(100%, 560px, calc(100vh - 300px));
+            min-width: 280px;
+
+            .chess-container {
+                width: 100%;
+            }
+        }
     }
 }
