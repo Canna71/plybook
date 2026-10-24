@@ -5,6 +5,16 @@ import { useContextMenu } from "../common/contextmenu";
 import { Path } from "../../models/pgn";
 import { GameContext } from "./GameContext";
 
+// PGN comments are untrusted text: escape them before adding our own markup
+export function escapeHtml(text: string) {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
 // regex for square names
 export const squareRegex = /(?<!<|")([a-h][1-8])(?!<|")/g;
 const squareSubst = `<span class="square" data-square="$1">$1</span>`;
@@ -37,7 +47,7 @@ export const CommentsView: Component<CommentsViewProps> = ({
     let ref: HTMLDivElement | undefined;
 
     const paragraph = () => {
-        let line = comments() || "";
+        let line = escapeHtml(comments() || "");
         // const matches = line.match(squareRegex);
         line = line.replace(moveRegex, moveSubst);
         line = line.replace(squareRegex, squareSubst);

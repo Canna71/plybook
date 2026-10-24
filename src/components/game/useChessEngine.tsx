@@ -43,7 +43,7 @@ export function useChessEngine(options: ChessEngineOptions) {
     const [engineAnalysisOn, setEngineAnalysisOn] = createSignal<boolean>(
         options.defaultEngineAnalysisOn,
     );
-    const [engineFolder, _others] = createResource(() => getEnginePath());
+    const [engineName, _others] = createResource(() => getEnginePath());
     const [engine, setEngine] = createSignal<IChessEngine | undefined>(
         undefined,
     );
@@ -101,14 +101,14 @@ export function useChessEngine(options: ChessEngineOptions) {
     });
 
     const shouldInitEngine = () => {
-        const shouldInit = needEngine() && engineFolder() && !engine();
+        const shouldInit = needEngine() && engineName() && !engine();
         return shouldInit;
     };
 
     createEffect(async () => {
         if (shouldInitEngine()) {
             const engine = new UCIEngine(
-                new ExecutableUCIInterface(engineFolder()!),
+                new ExecutableUCIInterface(engineName()!),
             );
 
             await engine.init();

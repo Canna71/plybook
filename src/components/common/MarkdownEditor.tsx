@@ -8,6 +8,7 @@ import {
     useContext,
 } from "solid-js";
 import showdown from "showdown";
+import DOMPurify from "dompurify";
 import { GameContext } from "../game/GameContext";
 import { initFromGameModel } from "./utils";
 
@@ -74,7 +75,8 @@ const MarkdownEditor: Component<MarkdownEditorProps> = (props) => {
             return "";
         }
         val = val.replaceAll(SEPARATOR, "\n");
-        return converter.makeHtml(val) as string;
+        // the description comes from PGN files, so strip anything active from the rendered markdown
+        return DOMPurify.sanitize(converter.makeHtml(val));
     };
 
     return (

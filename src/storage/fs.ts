@@ -9,12 +9,11 @@ import {
     writeFile,
 } from "@tauri-apps/plugin-fs";
 import { appConfigDir, appLocalDataDir, join, sep } from "@tauri-apps/api/path";
-import { open } from "@tauri-apps/plugin-shell";
+import { invoke } from "@tauri-apps/api/core";
 import anylogger from "anylogger";
 const log = anylogger("fs");
 
 const LIBRARY_FOLDER = "Library";
-const ENGINES_FOLDER = "Engines";
 const THEMES_FOLDER = "Themes";
 
 export async function initStorage() {
@@ -97,7 +96,7 @@ export async function ensureAppDataFolders() {
         await ensureFolderExists(
             await join(appDataPath, LIBRARY_FOLDER, "pgn"),
         );
-        await ensureFolderExists(await join(appDataPath, ENGINES_FOLDER));
+        // the Engines folder is created by the Rust side, the webview has no access to it
         await ensureFolderExists(await join(appDataPath, THEMES_FOLDER));
     } catch (error) {
         log.error("Error ensuring AppData folders exist:", error);
@@ -116,35 +115,18 @@ export async function listAppData(path: string) {
     });
 }
 
+// returns the file name of the engine to use, in the Engines folder
 export async function getEnginePath(name?: string) {
-    const appDataDirPath = await appLocalDataDir();
-    let enginePath = undefined;
-    if (name) {
-        const tentative = await join(appDataDirPath, ENGINES_FOLDER, name);
-        const isOk = await exists(tentative);
-        if (isOk) {
-            enginePath = tentative;
-        }
+    const engines = await getAvailableEngines();
+    if (name && engines.includes(name)) {
+        return name;
     }
-    if (!enginePath) {
-        // select the first engine found
-        const engines = await listAppData(
-            await join(appDataDirPath, ENGINES_FOLDER),
-        );
-        if (engines.length > 0) {
-            enginePath = await join(
-                appDataDirPath,
-                ENGINES_FOLDER,
-                engines[0].name,
-            );
-        }
-    }
-    return enginePath;
+    // select the first engine found
+    return engines[0];
 }
 
 export async function getAvailableEngines() {
-    const enginesPath = await join(await appLocalDataDir(), ENGINES_FOLDER);
-    return (await listAppData(enginesPath)).map((entry) => entry.name);
+    return invoke<string[]>("engine_list");
 }
 
 export async function renameOrCreateDataFile(
@@ -273,6 +255,5 @@ export function getDefaultStudyContent() {
 }
 
 export async function openDataPath(path: string) {
-    const fullPath = await join(await appLocalDataDir(), path);
-    return await open(fullPath);
+    return invoke("open_library_path", { path });
 }

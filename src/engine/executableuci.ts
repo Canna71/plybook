@@ -1,56 +1,63 @@
-import { Child, Command } from "@tauri-apps/plugin-shell";
+import { Channel, invoke } from "@tauri-apps/api/core";
 import { IUCIInterface } from "./iuciinterface";
-import { isWindows } from "../models/osutils";
 import anylogger from "anylogger";
 const log = anylogger("uciengine");
+
+type EngineEvent =
+    | { event: "stdout"; data: string }
+    | { event: "stderr"; data: string }
+    | { event: "error"; data: string }
+    | { event: "terminated"; data: { code: number | null } };
+
 // ExecutableUCIInterface.ts
+// The engine process is owned by the Rust side (see src-tauri/src/engine.rs);
+// the webview only refers to it by file name in the Engines folder.
 export class ExecutableUCIInterface implements IUCIInterface {
-    private command?: Command<string>;
-    private child?: Child;
+    private pid?: number;
     private responseCallback?: (line: string) => void;
-    private enginePath: string;
+    private engineName: string;
     private isReady = false;
     private exited = false;
 
-    constructor(enginePath: string) {
-        this.enginePath = enginePath;
-    }
-
-    private async getEngineCommand() {
-        if (isWindows()) {
-            return Command.create("exec-cmd", ["/c", `${this.enginePath}`]);
-        } else {
-            return Command.create("exec-sh", ["-c", `"${this.enginePath}"`]);
-        }
+    constructor(engineName: string) {
+        this.engineName = engineName;
     }
 
     async init(): Promise<void> {
         if (this.isReady) return;
 
-        this.command = await this.getEngineCommand();
-
-        this.command.stdout.on("data", (line: string) => {
-            if (line.includes("uciok")) {
-                this.isReady = true;
+        const onEvent = new Channel<EngineEvent>();
+        onEvent.onmessage = (message) => {
+            switch (message.event) {
+                case "stdout":
+                    if (message.data.includes("uciok")) {
+                        this.isReady = true;
+                    }
+                    this.responseCallback?.(message.data);
+                    break;
+                case "stderr":
+                    log.error(`Engine error: ${message.data}`);
+                    break;
+                case "error":
+                    log.error(`error: ${message.data}`);
+                    break;
+                case "terminated":
+                    this.isReady = false;
+                    this.exited = true;
+                    break;
             }
+        };
 
-            this.responseCallback?.(line);
-        });
-
-        this.command.stderr.on("data", (line: string) => {
-            log.error(`Engine error: ${line}`);
-        });
-
-        this.command.on("close", (_code) => {
-            this.isReady = false;
+        try {
+            this.pid = await invoke<number>("engine_spawn", {
+                name: this.engineName,
+                onEvent,
+            });
+        } catch (e) {
+            log.error(`cannot start engine: ${e}`);
             this.exited = true;
-        });
-
-        this.command.on("error", (err) => {
-            log.error(`error: ${err}`);
-        });
-
-        this.child = await this.command.spawn();
+            return;
+        }
 
         this.sendCommand("uci");
 
@@ -62,7 +69,10 @@ export class ExecutableUCIInterface implements IUCIInterface {
 
     sendCommand(command: string): void {
         log.debug(`Sending command: ${command}`);
-        this.child?.write(command + "\n");
+        if (this.pid === undefined) return;
+        invoke("engine_write", { pid: this.pid, data: command + "\n" }).catch(
+            (e) => log.error(`cannot write to engine: ${e}`),
+        );
     }
 
     onResponse(callback: (line: string) => void): void {
@@ -70,6 +80,9 @@ export class ExecutableUCIInterface implements IUCIInterface {
     }
 
     close(): void {
-        this.child?.kill();
+        if (this.pid === undefined) return;
+        invoke("engine_kill", { pid: this.pid }).catch((e) =>
+            log.error(`cannot stop engine: ${e}`),
+        );
     }
 }
