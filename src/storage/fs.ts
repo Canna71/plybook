@@ -9,13 +9,12 @@ import {
     writeFile,
 } from "@tauri-apps/plugin-fs";
 import { appConfigDir, appLocalDataDir, join, sep } from "@tauri-apps/api/path";
-import { open } from "@tauri-apps/plugin-shell";
+import { invoke } from "@tauri-apps/api/core";
 import anylogger from "anylogger";
 const log = anylogger("fs");
 
 const LIBRARY_FOLDER = "Library";
 const HISTORY_FOLDER = "History";
-const ENGINES_FOLDER = "Engines";
 const THEMES_FOLDER = "Themes";
 
 export async function initStorage() {
@@ -76,7 +75,6 @@ async function ensureFolderExists(folderPath: string): Promise<void> {
 
         if (!folderExists) {
             await mkdir(folderPath, { recursive: true });
-        } else {
         }
     } catch (error) {
         log.error(`Error ensuring folder exists at ${folderPath}:`, error);
@@ -96,12 +94,9 @@ export async function ensureAppDataFolders() {
     try {
         const appDataPath = await appLocalDataDir();
         await ensureFolderExists(appDataPath);
-        // await ensureFolderExists(
-        //     await join(appDataPath, LIBRARY_FOLDER, "pgn"),
-        // );
         await ensureFolderExists(await join(appDataPath, LIBRARY_FOLDER));
         await ensureFolderExists(await join(appDataPath, HISTORY_FOLDER));
-        await ensureFolderExists(await join(appDataPath, ENGINES_FOLDER));
+        // the Engines folder is created by the Rust side, the webview has no access to it
         await ensureFolderExists(await join(appDataPath, THEMES_FOLDER));
     } catch (error) {
         log.error("Error ensuring AppData folders exist:", error);
@@ -120,29 +115,18 @@ export async function listAppData(path: string) {
     });
 }
 
+// returns the file name of the engine to use, in the Engines folder
 export async function getEnginePath(name?: string) {
-    const appDataDirPath = await appLocalDataDir();
-    let enginePath = undefined;
-    if(name) {
-        const tentative = await join(appDataDirPath, ENGINES_FOLDER, name);
-        const isOk = await exists(tentative);
-        if (isOk) {
-            enginePath = tentative;
-        }
+    const engines = await getAvailableEngines();
+    if (name && engines.includes(name)) {
+        return name;
     }
-    if(!enginePath){
-        // select the first engine found
-        const engines = await listAppData(await join(appDataDirPath, ENGINES_FOLDER));
-        if(engines.length > 0) {
-            enginePath = await join(appDataDirPath, ENGINES_FOLDER, engines[0].name);
-        }
-    }
-    return enginePath;
+    // select the first engine found
+    return engines[0];
 }
 
 export async function getAvailableEngines() {
-    const enginesPath = await join(await appLocalDataDir(), ENGINES_FOLDER);
-    return (await listAppData(enginesPath)).map((entry) => entry.name);
+    return invoke<string[]>("engine_list");
 }
 
 export async function renameOrCreateDataFile(
@@ -151,7 +135,7 @@ export async function renameOrCreateDataFile(
     content?: string,
 ) {
     const path = basePath(oldName || newName);
-    const oldExt =  oldName ? fileOrFolderExtension(oldName) : "";
+    const oldExt = oldName ? fileOrFolderExtension(oldName) : "";
     const newExt = fileOrFolderExtension(newName);
     if (oldExt && !newExt) {
         newName = `${newName}.${oldExt}`;
@@ -166,7 +150,7 @@ export async function renameOrCreateDataFile(
             newPathBaseDir: BaseDirectory.AppLocalData,
         });
     } else {
-        await writeDataFile(newFullPath, content||"");
+        await writeDataFile(newFullPath, content || "");
         return newFullPath;
     }
 }
@@ -181,12 +165,15 @@ export async function createNewDataFile(
     let i = 1;
     let fullPath = "";
     // let fullPath = await join(folder, newName);
-    while (fullPath = await join(folder, newName), await exists(fullPath, { baseDir: BaseDirectory.AppLocalData })) {
+    while (
+        ((fullPath = await join(folder, newName)),
+        await exists(fullPath, { baseDir: BaseDirectory.AppLocalData }))
+    ) {
         // the name can and with an extension, we should add a prgressive number but before the extension
         newName = createIncrementedName(name, newName, i);
         i++;
     }
-    
+
     await writeDataFile(fullPath, content);
     return fullPath;
 }
@@ -210,7 +197,10 @@ export async function createNewDataFolder(folder: string, name: string) {
     let i = 1;
     let fullPath = "";
     // let fullPath = await join(folder, newName);
-    while (fullPath = await join(folder, newName), await exists(fullPath, { baseDir: BaseDirectory.AppLocalData })) {
+    while (
+        ((fullPath = await join(folder, newName)),
+        await exists(fullPath, { baseDir: BaseDirectory.AppLocalData }))
+    ) {
         // the name can and with an extension, we should add a prgressive number but before the extension
         // let base = name;
         // let ext = "";
@@ -225,7 +215,7 @@ export async function createNewDataFolder(folder: string, name: string) {
         newName = createIncrementedName(name, newName, i);
         i++;
     }
-    
+
     await mkdir(fullPath, { baseDir: BaseDirectory.AppLocalData });
     return fullPath;
 }
@@ -233,12 +223,15 @@ export async function createNewDataFolder(folder: string, name: string) {
 export async function deleteDataFileOrFolder(path: string) {
     const ex = await exists(path, { baseDir: BaseDirectory.AppLocalData });
     if (ex) {
-        await remove(path, { baseDir: BaseDirectory.AppLocalData, recursive: true });
+        await remove(path, {
+            baseDir: BaseDirectory.AppLocalData,
+            recursive: true,
+        });
     }
 }
 
 export function NameWithoutExtension(name: string) {
-    const dotIndex = name.lastIndexOf('.');
+    const dotIndex = name.lastIndexOf(".");
     const ret = dotIndex !== -1 ? name.substring(0, dotIndex) : name;
     return ret;
 }
@@ -253,8 +246,8 @@ export function basePath(name: string) {
 
 export function fileOrFolderExtension(name: string) {
     const base = baseName(name);
-    const dotIndex = base.lastIndexOf('.');
-    return dotIndex !== -1 ? base.substring(dotIndex+1) : "";
+    const dotIndex = base.lastIndexOf(".");
+    return dotIndex !== -1 ? base.substring(dotIndex + 1) : "";
 }
 
 export function getDefaultStudyContent() {
@@ -262,24 +255,25 @@ export function getDefaultStudyContent() {
 }
 
 export async function openDataPath(path: string) {
-    const fullPath = await join(await appLocalDataDir(), path);
-    return await open(fullPath);
+    return invoke("open_library_path", { path });
 }
 
 export async function saveGameToHistory(pgn: string) {
     const historyPath = await join(await appLocalDataDir(), HISTORY_FOLDER);
     // read the timestamp from the pgn tag  [Timestamp "2021.09.01 12:00:00"]
-    
-    const timestamp = pgn.match(/\[Timestamp "([^"]+)"\]/)?.[1] || new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+
+    const timestamp =
+        pgn.match(/\[Timestamp "([^"]+)"\]/)?.[1] ||
+        new Date().toISOString().replace(/T/, " ").replace(/\..+/, "");
 
     log.debug("saveGameToHistory", timestamp);
 
     // create a new file with the timestamp as name and the path as yyyy/MM/dd
     const date = timestamp.split("T")[0];
     const [year, month, day] = date.split("-");
-    const yearFolder = await join(historyPath, year)
+    const yearFolder = await join(historyPath, year);
     await ensureFolderExists(yearFolder);
-    
+
     const monthFolder = await join(yearFolder, month);
     await ensureFolderExists(monthFolder);
 

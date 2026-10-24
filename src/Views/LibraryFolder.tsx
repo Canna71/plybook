@@ -19,15 +19,19 @@ import { sep } from "@tauri-apps/api/path";
 import Button from "../components/common/Button";
 import { ContentContext } from "../components/common/ContentContext";
 import Editable from "../components/common/Editable";
-import { IconCircleXFilled, IconEdit, IconPlus, IconRefresh } from "@tabler/icons-solidjs";
+import {
+    IconCircleXFilled,
+    IconEdit,
+    IconPlus,
+    IconRefresh,
+} from "@tabler/icons-solidjs";
 
 import "./LibraryFolder.scss";
 import BreadCrumb from "../components/common/BreadCrumb";
 
 const LibraryFolder = () => {
     const [searchParams] = useSearchParams();
-    const { renaming, setRenaming } =
-        useContext(ContentContext)!;
+    const { renaming, setRenaming } = useContext(ContentContext)!;
 
     const folderPath = () => {
         if (typeof searchParams.path === "string") {
@@ -92,7 +96,7 @@ const LibraryFolder = () => {
     return (
         <div class="library-folder">
             <div class="buttons-bar">
-                <Button class="is-primary is-outlined"  onClick={refetch}>
+                <Button class="is-primary is-outlined" onClick={refetch}>
                     <IconRefresh />
                 </Button>
                 <Button class="is-primary is-outlined" onClick={newStudy}>
@@ -102,12 +106,12 @@ const LibraryFolder = () => {
             </div>
 
             <BreadCrumb path={folderPath} />
-            
+
             <div class="table-container">
                 <table class="table files_table is-hoverable is-fullwidth">
-                <colgroup>
-                    <col width={"99%"} />
-                </colgroup>
+                    <colgroup>
+                        <col width={"99%"} />
+                    </colgroup>
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -128,7 +132,7 @@ const LibraryFolder = () => {
                                     <td>
                                         <Show when={!isRenaming(file.name)}>
                                             <a
-                                                href={`/game?path=${getFullPath(file.name)}&source=library`}
+                                                href={`/game?path=${encodeURIComponent(getFullPath(file.name))}&source=library`}
                                             >
                                                 {NameWithoutExtension(
                                                     file.name,

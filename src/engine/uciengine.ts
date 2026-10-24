@@ -8,9 +8,8 @@ import {
     IEngineEventEmitter,
 } from "./engineinterfaces";
 import { IUCIInterface } from "./iuciinterface";
-import anylogger from 'anylogger'
-const log = anylogger('uciengine')
-
+import anylogger from "anylogger";
+const log = anylogger("uciengine");
 
 // interface EngineOption {
 //     name: string;
@@ -36,7 +35,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
         this.uciInterface = uciInterface;
         this.uciInterface.onResponse((line) => this.processEngineOutput(line));
     }
-    getElos?(): [{ level: number; elo: number; }] {
+    getElos?(): [{ level: number; elo: number }] {
         throw new Error("Method not implemented.");
     }
     getId(): EngineId | undefined {
@@ -131,25 +130,26 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
                 this.isReady = true;
                 this.emit("ready");
                 break;
-            case "bestmove":
+            case "bestmove": {
                 const bestmove = tokens[1];
                 const ponder = tokens[3]; // Optional ponder move
                 this.emit("bestmove", bestmove, ponder);
                 break;
+            }
 
-            case "info":
+            case "info": {
                 const info = this.parseInfoMessage(tokens.slice(1));
                 if (info) {
                     this.emit("info", info);
                 }
                 break;
+            }
             case "id":
                 this.parseId(tokens);
                 break;
             case "option":
                 this.parseOptions(tokens);
                 break;
-
 
             default:
                 if (line.startsWith("error")) {
@@ -158,25 +158,29 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
         }
     }
     parseOptions(tokens: string[]) {
-
         // option name Skill Level type spin default 20 min 0 max 20
 
         const typeIndex = tokens.indexOf("type");
-        
+
         // const optionsIndex = tokens.indexOf("options"); // Optional
         // name is at 2 until type
 
         const optionName = tokens.slice(2, typeIndex).join(" ");
 
-        const optionType = tokens[typeIndex+1];
-        const optionDefault = tokens[typeIndex+3];
-        const optionMin = tokens[typeIndex+5];
-        const optionMax = tokens[typeIndex+7];
-        const optionVar = tokens.slice(typeIndex+9);
+        const optionType = tokens[typeIndex + 1];
+        const optionDefault = tokens[typeIndex + 3];
+        const optionMin = tokens[typeIndex + 5];
+        const optionMax = tokens[typeIndex + 7];
+        const optionVar = tokens.slice(typeIndex + 9);
         // const optionOptions = tokens.slice(7);
         const option: EngineOption = {
             name: optionName,
-            type: optionType as "check" | "spin" | "combo" | "string" | "button",
+            type: optionType as
+                | "check"
+                | "spin"
+                | "combo"
+                | "string"
+                | "button",
             default: optionDefault,
             min: optionMin ? parseInt(optionMin, 10) : undefined,
             max: optionMax ? parseInt(optionMax, 10) : undefined,
@@ -185,25 +189,24 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
         };
 
         this.EngineOptions = {
-            ...this.EngineOptions || {},
+            ...(this.EngineOptions || {}),
             [optionName]: option, // Use optionName as the key
         };
     }
 
     private parseId(tokens: string[]): void {
         if (tokens[1] === "name") {
-            this.engineId = {  
-                ...this.engineId || {},
+            this.engineId = {
+                ...(this.engineId || {}),
                 name: tokens.slice(2).join(" "),
             };
         } else if (tokens[1] === "author") {
             this.engineId = {
-                ...this.engineId || {},
+                ...(this.engineId || {}),
                 author: tokens.slice(2).join(" "),
             };
         }
     }
-                
 
     /**
      * Parse info string from engine
@@ -215,7 +218,6 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
      */
     private parseInfoMessage(tokens: string[]): EngineInfo | null {
         try {
-        
             const result: EngineInfo = {};
 
             // Skip 'info' at parts[0]
@@ -244,7 +246,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
                         }
                         break;
 
-                    case "pv":
+                    case "pv": {
                         // Collect all remaining tokens as moves
                         const moves: string[] = [];
                         while (
@@ -269,6 +271,7 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
                         }
                         result.pv = moves;
                         break;
+                    }
 
                     case "nodes":
                         if (i + 1 < tokens.length) {

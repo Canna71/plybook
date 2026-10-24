@@ -69,13 +69,17 @@ export function toShapes(
     _highlightedMoves: Accessor<string[]>,
     data: Initial | PlyData,
 ) {
-    let autoShapes = highlightedSquares().length>0
-        ? highlightedSquares().map(hs => ({ orig: hs as Key, brush: "green" }))
-        : [];
+    let autoShapes =
+        highlightedSquares().length > 0
+            ? highlightedSquares().map((hs) => ({
+                  orig: hs as Key,
+                  brush: "green",
+              }))
+            : [];
     // TODO: how can we display moves regardless of the position?
     // autoShapes = autoShapes.concat(
     //     highlightedMoves().map((hm) => {
-    //         const move = 
+    //         const move =
     //         const [from, to] = hm.split("-");
     //         return { orig: from as Key, dest: to as Key, brush: "green" };
     //     }),
@@ -148,7 +152,7 @@ export function makeConfig(
         }
 
         const lastMoveKey = lastMove(data);
-        let shapes = toShapes(highlightedSquares, highlightedMoves, data);
+        const shapes = toShapes(highlightedSquares, highlightedMoves, data);
 
         const config: Config = {
             ...baseConfig,
@@ -164,7 +168,7 @@ export function makeConfig(
 }
 
 function* toSquares(squares: SquareSet) {
-    for (let square of squares) {
+    for (const square of squares) {
         yield makeSquare(square) as Key;
     }
 }
@@ -286,7 +290,7 @@ export function useFenTooltip(
     ) => {
         if (!tooltipEnabled) return;
         if (e) {
-            !!plyData && showTooltip(e.currentTarget, plyData);
+            if (plyData) showTooltip(e.currentTarget, plyData);
         } else {
             showTooltip(undefined, undefined);
         }
@@ -306,14 +310,13 @@ export function initFromGameModel(
     context: GameContextType,
     gameModel: GameModel,
 ) {
-
-    const { gameSignal: [, setGame], 
-        viewModeSignal:[, setViewMode] ,
+    const {
+        gameSignal: [, setGame],
+        viewModeSignal: [, setViewMode],
         descriptionSignal: [, setDescription],
         startingPositionSignal: [, setStartingPosition],
         hintMoveSignal: [, setHintMove],
     } = context;
-    
 
     batch(() => {
         setGame(gameModel);
@@ -323,12 +326,10 @@ export function initFromGameModel(
             if (setup.isOk) {
                 setStartingPosition(makeFen(setup.value));
             }
-        } 
+        }
         // context.currentPathSignal[1](gameModel.pathAtMainlinePly(0));
         setViewMode(ViewMode.MOVES);
-        setDescription(
-            gameModel.headers.get("Description") || "",
-        );
+        setDescription(gameModel.headers.get("Description") || "");
     });
 }
 
@@ -353,27 +354,23 @@ export async function safePaste(
     const selection = window.getSelection();
     if (!selection) return;
     if (!isSelectionInEditableDiv(editableDiv, selection)) return;
-    try {
-        let text = await navigator.clipboard.readText();
-        text = sanitizeText(text);
+    let text = await navigator.clipboard.readText();
+    text = sanitizeText(text);
 
-        const range = selection.getRangeAt(0);
-        range.deleteContents();
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
 
-        const textNode = document.createTextNode(text);
-        range.insertNode(textNode);
+    const textNode = document.createTextNode(text);
+    range.insertNode(textNode);
 
-        // Update selection
-        selection.removeAllRanges();
-        const newRange = document.createRange();
-        newRange.setStartAfter(textNode);
-        newRange.setEndAfter(textNode);
-        selection.addRange(newRange);
+    // Update selection
+    selection.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.setStartAfter(textNode);
+    newRange.setEndAfter(textNode);
+    selection.addRange(newRange);
 
-        editableDiv.normalize();
-    } catch (err) {
-        throw err;
-    }
+    editableDiv.normalize();
 }
 
 const figurineMap: Record<string, () => JSXElement> = {
@@ -392,10 +389,9 @@ const figurineMap: Record<string, () => JSXElement> = {
 };
 
 export function getFigurine(piece: string) {
-    
-    if(getTheme() === "light"){
+    if (getTheme() === "light") {
         // invert the casing of piece
-        if(piece === piece.toUpperCase()){
+        if (piece === piece.toUpperCase()) {
             piece = piece.toLowerCase();
         } else {
             piece = piece.toUpperCase();
@@ -429,9 +425,11 @@ export function useFen(
     currentPath: Accessor<Path | undefined>,
 ) {
     const position = usePosition(game, currentPath);
-    const fen = createMemo(() => makeFen(position().toSetup(), {
-        epd: false,
-    }));
+    const fen = createMemo(() =>
+        makeFen(position().toSetup(), {
+            epd: false,
+        }),
+    );
     return fen;
 }
 
@@ -440,14 +438,14 @@ export function moveEquals(pos: Position, a: NormalMove, b: NormalMove) {
     const asan = makeSan(pos, a);
     const bsan = makeSan(pos, b);
     return asan === bsan;
-} 
+}
 
 export const formatDate = (date?: string) => {
-    return date && new Date(date).toLocaleDateString() || "";
-}
+    return (date && new Date(date).toLocaleDateString()) || "";
+};
 
 // round a number to a given number of decimal places
 export function round(value: number | undefined, decimals: number) {
-    if(typeof value !== "number") return value;
+    if (typeof value !== "number") return value;
     return Number(Math.round(Number(value + "e" + decimals)) + "e-" + decimals);
 }

@@ -19,11 +19,6 @@ const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
     } = useContext(GameContext)!;
 
     const plyData = line[color === "white" ? "white" : "black"];
-    const evaluation = plyData?.evaluation;
-    if (evaluation && isPawns(evaluation)) {
-    }
-    if (evaluation && isMate(evaluation)) {
-    }
     const isValid = () => {
         return plyData !== undefined;
     };
@@ -64,7 +59,7 @@ const nagNames = [
         if (evalPrev) {
             const bestMoveUci = evalPrev?.ext as string | undefined;
             const bestMove = bestMoveUci && parseUci(bestMoveUci)!;
-            const san = bestMove && makeSan(parent()?.pos!, bestMove);
+            const san = bestMove && makeSan(parent()!.pos, bestMove);
             isBestMove = san === plyData?.san;
         }
 
@@ -118,7 +113,7 @@ const nagNames = [
             </Show>
             <span class="pgnviewer-movecontent">
                 {/* {(color && line[color]?.fan) || "..."} */}
-                <PlyFan san={plyData?.san!} color={color!} />
+                <PlyFan san={plyData?.san ?? ""} color={color!} />
             </span>
             <Show when={nag().isBestMove}>
                 <span class="pgnviewer-bestmove" title="Best Move">
@@ -130,9 +125,6 @@ const nagNames = [
 };
 
 const ReviewLine: Component<{ move: HierarchicalMoveData }> = ({ move }) => {
-    const {
-        currentPathSignal: [],
-    } = useContext(GameContext)!;
     const afterWhite = move.white?.comments || [];
 
     return (
@@ -205,7 +197,7 @@ const Review: Component = () => {
     const movesTree = (): HierarchicalMoveData[] => {
         const g = game();
         if (!g) return [];
-        let moves = g.moves;
+        const moves = g.moves;
 
         const tree = moves && makeTree(moves, 0, true);
         return tree || [];

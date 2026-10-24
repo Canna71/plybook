@@ -1,18 +1,43 @@
+import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import prettierRecommended from "eslint-plugin-prettier/recommended";
 
-
-/** @type {import('eslint').Linter.Config[]} */
-export default [
-    { files: ["**/*.{js,mjs,cjs,ts}"] },
-    { languageOptions: { globals: globals.browser } },
+export default tseslint.config(
     {
-        "extends": ["eslint:recommended","plugin:prettier/recommended"],
-        "rules": {
-            "no-multiple-empty-lines": ["error",{ "max": 1,"maxEOF": 0 }],
-            "prettier/prettier": "error"
-        }
+        ignores: [
+            "dist/",
+            "src-tauri/",
+            "public/",
+            "tools/",
+            "src/Views/obsoleted/",
+        ],
     },
-  ...tseslint.configs.recommended,
-
-];
+    {
+        files: ["**/*.{js,mjs,cjs,ts,tsx}"],
+        extends: [js.configs.recommended, ...tseslint.configs.recommended],
+        languageOptions: { globals: globals.browser },
+        rules: {
+            "no-multiple-empty-lines": ["error", { max: 1, maxEOF: 0 }],
+            // `cond && doSomething()` is used as a statement throughout the codebase
+            "@typescript-eslint/no-unused-expressions": [
+                "error",
+                { allowShortCircuit: true, allowTernary: true },
+            ],
+            // reported but not blocking until the engine/settings types are tightened
+            "@typescript-eslint/no-explicit-any": "warn",
+            "@typescript-eslint/no-unsafe-function-type": "warn",
+            // match tsc's convention: a leading underscore marks an intentionally unused name
+            "@typescript-eslint/no-unused-vars": [
+                "error",
+                {
+                    argsIgnorePattern: "^_",
+                    varsIgnorePattern: "^_",
+                    caughtErrorsIgnorePattern: "^_",
+                    destructuredArrayIgnorePattern: "^_",
+                },
+            ],
+        },
+    },
+    prettierRecommended,
+);

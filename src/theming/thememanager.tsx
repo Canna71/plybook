@@ -3,7 +3,7 @@ import { getSettingValue } from "../models/settings";
 import { CSSLoader } from "./CssLoader";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { appConfigDir, join } from "@tauri-apps/api/path";
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const cssLoader = new CSSLoader();
 
@@ -64,18 +64,14 @@ export function useThemes() {
     });
 }
 
-async function  loadStyle(path: string) {
-    const fullPath = await join(
-        await appConfigDir(),
-        path,
-    );
+async function loadStyle(path: string) {
+    const fullPath = await join(await appConfigDir(), path);
     const url = convertFileSrc(fullPath);
     const css = await fetch(url).then((res) => res.text());
     return css;
 }
 
 async function loadPiecesStyle(piecesTheme: string) {
-   
     if (!piecesTheme) return;
     cssLoader.unloadCSS("pieces-theme");
     let css = "";
@@ -101,7 +97,6 @@ async function loadBoardStyle(boardTheme: string) {
 
 const cachedTheme = await getCurrentWindow().theme();
 
-
-export function getTheme() :  "light" | "dark" {
-   return cachedTheme || "dark";
+export function getTheme(): "light" | "dark" {
+    return cachedTheme || "dark";
 }

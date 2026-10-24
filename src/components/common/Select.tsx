@@ -1,5 +1,5 @@
-import { Accessor, JSX, Setter, Show, splitProps } from 'solid-js';
-import { For } from 'solid-js/web';
+import { Accessor, JSX, Show, splitProps } from "solid-js";
+import { For } from "solid-js/web";
 // import styles from './Select.module.scss';
 
 export type Option = {
@@ -10,10 +10,10 @@ export type Option = {
 type SelectProps = {
     options: Accessor<Option[]>;
     selectedValue: Accessor<string>;
-    setSelectedValue: Setter<string>;
+    setSelectedValue: (value: string) => void;
     placeholder?: string;
     onChange?: (value: string) => void;
-} & JSX.HTMLAttributes<HTMLDivElement>
+} & JSX.HTMLAttributes<HTMLDivElement>;
 
 const Select = (props: SelectProps) => {
     const handleChange = (event: Event) => {
@@ -25,7 +25,13 @@ const Select = (props: SelectProps) => {
         }
     };
 
-    const [, divProps] = splitProps(props, ['options', 'selectedValue', 'setSelectedValue', 'placeholder', 'onChange']);
+    const [, divProps] = splitProps(props, [
+        "options",
+        "selectedValue",
+        "setSelectedValue",
+        "placeholder",
+        "onChange",
+    ]);
 
     return (
         <div {...divProps} class="select">
@@ -35,13 +41,20 @@ const Select = (props: SelectProps) => {
                 onChange={handleChange}
             >
                 <Show when={props.placeholder}>
-                    <option value="___" disabled selected={!props.selectedValue()}>
-                        {props.placeholder || 'Select option...'}
+                    <option
+                        value="___"
+                        disabled
+                        selected={!props.selectedValue()}
+                    >
+                        {props.placeholder || "Select option..."}
                     </option>
                 </Show>
                 <For each={props.options()}>
                     {(option) => (
-                        <option value={option.value} selected={option.value === props.selectedValue()}>
+                        <option
+                            value={option.value}
+                            selected={option.value === props.selectedValue()}
+                        >
                             {option.label}
                         </option>
                     )}

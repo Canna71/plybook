@@ -10,11 +10,12 @@ const PgnTextArea: Component<PgnTextAreaProps> = (props) => {
     // const [pgn, setPgn] = createSignal(props.initialPgn);
     const [pgn, setPgn] = props.pgnSignal;
     // const { viewModeSignal: [viewMode, setViewMode] } = useContext(GameContext)!;
+    // eslint-disable-next-line prefer-const -- assigned by Solid via ref={...}
     let div: HTMLTextAreaElement | null = null;
 
     const onInput = (_e: Event) => {
         let value = div!.value;
-        value = value.replace(/[“”]/g, "\"");
+        value = value.replace(/[“”]/g, '"');
         setPgn(value);
     };
 

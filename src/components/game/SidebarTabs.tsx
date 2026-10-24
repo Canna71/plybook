@@ -14,7 +14,11 @@ import { IconDeviceAnalytics } from "@tabler/icons-solidjs";
 
 const SidebarTabs = () => {
     const [tab, setTab] = createSignal(0);
-    const { isReviewing, startReview, isPlayingOnSignal: [isPlayingOn] } = useContext(GameContext)!;
+    const {
+        isReviewing,
+        startReview,
+        isPlayingOnSignal: [isPlayingOn],
+    } = useContext(GameContext)!;
 
     const updateTab = (index: number) => setTab(index);
 
