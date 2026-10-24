@@ -33,6 +33,11 @@ How this file is used:
   - Done when: adding an account and syncing creates the month files, a second sync only
     re-fetches the latest month, errors (unknown user, offline) show a toast.
   - Refactor: new `src-tauri/src/net.rs` as the single place for HTTP, with a fixed User-Agent.
+  - Refactor: Settings page split into sections (`components/settings/EngineSettings`,
+    `OnlineAccounts`).
+  - Status: implemented; split/dedupe checked on real chess.com and Lichess exports, Lichess
+    `since` boundary checked. Waiting for an in-app test before marking done.
+  - Known limits: no progress bar during a long first sync; no cancel.
 - [ ] **P1.2 Whole-game review**
   - Background review of a game with the active engine: eval graph, accuracy per side,
     move classification by **win-probability loss** (Lichess formula), list of key moments.

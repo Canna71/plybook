@@ -10,9 +10,19 @@
         flex-wrap: wrap;
     }
 
+    .settings-section + .settings-section {
+        margin-top: 32px;
+    }
+
     .settings-help {
         margin-bottom: 10px;
         opacity: 0.8;
+    }
+
+    .accounts-table .actions {
+        white-space: nowrap;
+        display: flex;
+        gap: 5px;
     }
 
     .engines-table {

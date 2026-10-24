@@ -6,6 +6,7 @@ import {
 import { get, toMerged } from "es-toolkit/compat";
 import { createStore } from "solid-js/store";
 import { createSignal } from "solid-js";
+import type { OnlineAccount } from "../online/onlinegames";
 export interface AppSettings {
     themes?: {
         board?: string;
@@ -22,6 +23,9 @@ export interface AppSettings {
             depth?: number;
             elo?: number;
         };
+    };
+    online?: {
+        accounts: OnlineAccount[];
     };
     layout: {
         columnsTemplate?: string;
@@ -48,6 +52,9 @@ const DEFAULT: AppSettings = {
             depth: 30,
             elo: 1000,
         },
+    },
+    online: {
+        accounts: [],
     },
     layout: {
         columnsTemplate: "180px 5px 1fr",
