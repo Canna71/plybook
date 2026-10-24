@@ -1,7 +1,6 @@
 import { Accessor, JSX, ParentComponent, Show, Signal } from "solid-js";
 import { Portal } from "solid-js/web";
 
-
 type ModalProps = {
     isOpen: Signal<boolean>;
     onClose?: () => void;
@@ -20,11 +19,8 @@ const Modal: ParentComponent<ModalProps> = (props) => {
             modal: true,
             "is-active": props.isOpen[0](),
             "is-clipped": true,
-           
         };
     };
-
-   
 
     return (
         <Portal>

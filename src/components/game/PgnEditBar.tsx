@@ -96,7 +96,7 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
     const onPlayAgainstEngine = () => {
         // Toggle the playing engine state (commented out for now)
         const currentFen = fen();
-        const playUrl = `/play?fen=${currentFen}`;
+        const playUrl = `/play?fen=${encodeURIComponent(currentFen)}`;
         navigate(playUrl);
     };
 

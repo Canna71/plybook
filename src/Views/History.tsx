@@ -19,7 +19,9 @@ const History: Component = () => {
     return (
         <div class="history_view">
             <div class="buttons-bar">
-                <Button class="is-primary is-outlined" onClick={refetch}>Refresh</Button>
+                <Button class="is-primary is-outlined" onClick={refetch}>
+                    Refresh
+                </Button>
             </div>
             <div class="table-container">
                 <table class="table history_table is-hoverable">
@@ -41,7 +43,12 @@ const History: Component = () => {
                             }
                         >
                             {(game) => (
-                                <tr class="history-row" onClick={() => viewGame(getIdValue(game.id?.id))}>
+                                <tr
+                                    class="history-row"
+                                    onClick={() =>
+                                        viewGame(getIdValue(game.id?.id))
+                                    }
+                                >
                                     <td>{formatDate(game.eventDate)}</td>
                                     <td>{game.whiteName || "Player"}</td>
                                     <td>{game.blackName || "Engine"}</td>

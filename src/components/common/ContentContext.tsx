@@ -9,11 +9,11 @@ export interface ContentContext {
 
 export const ContentContext = createContext<ContentContext>();
 const [refreshTrigger, setRefreshTrigger] = createSignal(0);
-    const [renaming, setRenaming] = createSignal<string | undefined>(undefined);
-    
-export function useContentContext() : ContentContext {
+const [renaming, setRenaming] = createSignal<string | undefined>(undefined);
+
+export function useContentContext(): ContentContext {
     // This will be our trigger for updates
-    
+
     return {
         onRefresh: refreshTrigger,
         refresh: () => setRefreshTrigger((v) => v + 1),

@@ -1,16 +1,14 @@
 import { Menu, MenuOptions } from "@tauri-apps/api/menu";
 
 export function useContextMenu(options: MenuOptions) {
-    
+    // context menu functions
 
-	// context menu functions
-
-	const onContextMenu = async (e: MouseEvent) => {
-		e.preventDefault();
+    const onContextMenu = async (e: MouseEvent) => {
+        e.preventDefault();
         const menuPromise = Menu.new(options);
-		const menu = await menuPromise;
+        const menu = await menuPromise;
 
-		menu.popup();
-	}
+        menu.popup();
+    };
     return onContextMenu;
 }

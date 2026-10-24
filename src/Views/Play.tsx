@@ -3,9 +3,7 @@ import { createEffect, createSignal } from "solid-js";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
 import { useSearchParams } from "@solidjs/router";
-import { IconDeviceFloppy } from "@tabler/icons-solidjs";
 import anylogger from "anylogger";
-import { saveGameToHistory } from "../storage/fs";
 import { addToHistory } from "../storage/db";
 const log = anylogger("play");
 
@@ -14,19 +12,17 @@ const PlayView = () => {
     const [newPgn, setNewPgn] = createSignal<string | undefined>(undefined);
 
     createEffect(async () => {
-        if (typeof searchParams.fen === "string") {
-        } else {
-        }
+        // TODO: start from searchParams.fen when provided
     });
 
     const save = async () => {
-        log.debug("onSave", newPgn()); 
+        log.debug("onSave", newPgn());
         const pgn = newPgn();
         if (typeof pgn !== "string") {
             return;
         }
         await addToHistory(pgn);
-    }
+    };
 
     const initialFen = () => {
         if (typeof searchParams.fen === "string") {
@@ -39,10 +35,9 @@ const PlayView = () => {
         <>
             <nav class="game-header buttons buttons-bar" role="navigation">
                 TODO: | Time Control | Save Game | Draw
-
             </nav>
-            <GameManager 
-                initialFen={initialFen()} 
+            <GameManager
+                initialFen={initialFen()}
                 playingEngine={true}
                 setPgn={setNewPgn}
                 onGameFinished={save}

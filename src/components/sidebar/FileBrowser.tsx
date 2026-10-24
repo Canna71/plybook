@@ -1,15 +1,12 @@
-import {
-    batch,
-    createEffect,
-    createSignal,
-    useContext,
-} from "solid-js";
+import { batch, createEffect, createSignal, useContext } from "solid-js";
 import TreeView, { TreeNode } from "../common/TreeView";
+import { listAppData, NameWithoutExtension } from "../../storage/fs";
 import {
-    listAppData,
-    NameWithoutExtension,
-} from "../../storage/fs";
-import { IconBook, IconChevronDown, IconChevronRight, IconFile } from "@tabler/icons-solidjs";
+    IconBook,
+    IconChevronDown,
+    IconChevronRight,
+    IconFile,
+} from "@tabler/icons-solidjs";
 import { ContentContext } from "../common/ContentContext";
 import FileBrowserItem from "./FileBrowserItem";
 import { sep } from "@tauri-apps/api/path";
@@ -55,8 +52,11 @@ async function directoryToNodes(path: string) {
 
 const FileBrowser = (props: FileBrowserProps) => {
     const { onRefresh, renaming } = useContext(ContentContext)!;
-    const [selectedNode, setSelectedNode] = createSignal<TreeNode<FileBrowserFile> | null>(null);
-    const [expandedNodes, setExpandedNodes] = createSignal<Set<string>>(new Set());
+    const [selectedNode, setSelectedNode] =
+        createSignal<TreeNode<FileBrowserFile> | null>(null);
+    const [expandedNodes, setExpandedNodes] = createSignal<Set<string>>(
+        new Set(),
+    );
 
     const root = {
         id: props.rootFolder.path,
@@ -96,17 +96,18 @@ const FileBrowser = (props: FileBrowserProps) => {
             expandedNodesSignal={[expandedNodes, setExpandedNodes]}
             indentSize={8}
             root={rootNode}
-            
             onNodeClick={onNodeClickInternal}
             renderNode={(node, _isRenaming) => (
-                <FileBrowserItem node={node} expandedNodesSignal={[expandedNodes, setExpandedNodes]} />
+                <FileBrowserItem
+                    node={node}
+                    expandedNodesSignal={[expandedNodes, setExpandedNodes]}
+                />
             )}
             renderItemIcon={(node) => {
-                if(node.id === root.id) {
-                    return <IconBook />
+                if (node.id === root.id) {
+                    return <IconBook />;
                 }
-                return node.data!.isDirectory ? null : <IconFile />
-
+                return node.data!.isDirectory ? null : <IconFile />;
             }}
             renderExpandedIndicator={(isExpanded, _node) =>
                 isExpanded ? <IconChevronDown /> : <IconChevronRight />

@@ -8,10 +8,7 @@ await initStorage();
 
 document.getElementById("root")!.innerHTML = "";
 render(
-    () => (
-        <App />
-    ), 
+    () => <App />,
 
-document.getElementById("root") as HTMLElement);
-
-
+    document.getElementById("root") as HTMLElement,
+);
