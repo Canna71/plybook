@@ -12,8 +12,15 @@ import {
 } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useNavigate, useSearchParams } from "@solidjs/router";
-import { Color } from "chessops";
+import { Chess, Color } from "chessops";
 import { parseFen } from "chessops/fen";
+import { makeSanVariation } from "chessops/san";
+import {
+    movesFromText,
+    TextItem,
+    textNearDiagram,
+    turnFromText,
+} from "../models/booktext";
 import { Config } from "chessground/config";
 import anylogger from "anylogger";
 import { Chessboard } from "../components/common/chessboard";
@@ -32,6 +39,7 @@ import {
     PdfTextLayer,
     renderPage,
     renderPageWidth,
+    pageTextItems,
     renderTextLayer,
 } from "../scan/pdf";
 import { imageToGray, scanPage, warmUpScanner } from "../scan/recognizer";
@@ -45,12 +53,13 @@ import {
     writeDataFile,
 } from "../storage/fs";
 import {
-    addStartingComment,
     bookQuote,
     collectionName,
     diagramFileName,
     diagramPgn,
+    normalPgn,
 } from "../models/scancollection";
+import GameManager, { GameManagerApi } from "../components/game/GameManager";
 import { join } from "@tauri-apps/api/path";
 import { BaseDirectory, exists, mkdir } from "@tauri-apps/plugin-fs";
 import { makeToast } from "../components/common/Toast";
@@ -98,7 +107,11 @@ const PdfReader: Component = () => {
     );
     const [showDiagrams, setShowDiagrams] = createSignal(true);
     const [selected, setSelected] = createSignal<
-        PageDiagram & { turn: Color }
+        PageDiagram & {
+            turn: Color;
+            /** The text below the diagram, which may give its moves */
+            following?: string;
+        }
     >();
     const [query, setQuery] = createSignal("");
     const [matches, setMatches] = createSignal<number[]>();
@@ -299,32 +312,90 @@ const PdfReader: Component = () => {
     const hasNotes = (d: PageDiagram) =>
         !!notes()?.has(diagramFileName({ ...d, fen: "" }));
 
-    /** The diagram's notes file, written from the position shown when there is none yet. */
-    const notesFile = async (d: PageDiagram & { turn: Color }) => {
-        const folder = await notesFolder();
-        const file = await join(folder, diagramFileName({ ...d, fen: "" }));
-        if (!(await exists(file, { baseDir: BaseDirectory.AppLocalData }))) {
-            const fen = scannedPosition(d.read, d.turn).fen;
-            await mkdir(folder, {
+    /**
+     * The notes being edited beside the book: the diagram's PGN from its file, or a new one
+     * from the scanned position, written to the file only once something is added.
+     */
+    const [notesGame, setNotesGame] = createSignal<{
+        file: string;
+        pgn: string;
+    }>();
+    let notesApi: GameManagerApi | undefined;
+    // the editor re-writes the PGN as it loads it: that is not a change worth saving
+    let baseline = "";
+    let loading = false;
+    let pending: { file: string; pgn: string } | undefined;
+    let notesTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const writeNotes = async () => {
+        clearTimeout(notesTimer);
+        const p = pending;
+        pending = undefined;
+        if (!p) return;
+        try {
+            await mkdir(await notesFolder(), {
                 baseDir: BaseDirectory.AppLocalData,
                 recursive: true,
             });
-            await writeDataFile(
-                file,
+            await writeDataFile(p.file, p.pgn);
+            if (!notes()?.has(baseName(p.file))) refetchNotes();
+        } catch (err) {
+            log.error("saving notes failed", err);
+            makeToast(`Could not save the notes: ${String(err)}`);
+        }
+    };
+    onCleanup(() => void writeNotes());
+    const onNotesChange = (pgn: string) => {
+        const game = notesGame();
+        if (!game) return;
+        const normal = normalPgn(pgn);
+        if (loading) baseline = normal;
+        if (normal === baseline) return;
+        baseline = normal;
+        pending = { file: game.file, pgn };
+        clearTimeout(notesTimer);
+        notesTimer = setTimeout(writeNotes, 800);
+    };
+
+    createEffect(
+        on(selected, async (d) => {
+            void writeNotes();
+            setNotesGame(undefined);
+            notesApi = undefined;
+            if (!d) return;
+            const p = scannedPosition(d.read, d.turn);
+            if (!p.legal) return;
+            const file = await join(
+                await notesFolder(),
+                diagramFileName({ ...d, fen: "" }),
+            );
+            const saved = (await exists(file, {
+                baseDir: BaseDirectory.AppLocalData,
+            }))
+                ? await readDataFile(file)
+                : undefined;
+            if (selected() !== d) return;
+            const pgn =
+                saved ??
                 diagramPgn(NameWithoutExtension(baseName(path())), {
                     ...d,
-                    fen,
-                }),
-            );
-            refetchNotes();
-        }
-        return file;
-    };
-    const openNotes = async () => {
+                    fen: p.fen,
+                });
+            baseline = normalPgn(pgn);
+            loading = true;
+            setNotesGame({ file, pgn });
+            setTimeout(() => (loading = false), 500);
+        }),
+    );
+
+    /** Analysis of the notes once there are any, else of the position. */
+    const analyze = async () => {
+        const game = notesGame();
+        await writeNotes();
         const d = selected();
-        if (!d) return;
-        const file = await notesFile(d);
-        navigate(`/analysis?path=${encodeURIComponent(file)}`);
+        if (game && d && hasNotes(d)) {
+            navigate(`/analysis?path=${encodeURIComponent(game.file)}`);
+        } else open("/analysis");
     };
 
     // the last text selected on the pages: clicking a button must not lose it
@@ -346,26 +417,54 @@ const PdfReader: Component = () => {
             document.removeEventListener("selectionchange", onSelection),
         );
     });
-    const addQuote = async () => {
-        const d = selected();
+    // #region chess in the text: whose move, and the moves that follow a diagram
+    const pageTexts = new Map<number, Promise<TextItem[]>>();
+    const textOf = (page: number) => {
+        const d = doc();
+        if (!d) return Promise.resolve([]);
+        if (!pageTexts.has(page))
+            pageTexts.set(
+                page,
+                pageTextItems(d, page).catch(() => [] as TextItem[]),
+            );
+        return pageTexts.get(page)!;
+    };
+    /** Opens a diagram, its side to move from the caption ("White to play") if it says. */
+    const pickDiagram = async (d: PageDiagram) => {
+        const near = textNearDiagram(await textOf(d.page), d.box);
+        const turn =
+            turnFromText(near.caption) ??
+            turnFromText(near.following) ??
+            d.orientation;
+        setSelected({ ...d, turn, following: near.following });
+    };
+    /** The moves the text gives from the diagram, numbered ("4.c3 Nf6 5.d4"). */
+    const textLine = () => {
+        const s = selected();
+        const fen = position()?.legal ? position()!.fen : undefined;
+        if (!s?.following || !fen) return undefined;
+        const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+        const { moves } = movesFromText(s.following, pos);
+        return moves.length ? makeSanVariation(pos, moves) : undefined;
+    };
+    const addTextMoves = (text: string) => {
+        const added = notesApi?.addMovesFromText(text) ?? 0;
+        makeToast(
+            added
+                ? `Added ${added} moves to the notes`
+                : "No moves in that text fit the position shown",
+        );
+        return added;
+    };
+    // #endregion
+
+    /** The selected text, as a comment on the move shown in the notes. */
+    const addQuote = () => {
         const q = quote();
-        if (!d || !q) return;
-        try {
-            const file = await notesFile(d);
-            const pgn = addStartingComment(
-                await readDataFile(file),
-                bookQuote(q.text, q.page),
-            );
-            await writeDataFile(file, pgn);
-            setQuote(undefined);
-            document.getSelection()?.removeAllRanges();
-            makeToast(
-                `Added to the notes of page ${d.page}, diagram ${d.index}`,
-            );
-        } catch (err) {
-            log.error("adding the quote failed", err);
-            makeToast(`Could not add the text: ${String(err)}`);
-        }
+        if (!q || !notesApi) return;
+        notesApi.addComment(bookQuote(q.text, q.page));
+        setQuote(undefined);
+        document.getSelection()?.removeAllRanges();
     };
     // #endregion
 
@@ -470,12 +569,7 @@ const PdfReader: Component = () => {
                                         if (ratio > 0) scan(n, isVisible);
                                     }}
                                     hasNotes={hasNotes}
-                                    onPick={(d) =>
-                                        setSelected({
-                                            ...d,
-                                            turn: d.orientation,
-                                        })
-                                    }
+                                    onPick={pickDiagram}
                                 />
                             )}
                         </For>
@@ -516,35 +610,119 @@ const PdfReader: Component = () => {
                         fallback={
                             <p class="reader-hint">
                                 Diagrams found on the pages are outlined: click
-                                one to study the position.
+                                one to take notes on it here (moves, variations,
+                                comments), saved with the book.
                             </p>
                         }
                     >
-                        <div class="reader-board">
-                            <Chessboard config={boardConfig} />
-                        </div>
-                        <div class="select is-small">
-                            <select
-                                value={selected()!.turn}
-                                onChange={(e) =>
-                                    setSelected({
-                                        ...selected()!,
-                                        turn: e.currentTarget.value as Color,
-                                    })
-                                }
-                            >
-                                <option value="white">White to move</option>
-                                <option value="black">Black to move</option>
-                            </select>
+                        <div class="reader-notes-header">
+                            <strong>
+                                Page {selected()!.page}, diagram{" "}
+                                {selected()!.index}
+                            </strong>
+                            <Show when={!hasNotes(selected()!)}>
+                                <div class="select is-small">
+                                    <select
+                                        title="Whose move it is in the diagram"
+                                        value={selected()!.turn}
+                                        onChange={(e) =>
+                                            setSelected({
+                                                ...selected()!,
+                                                turn: e.currentTarget
+                                                    .value as Color,
+                                            })
+                                        }
+                                    >
+                                        <option value="white">
+                                            White to move
+                                        </option>
+                                        <option value="black">
+                                            Black to move
+                                        </option>
+                                    </select>
+                                </div>
+                            </Show>
+                            <button
+                                class="delete"
+                                title="Close the notes"
+                                onClick={() => setSelected(undefined)}
+                            />
                         </div>
                         <For each={position()?.warnings}>
                             {(w) => <p class="reader-warning">{w}</p>}
                         </For>
+                        <Show
+                            when={notesGame()}
+                            keyed
+                            fallback={
+                                <Show when={!position()?.legal}>
+                                    <div class="reader-board">
+                                        <Chessboard config={boardConfig} />
+                                    </div>
+                                </Show>
+                            }
+                        >
+                            {(game) => (
+                                <div class="reader-notes">
+                                    <GameManager
+                                        compact
+                                        initalPgn={() => game.pgn}
+                                        setPgn={onNotesChange}
+                                        editable={() => true}
+                                        onReady={(api) => (notesApi = api)}
+                                    />
+                                </div>
+                            )}
+                        </Show>
+                        <Show when={notesGame() && textLine()}>
+                            <div class="reader-text-moves">
+                                <span>
+                                    From the text: <strong>{textLine()}</strong>
+                                </span>
+                                <Button
+                                    class="is-small is-info is-light"
+                                    title="Play these moves in the notes, from the move shown or from the diagram"
+                                    onClick={() =>
+                                        addTextMoves(selected()!.following!)
+                                    }
+                                >
+                                    Add these moves
+                                </Button>
+                            </div>
+                        </Show>
+                        <div class="buttons">
+                            <Button
+                                class="is-small"
+                                disabled={!notesGame() || !quote()}
+                                title="Select text on a page first: it becomes a comment on the move shown"
+                                onClick={addQuote}
+                            >
+                                Add selected text as a comment
+                            </Button>
+                            <Button
+                                class="is-small"
+                                disabled={!notesGame() || !quote()}
+                                title="Select moves in the text first (e.g. 12...Nf6 13.Bd3): they are played from the move shown"
+                                onClick={() => {
+                                    if (addTextMoves(quote()!.text)) {
+                                        setQuote(undefined);
+                                        document
+                                            .getSelection()
+                                            ?.removeAllRanges();
+                                    }
+                                }}
+                            >
+                                Add selected moves
+                            </Button>
+                        </div>
+                        <Show when={quote()}>
+                            <p class="reader-quote">“{quote()!.text}”</p>
+                        </Show>
                         <div class="buttons">
                             <Button
                                 class="is-small is-primary"
                                 disabled={!position()?.legal}
-                                onClick={() => open("/analysis")}
+                                onClick={analyze}
                             >
                                 Analyze
                             </Button>
@@ -570,29 +748,6 @@ const PdfReader: Component = () => {
                                 Edit
                             </Button>
                         </div>
-                        <div class="buttons">
-                            <Button
-                                class="is-small is-info"
-                                disabled={!position()?.legal}
-                                title="Moves, variations and comments for this diagram, kept in Library/Scanned"
-                                onClick={openNotes}
-                            >
-                                {hasNotes(selected()!)
-                                    ? "Notes"
-                                    : "Start notes"}
-                            </Button>
-                            <Button
-                                class="is-small"
-                                disabled={!position()?.legal || !quote()}
-                                title="Select text on a page first"
-                                onClick={addQuote}
-                            >
-                                Add selected text to notes
-                            </Button>
-                        </div>
-                        <Show when={quote()}>
-                            <p class="reader-quote">“{quote()!.text}”</p>
-                        </Show>
                     </Show>
                 </div>
             </div>

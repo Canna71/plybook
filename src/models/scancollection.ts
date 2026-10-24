@@ -43,16 +43,11 @@ export function bookQuote(text: string, page: number): string {
     return quote ? `${quote} (p. ${page})` : "";
 }
 
-/**
- * Adds a comment to the start of a diagram's game (before its moves), after any already
- * there; the rest of the game is kept as it is.
- */
-export function addStartingComment(pgn: string, comment: string): string {
-    const [game] = parsePgn(pgn);
-    if (!game || !comment) return pgn;
-    game.comments = [...(game.comments ?? []), comment];
-    return makePgn(game);
-}
+/** A PGN as chessops writes it, so the same games compare equal however they were spaced. */
+export const normalPgn = (pgn: string) =>
+    parsePgn(pgn)
+        .map((g) => makePgn(g))
+        .join("\n");
 
 /** The diagram as a PGN game; the solution, if any, as its moves. */
 export function diagramPgn(book: string, d: ScannedDiagram): string {

@@ -14,6 +14,7 @@ import {
     untrack,
 } from "solid-js";
 import { makeGameInternal, Path } from "../../models/pgn";
+import { movesFromText } from "../../models/booktext";
 import { GameModel } from "../../models/GameModel";
 import ButtonBar from "./Buttonbar";
 import {
@@ -83,6 +84,20 @@ export type GameManagerOptions = {
     ) => void;
     onGameFinished?: () => void;
     editable?: Accessor<boolean>;
+    /** Board above the moves, for a side panel (the PDF reader's notes) */
+    compact?: boolean;
+    /** Hands the parent what it may do to the game being edited */
+    onReady?: (api: GameManagerApi) => void;
+};
+
+export type GameManagerApi = {
+    /** Adds a comment after the move shown (or before the first move) */
+    addComment: (text: string) => void;
+    /**
+     * Plays the moves found in `text` from the move shown, or else from the start, as a new
+     * line where they differ from the game; how many moves were added.
+     */
+    addMovesFromText: (text: string) => number;
 };
 
 type PromotionData = {
@@ -129,6 +144,8 @@ const GameManager: Component<GameManagerOptions> = ({
     editable,
     defaultEngineAnalysisOn = false,
     onGameFinished,
+    compact,
+    onReady,
 }) => {
     // #region Game State
     const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
@@ -697,6 +714,29 @@ const GameManager: Component<GameManagerOptions> = ({
     } as GameContextType;
     // #endregion
 
+    onReady?.({
+        addComment: (text) => {
+            const path = currentPath();
+            const g = game();
+            if (g && path) setGame(g.insertComment(path, text, false, true));
+        },
+        addMovesFromText: (text) => {
+            const g = game();
+            if (!g) return 0;
+            for (const from of [currentPath() ?? Path.root, Path.root]) {
+                const { moves } = movesFromText(text, g.getPosition(from));
+                if (!moves.length) continue;
+                const [next, path] = g.applyMoves(from, moves);
+                batch(() => {
+                    setCurrentPath(path);
+                    setGame(next);
+                });
+                return moves.length;
+            }
+            return 0;
+        },
+    });
+
     // #region tooltip
     const { reference, ply, showTooltip } = useTooltip();
 
@@ -708,12 +748,17 @@ const GameManager: Component<GameManagerOptions> = ({
                 <TooltipContext.Provider value={{ showTooltip }}>
                     <div
                         class="pgnviewer-container"
-                        style={{
-                            "grid-template-columns": getSettingValue(
-                                "layout.playing.columnsTemplate",
-                                "400px 5px 1fr",
-                            ),
-                        }}
+                        classList={{ compact }}
+                        style={
+                            compact
+                                ? undefined
+                                : {
+                                      "grid-template-columns": getSettingValue(
+                                          "layout.playing.columnsTemplate",
+                                          "400px 5px 1fr",
+                                      ),
+                                  }
+                        }
                     >
                         <div class="pgnviewer-content">
                             <Show
@@ -796,7 +841,9 @@ const GameManager: Component<GameManagerOptions> = ({
                                 />
                             </Show>
                         </div>
-                        <VDivider ref={divider!} />
+                        <Show when={!compact}>
+                            <VDivider ref={divider!} />
+                        </Show>
                         <div class="pgnviewer-sidebar">
                             <Show when={!isPuzzleMode()}>
                                 <PgnEditBar isEditable={isEditable} />

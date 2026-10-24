@@ -18,6 +18,27 @@
     grid-template-columns: 400px 5px 1fr;
     grid-template-rows: 1fr auto;
 
+    // a side panel: the board above the moves
+    &.compact {
+        grid-template-areas:
+            "board"
+            "sidebar"
+            "description";
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto auto auto;
+        padding: 0;
+
+        .pgnviewer-content {
+            padding: 0 0 8px;
+        }
+
+        .pgnviewer-sidebar {
+            height: auto;
+            overflow: visible;
+            padding: 0;
+        }
+    }
+
     .pgnviewer-comments {
         grid-area: comments;
         padding: 4px 0;
