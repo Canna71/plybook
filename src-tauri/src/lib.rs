@@ -7,6 +7,7 @@ mod games;
 mod lichess_puzzles;
 mod migrate;
 mod net;
+mod repertoire;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -20,6 +21,7 @@ use engine::*;
 use games::*;
 use lichess_puzzles::*;
 use net::*;
+use repertoire::*;
 
 // use add_capability to enable an arbitrary engine to run
 // #[tauri::command]
@@ -87,7 +89,11 @@ pub fn run() {
             lichess_puzzle_attempt,
             lichess_puzzle_download,
             lichess_puzzle_import_file,
-            scan_capture_screen
+            scan_capture_screen,
+            repertoire_list,
+            repertoire_set,
+            repertoire_cards,
+            repertoire_save_card
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
