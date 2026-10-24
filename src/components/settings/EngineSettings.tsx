@@ -8,6 +8,7 @@ import {
     Show,
 } from "solid-js";
 import anylogger from "anylogger";
+import { getSettingValue, setSettingValue } from "../../models/settings";
 import Button from "../common/Button";
 import { makeErrorToast, makeToast } from "../common/Toast";
 import { ExecutableUCIInterface } from "../../engine/executableuci";
@@ -17,6 +18,7 @@ import {
     EngineProfile,
     Executable,
     getEnginesFolder,
+    HUMAN_SETTING,
     knownExecutables,
     listWeights,
     newProfileId,
@@ -383,6 +385,34 @@ const EngineSettings: Component = () => {
                         </For>
                     </tbody>
                 </table>
+            </div>
+
+            <div class="field human-engine">
+                <label class="label">Human moves in analysis</label>
+                <div class="select">
+                    <select
+                        value={getSettingValue<string>(HUMAN_SETTING, "")}
+                        onChange={(e) =>
+                            setSettingValue(
+                                HUMAN_SETTING,
+                                e.currentTarget.value,
+                            )
+                        }
+                    >
+                        <option value="">
+                            Automatic (first human-like engine)
+                        </option>
+                        <option value="off">Off</option>
+                        <For each={profiles().filter((p) => p.singleNode)}>
+                            {(p) => <option value={p.id}>{p.name}</option>}
+                        </For>
+                    </select>
+                </div>
+                <p class="help">
+                    A Maia engine runs next to the analysis and shows the moves
+                    players of its rating usually choose, and when the natural
+                    move is a trap.
+                </p>
             </div>
 
             <Show when={addOpen()}>

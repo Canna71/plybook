@@ -14,6 +14,8 @@ export interface AppSettings {
     };
     engine?: {
         lastUsed?: string;
+        /** Maia-style profile for human-move hints: "" first one, "off" none */
+        human?: string;
         analysis: {
             depth?: number;
             multipv?: number;
@@ -47,6 +49,7 @@ const DEFAULT: AppSettings = {
     },
     engine: {
         lastUsed: "",
+        human: "",
         analysis: {
             depth: 30,
             multipv: 3,

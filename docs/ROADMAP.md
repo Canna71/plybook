@@ -96,8 +96,17 @@ How this file is used:
     safety yet; shown only while engine analysis is on.
 - [ ] **P2.4 Natural-language explanation** (optional, needs an API key): Claude phrases P2.3
   facts and engine lines; never asked to calculate. **Decision**: provider and key handling.
-- [ ] **P2.5 Human vs best**: Maia's most likely move next to the engine's best, to show traps
-  and "natural but wrong" moves.
+- [x] **P2.5 Human vs best** (`feature/human-moves`; owner review pending): Maia's most likely
+  move next to the engine's best, to show traps and "natural but wrong" moves.
+  - Status: a Maia profile runs next to the analysis engine (`useHumanMoves`, Lc0
+    VerboseMoveStats policy from `go nodes 1`) and the panel shows "maia-1500: Nf6 33% · Bc5 21%
+    · h6 13%", starring the engine's choice and warning "Trap: most players play X, which loses
+    N% winning chances" (`models/human.ts`). Settings: "Human moves in analysis" (automatic,
+    off, or a profile).
+  - Refactor: `startEngine(profile)` shared by analysis and human moves; `info string` lines are
+    a separate UCI event; UCIEngine has tests with a fake process.
+  - Known limits: a trap is only detected when the natural move is among the engine's MultiPV
+    lines; otherwise the panel says the engine does not rank it.
 - [ ] **P2.6 Candidate-move trainer**: commit to 2-3 candidates before the reveal; track how
   often the best move was among them.
 - [ ] **P2.7 Guess the move** through master games or your own.

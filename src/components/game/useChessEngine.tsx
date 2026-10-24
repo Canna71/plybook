@@ -11,13 +11,7 @@ import {
 } from "solid-js";
 import { createStore } from "solid-js/store";
 import { IChessEngine, EngineInfo } from "../../engine/engineinterfaces";
-import { ExecutableUCIInterface } from "../../engine/executableuci";
-import { UCIEngine } from "../../engine/uciengine";
-import {
-    activeProfile,
-    expandEnginesFolder,
-    getEnginesFolder,
-} from "../../engine/engineprofiles";
+import { activeProfile, startEngine } from "../../engine/engineprofiles";
 import { makeMove } from "../common/utils";
 import { makeErrorToast } from "../common/Toast";
 import { Color } from "chessground/types";
@@ -138,20 +132,9 @@ export function useChessEngine(options: ChessEngineOptions) {
 
     createEffect(async () => {
         if (shouldInitEngine()) {
-            const p = profile()!;
-            const engine = new UCIEngine(
-                new ExecutableUCIInterface(p.id, p.name),
-            );
-
+            let engine: IChessEngine;
             try {
-                await engine.init();
-                const enginesFolder = await getEnginesFolder();
-                for (const option of p.options) {
-                    engine.setOption(
-                        option.name,
-                        expandEnginesFolder(option.value, enginesFolder),
-                    );
-                }
+                engine = await startEngine(profile()!);
             } catch (err) {
                 log.error("engine failed to start", err);
                 makeErrorToast(
