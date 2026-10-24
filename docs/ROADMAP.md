@@ -178,7 +178,12 @@ How this file is used:
     a Lichess screenshot from Black's side) with the real model.
   - CSP: added `script-src 'self' 'wasm-unsafe-eval'` (WebAssembly) and `blob:` images.
   - Known limits: 2D boards only (no photos of real boards, no 3D sets); not yet confirmed in
-    the macOS webview itself; no screen-region capture (paste a screenshot instead).
+    the macOS webview itself.
+- [x] **P4.1b Scan from screen** (`feature/screen-capture`; owner review pending): "Capture from
+  screen" on the Scan page; drag a rectangle over any board on screen (any app or website) and it
+  opens recognized. macOS: the system region capture (`screencapture -i`) while ReChess hides;
+  checks the Screen Recording permission first and explains how to grant it. Windows: later
+  (Win+Shift+S and paste meanwhile).
 - [ ] **P4.2 FEN / PGN from pasted text** (web pages, chat).
 - [ ] **P4.3 Books and PDFs**: detect diagrams on pages and batch-convert them into a puzzle
   collection.
@@ -189,6 +194,13 @@ How this file is used:
   embedded player. Needs a narrow CSP `frame-src` for youtube-nocookie.com.
 - [-] **I.2 Chessable**: no public API; courses only export to chess.com. Covered by P3.6 with
   PGNs the user owns.
+- [ ] **I.3 "Open in ReChess" from the browser** (decided 2026-10-24: later): register a
+  `rechess://` link (Tauri deep-link plugin) such as `rechess://analyze?fen=…`, plus a bookmarklet
+  that reads the position Lichess / chess.com already keep as text in the page, so no image
+  recognition is needed there.
+- [-] **I.4 In-app web browser** for scanning boards: an external page cannot be given the app's
+  access, most boards are drawn from page elements rather than images, and it would be a
+  second-rate browser. Covered by P4.1b (scan from screen) and I.3.
 
 ## Shared foundations
 
