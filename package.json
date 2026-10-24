@@ -9,6 +9,7 @@
     "build": "vite build",
     "serve": "vite preview",
     "tauri": "tauri",
+    "build:mac": "test -n \"$APPLE_SIGNING_IDENTITY\" || { echo 'Set APPLE_SIGNING_IDENTITY (security find-identity -v -p codesigning), see README'; exit 1; } && tauri build --bundles app",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run"

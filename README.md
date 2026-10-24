@@ -34,6 +34,20 @@ pnpm install
 pnpm tauri dev
 ```
 
+### macOS builds: sign with a stable identity
+
+Unsigned (ad-hoc) builds get a new identity on every build, so macOS forgets permissions such as
+Screen Recording (used by "Capture from screen") and asks again after each rebuild. Sign with your
+certificate instead; list yours with `security find-identity -v -p codesigning`:
+
+```bash
+export APPLE_SIGNING_IDENTITY="Apple Development: Your Name (TEAMID)"   # e.g. in ~/.zshrc
+pnpm build:mac        # tauri build --bundles app, refuses to run unsigned
+```
+
+After the first signed build, remove old `rechess` entries in System Settings → Privacy &
+Security → Screen Recording, grant the permission again and reopen ReChess once.
+
 ### To build icons:
 
 ```bash
