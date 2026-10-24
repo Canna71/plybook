@@ -9,10 +9,7 @@ use crate::db::{db_path, Database};
 use rusqlite::{params, params_from_iter, types::Value, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 use shakmaty::{
-    fen::Fen,
-    uci::UciMove,
-    zobrist::Zobrist64,
-    CastlingMode, Chess, EnPassantMode, Position,
+    fen::Fen, uci::UciMove, zobrist::Zobrist64, CastlingMode, Chess, EnPassantMode, Position,
 };
 use std::io::{self, Read};
 use std::ops::ControlFlow;
@@ -495,6 +492,74 @@ fn search_games(conn: &Connection, q: &GameQuery) -> Result<SearchResult, String
     Ok(SearchResult { total, games })
 }
 
+#[derive(Debug, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ExplorerMove {
+    uci: String,
+    san: String,
+    games: i64,
+    white_wins: i64,
+    draws: i64,
+    black_wins: i64,
+    /// Average rating of the players, where known
+    average_elo: Option<i64>,
+}
+
+/// The moves played from a position in the imported games, most played first. A game counts
+/// once per move even if it reached the position twice; transpositions are found by hash.
+fn explore(
+    conn: &Connection,
+    fen: &str,
+    database_id: Option<i64>,
+) -> Result<Vec<ExplorerMove>, String> {
+    let pos: Chess = Fen::from_ascii(fen.trim().as_bytes())
+        .map_err(|e| e.to_string())?
+        .into_position(CastlingMode::Chess960)
+        .map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT p.next_move, count(*) AS games,
+                 sum(g.result = '1-0'), sum(g.result = '1/2-1/2'), sum(g.result = '0-1'),
+                 avg((g.white_elo + g.black_elo) / 2.0)
+             FROM (SELECT DISTINCT game_id, next_move FROM positions
+                   WHERE hash = ?1 AND next_move IS NOT NULL
+                     AND (?2 IS NULL OR database_id = ?2)) AS p
+             JOIN games g ON g.id = p.game_id
+             GROUP BY p.next_move ORDER BY games DESC LIMIT 40",
+        )
+        .map_err(|e| e.to_string())?;
+    let rows = stmt
+        .query_map(params![zobrist(&pos), database_id], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, i64>(1)?,
+                r.get::<_, i64>(2)?,
+                r.get::<_, i64>(3)?,
+                r.get::<_, i64>(4)?,
+                r.get::<_, Option<f64>>(5)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<rusqlite::Result<Vec<_>>>()
+        .map_err(|e| e.to_string())?;
+    Ok(rows
+        .into_iter()
+        .filter_map(|(uci, games, white_wins, draws, black_wins, elo)| {
+            // a hash collision could name a move that is not legal here
+            let mv = uci.parse::<UciMove>().ok()?.to_move(&pos).ok()?;
+            Some(ExplorerMove {
+                san: shakmaty::san::San::from_move(&pos, mv).to_string(),
+                uci,
+                games,
+                white_wins,
+                draws,
+                black_wins,
+                average_elo: elo.map(|e| e.round() as i64),
+            })
+        })
+        .collect())
+}
+
 fn game_pgn(conn: &Connection, id: i64) -> Result<String, String> {
     conn.query_row("SELECT pgn FROM games WHERE id = ?1", [id], |r| r.get(0))
         .optional()
@@ -530,6 +595,15 @@ pub async fn gamedb_search(
     query: GameQuery,
 ) -> Result<SearchResult, String> {
     with_db(&db, |conn| search_games(conn, &query))
+}
+
+#[tauri::command]
+pub async fn gamedb_explore(
+    db: State<'_, Database>,
+    fen: String,
+    database_id: Option<i64>,
+) -> Result<Vec<ExplorerMove>, String> {
+    with_db(&db, |conn| explore(conn, &fen, database_id))
 }
 
 #[tauri::command]
@@ -833,6 +907,55 @@ mod tests {
     }
 
     #[test]
+    fn explores_the_moves_played_from_a_position() {
+        let (conn, info) = imported();
+        let start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        let moves = explore(&conn, start, None).unwrap();
+        assert_eq!(moves.len(), 1);
+        assert_eq!(
+            moves[0],
+            ExplorerMove {
+                uci: "e2e4".into(),
+                san: "e4".into(),
+                games: 2,
+                white_wins: 1,
+                draws: 0,
+                black_wins: 1,
+                average_elo: Some(1900),
+            }
+        );
+        // after 1. e4 Black chose e5 once and c5 once
+        let after_e4 = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+        let mut sans: Vec<String> = explore(&conn, after_e4, Some(info.id))
+            .unwrap()
+            .into_iter()
+            .map(|m| m.san)
+            .collect();
+        sans.sort();
+        assert_eq!(sans, ["c5", "e5"]);
+        assert!(explore(&conn, after_e4, Some(info.id + 1))
+            .unwrap()
+            .is_empty());
+        assert!(explore(&conn, "bad fen", None).is_err());
+    }
+
+    #[test]
+    fn explorer_counts_a_repeated_position_once() {
+        let conn = Connection::open_in_memory().unwrap();
+        crate::db::migrate(&conn).unwrap();
+        // the knights go out and back: the start position is reached twice, both times with Nf3
+        let pgn = "[White \"A\"]\n[Black \"B\"]\n[Result \"1/2-1/2\"]\n\n\
+            1. Nf3 Nf6 2. Ng1 Ng8 3. Nf3 1/2-1/2\n";
+        import_games(&conn, pgn.as_bytes(), "rep", "rep.pgn", |_, _| {}).unwrap();
+        let start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        let moves = explore(&conn, start, None).unwrap();
+        assert_eq!(
+            (moves[0].san.as_str(), moves[0].games, moves[0].draws),
+            ("Nf3", 1, 1)
+        );
+    }
+
+    #[test]
     fn deleting_a_database_removes_its_games() {
         let (conn, info) = imported();
         delete_database(&conn, info.id).unwrap();
@@ -870,6 +993,18 @@ mod tests {
             },
         )
         .unwrap();
+        let explorer = std::time::Instant::now();
+        let start_moves = explore(
+            &conn,
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            None,
+        )
+        .unwrap();
+        eprintln!(
+            "explorer at the start: {} moves in {:.0} ms",
+            start_moves.len(),
+            explorer.elapsed().as_secs_f64() * 1000.0
+        );
         let size = std::fs::metadata(&db_file).unwrap().len();
         eprintln!(
             "{} games in {elapsed:.2}s ({:.0} games/s), {} after 1. e4 found in {:.0} ms, {:.1} MB",

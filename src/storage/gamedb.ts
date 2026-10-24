@@ -74,3 +74,17 @@ export async function importDatabase(
         undefined
     );
 }
+
+export type ExplorerMove = {
+    uci: string;
+    san: string;
+    games: number;
+    whiteWins: number;
+    draws: number;
+    blackWins: number;
+    averageElo?: number;
+};
+
+/** Moves played from `fen` in the imported games, most played first. */
+export const exploreDatabases = (fen: string, databaseId?: number) =>
+    invoke<ExplorerMove[]>("gamedb_explore", { fen, databaseId });

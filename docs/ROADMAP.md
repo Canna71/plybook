@@ -146,8 +146,14 @@ How this file is used:
     cancel during an import; .zip files must be unpacked first.
 - [ ] **P3.2 Lichess puzzle database** (CC0 CSV): import by theme and rating range into the
   puzzle trainer.
-- [ ] **P3.3 Opening explorer**: own database first, Lichess explorer online (check whether its
-  API now needs a token).
+- [~] **P3.3 Opening explorer**: own database first, Lichess explorer online.
+  - [x] Own databases (`feature/explorer`; owner review pending): Explorer tab next to Moves and
+    Evaluation; moves played from the current position with counts, a White/draw/Black bar and
+    average Elo, click to play; the games that reached the position underneath. Transpositions
+    by hash; a game counts once per move. 5 ms at the start position for 7,641 games (grows
+    linearly: about 0.5 s for a million). Only the first 30 plies of each game are indexed.
+  - [ ] Lichess explorer: its API answers 401 without a token since 2025-26, so it needs the
+    user's personal Lichess token, stored with S.1.
 - [ ] **P3.4 Opening books**: Polyglot `.bin` support in analysis and as engine-play book.
 - [ ] **P3.5 Endgame tablebase** lookups (Lichess tablebase API).
 - [ ] **P3.6 Repertoire builder and trainer**: spaced repetition over your own lines
@@ -167,6 +173,11 @@ How this file is used:
   embedded player. Needs a narrow CSP `frame-src` for youtube-nocookie.com.
 - [-] **I.2 Chessable**: no public API; courses only export to chess.com. Covered by P3.6 with
   PGNs the user owns.
+
+## Shared foundations
+
+- [ ] **S.1 Secret storage** for the Lichess token (P3.3) and model API keys (P2.4b): kept by
+  Rust (OS keychain or a file outside the webview's fs scope), never readable by the webview.
 
 ## Other
 
