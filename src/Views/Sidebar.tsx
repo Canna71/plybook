@@ -44,9 +44,6 @@ const Sidebar = () => {
                     <li>
                         <a href="/settings">Settings</a>
                     </li>
-                    <li>
-                        <a href="/db">DB Test</a>
-                    </li>
                 </ul>
                 <p class="menu-label">Library</p>
                 <ul class="menu-list"></ul>

@@ -10,9 +10,7 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-/// https://surrealdb.com/docs/surrealdb/embedding/rust
 // use serde::{Deserialize, Serialize};
-use tokio::sync::Mutex;
 use db::*;
 use engine::*;
 use net::*;
@@ -33,7 +31,7 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init())
-        .manage(DatabaseConnection(Mutex::new(None)))
+        .manage(Database::default())
         .manage(EngineProcesses::default())
         .manage(ApprovedExecutables::default())
         .plugin(tauri_plugin_shell::init())
@@ -46,9 +44,9 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            greet, init_db, index_game, list_games, upload_pgn, upsert_study,
-            list_studies, list_puzzles, update_puzzle_score, pick_puzzle, 
-            update_cached_weights, update_puzzle_base_weight, delete_puzzle, get_study,
+            greet, init_db, upsert_study,
+            list_puzzles, update_puzzle_score, pick_puzzle, 
+            update_puzzle_base_weight, delete_puzzle, get_study,
             save_history_game, get_history_game, list_history,
             engine_list, engine_save_profile, engine_remove_profile, engine_pick_executable, engine_pick_weights,
             engine_folder, engine_open_folder, engine_weights,

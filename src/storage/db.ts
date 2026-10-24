@@ -30,41 +30,9 @@ export type Study = {
     created_at: string;
 };
 
-export type Id =
-    | { String: string }
-    | { Number: number }
-    | { Uuid: string }
-    | { Array: any[] }
-    | { Object: Record<string, any> }
-    | { Generate: "Rand" | "Ulid" | "Uuid" }
-    | { Range: { start: Id | null; end: Id | null } };
-
-// You could add this helper function to your db.ts file
-export function getIdValue(id: Id | undefined): string | undefined {
-    if (!id) return undefined;
-
-    if ("Number" in id) return id.Number.toString();
-    if ("String" in id) return id.String;
-    if ("Uuid" in id) return id.Uuid;
-    if ("Array" in id) return JSON.stringify(id.Array);
-    if ("Object" in id) return JSON.stringify(id.Object);
-    if ("Generate" in id) return `${id.Generate}()`;
-    if ("Range" in id) {
-        const start = id.Range.start ? getIdValue(id.Range.start) : "*";
-        const end = id.Range.end ? getIdValue(id.Range.end) : "*";
-        return `${start}..${end}`;
-    }
-
-    return undefined;
-}
-
-export type RecordId = {
-    id: Id;
-    tb: string;
-};
-
+// Mirrors Game in src-tauri/src/db.rs
 export type Game = {
-    id?: RecordId;
+    id?: string;
     pgn: string;
     timeControlInitial: number;
     timeControlIncrement: number;
@@ -77,16 +45,6 @@ export type Game = {
     round: number;
 };
 
-export async function upsertStudy(study: Study): Promise<Study> {
-    return await invoke("upsert_study", {
-        study,
-    });
-}
-
-export async function listStudies(): Promise<Study[]> {
-    return await invoke("list_studies");
-}
-
 export async function listPuzzles(): Promise<Study[]> {
     return await invoke("list_puzzles");
 }
@@ -95,16 +53,7 @@ export async function initDB() {
     try {
         await invoke("init_db");
     } catch (error) {
-        if (
-            (error as string).includes(
-                "The process cannot access the file because it is being used by another process",
-            ) ||
-            (error as string).includes("lock hold by current process")
-        ) {
-            log.debug("DB already initialized");
-        } else {
-            log.warn("initDB", error);
-        }
+        log.error("initDB", error);
     }
 }
 
@@ -151,10 +100,6 @@ export async function createPuzzle(studyId: string, baseWeight?: number) {
 /** A weighted random puzzle, optionally only from one Library folder; undefined if none. */
 export async function pickPuzzle(folder?: string): Promise<Study | undefined> {
     return (await invoke<Study | null>("pick_puzzle", { folder })) ?? undefined;
-}
-
-export async function updateCachedWeights() {
-    return await invoke("update_cached_weights");
 }
 
 // History

@@ -3,7 +3,7 @@
 Desktop chess study app: play vs engine, analysis, game review, PGN library and puzzles.
 **Tauri 2** (Rust, `src-tauri/`) + **SolidJS + TypeScript + Vite** (`src/`), using lichess
 `chessground` (board) and `chessops` (rules/PGN). Bulma + SCSS. Puzzles and game history live
-in an embedded **SurrealDB** (RocksDB backend).
+in an embedded **SQLite** database (`rusqlite`, bundled SQLite).
 
 Target platforms: **macOS first, then Windows. Linux is not a target**, so Linux-only
 build issues are not bugs (e.g. case-sensitive file names) and CI runs on macOS and Windows only.
@@ -30,8 +30,8 @@ cd src-tauri && cargo clippy
 cd src-tauri && cargo fmt --check
 ```
 
-Building the Rust side needs LLVM/libclang (SurrealDB's RocksDB backend compiles C++).
-On macOS the Xcode command line tools are enough; on Windows install LLVM and set `LIBCLANG_PATH`.
+Building the Rust side needs a C compiler for the bundled SQLite: the Xcode command line tools on
+macOS, the MSVC build tools on Windows. (No LLVM/libclang since SurrealDB was removed.)
 
 Unit tests use **Vitest** (`vitest.config.ts`, Node environment, no Solid plugin) and cover pure
 modules: `src/models/review.test.ts`, `src/models/pgn.test.ts`. Keep tested modules free of Tauri
@@ -58,7 +58,7 @@ Rust changed.
 
 ```
 src/
-  index.tsx, App.tsx       router: / /game /analysis /play /puzzles /puzzle /library /history /boardeditor /db
+  index.tsx, App.tsx       router: / /game /analysis /play /puzzles /puzzle /library /history /boardeditor /settings /guess
   Views/                   route pages. GameView = file load/save/puzzle wrapper around GameManager.
                            Play, Puzzles, History, LibraryFolder, Sidebar, Layout. obsoleted/ is dead code.
   components/game/         GameManager.tsx (the hub, ~870 lines), GameContext.tsx (shared signals),
@@ -75,7 +75,9 @@ src/
   theming/                 dynamic CSS loading for board/piece themes (src/assets/styles)
 src-tauri/src/
   lib.rs                   plugin setup, setup hook, command registration (generate_handler!)
-  db.rs                    SurrealDB commands: studies/puzzles CRUD, weights, pick_puzzle, history, games
+  db.rs                    SQLite: puzzles (weights, pick_puzzle) and history; schema steps in SCHEMA
+                           (PRAGMA user_version), one-time import of tools/surreal-export output
+  net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts
   engine.rs                engine process management (engine_list/spawn/write/kill) + open_library_path
   migrate.rs               one-time move of user data from the old "rechess" identifier folders
 src-tauri/capabilities/    webview permissions (default.json, desktop.json)
@@ -88,7 +90,8 @@ Data flow: the **PGN string is the source of truth** for a game. Edits go throug
 User data locations (resolved by Tauri from the bundle identifier):
 - `<AppLocalData>/Library` user PGN files and folders
 - `<AppLocalData>/Engines` UCI engine binaries (the first one found is used)
-- `<AppLocalData>/db` SurrealDB database
+- `<AppLocalData>/rechess.sqlite` database (the old SurrealDB `db/` folder is no longer read;
+  `tools/surreal-export` turns it into `surreal-export.json`, imported on the next start)
 - `<AppConfig>` settings JSON
 
 ## Conventions
@@ -129,12 +132,11 @@ User data locations (resolved by Tauri from the bundle identifier):
 
 - **Bundle identifier is `com.canna71.rechess`** (decided). Changing it moves every user's
   Library, settings and DB; `migrate.rs` exists to move data from the old `rechess` identifier.
-- `src-tauri/gen/schemas` and `src-tauri/db` are generated/ignored. The capability `$schema`
+- `src-tauri/gen/schemas` is generated/ignored. The capability `$schema`
   points at `gen/schemas`, which appears after the first `cargo build`/`tauri dev`.
 - On macOS, a downloaded engine binary may be quarantined or not executable (`chmod +x`,
   `xattr -d com.apple.quarantine`). Engine start failures mostly surface in the log only.
 - Paths in routes must be URL-encoded (`encodeURIComponent`) because file names can contain `&#?+`.
-- `/db` (DBTest) is a dev harness; `upload_pgn` / `index_game` in `db.rs` are stubs.
 - Dead code you can ignore or delete: `src/Views/obsoleted/`, `Views/GameEditView.tsx`,
   `components/Analysis.tsx`, `models/FENcoder.ts`, Rust `greet`.
 - Known refactor targets: split `GameManager.tsx`, make `useChessEngine` an explicit state machine,
