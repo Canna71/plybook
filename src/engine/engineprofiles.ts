@@ -122,3 +122,10 @@ export function humanProfile(): EngineProfile | undefined {
     const candidates = profiles().filter((p) => p.singleNode && !p.missing);
     return candidates.find((p) => p.id === wanted) ?? candidates[0];
 }
+
+/** A full-strength profile to judge moves: the selected one unless it is Maia-style. */
+export function analysisProfile(): EngineProfile | undefined {
+    const active = activeProfile();
+    if (active && !active.singleNode) return active;
+    return profiles().find((p) => !p.singleNode && !p.missing);
+}

@@ -100,7 +100,7 @@ export function makeArrowShape(orig: Key, dest: Key, brush: string): DrawShape {
     return { orig, dest, brush };
 }
 
-const drawBrushes: DrawBrushes = {
+export const drawBrushes: DrawBrushes = {
     yellow: { key: "yellow", color: "yellow", opacity: 1, lineWidth: 10 },
     green: { key: "green", color: "green", opacity: 1, lineWidth: 10 },
     red: { key: "red", color: "red", opacity: 1, lineWidth: 10 },

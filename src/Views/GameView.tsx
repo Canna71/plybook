@@ -274,6 +274,21 @@ const GameView = () => {
                         </div>
                     </Show>
 
+                    <Show when={filePath() && !isPuzzleMode()}>
+                        <div class="navbar-item">
+                            <Button
+                                class="is-primary is-outlined"
+                                title="Name your candidate moves at each turn, then compare with the game and the engine"
+                                onClick={() =>
+                                    navigate(
+                                        `/guess?path=${encodeURIComponent(filePath()!)}`,
+                                    )
+                                }
+                            >
+                                Guess the move
+                            </Button>
+                        </div>
+                    </Show>
                     <Show when={filePath()}>
                         <div class="navbar-item">
                             <Select

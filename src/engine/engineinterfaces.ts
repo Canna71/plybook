@@ -6,6 +6,8 @@ export interface AnalysisOptions {
     threads?: number;
     /** Fixed number of nodes; with 1 an Lc0/Maia net plays its raw first choice */
     nodes?: number;
+    /** Only search these moves (UCI) */
+    searchmoves?: string[];
 }
 
 // Types for the parsed information

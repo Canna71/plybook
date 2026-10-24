@@ -1,0 +1,27 @@
+.guess_view {
+    display: flex;
+    gap: 16px;
+    height: 100%;
+    padding: 16px;
+    overflow: auto;
+
+    .guess-board {
+        flex: 0 0 auto;
+        width: min(80vh, 60%);
+        aspect-ratio: 1;
+    }
+
+    .guess-panel {
+        flex: 1;
+        min-width: 260px;
+
+        .guess-score {
+            margin-bottom: 10px;
+            opacity: 0.85;
+        }
+
+        .tags {
+            min-height: 2em;
+        }
+    }
+}
