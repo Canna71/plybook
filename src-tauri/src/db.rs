@@ -81,6 +81,27 @@ CREATE TABLE positions (
 );
 CREATE INDEX positions_hash ON positions (hash);
 "#,
+    r#"
+CREATE TABLE lichess_puzzles (
+    id TEXT PRIMARY KEY,
+    fen TEXT NOT NULL,
+    moves TEXT NOT NULL,
+    rating INTEGER NOT NULL,
+    popularity INTEGER NOT NULL,
+    plays INTEGER NOT NULL,
+    themes TEXT NOT NULL,
+    game_url TEXT NOT NULL,
+    opening TEXT NOT NULL
+);
+CREATE INDEX lichess_puzzles_rating ON lichess_puzzles (rating);
+CREATE TABLE puzzle_attempts (
+    puzzle_id TEXT NOT NULL,
+    solved INTEGER NOT NULL,
+    at TEXT NOT NULL,
+    rating_after REAL NOT NULL
+);
+CREATE INDEX puzzle_attempts_puzzle ON puzzle_attempts (puzzle_id);
+"#,
 ];
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -146,7 +167,7 @@ pub(crate) fn migrate(conn: &Connection) -> rusqlite::Result<()> {
     Ok(())
 }
 
-fn with_db<T>(
+pub(crate) fn with_db<T>(
     db: &State<'_, Database>,
     f: impl FnOnce(&Connection) -> Result<T, String>,
 ) -> Result<T, String> {

@@ -3,6 +3,7 @@ import { listPuzzles, pickPuzzle, Study } from "../storage/db";
 import Button from "../components/common/Button";
 import { formatDate, round } from "../components/common/utils";
 import "./Puzzles.scss";
+import LichessPuzzles from "../components/puzzles/LichessPuzzles";
 import { useNavigate } from "@solidjs/router";
 import { NameWithoutExtension } from "../storage/fs";
 import { mistakesFolder } from "../storage/mistakes";
@@ -27,6 +28,7 @@ const Puzzles: Component = () => {
 
     return (
         <div class="puzzles_view ">
+            <LichessPuzzles />
             <div class="buttons-bar">
                 <Button class="is-primary" onClick={() => nextPuzzle()}>
                     Pick Puzzle

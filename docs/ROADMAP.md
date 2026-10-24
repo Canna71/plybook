@@ -144,8 +144,15 @@ How this file is used:
     (7,641 chess.com games: 0.54 s, 22 MB; a position search 7 ms).
     Known limits: comments and variations are not kept; Chess960 games are skipped; no
     cancel during an import; .zip files must be unpacked first.
-- [ ] **P3.2 Lichess puzzle database** (CC0 CSV): import by theme and rating range into the
-  puzzle trainer.
+- [x] **P3.2 Lichess puzzle database** (`feature/lichess-puzzles`; owner review pending): import
+  by theme and rating range into the puzzle trainer.
+  - Status: Puzzles page → "Download from Lichess" (or "Import file…"), popular puzzles
+    (popularity ≥ 90: 3.3 M, ~720 MB, 11 s to import) or all (6.2 M, ~1.4 GB, 21 s). Train by
+    theme within ±150 of your puzzle rating (Elo, K=32, first try only, as on Lichess); "Your
+    weakest themes" from your attempts, each with a Train button; picking takes ~0.1 ms.
+    Puzzles play in the puzzle screen (set-up move automatic, board facing the solver).
+  - Known limits: only Lichess's exact solution is accepted (Lichess also accepts any mate in
+    mate-in-1 puzzles); no cancel during download.
 - [~] **P3.3 Opening explorer**: own database first, Lichess explorer online.
   - [x] Own databases (`feature/explorer`; owner review pending): Explorer tab next to Moves and
     Evaluation; moves played from the current position with counts, a White/draw/Black bar and

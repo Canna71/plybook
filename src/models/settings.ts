@@ -33,6 +33,12 @@ export interface AppSettings {
     online?: {
         accounts: OnlineAccount[];
     };
+    puzzles?: {
+        lichess?: {
+            /** Theme to train; "" for any */
+            theme?: string;
+        };
+    };
     layout: {
         columnsTemplate?: string;
         playing: {
@@ -67,6 +73,11 @@ const DEFAULT: AppSettings = {
     },
     online: {
         accounts: [],
+    },
+    puzzles: {
+        lichess: {
+            theme: "",
+        },
     },
     layout: {
         columnsTemplate: "180px 5px 1fr",

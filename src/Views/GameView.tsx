@@ -38,6 +38,12 @@ import {
 import { historyTitle } from "../models/history";
 import { mistakesFolder } from "../storage/mistakes";
 import { makeToast } from "../components/common/Toast";
+import {
+    getLichessPuzzle,
+    pickNextLichessPuzzle,
+    recordPuzzleAttempt,
+} from "../storage/lichesspuzzles";
+import { lichessPuzzlePgn } from "../models/lichesspuzzle";
 import { calculatePerformanceScore } from "../models/puzzles";
 import Select, { Option } from "../components/common/Select";
 import Button from "../components/common/Button";
@@ -66,6 +72,14 @@ const GameView = () => {
             ? searchParams.id
             : undefined;
     const [historyName, setHistoryName] = createSignal<string>();
+    /** A puzzle from the Lichess puzzle database */
+    const lichessPuzzleId = () =>
+        searchParams.source === "lichess" && typeof searchParams.id === "string"
+            ? searchParams.id
+            : undefined;
+    // only the first try at a puzzle counts, as on Lichess
+    let recordedPuzzle: string | undefined;
+
     /** A game from an imported database (read-only: Save copies it to the Library) */
     const databaseGameId = () =>
         searchParams.source === "database" &&
@@ -110,7 +124,22 @@ const GameView = () => {
         let pgnText = getDefaultStudyContent();
         const id = historyId();
         const dbId = databaseGameId();
-        if (dbId !== undefined) {
+        const lichessId = lichessPuzzleId();
+        if (lichessId) {
+            try {
+                const puzzle = await getLichessPuzzle(lichessId);
+                pgnText = lichessPuzzlePgn(puzzle) ?? pgnText;
+                setHistoryName(
+                    `Lichess puzzle ${puzzle.id} (${puzzle.rating})`,
+                );
+            } catch (e) {
+                message("Error reading the puzzle: \n" + String(e), {
+                    title: "Re:Chess",
+                    kind: "error",
+                });
+                log.error(e);
+            }
+        } else if (dbId !== undefined) {
             try {
                 pgnText = await getDatabaseGame(dbId);
                 const game = makeGame(pgnText);
@@ -238,6 +267,15 @@ const GameView = () => {
         hintUsed: number,
         retries: number,
     ) => {
+        const lichessId = lichessPuzzleId();
+        if (lichessId) {
+            if (recordedPuzzle === lichessId) return;
+            recordedPuzzle = lichessId;
+            const firstTry = solved && hintUsed === 0 && retries === 0;
+            const rating = await recordPuzzleAttempt(lichessId, firstTry);
+            makeToast(`Puzzle rating: ${Math.round(rating)}`);
+            return;
+        }
         // puzzle solved
         const score = calculatePerformanceScore(
             solved, // solved
@@ -279,6 +317,15 @@ const GameView = () => {
     };
 
     const onNextPuzzle = async () => {
+        if (lichessPuzzleId()) {
+            const next = await pickNextLichessPuzzle();
+            if (!next) {
+                makeToast("No new puzzle of this theme near your rating");
+                return;
+            }
+            navigate(`/puzzle?source=lichess&id=${next.id}`, { replace: true });
+            return;
+        }
         // training mistakes from reviewed games stays within them
         const mistakes = await mistakesFolder();
         const inMistakes = filePath()?.startsWith(mistakes + sep());
@@ -344,16 +391,18 @@ const GameView = () => {
                         </div>
                     </Show>
 
-                    <div class="navbar-item">
-                        <button
-                            disabled={!canSave()}
-                            class="button is-primary"
-                            onClick={onSave}
-                        >
-                            <IconDeviceFloppy />
-                            Save
-                        </button>
-                    </div>
+                    <Show when={!lichessPuzzleId()}>
+                        <div class="navbar-item">
+                            <button
+                                disabled={!canSave()}
+                                class="button is-primary"
+                                onClick={onSave}
+                            >
+                                <IconDeviceFloppy />
+                                Save
+                            </button>
+                        </div>
+                    </Show>
                 </Show>
             </nav>
             <GameManager
