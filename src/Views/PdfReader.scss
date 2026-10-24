@@ -65,6 +65,9 @@
                 forced-color-adjust: none;
                 transform-origin: 0 0;
                 z-index: 0;
+                // App.scss turns selection off everywhere; WebKit reads the prefixed property
+                -webkit-user-select: text;
+                user-select: text;
 
                 :is(span, br) {
                     color: transparent;
@@ -72,6 +75,7 @@
                     white-space: pre;
                     cursor: text;
                     transform-origin: 0% 0%;
+                    -webkit-user-select: text;
                     user-select: text;
                 }
 
@@ -107,6 +111,7 @@
                     inset: 100% 0 0;
                     z-index: 0;
                     cursor: default;
+                    -webkit-user-select: none;
                     user-select: none;
                 }
 
