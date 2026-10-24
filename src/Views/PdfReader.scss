@@ -1,0 +1,97 @@
+.reader_view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .reader-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-bottom: 1px solid rgba(127, 127, 127, 0.3);
+        flex-wrap: wrap;
+
+        .reader-title {
+            margin-right: auto;
+        }
+
+        .page-input {
+            width: 5em;
+        }
+    }
+
+    .reader-body {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+    }
+
+    .reader-pages {
+        flex: 1;
+        overflow: auto;
+        padding: 16px;
+        background: rgba(127, 127, 127, 0.15);
+
+        .reader-page {
+            position: relative;
+            margin: 0 auto 16px;
+            background: white;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+
+            .reader-canvas {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            .reader-diagram {
+                position: absolute;
+                border: 2px solid hsla(171, 100%, 41%, 0.8);
+                border-radius: 3px;
+                background: transparent;
+                cursor: pointer;
+                padding: 0;
+
+                &:hover {
+                    background: hsla(171, 100%, 41%, 0.15);
+                }
+
+                &.unsure {
+                    border-color: hsla(36, 100%, 50%, 0.8);
+                    border-style: dashed;
+                }
+            }
+        }
+    }
+
+    .reader-side {
+        flex: 0 0 300px;
+        padding: 12px;
+        overflow: auto;
+        border-left: 1px solid rgba(127, 127, 127, 0.3);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .reader-board {
+            width: 100%;
+            aspect-ratio: 1;
+        }
+
+        .reader-hint,
+        .reader-matches {
+            font-size: 0.9em;
+            opacity: 0.85;
+        }
+
+        .reader-matches a {
+            cursor: pointer;
+        }
+
+        .reader-warning {
+            font-size: 0.85em;
+            color: hsl(36, 100%, 45%);
+        }
+    }
+}

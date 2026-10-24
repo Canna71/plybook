@@ -60,14 +60,21 @@ export async function writeConfigFile<T>(subPath: string, data: T) {
     });
 }
 
-export async function writeDataFile(subPath: string, data: string) {
-    // return writeTextFile(subPath, data, {
-    //     baseDir: BaseDirectory.AppLocalData
-    // });
-    return writeFile(subPath, new TextEncoder().encode(data), {
+/** Writes text, or bytes as they are (a PDF, say). */
+export async function writeDataFile(
+    subPath: string,
+    data: string | Uint8Array,
+) {
+    const bytes =
+        typeof data === "string" ? new TextEncoder().encode(data) : data;
+    return writeFile(subPath, bytes, {
         baseDir: BaseDirectory.AppLocalData,
     });
 }
+
+/** The bytes of a file in the app's data folder. */
+export const readDataBytes = (subPath: string) =>
+    readFile(subPath, { baseDir: BaseDirectory.AppLocalData });
 
 async function ensureFolderExists(folderPath: string): Promise<void> {
     try {
@@ -145,7 +152,7 @@ export async function renameOrCreateDataFile(
 export async function createNewDataFile(
     folder: string,
     name: string,
-    content: string,
+    content: string | Uint8Array,
 ) {
     let newName = name;
     let i = 1;

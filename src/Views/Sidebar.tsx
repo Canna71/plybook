@@ -14,6 +14,8 @@ const Sidebar = () => {
                 navigate(
                     `/game?path=${encodeURIComponent(file.path)}&source=library`,
                 );
+            } else if (file.name.toLowerCase().endsWith(".pdf")) {
+                navigate(`/reader?path=${encodeURIComponent(file.path)}`);
             }
         }
         if (file && file.isDirectory) {

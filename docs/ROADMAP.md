@@ -223,10 +223,17 @@ How this file is used:
     the rendered size.
   - Known limits: the side to move is a guess (the side at the bottom); the engine solution is
     one move; very ornate or 3D diagrams are not read.
-- [ ] **P4.4 Read PDFs in the app** (requested 2026-10-25): keep chess PDFs in the Library and
-  read them in a viewer (pages, zoom, search, bookmarks of the last page read), with "scan this
-  diagram" on a click and the board beside the page for analysis. Builds on P4.3's pdf.js
-  setup.
+- [x] **P4.4 Read PDFs in the app** (`feature/pdf-reader`; owner review pending; requested
+  2026-10-25): keep chess PDFs in the Library and read them in a viewer.
+  - Status: "Add PDF…" in a Library folder copies a PDF in; PDFs are listed (and in the
+    sidebar tree) and open in `/reader`: pages render as they scroll into view (sharp on
+    retina, dropped when far away), page number / previous / next, zoom, "Find in the book"
+    (pages whose text matches), the last page read is remembered per book. Diagrams on visible
+    pages are found in the background (one page at a time) and outlined (dashed when unsure);
+    a click shows the position beside the page with whose move, Analyze, Play from here, Find
+    in databases and Edit (the board editor now takes `?fen=`).
+  - Known limits: scanned (image-only) PDFs have no text to find; pages are assumed to share
+    the first page's shape for the placeholders.
 
 ## Integrations
 

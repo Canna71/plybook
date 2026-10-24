@@ -18,15 +18,51 @@ export async function openPdf(file: Blob): Promise<PdfDocument> {
 }
 
 /** Renders page `number` (from 1) onto a new canvas whose longer side is `size` pixels. */
-export async function renderPage(
+export const renderPage = (pdf: PdfDocument, number: number, size: number) =>
+    render(pdf, number, (w, h) => size / Math.max(w, h));
+
+/** Renders page `number` (from 1) onto a new canvas `width` pixels wide, for reading. */
+export const renderPageWidth = (
     pdf: PdfDocument,
     number: number,
-    size: number,
+    width: number,
+) => render(pdf, number, (w) => width / w);
+
+/** Height / width of a page. */
+export async function pageAspect(pdf: PdfDocument, number: number) {
+    const viewport = (await pdf.getPage(number)).getViewport({ scale: 1 });
+    return viewport.height / viewport.width;
+}
+
+/** The pages (from 1) whose text contains `query`, ignoring case; at most `max`. */
+export async function findText(
+    pdf: PdfDocument,
+    query: string,
+    max = 50,
+): Promise<number[]> {
+    const wanted = query.trim().toLowerCase();
+    const pages: number[] = [];
+    if (!wanted) return pages;
+    for (let n = 1; n <= pdf.numPages && pages.length < max; n++) {
+        const content = await (await pdf.getPage(n)).getTextContent();
+        const text = content.items
+            .map((item) => ("str" in item ? item.str : ""))
+            .join(" ")
+            .toLowerCase();
+        if (text.includes(wanted)) pages.push(n);
+    }
+    return pages;
+}
+
+async function render(
+    pdf: PdfDocument,
+    number: number,
+    scaleFor: (width: number, height: number) => number,
 ): Promise<HTMLCanvasElement> {
     const page = await pdf.getPage(number);
     const unscaled = page.getViewport({ scale: 1 });
     const viewport = page.getViewport({
-        scale: size / Math.max(unscaled.width, unscaled.height),
+        scale: scaleFor(unscaled.width, unscaled.height),
     });
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(viewport.width);
