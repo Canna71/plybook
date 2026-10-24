@@ -27,6 +27,7 @@ import { EvaluationExt, Path } from "../../models/pgn";
 import { makeFen, parseFen } from "chessops/fen";
 import { ReviewProgress } from "./GameContext";
 import { CLASS_NAGS, mainline, reviewLine } from "../../models/review";
+import { nullMoveFen } from "../../models/threat";
 import anylogger from "anylogger";
 const log = anylogger("usechessengine");
 
@@ -77,6 +78,8 @@ export function useChessEngine(options: ChessEngineOptions) {
     >(undefined);
 
     const [isPlayingOn, setIsPlayingOn] = createSignal(false);
+    // analysis of what the opponent would play if it were their move
+    const [threatOn, setThreatOn] = createSignal(false);
 
     const isReviewing = () => !!reviewPositionPath();
 
@@ -274,6 +277,11 @@ export function useChessEngine(options: ChessEngineOptions) {
             if (isReviewing()) {
                 handleReviewPosition(bestMove, g);
             }
+            if (threatFen()) {
+                // the opponent's move, not a hint for the side to move
+                setHintMove(undefined);
+                return;
+            }
             log.debug("Hint move", bestMove);
             setHintMove(isNoMove(bestMove) ? undefined : bestMove);
             return;
@@ -331,8 +339,19 @@ export function useChessEngine(options: ChessEngineOptions) {
     //     }
     // });
 
+    /** The searched position in threat mode: the current one with the other side to move */
+    const threatFen = createMemo(() =>
+        threatOn() &&
+        engineAnalysisOn() &&
+        !isReviewing() &&
+        !options.wrongPuzzleMove() &&
+        !options.playingEngine()
+            ? nullMoveFen(options.fen())
+            : undefined,
+    );
+
     const analyzeFen = createMemo(() => {
-        let fenStr = options.fen();
+        let fenStr = threatFen() ?? options.fen();
         if (isReviewing()) {
             fenStr = game()!.dataAt(reviewPositionPath() || Path.root)!.fen;
         } else if (options.wrongPuzzleMove()) {
@@ -427,5 +446,8 @@ export function useChessEngine(options: ChessEngineOptions) {
         startReview,
         reviewProgress,
         isPlayingOnSignal: [isPlayingOn, setIsPlayingOn] as Signal<boolean>,
+        threatOnSignal: [threatOn, setThreatOn] as Signal<boolean>,
+        threatFen,
+        analyzedFen: analyzeFen,
     };
 }

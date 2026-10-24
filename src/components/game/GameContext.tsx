@@ -35,6 +35,12 @@ export interface GameContextType {
     isReviewing: Accessor<boolean>;
     startReview: () => void;
     reviewProgress: Accessor<ReviewProgress>;
+    /** Threat mode: the engine searches the position with the other side to move */
+    threatOnSignal: Signal<boolean>;
+    /** The null-move position while threat mode is active */
+    threatFen: Accessor<string | undefined>;
+    /** The position the engine lines belong to */
+    analyzedFen: Accessor<string>;
     onGameFinished?: () => void;
 }
 

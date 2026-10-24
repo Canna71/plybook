@@ -345,6 +345,20 @@ const GameManager: Component<GameManagerOptions> = ({
                 const arrow = makeArrowShape(from, to, "black");
                 shapes.push(arrow);
             }
+        } else if (threatFen()) {
+            // the opponent's threats, always shown: they are the point of the mode
+            for (const info of engineInfo) {
+                const move = info.pv && parseUci(info.pv[0]);
+                if (move && "from" in move) {
+                    shapes.push(
+                        makeArrowShape(
+                            makeSquare(move.from),
+                            makeSquare(move.to),
+                            info.multipv === 1 ? "red" : "pink",
+                        ),
+                    );
+                }
+            }
         } else {
             if (engineInfo.length > 0 && showArrows) {
                 for (const info of engineInfo) {
@@ -606,6 +620,9 @@ const GameManager: Component<GameManagerOptions> = ({
         startReview,
         reviewProgress,
         isPlayingOnSignal: [isPlayingOn, setIsPlayingOn],
+        threatOnSignal,
+        threatFen,
+        analyzedFen,
     } = useChessEngine({
         defaultEngineAnalysisOn,
         engineColor,
@@ -653,6 +670,9 @@ const GameManager: Component<GameManagerOptions> = ({
         isReviewing,
         startReview,
         reviewProgress,
+        threatOnSignal,
+        threatFen,
+        analyzedFen,
         onGameFinished,
     } as GameContextType;
     // #endregion

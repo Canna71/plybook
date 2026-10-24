@@ -11,6 +11,7 @@ import { GameContext, ReviewProgress } from "./GameContext";
 
 import "./EngineControl.scss";
 import {
+    IconAlertTriangle,
     IconCpu,
     IconFlag,
     IconPlayerPlayFilled,
@@ -21,7 +22,8 @@ import { ViewMode } from "./PgnEditBar";
 import Select from "../common/Select";
 import { Color } from "chessops";
 import Button from "../common/Button";
-import { makeGame } from "../../models/pgn";
+import { makeGame, Path } from "../../models/pgn";
+import { nullMoveFen } from "../../models/threat";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import Modal from "../common/Modal";
 import { StartingPositionIcon } from "../common/Icons";
@@ -42,7 +44,21 @@ const EngineControl = () => {
         isReviewing,
         reviewProgress,
         onGameFinished,
+        threatOnSignal: [threatOn, setThreatOn],
+        currentPathSignal: [currentPath],
     } = useContext(GameContext)!;
+    const [engineAnalysisOn, setEngineAnalysisOn] = engineAnalysisOnSignal;
+
+    // passing the move is impossible in check
+    const threatPossible = () => {
+        const fen = game()?.dataAt(currentPath() ?? Path.root)?.fen;
+        return !!fen && !!nullMoveFen(fen);
+    };
+    const toggleThreat = () => {
+        const on = !threatOn();
+        setThreatOn(on);
+        if (on && !engineAnalysisOn()) setEngineAnalysisOn(true);
+    };
 
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
         engineColor() || "random",
@@ -165,6 +181,18 @@ const EngineControl = () => {
                                 title="Analysis Settings"
                             >
                                 <IconSettingsFilled />
+                            </Button>
+                            <Button
+                                class={threatOn() ? "is-danger" : ""}
+                                onClick={toggleThreat}
+                                disabled={!threatPossible()}
+                                title={
+                                    threatPossible()
+                                        ? "Show the threat: what the opponent would play if it were their move"
+                                        : "No threat analysis in check"
+                                }
+                            >
+                                <IconAlertTriangle />
                             </Button>
                         </div>
                     </Show>
