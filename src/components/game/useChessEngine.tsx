@@ -23,6 +23,8 @@ import { ReviewProgress } from "./GameContext";
 import { CLASS_NAGS, mainline, reviewLine } from "../../models/review";
 import { nullMoveFen } from "../../models/threat";
 import { scoreToEvaluation } from "../../models/whatif";
+import { pickBookMove } from "../../models/books";
+import { bookMoves, ENGINE_BOOK_SETTING } from "../../storage/books";
 import { parseUci } from "chessops";
 import { Chess } from "chessops/chess";
 
@@ -445,6 +447,31 @@ export function useChessEngine(options: ChessEngineOptions) {
                 multipv: 1,
                 threads: getSettingValue("engine.threads", 1),
             };
+
+            // while the position is in the chosen book, the engine plays a book move
+            const book = getSettingValue<string>(ENGINE_BOOK_SETTING, "");
+            if (enginesTurn && book) {
+                const searchOpts = opts;
+                bookMoves(book, fenStr)
+                    .then((moves) => pickBookMove(moves))
+                    .catch((err) => {
+                        log.warn("book lookup failed", err);
+                        return undefined;
+                    })
+                    .then((uci) => {
+                        // the position moved on, or the engine was replaced, meanwhile
+                        if (analyzeFen() !== fenStr || engine() !== eng) return;
+                        const move = uci && parseUci(uci);
+                        if (move && "from" in move) {
+                            log.debug("Book move", uci);
+                            options.applyMove(move);
+                        } else {
+                            pendingSearches++;
+                            eng.analyzeFromFenOrMoves(fenStr, searchOpts);
+                        }
+                    });
+                return;
+            }
         }
         if (opts) {
             log.debug("Analyzing", fenStr, opts);
