@@ -11,7 +11,7 @@ import { useNavigate } from "@solidjs/router";
 import anylogger from "anylogger";
 import BoardEditor from "../components/boardeditor/BoardEditor";
 import Button from "../components/common/Button";
-import { pendingScan, setPendingScan } from "../scan/pendingScan";
+import { pendingScan, setPendingScan } from "../paste/pending";
 import { scanImage, warmUpScanner } from "../scan/recognizer";
 import { captureScreenRegion } from "../scan/capture";
 import "./ScanView.scss";

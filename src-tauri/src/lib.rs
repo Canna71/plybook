@@ -74,6 +74,7 @@ pub fn run() {
             engine_kill,
             open_library_path,
             online_fetch_games,
+            online_lichess_game,
             gamedb_list,
             gamedb_delete,
             gamedb_search,

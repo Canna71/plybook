@@ -52,6 +52,7 @@ import { join, sep } from "@tauri-apps/api/path";
 import { BaseDirectory, mkdir } from "@tauri-apps/plugin-fs";
 import { getDatabaseGame } from "../storage/gamedb";
 import { makeGame } from "../models/pgn";
+import { pendingPgn } from "../paste/pending";
 import anylogger from "anylogger";
 const log = anylogger("gameview");
 
@@ -86,6 +87,17 @@ const GameView = () => {
         typeof searchParams.id === "string"
             ? Number(searchParams.id)
             : undefined;
+
+    /** Games pasted as text or fetched from a pasted Lichess link */
+    const isPasted = () => searchParams.source === "pasted";
+
+    /** Games that do not live in a file: Save copies them into this Library folder */
+    const libraryCopyFolder = () =>
+        databaseGameId() !== undefined
+            ? "From databases"
+            : isPasted()
+              ? "Pasted"
+              : undefined;
 
     const displayedName = () => {
         const path = searchParams.path;
@@ -126,6 +138,18 @@ const GameView = () => {
         if (typeof searchParams.fen === "string") {
             const fen = searchParams.fen.replace(/["\\]/g, "");
             pgnText = `[SetUp "1"]\n[FEN "${fen}"]\n\n*\n`;
+        }
+        // tracked: pasting again while here opens the new games
+        const pasted = isPasted() ? pendingPgn() : undefined;
+        if (pasted) {
+            pgnText = pasted;
+            const first = makeGame(pasted);
+            setHistoryName(
+                historyTitle(
+                    first.players.white.name,
+                    first.players.black.name,
+                ),
+            );
         }
         const id = historyId();
         const dbId = databaseGameId();
@@ -216,14 +240,15 @@ const GameView = () => {
         return !isPuzzleMode(); // TODO: Check if the source is writable
     };
 
-    const canSave = () => modified() || databaseGameId() !== undefined;
+    const canSave = () => modified() || libraryCopyFolder() !== undefined;
 
     const onSave = async () => {
         const pgnText = newPgn();
         if (pgnText) {
-            if (databaseGameId() !== undefined) {
+            const copyFolder = libraryCopyFolder();
+            if (copyFolder) {
                 // copy into the Library, where it can be annotated
-                const folder = await join("Library", "From databases");
+                const folder = await join("Library", copyFolder);
                 await mkdir(folder, {
                     baseDir: BaseDirectory.AppLocalData,
                     recursive: true,

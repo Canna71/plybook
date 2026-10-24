@@ -184,7 +184,11 @@ How this file is used:
   checks the Screen Recording permission first and explains how to grant it. Windows: later
   (Win+Shift+S and paste meanwhile). macOS keeps the permission only for signed builds
   (`pnpm build:mac`, see README); ad-hoc builds are new apps to it after every rebuild.
-- [ ] **P4.2 FEN / PGN from pasted text** (web pages, chat).
+- [x] **P4.2 FEN / PGN from pasted text** (`feature/paste-text`; owner review pending): pasted
+  anywhere outside a text field, a FEN (or a bare board) opens in analysis, a PGN (one or many
+  games) opens in analysis with Save copying it to `Library/Pasted`, and a Lichess game link
+  downloads that game (with clocks and evals when analysed). `src/paste/` with tests.
+  chess.com game links are not supported (no public single-game API).
 - [ ] **P4.3 Books and PDFs**: detect diagrams on pages and batch-convert them into a puzzle
   collection.
 
