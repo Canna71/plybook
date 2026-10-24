@@ -45,6 +45,7 @@ import { makeSquare, NormalMove, parseUci } from "chessops";
 import "./GameManager.scss";
 import EngineInfoViewer from "./EngineInfoViewer";
 import WhatIf from "./WhatIf";
+import PositionFacts from "./PositionFacts";
 import { Tooltip } from "../common/Tooltip";
 import PgnEditBar, { ViewMode } from "./PgnEditBar";
 import PgnTextArea from "./PgnTextArea";
@@ -803,6 +804,7 @@ const GameManager: Component<GameManagerOptions> = ({
                                 <Show when={!threatFen()}>
                                     <WhatIf engineInfo={engineInfo} />
                                 </Show>
+                                <PositionFacts />
                                 <EngineInfoViewer engineInfo={engineInfo} />
                             </Show>
 

@@ -84,8 +84,16 @@ How this file is used:
     knight on f3)"). Not available in check. `src/models/threat.ts` with tests.
   - Refactor: engine lines are built from the position the engine searched (`analyzedFen`), not
     the board, so stale infos no longer produce illegal lines; props destructuring fixed.
-- [ ] **P2.3 Position facts**: hanging pieces, forks, pins, mate threats, king safety, material at
-  the end of the PV, computed with chessops. Shown as short bullet points per move.
+- [x] **P2.3 Position facts** (`feature/position-facts`; owner review pending): hanging pieces,
+  forks, pins, mate threats, king safety, material at the end of the PV, computed with chessops.
+  Shown as short bullet points per move.
+  - Status: `src/models/facts.ts` finds check, forks (king, more valuable or undefended
+    targets), pins against the king and hanging pieces (undefended, or attacked by a cheaper
+    piece); facts the last move created come first, marked "new"; lasting pawn facts are hidden.
+    About 0.9 facts per position on 10 real games. Material at the end of the PV is in P2.1,
+    mate threats in P2.2.
+  - Known limits: attacks only (no exchange evaluation, no x-rays, no relative pins); no king
+    safety yet; shown only while engine analysis is on.
 - [ ] **P2.4 Natural-language explanation** (optional, needs an API key): Claude phrases P2.3
   facts and engine lines; never asked to calculate. **Decision**: provider and key handling.
 - [ ] **P2.5 Human vs best**: Maia's most likely move next to the engine's best, to show traps
