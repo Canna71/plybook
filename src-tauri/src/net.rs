@@ -113,7 +113,7 @@ async fn chesscom_games(username: &str, since: Option<(i64, u32)>) -> Result<Str
             let y = parts.next()?.parse().ok()?;
             Some((y, m))
         })
-        .filter(|month| since.map_or(true, |since| *month >= since))
+        .filter(|month| since.is_none_or(|since| *month >= since))
         .collect();
     months.sort();
 

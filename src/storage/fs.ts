@@ -243,28 +243,3 @@ export function getDefaultStudyContent() {
 export async function openDataPath(path: string) {
     return invoke("open_library_path", { path });
 }
-
-export async function saveGameToHistory(pgn: string) {
-    const historyPath = await join(await appLocalDataDir(), HISTORY_FOLDER);
-    // read the timestamp from the pgn tag  [Timestamp "2021.09.01 12:00:00"]
-
-    const timestamp =
-        pgn.match(/\[Timestamp "([^"]+)"\]/)?.[1] ||
-        new Date().toISOString().replace(/T/, " ").replace(/\..+/, "");
-
-    log.debug("saveGameToHistory", timestamp);
-
-    // create a new file with the timestamp as name and the path as yyyy/MM/dd
-    const date = timestamp.split("T")[0];
-    const [year, month, day] = date.split("-");
-    const yearFolder = await join(historyPath, year);
-    await ensureFolderExists(yearFolder);
-
-    const monthFolder = await join(yearFolder, month);
-    await ensureFolderExists(monthFolder);
-
-    const dayFolder = await join(monthFolder, day);
-    await ensureFolderExists(dayFolder);
-
-    return createNewDataFile(dayFolder, `${timestamp}.pgn`, pgn);
-}

@@ -62,6 +62,7 @@ import HintButtons from "./HintButtons";
 import SidebarTabs from "./SidebarTabs";
 import anylogger from "anylogger";
 import { showAlert } from "../common/Alert";
+import { gameEnd } from "../../models/play";
 const log = anylogger("gamemanager");
 
 export type GameManagerOptions = {
@@ -430,46 +431,25 @@ const GameManager: Component<GameManagerOptions> = ({
 
         const [appliedGame, newPath] = g.applyMoves(path, [move]);
         let newGameModel = appliedGame;
-        const isMate = newGameModel.isMate(newPath);
+        // only games against the engine end with a result and an alert
+        const end =
+            playingEngine && isPlayingOn()
+                ? gameEnd(newGameModel.getPosition(newPath), engineColor?.())
+                : undefined;
+        if (end) {
+            newGameModel = newGameModel.updateHeaders(
+                new Map([["Result", end.result]]),
+            );
+            setTimeout(() => showAlert(end), 500);
+        }
         batch(() => {
             setHintType(HintType.None);
-
-            if (isMate) {
-                if (turn() === engineColor?.()) {
-                    setTimeout(
-                        () =>
-                            showAlert({
-                                icon: "failure",
-                                title: "Checkmate",
-                                message: "You lost the game",
-                            }),
-                        500,
-                    );
-                } else {
-                    setTimeout(
-                        () =>
-                            showAlert({
-                                icon: "successfailure",
-                                title: "Checkmate",
-                                message: "You won the game",
-                            }),
-                        500,
-                    );
-                }
-                // TODO: double check this
-                const score = turn() === "white" ? "1-0" : "0-1";
-
-                newGameModel = newGameModel.updateHeaders(
-                    new Map([["Result", score]]),
-                );
-                setIsPlayingOn(false);
-            }
+            if (end) setIsPlayingOn(false);
             setCurrentPath(newPath);
             setGame(newGameModel);
-            if (isMate) {
-                onGameFinished?.();
-            }
         });
+        // after the batch, so listeners see the final move and result
+        if (end) onGameFinished?.();
     };
 
     // #endregion
