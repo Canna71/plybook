@@ -76,6 +76,20 @@
         }
     }
 
+    .train-mistakes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .train-hint {
+        font-size: 0.85em;
+        opacity: 0.8;
+        margin-bottom: 8px;
+    }
+
     .review-moves .move-cell.is-current {
         background: rgba(127, 127, 127, 0.2);
     }

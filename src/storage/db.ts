@@ -148,8 +148,9 @@ export async function createPuzzle(studyId: string, baseWeight?: number) {
     });
 }
 
-export async function pickPuzzle(): Promise<Study> {
-    return await invoke("pick_puzzle");
+/** A weighted random puzzle, optionally only from one Library folder; undefined if none. */
+export async function pickPuzzle(folder?: string): Promise<Study | undefined> {
+    return (await invoke<Study | null>("pick_puzzle", { folder })) ?? undefined;
 }
 
 export async function updateCachedWeights() {
