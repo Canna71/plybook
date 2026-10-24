@@ -8,11 +8,13 @@ import {
     useContext,
 } from "solid-js";
 import { GameContext, ReviewProgress } from "./GameContext";
+import { useNavigate } from "@solidjs/router";
 
 import "./EngineControl.scss";
 import {
     IconAlertTriangle,
     IconCpu,
+    IconDatabaseSearch,
     IconFlag,
     IconPlayerPlayFilled,
     IconSettingsFilled,
@@ -54,6 +56,12 @@ const EngineControl = () => {
         const fen = game()?.dataAt(currentPath() ?? Path.root)?.fen;
         return !!fen && !!nullMoveFen(fen);
     };
+    const navigate = useNavigate();
+    const findInDatabases = () => {
+        const fen = game()?.dataAt(currentPath() ?? Path.root)?.fen;
+        if (fen) navigate(`/databases?fen=${encodeURIComponent(fen)}`);
+    };
+
     const toggleThreat = () => {
         const on = !threatOn();
         setThreatOn(on);
@@ -193,6 +201,12 @@ const EngineControl = () => {
                                 }
                             >
                                 <IconAlertTriangle />
+                            </Button>
+                            <Button
+                                onClick={findInDatabases}
+                                title="Find this position in your game databases"
+                            >
+                                <IconDatabaseSearch />
                             </Button>
                         </div>
                     </Show>

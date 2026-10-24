@@ -130,14 +130,20 @@ How this file is used:
 
 ## Phase 3: databases and imports
 
-- [~] **P3.1 Game database** for large PGN files (TWIC, Lichess elite, Lumbra), with search by
+- [x] **P3.1 Game database** for large PGN files (TWIC, Lichess elite, Lumbra), with search by
   player, opening and position. Decided 2026-10-24: SQLite for everything, SurrealDB removed.
   - [x] **P3.1a Move storage to SQLite** (`feature/sqlite`): puzzles and history in
     `rechess.sqlite`, versioned schema, weights computed on pick (same formula, no hourly cache);
     `tools/surreal-export` + one-time import keep old data (done for the owner's data: 1 game).
     The SurrealDB-only stubs and the `/db` test page are gone; no more LLVM to build.
-  - [ ] **P3.1b Game database**: import large PGN files, search by player/opening/position
-    (position index by Zobrist hash).
+  - [x] **P3.1b Game database** (`feature/game-database`; owner review pending): import large
+    PGN files (.pgn, .pgn.zst) from the Databases page with progress; search by player, ECO,
+    result, minimum Elo and position (first 30 plies indexed by Zobrist hash, with the next
+    move for the explorer); open a game, Save copies it to `Library/From databases`; "Find this
+    position" button next to the analysis switch. ~14,000 games/s, ~3 KB per game on disk
+    (7,641 chess.com games: 0.54 s, 22 MB; a position search 7 ms).
+    Known limits: comments and variations are not kept; Chess960 games are skipped; no
+    cancel during an import; .zip files must be unpacked first.
 - [ ] **P3.2 Lichess puzzle database** (CC0 CSV): import by theme and rating range into the
   puzzle trainer.
 - [ ] **P3.3 Opening explorer**: own database first, Lichess explorer online (check whether its

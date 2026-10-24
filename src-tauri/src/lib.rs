@@ -2,6 +2,7 @@
 // use tauri::Manager;   
 mod db;
 mod engine;
+mod games;
 mod migrate;
 mod net;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -13,6 +14,7 @@ fn greet(name: &str) -> String {
 // use serde::{Deserialize, Serialize};
 use db::*;
 use engine::*;
+use games::*;
 use net::*;
 
 
@@ -51,7 +53,8 @@ pub fn run() {
             engine_list, engine_save_profile, engine_remove_profile, engine_pick_executable, engine_pick_weights,
             engine_folder, engine_open_folder, engine_weights,
             engine_spawn, engine_write, engine_kill, open_library_path,
-            online_fetch_games
+            online_fetch_games,
+            gamedb_list, gamedb_delete, gamedb_search, gamedb_game, gamedb_import
         ])
         
         .run(tauri::generate_context!())

@@ -12,6 +12,7 @@ import { save } from "@tauri-apps/plugin-dialog";
 import GameManager from "../components/game/GameManager";
 import {
     baseName,
+    createNewDataFile,
     getDefaultStudyContent,
     NameWithoutExtension,
     readDataFile,
@@ -41,7 +42,10 @@ import { calculatePerformanceScore } from "../models/puzzles";
 import Select, { Option } from "../components/common/Select";
 import Button from "../components/common/Button";
 import BreadCrumb from "../components/common/BreadCrumb";
-import { sep } from "@tauri-apps/api/path";
+import { join, sep } from "@tauri-apps/api/path";
+import { BaseDirectory, mkdir } from "@tauri-apps/plugin-fs";
+import { getDatabaseGame } from "../storage/gamedb";
+import { makeGame } from "../models/pgn";
 import anylogger from "anylogger";
 const log = anylogger("gameview");
 
@@ -62,6 +66,12 @@ const GameView = () => {
             ? searchParams.id
             : undefined;
     const [historyName, setHistoryName] = createSignal<string>();
+    /** A game from an imported database (read-only: Save copies it to the Library) */
+    const databaseGameId = () =>
+        searchParams.source === "database" &&
+        typeof searchParams.id === "string"
+            ? Number(searchParams.id)
+            : undefined;
 
     const displayedName = () => {
         const path = searchParams.path;
@@ -99,7 +109,25 @@ const GameView = () => {
         // onRefresh();
         let pgnText = getDefaultStudyContent();
         const id = historyId();
-        if (id) {
+        const dbId = databaseGameId();
+        if (dbId !== undefined) {
+            try {
+                pgnText = await getDatabaseGame(dbId);
+                const game = makeGame(pgnText);
+                setHistoryName(
+                    historyTitle(
+                        game.players.white.name,
+                        game.players.black.name,
+                    ),
+                );
+            } catch (e) {
+                message("Error reading game from database: \n" + String(e), {
+                    title: "Re:Chess",
+                    kind: "error",
+                });
+                log.error(e);
+            }
+        } else if (id) {
             try {
                 const game = await getHistoryGame(id);
                 if (!game) throw new Error(`Game ${id} not found in history`);
@@ -154,12 +182,26 @@ const GameView = () => {
         return !isPuzzleMode(); // TODO: Check if the source is writable
     };
 
-    const canSave = () => modified();
+    const canSave = () => modified() || databaseGameId() !== undefined;
 
     const onSave = async () => {
         const pgnText = newPgn();
         if (pgnText) {
-            if (historyId()) {
+            if (databaseGameId() !== undefined) {
+                // copy into the Library, where it can be annotated
+                const folder = await join("Library", "From databases");
+                await mkdir(folder, {
+                    baseDir: BaseDirectory.AppLocalData,
+                    recursive: true,
+                });
+                const path = await createNewDataFile(
+                    folder,
+                    `${displayedName().replace(/[\\/:*?"<>|]/g, "-")}.pgn`,
+                    pgnText,
+                );
+                refresh();
+                navigate(`/game?path=${encodeURIComponent(path)}`);
+            } else if (historyId()) {
                 if (await saveHistoryGame(pgnText, historyId()))
                     setModified(false);
             } else if (typeof searchParams.path === "string") {

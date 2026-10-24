@@ -16,6 +16,7 @@ import LibraryFolder from "./Views/LibraryFolder";
 import History from "./Views/History";
 import Settings from "./Views/Settings";
 import GuessTheMove from "./Views/GuessTheMove";
+import Databases from "./Views/Databases";
 
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
@@ -46,6 +47,7 @@ function App() {
                 <Route path="/history" component={History} />
                 <Route path="/settings" component={Settings} />
                 <Route path="/guess" component={GuessTheMove} />
+                <Route path="/databases" component={Databases} />
 
                 <Route
                     path="/analysis"
