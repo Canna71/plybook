@@ -26,7 +26,7 @@ How this file is used:
 
 ## Phase 1: learn from your own games
 
-- [~] **P1.1 Import games from chess.com and Lichess** (`feature/online-import`)
+- [x] **P1.1 Import games from chess.com and Lichess** (`feature/online-import`)
   - Accounts (site + username) managed in Settings; "Sync" downloads games month by month into
     `Library/Online/<site>/<username>/<YYYY-MM>.pgn`.
   - Sync is incremental: past months already on disk are skipped, the latest month is refreshed.
@@ -35,10 +35,8 @@ How this file is used:
   - Refactor: new `src-tauri/src/net.rs` as the single place for HTTP, with a fixed User-Agent.
   - Refactor: Settings page split into sections (`components/settings/EngineSettings`,
     `OnlineAccounts`).
-  - Status: implemented; split/dedupe checked on real chess.com and Lichess exports, Lichess
-    `since` boundary checked. Waiting for an in-app test before marking done.
   - Known limits: no progress bar during a long first sync; no cancel.
-- [ ] **P1.2 Whole-game review**
+- [~] **P1.2 Whole-game review** (`feature/game-review`)
   - Background review of a game with the active engine: eval graph, accuracy per side,
     move classification by **win-probability loss** (Lichess formula), list of key moments.
   - Done when: a 40-move game reviews in under a minute at a modest depth, labels match
