@@ -44,6 +44,8 @@ export interface GameContextType {
     analyzedFen: Accessor<string>;
     /** The engine's evaluation (with its best move in `ext`) of a position analysed earlier */
     evaluationAt: (fen: string) => (Evaluation & { ext?: string }) | undefined;
+    /** The engine's main line (UCI) in a position analysed earlier */
+    lineAt: (fen: string) => string[] | undefined;
     onGameFinished?: () => void;
 }
 

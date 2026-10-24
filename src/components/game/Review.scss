@@ -74,6 +74,16 @@
         .moment-best {
             opacity: 0.8;
         }
+
+        li {
+            flex-wrap: wrap;
+        }
+
+        .moment-explanation {
+            flex-basis: 100%;
+            padding-left: 24px;
+            font-size: 0.9em;
+        }
     }
 
     .train-mistakes {

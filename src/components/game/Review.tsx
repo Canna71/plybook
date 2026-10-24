@@ -33,6 +33,7 @@ import {
     trainableMistakes,
 } from "../../models/mistakes";
 import { saveMistakePuzzles } from "../../storage/mistakes";
+import { explainMove } from "../../models/explain";
 import { getAccounts } from "../../online/onlinegames";
 import "./Review.scss";
 
@@ -86,6 +87,20 @@ const Review: Component = () => {
 
     const player = (color: Color) =>
         game()?.players[color].name ?? (color === "white" ? "White" : "Black");
+
+    /** Why the move was bad, from the review data alone (no engine lines). */
+    const momentExplanation = (m: ReviewedMove) => {
+        const data = game()?.dataAt(m.path);
+        if (!m.fenBefore || !data || !("uci" in data)) return undefined;
+        return (
+            explainMove({
+                fenBefore: m.fenBefore,
+                uci: data.uci,
+                verdict: m,
+                bestUci: m.bestUci,
+            }).join(" ") || undefined
+        );
+    };
 
     // #region puzzles from mistakes
     const navigate = useNavigate();
@@ -262,6 +277,19 @@ const Review: Component = () => {
                                         <span class="moment-best">
                                             best was {m.bestSan}
                                         </span>
+                                    </Show>
+                                    <Show
+                                        when={
+                                            currentPath()?.path ===
+                                                m.path.path &&
+                                            momentExplanation(m)
+                                        }
+                                    >
+                                        {(text) => (
+                                            <p class="moment-explanation">
+                                                {text()}
+                                            </p>
+                                        )}
                                     </Show>
                                 </li>
                             )}

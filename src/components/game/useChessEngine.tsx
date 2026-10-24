@@ -28,7 +28,7 @@ import { Chess } from "chessops/chess";
 
 /** Positions are remembered without the move counters */
 const fenKey = (fen: string) => fen.split(" ").slice(0, 4).join(" ");
-type Remembered = { evaluation: EvaluationExt; depth: number };
+type Remembered = { evaluation: EvaluationExt; depth: number; pv: string[] };
 import anylogger from "anylogger";
 const log = anylogger("usechessengine");
 
@@ -318,12 +318,16 @@ export function useChessEngine(options: ChessEngineOptions) {
         setRemembered(key, {
             evaluation: scoreToEvaluation(info.score, info.pv![0]),
             depth,
+            pv: [...info.pv!],
         });
     };
 
     /** The engine's view of a position analysed earlier in this session */
     const evaluationAt = (fen: string): EvaluationExt | undefined =>
         remembered[fenKey(fen)]?.evaluation;
+    /** The engine's main line in a position analysed earlier */
+    const lineAt = (fen: string): string[] | undefined =>
+        remembered[fenKey(fen)]?.pv;
 
     const startReview = () => {
         if (profile()?.singleNode) {
@@ -466,5 +470,6 @@ export function useChessEngine(options: ChessEngineOptions) {
         threatFen,
         analyzedFen: analyzeFen,
         evaluationAt,
+        lineAt,
     };
 }
