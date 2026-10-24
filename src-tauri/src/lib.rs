@@ -1,8 +1,9 @@
 #![allow(non_snake_case)]
-// use tauri::Manager;   
+// use tauri::Manager;
 mod db;
 mod engine;
 mod games;
+mod lichess_puzzles;
 mod migrate;
 mod net;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -15,8 +16,8 @@ fn greet(name: &str) -> String {
 use db::*;
 use engine::*;
 use games::*;
+use lichess_puzzles::*;
 use net::*;
-
 
 // use add_capability to enable an arbitrary engine to run
 // #[tauri::command]
@@ -46,18 +47,44 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            greet, init_db, upsert_study,
-            list_puzzles, update_puzzle_score, pick_puzzle, 
-            update_puzzle_base_weight, delete_puzzle, get_study,
-            save_history_game, get_history_game, list_history,
-            engine_list, engine_save_profile, engine_remove_profile, engine_pick_executable, engine_pick_weights,
-            engine_folder, engine_open_folder, engine_weights,
-            engine_spawn, engine_write, engine_kill, open_library_path,
+            greet,
+            init_db,
+            upsert_study,
+            list_puzzles,
+            update_puzzle_score,
+            pick_puzzle,
+            update_puzzle_base_weight,
+            delete_puzzle,
+            get_study,
+            save_history_game,
+            get_history_game,
+            list_history,
+            engine_list,
+            engine_save_profile,
+            engine_remove_profile,
+            engine_pick_executable,
+            engine_pick_weights,
+            engine_folder,
+            engine_open_folder,
+            engine_weights,
+            engine_spawn,
+            engine_write,
+            engine_kill,
+            open_library_path,
             online_fetch_games,
-            gamedb_list, gamedb_delete, gamedb_search, gamedb_game, gamedb_import,
-            gamedb_explore
+            gamedb_list,
+            gamedb_delete,
+            gamedb_search,
+            gamedb_game,
+            gamedb_import,
+            gamedb_explore,
+            lichess_puzzle_stats,
+            lichess_puzzle_pick,
+            lichess_puzzle_get,
+            lichess_puzzle_attempt,
+            lichess_puzzle_download,
+            lichess_puzzle_import_file
         ])
-        
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -2,6 +2,8 @@
 //! source is a command here with a fixed host and validated parameters.
 
 use serde::Deserialize;
+use std::io::Write;
+use std::path::Path;
 use std::time::Duration;
 
 const USER_AGENT: &str = concat!(
@@ -73,6 +75,41 @@ async fn get_text(
         )),
         code => Err(format!("{} answered with HTTP {code}", site.label())),
     }
+}
+
+/// The Lichess puzzle database (CC0), about 300 MB compressed.
+pub const LICHESS_PUZZLES_URL: &str = "https://database.lichess.org/lichess_db_puzzle.csv.zst";
+
+/// Downloads `url` (one of the fixed URLs above) to `dest`, reporting (bytes, total bytes).
+pub async fn download(
+    url: &'static str,
+    dest: &Path,
+    mut progress: impl FnMut(u64, u64),
+) -> Result<(), String> {
+    let mut response = client()?
+        .get(url)
+        .send()
+        .await
+        .map_err(|e| format!("Could not reach {url}: {e}"))?;
+    if !response.status().is_success() {
+        return Err(format!("{url} answered with HTTP {}", response.status()));
+    }
+    let total = response.content_length().unwrap_or(0);
+    let partial = dest.with_extension("part");
+    let mut file = std::fs::File::create(&partial).map_err(|e| e.to_string())?;
+    let mut done = 0u64;
+    let mut last_report = 0u64;
+    while let Some(chunk) = response.chunk().await.map_err(|e| e.to_string())? {
+        file.write_all(&chunk).map_err(|e| e.to_string())?;
+        done += chunk.len() as u64;
+        if done - last_report >= 1 << 20 {
+            progress(done, total);
+            last_report = done;
+        }
+    }
+    progress(done, total);
+    drop(file);
+    std::fs::rename(&partial, dest).map_err(|e| e.to_string())
 }
 
 #[derive(Deserialize)]

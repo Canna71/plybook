@@ -5,7 +5,7 @@
 //! Games are stored as rebuilt PGN: all tags and the mainline; comments and variations are
 //! dropped, which suits reference databases and keeps them small.
 
-use crate::db::{db_path, Database};
+use crate::db::{db_path, with_db, Database};
 use rusqlite::{params, params_from_iter, types::Value, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 use shakmaty::{
@@ -263,9 +263,15 @@ impl Visitor for Indexer {
 }
 
 /// Counts the bytes read, for progress.
-struct Counting<R> {
+pub(crate) struct Counting<R> {
     inner: R,
     count: std::sync::Arc<std::sync::atomic::AtomicU64>,
+}
+
+impl<R> Counting<R> {
+    pub(crate) fn new(inner: R, count: std::sync::Arc<std::sync::atomic::AtomicU64>) -> Self {
+        Counting { inner, count }
+    }
 }
 
 impl<R: Read> Read for Counting<R> {
@@ -370,7 +376,7 @@ fn import_games(
                     .map_err(|e| e.to_string())?;
             }
             games += 1;
-            if games % PROGRESS_EVERY == 0 {
+            if games.is_multiple_of(PROGRESS_EVERY) {
                 progress(games, skipped);
             }
         }
@@ -571,14 +577,6 @@ fn game_pgn(conn: &Connection, id: i64) -> Result<String, String> {
 
 // #region commands
 
-fn with_db<T>(
-    db: &State<'_, Database>,
-    f: impl FnOnce(&Connection) -> Result<T, String>,
-) -> Result<T, String> {
-    let guard = db.0.lock().map_err(|e| e.to_string())?;
-    f(guard.as_ref().ok_or("Database not initialized")?)
-}
-
 #[tauri::command]
 pub async fn gamedb_list(db: State<'_, Database>) -> Result<Vec<DatabaseInfo>, String> {
     with_db(&db, list_databases)
@@ -651,10 +649,7 @@ fn import_file(
     let file = std::fs::File::open(path).map_err(|e| format!("{}: {e}", path.display()))?;
     let total_bytes = file.metadata().map(|m| m.len()).unwrap_or(0);
     let count = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
-    let counted = Counting {
-        inner: file,
-        count: count.clone(),
-    };
+    let counted = Counting::new(file, count.clone());
     let file_name = path
         .file_name()
         .map_or_else(String::new, |n| n.to_string_lossy().to_string());
