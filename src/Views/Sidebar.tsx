@@ -45,6 +45,9 @@ const Sidebar = () => {
                         <a href="/databases">Databases</a>
                     </li>
                     <li>
+                        <a href="/scan">Scan position</a>
+                    </li>
+                    <li>
                         <a href="/settings">Settings</a>
                     </li>
                 </ul>

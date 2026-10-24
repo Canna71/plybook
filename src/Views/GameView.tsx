@@ -122,6 +122,11 @@ const GameView = () => {
     createEffect(async () => {
         // onRefresh();
         let pgnText = getDefaultStudyContent();
+        // a position from elsewhere (a scan, the editor): start the analysis from it
+        if (typeof searchParams.fen === "string") {
+            const fen = searchParams.fen.replace(/["\\]/g, "");
+            pgnText = `[SetUp "1"]\n[FEN "${fen}"]\n\n*\n`;
+        }
         const id = historyId();
         const dbId = databaseGameId();
         const lichessId = lichessPuzzleId();

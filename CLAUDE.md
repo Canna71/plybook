@@ -130,7 +130,8 @@ User data locations (resolved by Tauri from the bundle identifier):
   relative paths (a packaged app's working directory is `/` on macOS or `Program Files` on Windows).
 - The CSP in `tauri.conf.json` is the backstop against injected HTML. Anything from a PGN or user
   input rendered through `innerHTML` (Comments, MarkdownEditor) must be escaped or sanitized
-  with DOMPurify.
+  with DOMPurify. `'wasm-unsafe-eval'` is there only for the screenshot scanner's ONNX runtime
+  (`src/scan`), which runs single-threaded so no worker sources are needed.
 
 ## Gotchas
 

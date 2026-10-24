@@ -168,8 +168,17 @@ How this file is used:
 
 ## Phase 4: recognize positions
 
-- [ ] **P4.1 Paste a screenshot** (Cmd+V or screen region) → FEN → board editor for correction.
-  Candidates: fenshot (MIT, in-browser), chessboard-recognizer; Claude vision as a fallback.
+- [x] **P4.1 Paste a screenshot** (`feature/scan-position`; owner review pending): Cmd+V or an
+  image file → FEN → board editor for correction.
+  - Status: fenshot 0.1.5 (MIT, CNN tile classifier, 1.3 MB) under onnxruntime-web 1.26,
+    entirely local and single-threaded. Pasting an image anywhere outside a text field opens
+    "Scan position"; the read lands in the board editor with warnings when unsure or illegal;
+    then Analyze, Play from here or Find in databases. Boards seen from Black are turned round;
+    the side at the bottom moves by default. Tested end to end on two real images (a diagram,
+    a Lichess screenshot from Black's side) with the real model.
+  - CSP: added `script-src 'self' 'wasm-unsafe-eval'` (WebAssembly) and `blob:` images.
+  - Known limits: 2D boards only (no photos of real boards, no 3D sets); not yet confirmed in
+    the macOS webview itself; no screen-region capture (paste a screenshot instead).
 - [ ] **P4.2 FEN / PGN from pasted text** (web pages, chat).
 - [ ] **P4.3 Books and PDFs**: detect diagrams on pages and batch-convert them into a puzzle
   collection.

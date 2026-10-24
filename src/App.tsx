@@ -17,6 +17,7 @@ import History from "./Views/History";
 import Settings from "./Views/Settings";
 import GuessTheMove from "./Views/GuessTheMove";
 import Databases from "./Views/Databases";
+import ScanView from "./Views/ScanView";
 
 function App() {
     // const [greetMsg, setGreetMsg] = createSignal("");
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/settings" component={Settings} />
                 <Route path="/guess" component={GuessTheMove} />
                 <Route path="/databases" component={Databases} />
+                <Route path="/scan" component={ScanView} />
 
                 <Route
                     path="/analysis"
