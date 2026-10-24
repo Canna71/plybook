@@ -141,8 +141,11 @@ User data locations (resolved by Tauri from the bundle identifier):
   relative paths (a packaged app's working directory is `/` on macOS or `Program Files` on Windows).
 - The CSP in `tauri.conf.json` is the backstop against injected HTML. Anything from a PGN or user
   input rendered through `innerHTML` (Comments, MarkdownEditor) must be escaped or sanitized
-  with DOMPurify. `'wasm-unsafe-eval'` is there only for the screenshot scanner's ONNX runtime
-  (`src/scan`), which runs single-threaded so no worker sources are needed.
+  with DOMPurify. `'wasm-unsafe-eval'` is there for the scanner's ONNX runtime (`src/scan`, run
+  single-threaded) and pdf.js's image decoders; `font-src data:` lets pdf.js load PDF fonts
+  (chess diagrams are often drawn with chess fonts). pdf.js's worker is a bundled asset; its
+  decoders and standard fonts are served from `/pdfjs`, which `tools/copy-pdfjs-assets.mjs`
+  fills from node_modules on every `pnpm dev` / `pnpm build` (git-ignored).
 - The CSP is enforced only in built apps, not under `tauri dev`: check styling changes in a
   build. Board and piece themes are injected `<style>` elements with `data:` images, and
   solid-toast injects its styles too, hence `style-src 'unsafe-inline'` and `img-src data:`;

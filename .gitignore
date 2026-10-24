@@ -8,3 +8,6 @@ dist
 
 # tool build output (it can also share src-tauri/target)
 tools/surreal-export/target
+
+# pdf.js runtime files, copied from node_modules by tools/copy-pdfjs-assets.mjs
+public/pdfjs
