@@ -24,9 +24,9 @@ import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
 import { getSettingValue } from "../../models/settings";
 import { EvaluationExt, Path } from "../../models/pgn";
-import { Box, isChildNode, walk } from "chessops/pgn";
 import { makeFen, parseFen } from "chessops/fen";
 import { ReviewProgress } from "./GameContext";
+import { CLASS_NAGS, mainline, reviewLine } from "../../models/review";
 import anylogger from "anylogger";
 const log = anylogger("usechessengine");
 
@@ -231,44 +231,33 @@ export function useChessEngine(options: ChessEngineOptions) {
             setAnnotatedGame(ng);
         }
 
-        const node = g.nodeAt(path);
-        if (node) {
-            const next = node.children[0];
-            if (next) {
-                batch(() => {
-                    setReviewPositionPath(next.data.path);
-                    incrementReviewProgress();
-                });
-            } else {
-                let cn = node;
-                // try to find an uneexplored anchestor
-                let parent = g.nodeAt(path.previous());
-                while (parent && isChildNode(parent) && isChildNode(cn)) {
-                    if (
-                        parent?.children.indexOf(cn) ===
-                        parent?.children.length - 1
-                    ) {
-                        cn = parent;
-                        parent = g.nodeAt(parent.data.path.previous());
-                    } else {
-                        cn = parent.children[parent.children.indexOf(cn) + 1];
-                        if (isChildNode(cn)) {
-                            setReviewPositionPath(cn.data.path);
-                            incrementReviewProgress();
+        // the review follows the mainline; side variations are the user's own
+        const next = g.nodeAt(path)?.children[0];
+        if (next) {
+            batch(() => {
+                setReviewPositionPath(next.data.path);
+                incrementReviewProgress();
+            });
+            return;
+        }
+        ng = annotateMistakes(ng);
+        batch(() => {
+            setGame(ng);
+            log.debug("Reviewing done", ng);
+            setReviewPositionPath(undefined);
+        });
+    };
 
-                            return;
-                        }
-                    }
-                }
-
-                log.debug("No next position");
-                batch(() => {
-                    setGame(ng);
-                    log.debug("Reviewing done", ng);
-                    setReviewPositionPath(undefined);
-                });
+    /** Adds ?!, ? and ?? to the moves the review flags, unless the user annotated them. */
+    const annotateMistakes = (g: GameModel) => {
+        for (const move of reviewLine(mainline(g))) {
+            const nag = CLASS_NAGS[move.class];
+            const data = g.dataAt(move.path);
+            if (nag && data && "nags" in data && data.nags.length === 0) {
+                g = g.annotate(move.path, nag);
             }
         }
+        return g;
     };
 
     const onEngineBestMove = (bestMove: string, _ponder: string) => {
@@ -313,14 +302,15 @@ export function useChessEngine(options: ChessEngineOptions) {
     };
 
     const startReview = () => {
+        if (profile()?.singleNode) {
+            makeErrorToast(
+                `${profile()!.name} plays like a human and cannot review games. Select a full-strength engine such as Stockfish in Settings.`,
+            );
+            return;
+        }
         engine()?.stop();
 
-        // computes the total number of positions in the game
-        let total = 0;
-        walk(game()!.moves, new Box(0), () => {
-            total++;
-            return true;
-        });
+        const total = game()!.mainline.length + 1;
 
         batch(() => {
             // setIsReviewing(true);
@@ -373,13 +363,23 @@ export function useChessEngine(options: ChessEngineOptions) {
                 eng.setOption("UCI_Elo", 3200);
             }
 
-            opts = {
-                nodes: profile()?.singleNode ? 1 : undefined,
-                depth: getSettingValue("engine.analysis.depth", 15),
-                movetime: getSettingValue("engine.analysis.movetime", 10000),
-                multipv: getSettingValue("engine.analysis.multipv", 3),
-                threads: getSettingValue("engine.threads", 1),
-            };
+            opts = isReviewing()
+                ? {
+                      depth: getSettingValue("engine.review.depth", 18),
+                      movetime: getSettingValue("engine.review.movetime", 1000),
+                      multipv: 1,
+                      threads: getSettingValue("engine.threads", 1),
+                  }
+                : {
+                      nodes: profile()?.singleNode ? 1 : undefined,
+                      depth: getSettingValue("engine.analysis.depth", 15),
+                      movetime: getSettingValue(
+                          "engine.analysis.movetime",
+                          10000,
+                      ),
+                      multipv: getSettingValue("engine.analysis.multipv", 3),
+                      threads: getSettingValue("engine.threads", 1),
+                  };
         } else if (shouldCallEngineMove()) {
             setHintMove(undefined);
 

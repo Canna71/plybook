@@ -17,6 +17,7 @@ const SidebarTabs = () => {
     const {
         isReviewing,
         startReview,
+        reviewProgress,
         isPlayingOnSignal: [isPlayingOn],
     } = useContext(GameContext)!;
 
@@ -27,10 +28,6 @@ const SidebarTabs = () => {
             setTab(1);
         }
     });
-
-    const reviewGame = () => {
-        startReview();
-    };
 
     return (
         <div class="sidebar-tabs">
@@ -60,14 +57,31 @@ const SidebarTabs = () => {
                         </div>
                     </Match>
                     <Match when={tab() === 1}>
-                        <Button onClick={reviewGame} title="Review Game">
+                        <Button
+                            onClick={startReview}
+                            title="Review the game with the selected engine"
+                            disabled={isReviewing()}
+                        >
                             <IconDeviceAnalytics />
                             Analyze Game
                         </Button>
                         <div class="pgnviewer-moves-wrapper">
                             <Show
                                 when={!isReviewing()}
-                                fallback={<div>Analizing...</div>}
+                                fallback={
+                                    <div class="review-progress">
+                                        <progress
+                                            class="progress is-primary is-small"
+                                            value={reviewProgress()?.current}
+                                            max={reviewProgress()?.total}
+                                        />
+                                        <span>
+                                            Analyzing position{" "}
+                                            {reviewProgress()?.current ?? 0} of{" "}
+                                            {reviewProgress()?.total ?? 0}…
+                                        </span>
+                                    </div>
+                                }
                             >
                                 <Review />
                             </Show>

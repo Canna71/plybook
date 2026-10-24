@@ -19,6 +19,7 @@ pnpm dev                  # frontend only in a browser; Tauri APIs (invoke, fs) 
 pnpm typecheck            # tsc --noEmit  (Vite does NOT typecheck, so run this)
 pnpm lint                 # ESLint 9 flat config, prettier enforced as a rule
 pnpm lint --fix           # autofix formatting (see the Solid ref gotcha below)
+pnpm test                 # Vitest unit tests (src/**/*.test.ts, Node environment)
 pnpm build                # vite build -> dist/
 pnpm tauri build          # packaged app (.app/.dmg on macOS, .msi/.exe on Windows)
 pnpm tauri icon ./tools/Logo.png   # regenerate app icons
@@ -32,18 +33,21 @@ cd src-tauri && cargo fmt --check
 Building the Rust side needs LLVM/libclang (SurrealDB's RocksDB backend compiles C++).
 On macOS the Xcode command line tools are enough; on Windows install LLVM and set `LIBCLANG_PATH`.
 
-There are **no automated tests yet** (no Vitest, no `cargo test` suites). Verify by typecheck,
-lint, build, `cargo check`, and by running the app. Good first candidates for tests are the pure
-modules `src/models/pgn.ts`, `src/models/GameModel.ts` and `src/engine/uciengine.ts`.
+Unit tests use **Vitest** (`vitest.config.ts`, Node environment, no Solid plugin) and cover pure
+modules: `src/models/review.test.ts`, `src/models/pgn.test.ts`. Keep tested modules free of Tauri
+and settings imports (`settings.ts` touches `window` on import). Rust has a few `cargo test` unit
+tests (`net.rs`). Otherwise verify by typecheck, lint, build, `cargo check`, and by running the app.
+Next candidates for tests: `src/models/GameModel.ts`, `src/engine/uciengine.ts`.
 
-Before pushing: `pnpm typecheck && pnpm lint && pnpm build`, plus `cargo check` if Rust changed.
+Before pushing: `pnpm typecheck && pnpm lint && pnpm test && pnpm build`, plus `cargo check` if
+Rust changed.
 `/check` runs all of it.
 
 ## Branches and PRs
 
 - **`develop` is the working branch.** Branch from `develop` and open PRs against `develop`.
   `main` is behind and only receives merges from `develop`.
-- CI (`.github/workflows/ci.yml`) runs on every PR and on pushes to `main`: typecheck, lint, build
+- CI (`.github/workflows/ci.yml`) runs on every PR and on pushes to `main`: typecheck, lint, test, build
   on `macos-latest` and `windows-latest`. It does not build or check Rust.
 - Feature branches are named `feature/<topic>`. Commit messages loosely follow Conventional
   Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `style:`, `build:`).

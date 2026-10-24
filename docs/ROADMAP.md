@@ -43,6 +43,14 @@ How this file is used:
     Lichess's on a few sample games within reason, results are saved in the PGN (`[%eval]`, NAGs).
   - Refactor: classification moves out of `Review.tsx` into a pure module with tests;
     fix props destructuring in `Review.tsx`; first Vitest setup.
+  - Status: implemented in `src/models/review.ts` (Lichess win %, accuracy, mate rules) and the
+    Evaluation tab. Labels agree with Lichess's own on 99.8% of 4,048 moves (50 analysed
+    games, same evals). Review runs the mainline only, depth 18 / 1 s per position
+    (`engine.review.*`). Waiting for an in-app test of speed and UI before marking done.
+  - Fixed on the way: `[%eval 0.18]` without depth was not parsed, so Lichess evals were
+    ignored; the standard start position gets +0.2 since exports never evaluate it.
+  - Known limits: re-reviewing keeps NAGs added by an earlier review; a Maia-style (1 node)
+    engine cannot review, the user must select a full-strength one.
 - [ ] **P1.3 Mistakes become puzzles**
   - Blunders and mistakes from reviewed games are added to the existing spaced-repetition puzzles
     ("find the better move"), linking back to the game.
@@ -103,7 +111,7 @@ How this file is used:
 - [ ] **O.4 Clocks** and time controls when playing.
 - [ ] **O.5 Board image / GIF export.**
 - [ ] **O.6 Backups** of Library and database; app auto-update.
-- [ ] **O.7 CI**: Rust `cargo check`/`clippy`, Vitest.
+- [ ] **O.7 CI**: Rust `cargo check`/`clippy`. (Vitest runs in CI since P1.2.)
 
 ## Known refactor targets (do them when touching the code)
 

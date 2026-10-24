@@ -1,244 +1,286 @@
-import { Component, For, Show, useContext } from "solid-js";
+import { Component, createMemo, For, Show, useContext } from "solid-js";
+import { Color } from "chessops";
+import { isMate, isPawns } from "chessops/pgn";
 import { HierarchicalMoveData, makeTree } from "../../models/tree";
+import { Path, PlyData } from "../../models/pgn";
+import {
+    CLASS_NAGS,
+    gameAccuracy,
+    keyMoments,
+    mainline,
+    MoveClass,
+    ReviewedMove,
+    reviewLine,
+    winCurve,
+} from "../../models/review";
 import { GameContext } from "./GameContext";
-import { Color, parseUci } from "chessops";
-import { Path } from "../../models/pgn";
-import { NagIcon, Ply } from "./Ply";
+import { NagIcon } from "./Ply";
 import { PlyFan } from "../common/PlyFan";
-import { Box, isMate, isPawns, walk } from "chessops/pgn";
-import { makeSan } from "chessops/san";
+import "./Review.scss";
 
-type PlyReviewProps = {
-    line: HierarchicalMoveData;
-    color?: Color;
+const CLASS_LABELS: Record<MoveClass, string> = {
+    best: "Best",
+    good: "Good",
+    inaccuracy: "Inaccuracies",
+    mistake: "Mistakes",
+    blunder: "Blunders",
+};
+const COUNTED: MoveClass[] = ["inaccuracy", "mistake", "blunder"];
+
+const formatScore = (data?: PlyData) => {
+    const ev = data?.evaluation;
+    if (ev && isMate(ev)) return `#${ev.mate}`;
+    if (ev && isPawns(ev)) return ev.pawns.toFixed(1);
+    return "";
 };
 
-const PlyReview: Component<PlyReviewProps> = ({ line, color }) => {
-    const {
-        gameSignal: [game],
-    } = useContext(GameContext)!;
-
-    const plyData = line[color === "white" ? "white" : "black"];
-    const isValid = () => {
-        return plyData !== undefined;
-    };
-
-    if (!isValid()) {
-        return <span class="pgnviewer-movecontent">...</span>;
-    }
-
-    const parent = () => {
-        if (isValid()) {
-            return game()!.dataAt(plyData!.path.previous());
-        }
-    };
-    /*
-"Inaccuracy" - The computer evaluates that this move resulted in a position that is at least 0.3 points worse than the position resulting from the best move available
-
-"Mistake" - This move is at least 0.9 points worse than the best move available
-
-"Blunder" - This move is at least 2 points worse than the best move available - pretty bad!  happy.png
-
-const nagNames = [
-    "Good Move",
-    "Good Move", 1
-    "Bad Move", 2
-    "Brilliant", 3 
-    "Blunder", 4
-    "Interesting", 5
-    "Inaccuracy", 6
-];
-
-*/
-
-    const nag = () => {
-        // return 1-6 nags
-        const evalThis = plyData?.evaluation;
-        const evalPrev = parent()?.evaluation;
-        let isBestMove = false;
-        if (evalPrev) {
-            const bestMoveUci = evalPrev?.ext as string | undefined;
-            const bestMove = bestMoveUci && parseUci(bestMoveUci)!;
-            const san = bestMove && makeSan(parent()!.pos, bestMove);
-            isBestMove = san === plyData?.san;
-        }
-
-        let nag = 0;
-        let diff = 0;
-        if (evalThis && evalPrev) {
-            if (isPawns(evalThis) && isPawns(evalPrev)) {
-                diff = evalThis.pawns - evalPrev.pawns;
-                if (parent()!.turn === "black") diff = -diff;
-
-                if (diff > 10) {
-                    nag = 3; // brilliant
-                } else if (diff > 2) {
-                    nag = 1; // good move
-                } else if (diff < -2) {
-                    nag = 4; // blunder
-                } else if (diff < -0.9) {
-                    nag = 2; // mistake
-                } else if (diff < -0.3) {
-                    nag = 6; // inaccuracy
-                }
-            }
-        }
-        return {
-            nag,
-            isBestMove,
-            diff,
-        };
-    };
-
-    const posScore = () => {
-        if (plyData?.evaluation && isMate(plyData!.evaluation)) {
-            return `#${plyData!.evaluation?.mate}`;
-        } else if (plyData?.evaluation && isPawns(plyData!.evaluation)) {
-            return `${plyData!.evaluation?.pawns}`;
-        }
-        return "";
-    };
-
-    return (
-        <div
-            class="move-cell pgnviewer-move"
-            data-color={color}
-            data-path={color && line[color]?.path.path}
-        >
-            <span class="engine-info-score has-background-info has-text-info-invert">
-                {posScore()}
-            </span>
-            <Show when={nag().nag > 0}>
-                <NagIcon nag={nag().nag} />
-            </Show>
-            <span class="pgnviewer-movecontent">
-                {/* {(color && line[color]?.fan) || "..."} */}
-                <PlyFan san={plyData?.san ?? ""} color={color!} />
-            </span>
-            <Show when={nag().isBestMove}>
-                <span class="pgnviewer-bestmove" title="Best Move">
-                    ⭐
-                </span>
-            </Show>
-        </div>
-    );
-};
-
-const ReviewLine: Component<{ move: HierarchicalMoveData }> = ({ move }) => {
-    const afterWhite = move.white?.comments || [];
-
-    return (
-        <>
-            <tr>
-                <td>
-                    <div class="move-cell">
-                        <span class="pgnviewer-movenumber">{move.number}.</span>
-                    </div>
-                </td>
-                <td>
-                    <PlyReview line={move} color="white" />
-                </td>
-                <td>
-                    <PlyReview line={move} color="black" />
-                </td>
-            </tr>
-
-            <Show when={afterWhite.length && move.black}>
-                <tr>
-                    <td>
-                        <div class="pgnviewer-movenumber">{move.number}.</div>
-                    </td>
-                    <td>
-                        <Ply line={move} />
-                    </td>
-                    <td>
-                        <Ply line={move} color="black" />
-                    </td>
-                </tr>
-            </Show>
-            {move.variations && (
-                <For each={move.variations}>
-                    {(variation) => (
-                        <tr>
-                            <td class="pgnviewer-variation-cell" colSpan={3}>
-                                <ReviewTree movesTree={() => variation} />
-                            </td>
-                        </tr>
-                    )}
-                </For>
-            )}
-        </>
-    );
-};
-
-const ReviewTree: Component<{
-    movesTree: () => HierarchicalMoveData[];
-}> = ({ movesTree }) => {
-    return (
-        <table class="pgnviewer-moves">
-            <For each={movesTree()}>
-                {(line) => (
-                    <>
-                        <ReviewLine move={line} />
-                    </>
-                )}
-            </For>
-        </table>
-    );
-};
+const moveLabel = (m: ReviewedMove) =>
+    `${Math.ceil(m.ply / 2)}${m.color === "white" ? "." : "..."} ${m.san}`;
 
 const Review: Component = () => {
     const {
-        currentPathSignal: [, setCurrentPath],
+        currentPathSignal: [currentPath, setCurrentPath],
         gameSignal: [game],
         playingEngine,
     } = useContext(GameContext)!;
 
-    const movesTree = (): HierarchicalMoveData[] => {
+    const nodes = createMemo(() => {
         const g = game();
-        if (!g) return [];
-        const moves = g.moves;
+        return g ? mainline(g) : [];
+    });
+    const reviewed = createMemo(() => reviewLine(nodes()));
+    const byPath = createMemo(
+        () => new Map(reviewed().map((m) => [m.path.path, m])),
+    );
+    const accuracy = createMemo(() => gameAccuracy(reviewed()));
+    const moments = createMemo(() => keyMoments(reviewed()));
+    const movesTree = createMemo((): HierarchicalMoveData[] => {
+        const g = game();
+        return (g && makeTree(g.moves, 0, false)) || [];
+    });
 
-        const tree = moves && makeTree(moves, 0, true);
-        return tree || [];
+    const goTo = (path: Path) => {
+        if (!playingEngine()) setCurrentPath(path);
     };
 
-    const hasEvaluation = () => {
-        const g = game();
-        if (!g) return false;
-        const moves = g.moves;
+    const count = (color: Color, cls: MoveClass) =>
+        reviewed().filter((m) => m.color === color && m.class === cls).length;
 
-        let num = 0;
-        walk(moves, new Box(0), (_ctx, node, _idx) => {
-            if (node.evaluation) {
-                num++;
-            }
-            return true;
-        });
-        return num > 0;
-    };
+    const player = (color: Color) =>
+        game()?.players[color].name ?? (color === "white" ? "White" : "Black");
 
-    const onClick = (e: Event) => {
-        if (playingEngine()) return;
-        const target = e.target as HTMLElement;
-
-        // find the closest anchestor with data-path attribute
-        const pathElement = target.closest("[data-path]") as HTMLElement;
-        if (!pathElement) return;
-
-        const path: string | undefined = pathElement.dataset.path;
-        if (!path) {
-            return;
-        }
-        setCurrentPath(new Path(path));
+    const MoveCell: Component<{ data?: PlyData }> = (props) => {
+        const review = () => props.data && byPath().get(props.data.path.path);
+        const nag = () => {
+            const cls = review()?.class;
+            return cls && CLASS_NAGS[cls];
+        };
+        return (
+            <Show
+                when={props.data}
+                fallback={<span class="pgnviewer-movecontent">...</span>}
+            >
+                {(data) => (
+                    <div
+                        class="move-cell pgnviewer-move"
+                        classList={{
+                            "is-current":
+                                currentPath()?.path === data().path.path,
+                        }}
+                        onClick={() => goTo(data().path)}
+                    >
+                        <span class="engine-info-score has-background-info has-text-info-invert">
+                            {formatScore(data())}
+                        </span>
+                        <Show when={nag()}>{(n) => <NagIcon nag={n()} />}</Show>
+                        <span class="pgnviewer-movecontent">
+                            <PlyFan
+                                san={data().san}
+                                color={
+                                    data().turn === "white" ? "black" : "white"
+                                }
+                            />
+                        </span>
+                        <Show when={review()?.class === "best"}>
+                            <span class="pgnviewer-bestmove" title="Best move">
+                                ⭐
+                            </span>
+                        </Show>
+                    </div>
+                )}
+            </Show>
+        );
     };
 
     return (
-        <Show when={hasEvaluation()} fallback={<div>No evaluation data.</div>}>
-            <div class="pgnviewer-moves-panel" onClick={onClick}>
-                <ReviewTree movesTree={movesTree} />
+        <Show
+            when={reviewed().length > 0}
+            fallback={
+                <div class="review-empty">
+                    No evaluations yet. Click Analyze Game to review it.
+                </div>
+            }
+        >
+            <div class="review-panel">
+                <table class="table is-narrow is-fullwidth review-summary">
+                    <thead>
+                        <tr>
+                            <th />
+                            <th>{player("white")}</th>
+                            <th>{player("black")}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Accuracy</td>
+                            <For each={["white", "black"] as Color[]}>
+                                {(color) => (
+                                    <td class="accuracy">
+                                        {accuracy()[color]?.toFixed(0) ?? "–"}
+                                        <Show
+                                            when={
+                                                accuracy()[color] !== undefined
+                                            }
+                                        >
+                                            %
+                                        </Show>
+                                    </td>
+                                )}
+                            </For>
+                        </tr>
+                        <For each={COUNTED}>
+                            {(cls) => (
+                                <tr>
+                                    <td>
+                                        <NagIcon nag={CLASS_NAGS[cls]!} />{" "}
+                                        {CLASS_LABELS[cls]}
+                                    </td>
+                                    <td>{count("white", cls)}</td>
+                                    <td>{count("black", cls)}</td>
+                                </tr>
+                            )}
+                        </For>
+                    </tbody>
+                </table>
+
+                <EvalGraph
+                    points={winCurve(nodes())}
+                    current={currentPath()}
+                    onSelect={goTo}
+                />
+
+                <Show when={moments().length > 0}>
+                    <h3 class="title is-6">Key moments</h3>
+                    <ul class="key-moments">
+                        <For each={moments()}>
+                            {(m) => (
+                                <li
+                                    classList={{
+                                        "is-current":
+                                            currentPath()?.path === m.path.path,
+                                    }}
+                                    onClick={() => goTo(m.path)}
+                                >
+                                    <NagIcon nag={CLASS_NAGS[m.class]!} />
+                                    <span class="moment-move">
+                                        {moveLabel(m)}
+                                    </span>
+                                    <span class="moment-loss">
+                                        −{m.loss.toFixed(0)}% win chance
+                                    </span>
+                                    <Show when={m.bestSan}>
+                                        <span class="moment-best">
+                                            best was {m.bestSan}
+                                        </span>
+                                    </Show>
+                                </li>
+                            )}
+                        </For>
+                    </ul>
+                </Show>
+
+                <table class="pgnviewer-moves review-moves">
+                    <tbody>
+                        <For each={movesTree()}>
+                            {(line) => (
+                                <tr>
+                                    <td>
+                                        <div class="move-cell">
+                                            <span class="pgnviewer-movenumber">
+                                                {line.number}.
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <MoveCell data={line.white} />
+                                    </td>
+                                    <td>
+                                        <MoveCell data={line.black} />
+                                    </td>
+                                </tr>
+                            )}
+                        </For>
+                    </tbody>
+                </table>
             </div>
         </Show>
+    );
+};
+
+const GRAPH_HEIGHT = 60;
+
+/** White's win % over the game; click to jump to a position. */
+const EvalGraph: Component<{
+    points: { path: Path; win?: number }[];
+    current?: Path;
+    onSelect: (path: Path) => void;
+}> = (props) => {
+    const width = () => Math.max(1, props.points.length - 1);
+    const y = (win: number) => GRAPH_HEIGHT * (1 - win / 100);
+    const area = () => {
+        const pts = props.points
+            .map((p, i) => (p.win === undefined ? "" : `${i},${y(p.win)}`))
+            .filter(Boolean);
+        return pts.length
+            ? `0,${GRAPH_HEIGHT} ${pts.join(" ")} ${width()},${GRAPH_HEIGHT}`
+            : "";
+    };
+    const currentIndex = () =>
+        props.points.findIndex((p) => p.path.path === props.current?.path);
+
+    const onClick = (e: MouseEvent) => {
+        const rect = (e.currentTarget as SVGElement).getBoundingClientRect();
+        const i = Math.round(((e.clientX - rect.left) / rect.width) * width());
+        const point = props.points[Math.max(0, Math.min(i, width()))];
+        if (point) props.onSelect(point.path);
+    };
+
+    return (
+        <svg
+            class="eval-graph"
+            viewBox={`0 0 ${width()} ${GRAPH_HEIGHT}`}
+            preserveAspectRatio="none"
+            onClick={onClick}
+        >
+            <title>White's winning chances; click to jump to a move</title>
+            <polygon class="eval-graph-white" points={area()} />
+            <line
+                class="eval-graph-mid"
+                x1="0"
+                x2={width()}
+                y1={GRAPH_HEIGHT / 2}
+                y2={GRAPH_HEIGHT / 2}
+            />
+            <Show when={currentIndex() >= 0}>
+                <line
+                    class="eval-graph-current"
+                    x1={currentIndex()}
+                    x2={currentIndex()}
+                    y1="0"
+                    y2={GRAPH_HEIGHT}
+                />
+            </Show>
+        </svg>
     );
 };
 
