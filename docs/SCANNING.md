@@ -72,8 +72,11 @@ Each page costs a few model runs (64 tiles each); a framed diagram usually needs
 - Pages are placeholders sized from the first page's aspect; an IntersectionObserver renders
   pages near the viewport (`renderPageWidth`, at device pixel ratio) and drops far ones.
 - Zoom 0.5–3×, page number / previous / next, "Find in the book" (`findText`: pages whose text
-  layer contains the query), the last page read per book in the `reader.pages` setting (written
-  as a whole object: Library paths contain dots, so they can't be setting key segments).
+  layer contains the query).
+- The reading place per book (page, how far down it, zoom) is kept in the `reader.places`
+  setting (written as a whole object: Library paths contain dots, so they can't be setting key
+  segments); old `reader.pages` entries are read as a fallback. Zoom and window resizes
+  re-anchor the view to that place (`anchoring` ignores the scroll events they cause).
 - Diagram scan: one page at a time through a module-level promise queue (`scanQueue`); a page
   scrolled away before its turn is skipped and rescanned when it shows again. Each page is
   rendered again at `PAGE_SIZE` for scanning (independent of zoom). Results are kept per page

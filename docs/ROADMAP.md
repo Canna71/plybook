@@ -238,8 +238,10 @@ How this file is used:
     missed or outlined a few pixels off with misread pieces; the board is now also taken from
     inside its frame. How recognition works and what to improve: `docs/SCANNING.md`.
   - Follow-ups (requested 2026-10-25):
-    - [ ] **P4.4a Remember the reading position** exactly: page and place on the page, zoom,
-      per book (today only the page).
+    - [x] **P4.4a Remember the reading position** (`feature/reader-position`; owner review
+      pending): the page, how far down it the view starts and the zoom, per book, in the
+      `reader.places` setting (older `reader.pages` entries are still honoured). Zooming and
+      resizing the window keep the same place at the top instead of jumping.
     - [ ] **P4.4b Select text** on pages (pdf.js text layer over the canvas).
     - [ ] **P4.4c Copy text into annotations**: selected text into a comment of the position
       being studied.

@@ -18,7 +18,11 @@ import { Config } from "chessground/config";
 import anylogger from "anylogger";
 import { Chessboard } from "../components/common/chessboard";
 import Button from "../components/common/Button";
-import { getSettingValue, setSettingValue } from "../models/settings";
+import {
+    getSettingValue,
+    ReaderPlace,
+    setSettingValue,
+} from "../models/settings";
 import { PAGE_SIZE } from "../scan/pages";
 import {
     findText,
@@ -34,6 +38,7 @@ import { baseName, NameWithoutExtension, readDataBytes } from "../storage/fs";
 import "./PdfReader.scss";
 const log = anylogger("reader");
 
+const PLACES_SETTING = "reader.places";
 const PAGES_SETTING = "reader.pages";
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
@@ -89,7 +94,7 @@ const PdfReader: Component = () => {
         onCleanup(() => resize.disconnect());
     });
 
-    // #region page position: remembered per book
+    // #region reading place: kept through zoom and resizing, remembered per book
     const visibility = new Map<number, number>();
     const onVisibility = (n: number, ratio: number) => {
         visibility.set(n, ratio);
@@ -103,35 +108,94 @@ const PdfReader: Component = () => {
         }
         setCurrent(best);
     };
+
+    let place = { page: 1, offset: 0 };
+    // while the pages change size, scroll events say nothing about where the reader is
+    let anchoring = false;
+    /** The page at the top of the view, and how far down it the view starts. */
+    const placeInView = () => {
+        const top = scroller.getBoundingClientRect().top;
+        let lo = 0;
+        let hi = pageElements.length - 1;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (pageElements[mid].getBoundingClientRect().bottom <= top)
+                lo = mid + 1;
+            else hi = mid;
+        }
+        const r = pageElements[lo].getBoundingClientRect();
+        const offset = (top - r.top) / r.height;
+        return { page: lo + 1, offset: Math.min(1, Math.max(0, offset)) };
+    };
+    const scrollToPlace = () => {
+        const el = pageElements[place.page - 1];
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        scroller.scrollTop +=
+            r.top -
+            scroller.getBoundingClientRect().top +
+            place.offset * r.height;
+    };
+
     let saveTimer: ReturnType<typeof setTimeout> | undefined;
+    const savePlace = () => {
+        clearTimeout(saveTimer);
+        saveTimer = undefined;
+        if (!doc()) return;
+        const places = getSettingValue<Record<string, ReaderPlace>>(
+            PLACES_SETTING,
+            {},
+        );
+        void setSettingValue(PLACES_SETTING, {
+            ...places,
+            [path()]: { ...place, zoom: zoom() },
+        });
+    };
+    const saveSoon = () => {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(savePlace, 1000);
+    };
+    onCleanup(() => {
+        if (saveTimer) savePlace();
+    });
+    const onScroll = () => {
+        if (anchoring || !pageElements.length) return;
+        place = placeInView();
+        saveSoon();
+    };
+    // the same place stays at the top when pages are laid out again
     createEffect(
-        on(current, (page) => {
-            clearTimeout(saveTimer);
-            saveTimer = setTimeout(() => {
-                const pages = getSettingValue<Record<string, number>>(
-                    PAGES_SETTING,
-                    {},
-                );
-                void setSettingValue(PAGES_SETTING, {
-                    ...pages,
-                    [path()]: page,
-                });
-            }, 1000);
+        on([aspect, width, zoom], ([a]) => {
+            if (!a) return;
+            anchoring = true;
+            requestAnimationFrame(() => {
+                scrollToPlace();
+                anchoring = false;
+            });
         }),
     );
+    createEffect(on(zoom, saveSoon, { defer: true }));
+
     const goTo = (page: number) => {
         const n = Math.min(Math.max(1, page), doc()?.numPages ?? 1);
         pageElements[n - 1]?.scrollIntoView({ block: "start" });
     };
-    // open where the book was left
+    // open where the book was left (older settings kept only the page)
     createEffect(
         on(aspect, (a) => {
             if (!a) return;
-            const saved = getSettingValue<Record<string, number>>(
+            const saved = getSettingValue<Record<string, ReaderPlace>>(
+                PLACES_SETTING,
+                {},
+            )?.[path()];
+            const page = getSettingValue<Record<string, number>>(
                 PAGES_SETTING,
                 {},
             )?.[path()];
-            if (saved && saved > 1) setTimeout(() => goTo(saved), 0);
+            place = saved
+                ? { page: saved.page, offset: saved.offset }
+                : { page: page ?? 1, offset: 0 };
+            if (saved?.zoom) setZoom(saved.zoom);
         }),
     );
     // #endregion
@@ -267,7 +331,7 @@ const PdfReader: Component = () => {
                 </Show>
             </div>
             <div class="reader-body">
-                <div class="reader-pages" ref={scroller}>
+                <div class="reader-pages" ref={scroller} onScroll={onScroll}>
                     <Show when={doc.error}>
                         <p class="notification is-danger is-light">
                             Could not open the PDF: {String(doc.error)}
