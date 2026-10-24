@@ -30,7 +30,8 @@ cd src-tauri && cargo clippy
 cd src-tauri && cargo fmt --check
 ```
 
-Rust is 1.96 here; pgn-reader is pinned to 0.28 / shakmaty 0.29 because newer ones need 1.97.
+Rust 1.97 or newer is required (`rust-version` in Cargo.toml, for pgn-reader 0.29 / shakmaty 0.30);
+`rustup update stable` if a machine is older.
 Building the Rust side needs a C compiler for the bundled SQLite: the Xcode command line tools on
 macOS, the MSVC build tools on Windows. (No LLVM/libclang since SurrealDB was removed.)
 
