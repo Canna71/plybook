@@ -20,7 +20,6 @@ import { movesFromText } from "../../models/booktext";
 import { ShortcutsHelp, useShortcuts } from "./useShortcuts";
 import { makeSanVariation } from "chessops/san";
 import { GameModel } from "../../models/GameModel";
-import ButtonBar from "./Buttonbar";
 import {
     initFromGameModel,
     isPromotion,
@@ -48,31 +47,22 @@ import PlayerName from "../boardeditor/PlayerName";
 import { PiecesPopup } from "./PiecesPopup";
 import { makeSquare, NormalMove, parseUci } from "chessops";
 import "./GameManager.scss";
-import EngineInfoViewer from "./EngineInfoViewer";
-import WhatIf from "./WhatIf";
-import PositionFacts from "./PositionFacts";
-import HumanMoves from "./HumanMoves";
-import TablebaseInfo from "./TablebaseInfo";
 import { useHumanMoves } from "./useHumanMoves";
 import { Tooltip } from "../common/Tooltip";
-import PgnEditBar, { ViewMode } from "./PgnEditBar";
-import PgnTextArea from "./PgnTextArea";
+import { ViewMode } from "./PgnEditBar";
 import { useChessEngine } from "./useChessEngine";
 import { playSoundForMove } from "./playSoundForMove";
 import { useTooltip } from "./useTooltip";
 import MarkdownEditor from "../common/MarkdownEditor";
 import { makePgn, parsePgn } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
-import EngineControl from "./EngineControl";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { Config } from "chessground/config";
 import Button from "../common/Button";
 import { IconCircleXFilled } from "@tabler/icons-solidjs";
 import HintButtons from "./HintButtons";
-import PanelSection, { setSectionOpen } from "./PanelSection";
-import ReviewPanel from "./ReviewPanel";
-import Moves from "./Moves";
-import Explorer from "./Explorer";
+import { setSectionOpen } from "./PanelSection";
+import AnalysisPanel from "./AnalysisPanel";
 import anylogger from "anylogger";
 import { showAlert } from "../common/Alert";
 import { gameEnd, timeoutEnd } from "../../models/play";
@@ -448,7 +438,7 @@ const GameManager: Component<GameManagerOptions> = ({
         return config;
     };
 
-    const hasMoves = createMemo(() => game()?.mainline?.length ?? 0 > 0);
+    const hasMoves = createMemo(() => (game()?.mainline?.length ?? 0) > 0);
 
     const whitePlayer = () => game()?.players.white.name || "White";
 
@@ -1021,110 +1011,15 @@ const GameManager: Component<GameManagerOptions> = ({
                         <Show when={!compact}>
                             <VDivider ref={divider!} />
                         </Show>
-                        <div class="pgnviewer-sidebar">
-                            {/* one toolbar: the engine on the left, the game's tools on the right */}
-                            <Show when={!isPuzzleMode()}>
-                                <div class="workspace-toolbar">
-                                    <Show when={viewMode() === ViewMode.MOVES}>
-                                        <EngineControl />
-                                    </Show>
-                                    <PgnEditBar isEditable={isEditable} />
-                                </div>
-                            </Show>
-                            <Show
-                                when={
-                                    engineCallable() &&
-                                    !playingEngine &&
-                                    !isReviewing() &&
-                                    !isPuzzleMode()
-                                }
-                            >
-                                <PanelSection id="engine" title="Engine">
-                                    <Show when={!threatFen()}>
-                                        <WhatIf engineInfo={engineInfo} />
-                                    </Show>
-                                    <EngineInfoViewer engineInfo={engineInfo} />
-                                </PanelSection>
-                            </Show>
-
-                            <Show
-                                when={
-                                    viewMode() === ViewMode.MOVES &&
-                                    !isPuzzleMode()
-                                }
-                            >
-                                <PanelSection id="moves" title="Moves" grow>
-                                    <Show
-                                        when={hasMoves()}
-                                        fallback={
-                                            <p class="panel-hint">
-                                                {playingEngine
-                                                    ? "Choose the engine's colour and start a new game."
-                                                    : "Make a move on the board, or paste a PGN or a FEN (⌘V)."}
-                                            </p>
-                                        }
-                                    >
-                                        <div class="pgnviewer-moves-wrapper">
-                                            <Moves />
-                                        </div>
-                                    </Show>
-                                    <ButtonBar />
-                                </PanelSection>
-                            </Show>
-
-                            <Show
-                                when={
-                                    engineCallable() &&
-                                    !playingEngine &&
-                                    !isReviewing() &&
-                                    !isPuzzleMode() &&
-                                    viewMode() === ViewMode.MOVES
-                                }
-                            >
-                                <PanelSection
-                                    id="insights"
-                                    title="About this position"
-                                >
-                                    <PositionFacts />
-                                    <HumanMoves
-                                        moves={humanMoves()}
-                                        name={humanProfileName()}
-                                        fen={fen()}
-                                        engineInfo={engineInfo}
-                                    />
-                                    <TablebaseInfo />
-                                </PanelSection>
-                            </Show>
-
-                            <Show
-                                when={
-                                    !isPlayingOn() &&
-                                    !isPuzzleMode() &&
-                                    viewMode() === ViewMode.MOVES
-                                }
-                            >
-                                <PanelSection
-                                    id="review"
-                                    title="Game review"
-                                    defaultOpen={false}
-                                >
-                                    <ReviewPanel />
-                                </PanelSection>
-                                <PanelSection
-                                    id="explorer"
-                                    title="Explorer"
-                                    defaultOpen={false}
-                                >
-                                    <Explorer />
-                                </PanelSection>
-                            </Show>
-
-                            <Show when={viewMode() === ViewMode.PGN}>
-                                <PgnTextArea
-                                    pgnSignal={[editPgn, setEditPgn]}
-                                />
-                            </Show>
-                        </div>
+                        <AnalysisPanel
+                            engineInfo={engineInfo}
+                            engineCallable={engineCallable}
+                            humanMoves={humanMoves}
+                            humanProfileName={humanProfileName}
+                            fen={fen}
+                            hasMoves={hasMoves}
+                            isEditable={isEditable}
+                        />
 
                         <div class="game-description">
                             <MarkdownEditor

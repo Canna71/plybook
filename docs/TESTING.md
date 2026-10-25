@@ -43,6 +43,19 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       "Hide" removes the checklist for good.
 - [ ] **Does it tell you what to do?** The real question of this step.
 
+## UX overhaul, step 4: the analysis workspace (branch feature/ux-overhaul)
+
+- [ ] **Board size**: resize the window (wide, tall, small): the board always fits, nothing is
+      cut off; drag the divider: the panel changes width and keeps it after a restart.
+- [ ] **Eval bar** (with Stockfish active): follows the evaluation as you step through moves,
+      flips with the board, hidden while playing and in puzzles.
+- [ ] **Toolbar**: Export and More menus open, do their thing, close on Esc or a click outside.
+- [ ] **Sections**: fold and unfold Engine, About this position, Game review, Explorer; they
+      stay that way after a restart; "Review the game" opens Game review with its progress.
+- [ ] **Moves**: readable, side lines clearly set apart, the current move easy to spot.
+- [ ] **PDF reader notes** still work in their side panel (they share this editor).
+- [ ] **Play and puzzles** look right with the new layout.
+
 ## PDF reader (P4.4)
 
 - [ ] **Text below the diagram** (P4.4e, needs work): "Text below the diagram: …" shows the
