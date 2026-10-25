@@ -437,10 +437,12 @@ export class GameModel {
     }
 
     public withStartingPosition(fen: string) {
+        // the PGN tag is "SetUp"; older versions wrote a second "Setup" next to it
+        this.game.headers.delete("Setup");
         const newGame = this.updateHeaders(
             new Map([
                 ["FEN", fen || ""],
-                ["Setup", "1"],
+                ["SetUp", "1"],
             ]),
         );
         return newGame;

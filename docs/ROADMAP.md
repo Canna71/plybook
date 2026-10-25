@@ -269,10 +269,19 @@ How this file is used:
       Nf6 5.d4") with "Add these moves"; "Add selected moves" plays a selected move sequence
       from the move shown in the notes (or from the diagram). SAN with figurines, castling
       with zeros, evaluation signs; bracketed side lines are left out; words between moves
-      end a line, so squares in sentences aren't taken for moves. Known limits: chess fonts
-      that map figurines to arbitrary letters in the PDF's text extract won't parse; the
-      "text below" is the diagram's column down to 30% of the page, so text continuing on
-      the next column or page is not read.
+      end a line, so squares in sentences aren't taken for moves. A selection shows what it
+      would add as moves ("As moves: …", from the move shown in the notes) before "Add as
+      moves" / "Add as a comment". Known limits: the "text below" is the diagram's column
+      down to 30% of the page, so text continuing on the next column or page is not read.
+    - [ ] **P4.4f Read piece icons in the text** (future improvement, owner 2026-10-25: "move
+      reading has difficulties with icons"). Books print pieces with chess-font figurines,
+      which reach the PDF's text as arbitrary characters, or not at all. Today a move after
+      an unreadable symbol ("f3") is tried as each piece, the same symbol standing for
+      the same piece throughout a line, and the reading that plays longest wins (ties stop
+      the line). A dropped symbol can't be told from a pawn move ("2 Nf3" read as "2 f3").
+      Ideas: learn each book's font mapping (the font name and glyph codes from pdf.js's text
+      content, or confirm it once with the user); read the glyphs' shapes with the tile
+      model; prefer the piece reading when a pawn move "fits" but breaks the line later.
 
 ## Integrations
 
