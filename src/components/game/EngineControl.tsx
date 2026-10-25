@@ -15,7 +15,6 @@ import { useNavigate } from "@solidjs/router";
 import "./EngineControl.scss";
 import {
     IconAlertTriangle,
-    IconCpu,
     IconDatabaseSearch,
     IconFlag,
     IconPlayerPlayFilled,
@@ -101,7 +100,7 @@ const EngineControl = () => {
         return [
             {
                 value: "random",
-                label: "random",
+                label: "Either colour",
             },
             {
                 value: "white",
@@ -184,10 +183,10 @@ const EngineControl = () => {
                 <div class="engine-control-row">
                     <Show when={canEnableEngine() && !isReviewing()}>
                         <div
-                            title="Enable Engine Analysis"
+                            title="Engine analysis on/off (L)"
                             class="is-flex is-flex-direction-row"
                         >
-                            <IconCpu />
+                            <span class="engine-label">Engine</span>
                             <ToggleSwitch
                                 toggleSignal={engineAnalysisOnSignal}
                             />
@@ -223,32 +222,34 @@ const EngineControl = () => {
                         />
                     </Show>
                     <Show when={playingEngine()}>
-                        <div title="Engine Color">
-                            <IconCpu />
-                            <Select
-                                selectedValue={internalColor}
-                                setSelectedValue={
-                                    setInternalColor as Setter<string>
-                                }
-                                options={engineColors}
-                            />
-                        </div>
+                        <Show when={!isPlayingOn()}>
+                            <div title="The colour the engine plays">
+                                <span class="engine-label">Engine plays</span>
+                                <Select
+                                    selectedValue={internalColor}
+                                    setSelectedValue={
+                                        setInternalColor as Setter<string>
+                                    }
+                                    options={engineColors}
+                                />
+                            </div>
+                            <Button class="is-primary" onClick={toggleGame}>
+                                <IconPlayerPlayFilled />
+                                New game
+                            </Button>
+                        </Show>
+                        <Show when={isPlayingOn()}>
+                            <Button onClick={toggleGame}>
+                                <IconFlag />
+                                Resign
+                            </Button>
+                        </Show>
                         <Button
                             onClick={() => setPlaySettingsVisible(true)}
-                            title="Playing Settings"
+                            title="Playing settings: strength, opening book, time per move"
                         >
                             <IconSettingsFilled />
                         </Button>
-                        <Show when={isPlayingOn()}>
-                            <Button onClick={toggleGame} title="Resign">
-                                <IconFlag />
-                            </Button>
-                        </Show>
-                        <Show when={!isPlayingOn()}>
-                            <Button onClick={toggleGame} title="New Game">
-                                <IconPlayerPlayFilled />
-                            </Button>
-                        </Show>
                         <Show when={viewMode() === ViewMode.MOVES}>
                             <Button
                                 onClick={() =>

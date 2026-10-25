@@ -16,7 +16,11 @@ import {
     IChessEngine,
     EngineInfo,
 } from "../../engine/engineinterfaces";
-import { activeProfile, startEngine } from "../../engine/engineprofiles";
+import {
+    activeProfile,
+    analysisProfile,
+    startEngine,
+} from "../../engine/engineprofiles";
 import { makeMove } from "../common/utils";
 import { makeErrorToast } from "../common/Toast";
 import { Color } from "chessground/types";
@@ -63,7 +67,10 @@ export function useChessEngine(options: ChessEngineOptions) {
     const [engineAnalysisOn, setEngineAnalysisOn] = createSignal<boolean>(
         options.defaultEngineAnalysisOn,
     );
-    const profile = activeProfile;
+    // the engine you play against is your choice; analysis, review and hints always use a
+    // full-strength one (Stockfish, say), whatever engine you play against
+    const profile = () =>
+        options.playingEngine() ? activeProfile() : analysisProfile();
     const [engine, setEngine] = createSignal<IChessEngine | undefined>(
         undefined,
     );
@@ -339,9 +346,9 @@ export function useChessEngine(options: ChessEngineOptions) {
         remembered[fenKey(fen)]?.pv;
 
     const startReview = () => {
-        if (profile()?.singleNode) {
+        if (!profile() || profile()!.singleNode) {
             makeErrorToast(
-                `${profile()!.name} plays like a human and cannot review games. Select a full-strength engine such as Stockfish in Settings.`,
+                "Reviewing needs a full-strength engine such as Stockfish: add one in Settings.",
             );
             return;
         }

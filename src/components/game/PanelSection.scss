@@ -1,0 +1,77 @@
+// the analysis panel's sections (PanelSection.tsx): folded ones take their header's height,
+// the moves take what's left and scroll inside
+.pgnviewer-sidebar {
+    .panel-section {
+        display: flex;
+        flex-direction: column;
+        border-bottom: 1px solid var(--rc-border);
+        min-height: 0;
+        flex: none;
+
+        &.open:not(.grow) {
+            max-height: 45%;
+        }
+
+        &.grow {
+            flex: 1;
+            min-height: 120px;
+        }
+    }
+
+    .panel-section-header {
+        display: flex;
+        align-items: center;
+        gap: var(--rc-space-1);
+        padding: 6px 2px;
+        font-size: var(--rc-text-xs);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--rc-text-muted);
+
+        &.foldable {
+            cursor: pointer;
+
+            &:hover {
+                color: var(--rc-text-strong);
+            }
+        }
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .panel-section-aside {
+            margin-left: auto;
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: 400;
+        }
+    }
+
+    .panel-section-body {
+        overflow: auto;
+        min-height: 0;
+        padding-bottom: var(--rc-space-2);
+        display: flex;
+        flex-direction: column;
+        gap: var(--rc-space-2);
+    }
+
+    .panel-section.grow .panel-section-body {
+        flex: 1;
+        overflow: hidden;
+
+        .pgnviewer-moves-wrapper {
+            flex: 1;
+            overflow-y: auto;
+        }
+    }
+
+    .panel-hint {
+        color: var(--rc-text-muted);
+        font-size: var(--rc-text-sm);
+        padding: var(--rc-space-3) var(--rc-space-1);
+    }
+}

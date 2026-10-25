@@ -15,6 +15,8 @@ import {
     IconBrandYoutube,
     IconCheck,
     IconCopy,
+    IconDots,
+    IconDownload,
     IconGif,
     IconPhotoDown,
     IconPlayerPlayFilled,
@@ -27,6 +29,7 @@ import { Path } from "../../models/pgn";
 import { saveExport } from "../../storage/exports";
 import { makeErrorToast, makeToast } from "../common/Toast";
 import AttachVideo from "../video/AttachVideo";
+import Menu from "../common/Menu";
 import { useNavigate } from "@solidjs/router";
 
 export enum ViewMode {
@@ -166,76 +169,81 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
 
     return (
         <div class="buttons-bar are-small">
-            <Show when={props.isEditable()}>
-                <Button onClick={onFLipBoard} title="Flip Board (F)">
+            <Show when={props.isEditable() && viewMode() === ViewMode.MOVES}>
+                <Button onClick={onFLipBoard} title="Flip the board (F)">
                     <IconSwitchVertical />
                 </Button>
-                <Button
-                    onClick={onCopyImage}
+                <Menu
+                    iconOnly
+                    title="Export the board or the line"
                     disabled={exporting()}
-                    title="Copy the board as an image"
+                    alignRight
+                    items={[
+                        {
+                            label: "Copy the board as an image",
+                            icon: <IconCopy />,
+                            onClick: onCopyImage,
+                        },
+                        {
+                            label: "Save the board as PNG…",
+                            icon: <IconPhotoDown />,
+                            onClick: onSaveImage,
+                        },
+                        {
+                            label: "Save the line as an animated GIF…",
+                            icon: <IconGif />,
+                            onClick: onSaveGif,
+                        },
+                    ]}
                 >
-                    <IconCopy />
-                </Button>
-                <Button
-                    onClick={onSaveImage}
-                    disabled={exporting()}
-                    title="Save the board as a PNG image…"
+                    <IconDownload />
+                </Menu>
+                <Menu
+                    iconOnly
+                    title="More"
+                    alignRight
+                    items={[
+                        {
+                            label: "Play the engine from here",
+                            icon: <IconPlayerPlayFilled />,
+                            onClick: onPlayAgainstEngine,
+                        },
+                        "separator",
+                        {
+                            label: isEditingDescription()
+                                ? "Finish the description"
+                                : "Write a description",
+                            icon: isEditingDescription() ? (
+                                <IconCheck />
+                            ) : (
+                                <IconTextPlus />
+                            ),
+                            onClick: isEditingDescription()
+                                ? onFinishEditDescription
+                                : onEditDescription,
+                        },
+                        {
+                            label: "Link a YouTube video to this move…",
+                            icon: <IconBrandYoutube />,
+                            onClick: () => setAttachingVideo(true),
+                        },
+                        "separator",
+                        {
+                            label: "Change the starting position",
+                            icon: <StartingPositionIcon />,
+                            onClick: onEditStartingPosition,
+                        },
+                        {
+                            label: "Edit the PGN text",
+                            icon: <IconBrackets />,
+                            onClick: onEditPgn,
+                        },
+                    ]}
                 >
-                    <IconPhotoDown />
-                </Button>
-                <Button
-                    onClick={onSaveGif}
-                    disabled={exporting()}
-                    title="Save the line shown as an animated GIF…"
-                >
-                    <IconGif />
-                </Button>
-                <Button
-                    onClick={() => setAttachingVideo(true)}
-                    title="Link a YouTube video to this move…"
-                >
-                    <IconBrandYoutube />
-                </Button>
-                <AttachVideo open={attachVideo} onAttach={onAttachVideo} />
-
-                <Show when={isEditingDescription()}>
-                    <Button
-                        onClick={onFinishEditDescription}
-                        title="Finish Editing Description"
-                    >
-                        <IconCheck />
-                    </Button>
-                </Show>
-
-                <Show when={!isEditingDescription()}>
-                    <Button
-                        onClick={onEditDescription}
-                        title="Edit Description"
-                    >
-                        <IconTextPlus />
-                    </Button>
-                </Show>
-                <Show when={viewMode() === ViewMode.MOVES}>
-                    <Button onClick={onEditPgn} title="Edit PGN">
-                        <IconBrackets />
-                    </Button>
-                    <Button
-                        title="Play Against Engine"
-                        onClick={onPlayAgainstEngine}
-                    >
-                        <IconPlayerPlayFilled />
-                    </Button>
-                </Show>
-                <Show when={viewMode() === ViewMode.MOVES}>
-                    <Button
-                        onClick={onEditStartingPosition}
-                        title="Change Starting Position"
-                    >
-                        <StartingPositionIcon />
-                    </Button>
-                </Show>
+                    <IconDots />
+                </Menu>
             </Show>
+            <AttachVideo open={attachVideo} onAttach={onAttachVideo} />
 
             <Show when={viewMode() === ViewMode.STARTING_POSITION}>
                 <div class="is-flex is-flex-direction-row is-gap-1">

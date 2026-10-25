@@ -83,7 +83,7 @@ const ButtonBar: Component = () => {
         );
     };
 
-    const hasMoves = createMemo(() => game()?.mainline?.length ?? 0 > 0);
+    const hasMoves = createMemo(() => (game()?.mainline?.length ?? 0) > 0);
 
     return (
         <>

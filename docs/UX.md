@@ -216,3 +216,36 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
     ticks itself as things get done; "Hide" dismisses it (`today.hideSetup`).
   - Not shown yet: synced online games waiting for review (the sync has no "reviewed" flag;
     a later step can add one).
+- 2026-10-25: step 3 approved by the owner and merged into `develop`.
+- 2026-10-25, step 4 (the analysis workspace) ready for review, done in substeps:
+  - 4a, board area: the board is as large as its column allows in both directions (the
+    column is a CSS size container; board = min(width − eval bar, height − player rows)),
+    players and clocks above and below at the board's width, an evaluation bar beside it in
+    analysis (`EvalBar.tsx`, `models/evalbar.ts` tested; the engine's evaluation of the
+    position shown, else the PGN's [%eval]; hidden while playing and in puzzles). The
+    divider sizes the panel and the board takes the rest (`layout.workspace.columns`):
+    the "resizable panels" request, for this screen.
+  - 4b, one toolbar: the engine on the left (a labelled "Engine" switch, settings, threat,
+    find in databases); flip, an Export menu (copy image, PNG, GIF) and a More menu (play
+    from here, description, YouTube video, starting position, PGN text) on the right, with
+    a new `Menu` component. The header's repertoire and puzzle settings are labelled. Play:
+    "Engine plays [Either colour]", "New game", "Resign".
+  - 4c, panel sections (`PanelSection.tsx`, open state remembered in `layout.panel`): Engine
+    (the judgement of the last move, then the lines; a hint when the engine is a human-like
+    one that gives no evaluation), Moves (always open, takes the spare height), About this
+    position (facts, human moves, tablebase), Game review and Explorer (folded at first;
+    Game review opens itself when a review starts). The old tabs are gone.
+  - Move list: a narrow, quiet number column, aligned moves, side lines indented in a box
+    with a rule, the current move in the accent colour.
+  - 4d, refactor: the panel moved out of `GameManager` into `AnalysisPanel.tsx`; old
+    `SidebarTabs` removed. The board area stays in GameManager for now (it shares a dozen
+    local values: promotion, puzzle and clock state); still on the refactor list.
+  - Fixed on the way: `hasMoves` returned the move count instead of a boolean
+    (`length ?? 0 > 0`), in GameManager and the button bar.
+- 2026-10-25, the owner's call on engines: analysis, review, training and explanations always
+  use a full-strength engine; the engine selected in Settings is only the one you play
+  against. `analysisProfile()` is the one chosen in Settings → Engines → "Analysis" (setting
+  `engine.analysisProfile`), else the first full-strength engine; Maia-style engines never
+  analyse. `useChessEngine` uses it everywhere except Play. Settings → Engines has two
+  columns: "Play against" and "Analysis".
+- 2026-10-25: step 4 approved by the owner and merged into `develop`.

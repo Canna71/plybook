@@ -20,7 +20,10 @@ export interface AppSettings {
         ui?: "system" | "light" | "dark";
     };
     engine?: {
+        /** The engine to play against */
         lastUsed?: string;
+        /** The engine for analysis, review and training; "" picks the first full-strength one */
+        analysisProfile?: string;
         /** Maia-style profile for human-move hints: "" first one, "off" none */
         human?: string;
         analysis: {
@@ -77,6 +80,10 @@ export interface AppSettings {
         playing: {
             columnsTemplate?: string;
         };
+        /** Board, divider and panel of the chess screens; the board takes the rest */
+        workspace?: {
+            columns?: string;
+        };
     };
     _timestamp?: number;
 }
@@ -89,6 +96,7 @@ const DEFAULT: AppSettings = {
     },
     engine: {
         lastUsed: "",
+        analysisProfile: "",
         human: "",
         analysis: {
             depth: 30,
@@ -134,6 +142,9 @@ const DEFAULT: AppSettings = {
         filesOpen: true,
         playing: {
             columnsTemplate: "400px 5px 1fr",
+        },
+        workspace: {
+            columns: "1fr 5px 440px",
         },
     },
 };
