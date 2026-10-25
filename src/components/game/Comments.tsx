@@ -4,6 +4,8 @@ import { safePaste } from "../common/utils";
 import { useContextMenu } from "../common/contextmenu";
 import { Path } from "../../models/pgn";
 import { GameContext } from "./GameContext";
+import { formatTime, parseYouTube, YOUTUBE_URL } from "../../models/youtube";
+import { playVideo } from "../video/VideoPlayer";
 
 // PGN comments are untrusted text: escape them before adding our own markup
 export function escapeHtml(text: string) {
@@ -48,11 +50,32 @@ export const CommentsView: Component<CommentsViewProps> = ({
 
     const paragraph = () => {
         let line = escapeHtml(comments() || "");
+        // video links first, set aside: their ids would otherwise get square markup ("e4")
+        const videos: string[] = [];
+        line = line.replace(YOUTUBE_URL, (url) => {
+            const v = parseYouTube(url);
+            if (!v) return url;
+            // the id is checked (11 of [A-Za-z0-9_-]) and the url is escaped already
+            videos.push(
+                `<span class="video-link" data-video-id="${v.id}" data-video-start="${v.start}" data-label="▶ ${formatTime(v.start)}" title="Play the video from ${formatTime(v.start)}">${url}</span>`,
+            );
+            // a private-use character marks the spot: it never appears in comments
+            return `${videos.length - 1}`;
+        });
         // const matches = line.match(squareRegex);
         line = line.replace(moveRegex, moveSubst);
         line = line.replace(squareRegex, squareSubst);
+        line = line.replace(/(\d+)/g, (_, i) => videos[+i]);
 
         return line;
+    };
+
+    const onClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        const id = target.dataset.videoId;
+        if (!id) return;
+        e.preventDefault();
+        playVideo({ id, start: +(target.dataset.videoStart ?? 0) });
     };
 
     const onMouseOver = (e: MouseEvent) => {
@@ -124,6 +147,7 @@ export const CommentsView: Component<CommentsViewProps> = ({
             data-placeholder="Add a comment"
             contentEditable={editable()}
             onMouseOver={onMouseOver}
+            onClick={onClick}
             onKeyDown={onKeyDown}
             onMouseLeave={onMouseLeave}
             onBlur={onBlur}

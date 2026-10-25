@@ -12,6 +12,7 @@ import { updateGameFromPgnString, useFen } from "../common/utils";
 import { StartingPositionIcon } from "../common/Icons";
 import {
     IconBrackets,
+    IconBrandYoutube,
     IconCheck,
     IconCopy,
     IconGif,
@@ -25,6 +26,7 @@ import { frameAt, lineFrames } from "../../models/boardframes";
 import { Path } from "../../models/pgn";
 import { saveExport } from "../../storage/exports";
 import { makeErrorToast, makeToast } from "../common/Toast";
+import AttachVideo from "../video/AttachVideo";
 import { useNavigate } from "@solidjs/router";
 
 export enum ViewMode {
@@ -125,6 +127,17 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
         });
     // #endregion
 
+    // a YouTube link becomes a comment on the move shown, played from the comment
+    const attachVideo = createSignal(false);
+    const setAttachingVideo = attachVideo[1];
+    const onAttachVideo = (link: string) => {
+        const g = game();
+        if (g)
+            setGame(
+                g.insertComment(currentPath() ?? Path.root, link, false, true),
+            );
+    };
+
     const onEditDescription = () => {
         setIsEditingDescription(true);
     };
@@ -178,6 +191,13 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
                 >
                     <IconGif />
                 </Button>
+                <Button
+                    onClick={() => setAttachingVideo(true)}
+                    title="Link a YouTube video to this move…"
+                >
+                    <IconBrandYoutube />
+                </Button>
+                <AttachVideo open={attachVideo} onAttach={onAttachVideo} />
 
                 <Show when={isEditingDescription()}>
                     <Button

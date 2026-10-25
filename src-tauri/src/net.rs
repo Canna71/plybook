@@ -360,9 +360,36 @@ pub async fn online_tablebase(fen: String) -> Result<Tablebase, String> {
     }
 }
 
+/// A YouTube watch page for a video id, starting at `start` seconds; None for anything that
+/// is not a video id, so the command below can only open YouTube.
+fn youtube_url(id: &str, start: u32) -> Option<String> {
+    let valid = id.len() == 11
+        && id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_');
+    valid.then(|| format!("https://www.youtube.com/watch?v={id}&t={start}s"))
+}
+
+/// Opens a YouTube video in the default browser (the embedded player's fallback).
+#[tauri::command]
+pub fn open_youtube(id: String, start: u32) -> Result<(), String> {
+    let url = youtube_url(&id, start).ok_or("Not a YouTube video id")?;
+    open::that_detached(url).map_err(|e| e.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn opens_only_youtube_videos() {
+        assert_eq!(
+            youtube_url("dQw4w9WgXcQ", 90).as_deref(),
+            Some("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=90s")
+        );
+        assert_eq!(youtube_url("short", 0), None);
+        assert_eq!(youtube_url("x&url=evil.", 0), None);
+    }
 
     #[test]
     fn reads_the_tablebase_answer() {

@@ -117,7 +117,8 @@ pub fn run() {
             backup_create,
             backup_restore,
             backup_auto,
-            backup_open_folder
+            backup_open_folder,
+            open_youtube
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
