@@ -249,3 +249,18 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
   analyse. `useChessEngine` uses it everywhere except Play. Settings → Engines has two
   columns: "Play against" and "Analysis".
 - 2026-10-25: step 4 approved by the owner and merged into `develop`.
+- 2026-10-25, step 5 (every chess screen on the layout) ready for review:
+  - Looked at each: Play and puzzles already use the shared workspace (step 4). Puzzles and
+    Guess the move need a prompt/feedback/next frame more than a new layout: that is step 6.
+  - The board editor was the weak one (controls crammed above the board, a heavy "Advanced
+    settings" box, the FEN under the board, half the window empty) and is used three times
+    (Board editor, Scan, "Change the starting position"). Redone (`BoardEditor.tsx`): board
+    and piece trays on the left, as large as the height allows; on the right a panel with
+    help, side to move (two buttons), flip / starting position / clear, castling as four
+    labelled checkboxes, en passant, the FEN with copy, and a slot for the screen's own
+    actions. One column when narrow (a container query). Trays swap when flipped.
+  - Board editor screen: a page header, starting from the initial position, with Analyze,
+    Play from here and Find in databases.
+  - Scan: a page header with Capture from screen, Choose an image and Scan a whole book; the
+    scanned picture appears in the editor's panel, next to the board, to compare square by
+    square; then the three actions.
