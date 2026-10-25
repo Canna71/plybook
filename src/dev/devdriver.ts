@@ -23,17 +23,26 @@ const POLL = 500;
 
 export function startDevDriver(navigate: (to: string) => void) {
     let last: string | undefined;
+    // the command waiting when the app (re)loads already ran: don't replay it
+    let started = false;
     const timer = setInterval(async () => {
         let cmd: Command;
         try {
             const res = await fetch("/dev-driver.json", { cache: "no-store" });
-            if (!res.ok) return;
+            if (!res.ok) {
+                started = true; // nothing waiting: the next command is new
+                return;
+            }
             cmd = await res.json();
         } catch {
             return;
         }
         if (!cmd?.id || cmd.id === last) return;
         last = cmd.id;
+        if (!started) {
+            started = true;
+            return;
+        }
         log.info("command", cmd);
         if (cmd.theme !== undefined) {
             if (cmd.theme) document.documentElement.dataset.theme = cmd.theme;

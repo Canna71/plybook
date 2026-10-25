@@ -57,6 +57,7 @@ import GameManager, { GameManagerApi } from "../components/game/GameManager";
 import { join } from "@tauri-apps/api/path";
 import { BaseDirectory, exists, mkdir } from "@tauri-apps/plugin-fs";
 import { makeToast } from "../components/common/Toast";
+import { recordRecent } from "../storage/recent";
 import "./PdfReader.scss";
 const log = anylogger("reader");
 
@@ -87,9 +88,11 @@ const PdfReader: Component = () => {
     const [params] = useSearchParams();
     const path = () => (typeof params.path === "string" ? params.path : "");
 
-    const [doc] = createResource(path, async (p) =>
-        openPdf(new Blob([await readDataBytes(p)])),
-    );
+    const [doc] = createResource(path, async (p) => {
+        const pdf = await openPdf(new Blob([await readDataBytes(p)]));
+        recordRecent(p, "book");
+        return pdf;
+    });
     const [aspect] = createResource(doc, (d) => pageAspect(d, 1));
     onCleanup(() => void doc()?.loadingTask.destroy());
 

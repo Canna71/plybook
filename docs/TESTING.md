@@ -32,6 +32,17 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Headers**: Puzzles, History, Databases, Repertoires, Settings start with a title, a
       line on what the screen is for, and their buttons on the right.
 
+## UX overhaul, step 3: Today (branch feature/ux-overhaul)
+
+- [ ] **The tiles are right**: Openings shows the moves due in your repertoires ("Train" opens
+      the one with most due); Puzzles shows your Lichess puzzle rating once downloaded;
+      Mistakes counts positions from reviewed games.
+- [ ] **Continue**: open a game and a PDF, come back to Today: both are listed, newest first,
+      the book with its page; clicking opens them.
+- [ ] **Get started**: ticks follow reality (e.g. link an account in Settings, come back);
+      "Hide" removes the checklist for good.
+- [ ] **Does it tell you what to do?** The real question of this step.
+
 ## PDF reader (P4.4)
 
 - [ ] **Text below the diagram** (P4.4e, needs work): "Text below the diagram: …" shows the

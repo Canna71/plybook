@@ -7,6 +7,7 @@ import { get, toMerged } from "es-toolkit/compat";
 import { createStore } from "solid-js/store";
 import { createSignal } from "solid-js";
 import type { OnlineAccount } from "../online/onlinegames";
+import type { RecentFile } from "./today";
 
 /** A place in a PDF: a page, how far down it the view starts (0–1), and the zoom */
 export type ReaderPlace = { page: number; offset: number; zoom: number };
@@ -48,6 +49,14 @@ export interface AppSettings {
             /** Theme to train; "" for any */
             theme?: string;
         };
+    };
+    /** Files opened lately, newest first (Today); written as a whole */
+    recent?: {
+        files?: RecentFile[];
+    };
+    today?: {
+        /** The first-start checklist was dismissed */
+        hideSetup?: boolean;
     };
     backup?: {
         /** A backup a day in <AppLocalData>/Backups, the last seven kept */
@@ -105,6 +114,12 @@ const DEFAULT: AppSettings = {
         lichess: {
             theme: "",
         },
+    },
+    recent: {
+        files: [],
+    },
+    today: {
+        hideSetup: false,
     },
     backup: {
         auto: true,
