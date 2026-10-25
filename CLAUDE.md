@@ -90,6 +90,7 @@ src-tauri/src/
   net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts
   engine.rs                engine process management (engine_list/spawn/write/kill) + open_library_path
   export.rs                export_save: save dialog + write for exported images/GIFs (raw bytes body)
+  backup.rs                backups (zip of Library, settings, the user's own tables), restore, daily auto
   migrate.rs               one-time move of user data from the old "rechess" identifier folders
 src-tauri/capabilities/    webview permissions (default.json, desktop.json)
 ```
@@ -102,6 +103,8 @@ User data locations (resolved by Tauri from the bundle identifier):
 - `<AppLocalData>/Library` user PGN files and folders
 - `<AppLocalData>/Engines` UCI engine binaries (the first one found is used)
 - `<AppLocalData>/Books` Polyglot opening books (imported in Settings)
+- `<AppLocalData>/Backups` automatic daily backups and the copies made before a restore
+  (`backup.rs`; a new user table belongs in its `USER_TABLES`, or backups miss it)
 - `<AppLocalData>/rechess.sqlite` database (the old SurrealDB `db/` folder is no longer read;
   `tools/surreal-export` turns it into `surreal-export.json`, imported on the next start)
 - `<AppConfig>` settings JSON
