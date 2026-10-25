@@ -5,6 +5,20 @@ not been tried in the running app yet. Test in a **built** app where noted (`pnp
 the CSP and signing only apply there. Tick an item when it's confirmed, note what went wrong
 when it isn't, and remove ticked items once their roadmap entry says "confirmed by the owner".
 
+## UX overhaul, step 1: look and themes (branch feature/ux-overhaul)
+
+- [ ] **Overall look** in both themes: Settings → Appearance → Theme, try Light and Dark; walk
+      through Analysis, Play, Puzzles, Databases, History, Settings. Anything unreadable,
+      clipped or out of place?
+- [ ] **Same as the system**: with "Same as the system", switching macOS between light and dark
+      switches the app.
+- [ ] **Board and pieces**: Appearance → Board / Pieces change the preview and every board.
+- [ ] **Density**: text and buttons are smaller (14 px base). Comfortable, or too small?
+- [ ] **Toasts** (built app): a toast (e.g. copy a board image) appears bottom right, in the
+      theme's colours.
+- [ ] **Dialogs**: Analysis Settings (gear in analysis): title bar, sliders with values on the
+      right, Close on the right.
+
 ## PDF reader (P4.4)
 
 - [ ] **Text below the diagram** (P4.4e, needs work): "Text below the diagram: …" shows the

@@ -1,0 +1,162 @@
+// Base styles on top of Bulma (UX overhaul, step 1): the app's surfaces, controls, tables,
+// focus and toasts, all from the tokens in tokens.scss, so both themes look intended.
+
+html,
+body,
+#root {
+    background-color: var(--rc-bg);
+    color: var(--rc-text);
+}
+
+// --- focus: visible for keyboard users, not on every click
+:focus-visible {
+    outline: 2px solid var(--rc-focus);
+    outline-offset: 1px;
+}
+
+// --- scrollbars: thin, out of the way
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rc-border-strong) transparent;
+}
+
+// --- buttons: one size family. Inside the app's content they are compact; icon-only
+// buttons are square.
+.main-content .button {
+    font-size: var(--rc-text-sm);
+    height: 2.15em;
+    padding: 0 0.75em;
+    gap: 0.35em;
+
+    .tabler-icon {
+        width: 1.25em;
+        height: 1.25em;
+    }
+
+    // a button holding only an icon
+    &:has(> svg:only-child) {
+        width: 2.15em;
+        padding: 0;
+    }
+}
+
+// --- tables: dense, quiet headers, rows that show where the pointer is
+.table {
+    --bulma-table-background-color: transparent;
+    --bulma-table-cell-padding: 0.4em 0.75em;
+    font-size: var(--rc-text-sm);
+
+    thead th {
+        color: var(--rc-text-muted);
+        font-weight: 600;
+        font-size: var(--rc-text-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border-bottom-color: var(--rc-border);
+    }
+
+    td {
+        border-bottom-color: var(--rc-border);
+        vertical-align: middle;
+    }
+
+    tbody tr:hover {
+        background-color: var(--rc-surface);
+    }
+}
+
+// --- form controls: the same height as buttons
+.main-content {
+    .input,
+    .select select,
+    .textarea {
+        font-size: var(--rc-text-sm);
+    }
+
+    .input {
+        height: 2.15em;
+    }
+
+    // selects keep Bulma's own height (forcing one clips the text), with tighter padding
+    .select:not(.is-multiple) select {
+        padding-top: 0.2em;
+        padding-bottom: 0.2em;
+    }
+}
+
+// --- modals: a surface with a shadow, not Bulma's grey slab
+.modal-card {
+    box-shadow: var(--rc-shadow);
+}
+
+.modal-card-head,
+.modal-card-foot {
+    background-color: var(--rc-surface);
+    border-color: var(--rc-border);
+    box-shadow: none;
+    padding: var(--rc-space-3) var(--rc-space-4);
+}
+
+.modal-card-head {
+    border-bottom: 1px solid var(--rc-border);
+    font-weight: 600;
+    color: var(--rc-text-strong);
+}
+
+.modal-card-body {
+    padding: var(--rc-space-4);
+}
+
+// the dialog's own button(s) on the right, as in macOS and Windows dialogs
+.modal-card-foot .buttons,
+.modal-card-foot .buttons.is-centered {
+    justify-content: flex-end;
+}
+
+// sliders with their value beside them, inside the dialog's width
+.slide-container {
+    display: flex;
+    align-items: center;
+    gap: var(--rc-space-2);
+    margin-bottom: var(--rc-space-2);
+
+    input[type="range"] {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .slide-value {
+        min-width: 3.5em;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        color: var(--rc-text-strong);
+    }
+}
+
+// --- toasts (Toast.tsx): follow the theme
+.rc-toast {
+    background-color: var(--rc-surface-2) !important;
+    color: var(--rc-text-strong) !important;
+    border: 1px solid var(--rc-border);
+    box-shadow: var(--rc-shadow) !important;
+    font-size: var(--rc-text-sm);
+    max-width: 420px;
+}
+
+.rc-toast-error {
+    border-left: 3px solid var(--rc-danger);
+}
+
+// --- a reusable empty state: what's missing and what to do
+.rc-empty {
+    color: var(--rc-text-muted);
+    padding: var(--rc-space-5);
+    text-align: center;
+
+    strong {
+        display: block;
+        color: var(--rc-text-strong);
+        font-size: var(--rc-text-lg);
+        margin-bottom: var(--rc-space-2);
+    }
+}

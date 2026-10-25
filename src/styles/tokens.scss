@@ -1,0 +1,82 @@
+// Design tokens (UX overhaul, step 1): one set of colours, spacing, type and radius for the
+// whole app. Bulma stays underneath and is themed through its own variables, so its light and
+// dark schemes (system, or `data-theme` on <html>, set from Settings → Appearance) follow these.
+// Components use the --rc-* tokens; new code should not hard-code colours.
+
+:root {
+    // a neutral, slightly cool grey for surfaces and text
+    --bulma-scheme-h: 220;
+    --bulma-scheme-s: 9%;
+    // accents: a calm green for primary actions, a clear blue for links and focus
+    --bulma-primary-h: 153;
+    --bulma-primary-s: 48%;
+    --bulma-primary-l: 40%;
+    --bulma-link-h: 214;
+    --bulma-link-s: 72%;
+    --bulma-link-l: 52%;
+    --bulma-info-h: 205;
+    --bulma-danger-h: 356;
+    --bulma-danger-s: 70%;
+    --bulma-danger-l: 54%;
+
+    --bulma-radius-small: 4px;
+    --bulma-radius: 6px;
+    --bulma-radius-medium: 8px;
+    --bulma-radius-large: 10px;
+    --bulma-family-primary: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Helvetica, Arial, sans-serif;
+    --bulma-family-code: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    // spacing scale
+    --rc-space-1: 4px;
+    --rc-space-2: 8px;
+    --rc-space-3: 12px;
+    --rc-space-4: 16px;
+    --rc-space-5: 24px;
+    --rc-space-6: 32px;
+
+    // type scale (the root size is 14px: a dense, tool-like UI)
+    --rc-text-xs: 0.75rem;
+    --rc-text-sm: 0.857rem;
+    --rc-text-md: 1rem;
+    --rc-text-lg: 1.143rem;
+    --rc-text-xl: 1.429rem;
+
+    --rc-radius: var(--bulma-radius);
+    --rc-radius-small: var(--bulma-radius-small);
+
+    // surfaces, borders, text: derived from Bulma's scheme, so they flip with the theme
+    --rc-bg: var(--bulma-scheme-main);
+    --rc-surface: var(--bulma-scheme-main-bis);
+    --rc-surface-2: var(--bulma-scheme-main-ter);
+    --rc-border: var(--bulma-border-weak);
+    --rc-border-strong: var(--bulma-border);
+    --rc-text: var(--bulma-text);
+    --rc-text-strong: var(--bulma-text-strong);
+    --rc-text-muted: var(--bulma-text-weak);
+    --rc-accent: var(--bulma-primary);
+    --rc-link: var(--bulma-link);
+    --rc-danger: var(--bulma-danger);
+    --rc-focus: hsla(
+        var(--bulma-link-h),
+        var(--bulma-link-s),
+        var(--bulma-link-l),
+        0.45
+    );
+    --rc-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+// the dark scheme's shadows need more weight to show
+@mixin dark-tokens {
+    --rc-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        @include dark-tokens;
+    }
+}
+
+:root[data-theme="dark"] {
+    @include dark-tokens;
+}

@@ -156,3 +156,16 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
 
 - 2026-10-25: plan written; the owner asked for an own-judgement redesign, evaluated step by
   step.
+- 2026-10-25: tooling first: Claude checks each step in the running app with screenshots
+  (`tools/shot.sh` + the dev-only driver, webview errors in the dev terminal).
+- 2026-10-25, step 1 (foundation) ready for review:
+  - Tokens in `src/styles/tokens.scss`: neutral cool greys, a calmer green for primary
+    actions, blue for links and focus; 14 px root size; spacing and type scales; radii.
+  - The old purple scheme override removed. Light and dark both work, following the
+    system, or Settings → Appearance (new section: theme, board, pieces, live preview; the
+    board and piece choices were only in the settings file before).
+  - Base styles in `src/styles/_base.scss`: compact buttons (square when icon-only), dense
+    tables with quiet headers and hover rows, aligned form controls, dialogs with a header,
+    body and right-aligned buttons, sliders that keep their value inside the dialog, focus
+    rings for keyboard use, thin scrollbars, toasts that follow the theme (bottom right).
+  - Not yet: layout changes (step 2+), page headers, empty states applied to screens.

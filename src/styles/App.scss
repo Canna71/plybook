@@ -8,6 +8,8 @@
 // @use "./BoardEdit.scss";
 @use "bulma/bulma";
 @use "animate.css/animate";
+@use "./tokens";
+@use "./base";
 
 .chess-container {
     width: 100%;
@@ -34,9 +36,9 @@ html, body {
 }
 
 :root {
-    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-    font-size: 16px;
-    // line-height: 24px;
+    font-family: var(--bulma-family-primary);
+    // a dense, tool-like UI: Bulma sizes everything in rem/em from here
+    font-size: 14px;
     font-weight: 400;
 
     font-synthesis: none;
@@ -44,27 +46,13 @@ html, body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
-    // --accent-color: #007bff;
-    // --background-modifier-accent: #007bff75;
-    // --background-modifier-active: #484848;
-    // --border-color: #acacac;
-
-    /* Set new values */
-    --bulma-scheme-h: 251;
-    // color: hsl(251, 24%, 22%);
-    --bulma-scheme-s: 15%;
-    --bulma-scheme-l: 28%;
-    // --bulma-column-gap: 0.35rem;
-}   
+}
 
 #root {
     height: 100vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-}
-
-@media (prefers-color-scheme: dark) {
 }
 
 .form-line {
@@ -96,10 +84,6 @@ html, body {
     &:hover .v-divider-line {
         visibility: visible;
     }
-}
-
-.main-content button {
-    padding: 4px;
 }
 
 .toaster-container {
@@ -160,12 +144,8 @@ html, body {
     padding: 4px;
     display: flex;
     justify-content: end;
-    gap: 8px;
-    margin: 8px;
-
-    button {
-        padding: 4px;
-    }
+    gap: var(--rc-space-1);
+    margin: var(--rc-space-2);
 }
 
 .modal-card-head .modal-icon {

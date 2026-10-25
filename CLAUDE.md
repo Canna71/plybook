@@ -197,7 +197,14 @@ dev-only driver (`src/dev/devdriver.ts`, which polls `public/dev-driver.json`; n
 production builds) and captures the app window to `$SHOTS/<name>.png`. It needs the Screen
 Recording permission for the terminal/editor running it; `tools/winid` is built from
 `tools/winid.swift` on first use. Dev builds have no CSP, so check CSP-sensitive things in a
-built app as well.
+built app as well. The webview's console errors and warnings appear in the `pnpm tauri dev`
+terminal as `[webview] …` (`tools/vite-devlog.ts`, dev server only).
+
+Styling: colours, spacing and type come from the tokens in `src/styles/tokens.scss` (`--rc-*`,
+plus Bulma's own variables themed there) and the base component styles in `src/styles/_base.scss`.
+Use the tokens; don't hard-code colours. Light/dark follows the system or `themes.ui`
+(Settings → Appearance), applied as `data-theme` on `<html>`. The UX overhaul plan and its
+decisions are in `docs/UX.md`.
 
 ## Claude Code setup in this repo
 
