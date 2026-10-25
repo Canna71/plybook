@@ -38,6 +38,15 @@ export function Chessboard(props: ChessboardProps) {
         const api = Chessground(wrapper, props.config());
         setApi(api);
         props.setApi?.(api);
+        // chessground caches where the board is and forgets it only on resize or scroll: a
+        // board moved by the layout around it (a panel above it changing) would take presses
+        // on the wrong squares. Forget it at every press, before chessground handles it.
+        const forgetBounds = () => api.state.dom.bounds.clear();
+        for (const type of ["mousedown", "touchstart"])
+            wrapper.addEventListener(type, forgetBounds, {
+                capture: true,
+                passive: true,
+            });
     });
 
     return (

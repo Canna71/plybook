@@ -260,8 +260,9 @@ How this file is used:
     - [x] **P4.4c Copy text into annotations** (same branches): "Add selected text as a
       comment" adds the last text selected on the pages as a comment on the move shown in
       the notes, on one line (line-end hyphenation undone) with "(p. N)".
-    - [x] **P4.4e Positions and moves from the text** (`feature/reader-side-notes`; owner
-      review pending; `src/models/booktext.ts` with tests): the side to move comes from the
+    - [x] **P4.4e Positions and moves from the text** — **needs work** (owner, 2026-10-25:
+      "From the text" looks right so far, more testing to come) (`feature/reader-side-notes`;
+      `src/models/booktext.ts` with tests): the side to move comes from the
       caption under the diagram ("White to play", "Black wins") or the first move number in
       the text below ("12...Nf6" → Black), falling back to the side at the bottom. Moves in
       the text below the diagram that can be played from it are shown ("From the text: 4.c3
@@ -327,6 +328,9 @@ How this file is used:
     toasts styled (also in builds); dark and light themes checked.
   - **Board**: responsive sizing everywhere (several pages size it by hand), drag-and-drop and
     click-to-move everywhere, move/arrow animations, sound settings.
+  - **Resizable panels** (requested 2026-10-25): drag the dividers between panels (e.g. the
+    PDF reader's pages and notes, board and moves) and remember the sizes per screen. The game
+    editor's `useSplitter`/`VDivider` is a starting point.
   - **Discoverability**: onboarding for first start (engine setup, sync an account, import
     puzzles), tooltips/shortcuts help (with O.2), clear naming (e.g. "studies" vs files).
   - **Accessibility**: keyboard navigation, focus states, contrast, screen-reader labels.

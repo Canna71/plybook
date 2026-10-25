@@ -161,6 +161,9 @@ User data locations (resolved by Tauri from the bundle identifier):
   points at `gen/schemas`, which appears after the first `cargo build`/`tauri dev`.
 - On macOS, a downloaded engine binary may be quarantined or not executable (`chmod +x`,
   `xattr -d com.apple.quarantine`). Engine start failures mostly surface in the log only.
+- chessground caches the board's screen position and refreshes it only on resize or scroll.
+  `components/common/chessboard.tsx` clears it at every press, because a board moved by the
+  layout around it (a panel above it changing) would otherwise put moves on the wrong squares.
 - Paths in routes must be URL-encoded (`encodeURIComponent`) because file names can contain `&#?+`.
 - Dead code you can ignore or delete: `src/Views/obsoleted/`, `Views/GameEditView.tsx`,
   `components/Analysis.tsx`, `models/FENcoder.ts`, Rust `greet`.
