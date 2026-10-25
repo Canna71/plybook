@@ -55,12 +55,23 @@ const boardBuiltinStyles = {
     brown: brown,
 } as Record<string, string>;
 
+/** The built-in board and piece themes, by name (Settings → Appearance). */
+export const BOARD_THEMES = Object.keys(boardBuiltinStyles);
+export const PIECE_THEMES = Object.keys(buildinPiecesThemes);
+
 export function useThemes() {
     createEffect(() => {
         const piecesTheme = getSettingValue<string>("themes.pieces", "merida");
         loadPiecesStyle(piecesTheme!);
         const boardTheme = getSettingValue<string>("themes.board", "bluish");
         loadBoardStyle(boardTheme!);
+    });
+    // light/dark UI: Bulma and the tokens read data-theme on <html>; none follows the system
+    createEffect(() => {
+        const ui = getSettingValue<string>("themes.ui", "system");
+        if (ui === "light" || ui === "dark")
+            document.documentElement.dataset.theme = ui;
+        else delete document.documentElement.dataset.theme;
     });
 }
 

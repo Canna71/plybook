@@ -15,6 +15,8 @@ export interface AppSettings {
     themes?: {
         board?: string;
         pieces?: string;
+        /** Light or dark UI; "system" follows the operating system */
+        ui?: "system" | "light" | "dark";
     };
     engine?: {
         lastUsed?: string;
@@ -70,6 +72,7 @@ const DEFAULT: AppSettings = {
     themes: {
         board: "bluish",
         pieces: "merida",
+        ui: "system",
     },
     engine: {
         lastUsed: "",

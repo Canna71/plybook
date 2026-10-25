@@ -47,4 +47,15 @@
         margin-top: 16px;
         max-width: 640px;
     }
+
+    .appearance {
+        display: flex;
+        gap: var(--rc-space-5);
+        align-items: flex-start;
+
+        .appearance-preview {
+            width: 200px;
+            flex: none;
+        }
+    }
 }

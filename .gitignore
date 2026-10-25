@@ -11,3 +11,6 @@ tools/surreal-export/target
 
 # pdf.js runtime files, copied from node_modules by tools/copy-pdfjs-assets.mjs
 public/pdfjs
+# commands for the dev-only app driver (src/dev/devdriver.ts), and tools/shot.sh's helper binary
+public/dev-driver.json
+tools/winid
