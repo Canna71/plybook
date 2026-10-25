@@ -60,6 +60,16 @@ const Layout: ParentComponent = (props) => {
         }
     };
     onMount(() => document.addEventListener("paste", onPaste));
+    // dev builds: a script can drive the app for screenshots (src/dev/devdriver.ts)
+    if (import.meta.env.DEV) {
+        onMount(() => {
+            let stop: (() => void) | undefined;
+            void import("../dev/devdriver").then(
+                (m) => (stop = m.startDevDriver(navigate)),
+            );
+            onCleanup(() => stop?.());
+        });
+    }
     onCleanup(() => document.removeEventListener("paste", onPaste));
 
     const gridTemplateColumns = () =>
