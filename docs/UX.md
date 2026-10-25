@@ -305,3 +305,17 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
     `library_import_dropped(folder)` copies the PGN/PDF ones into the folder, numbering
     duplicates. A dashed frame shows while files are dragged over the Library.
   - Empty folder: an empty state saying what can be done.
+- 2026-10-25, step 7b (Books) and 7c (Databases):
+  - Books is a screen of its own (Study → Books, `/books`; the reader and "Scan a whole book"
+    belong to it now, the Library's icon became folders). Every PDF anywhere in the Library is
+    a card: title, folder, the page it was left at (`reader.places`, or the older
+    `reader.pages`), when it was last opened, and how many diagrams were scanned from it
+    (`Library/Scanned/<book>`, matched by `collectionName`), linking to them. The last read
+    comes first. Scanned folders without a PDF are listed below. Add PDF… copies into
+    `Library/Books`; Scan a whole book… is in the header. Logic in `models/bookshelf.ts`
+    (`models/books.ts` is the Polyglot opening books).
+  - Databases: with none imported, an empty state says what to import (TWIC, the Lichess
+    database, Lumbra's) and that one's own games belong in the Library; the search form and
+    the results table appear once there is something to search. Delete is a plain button
+    with "…" (it asks first) instead of a red one on every row.
+  - Empty states keep their text to a readable width (64ch).

@@ -34,8 +34,16 @@ export const NAVIGATION: NavGroup[] = [
                 label: "Library",
                 icon: "library",
                 route: "/library?path=Library",
-                owns: ["/library", "/game", "/reader", "/guess"],
-                keywords: "files pgn studies books pdf",
+                owns: ["/library", "/game", "/guess"],
+                keywords: "files pgn studies",
+            },
+            {
+                id: "books",
+                label: "Books",
+                icon: "book",
+                route: "/books",
+                owns: ["/reader", "/scan-book"],
+                keywords: "pdf reader read scanned diagrams",
             },
             {
                 id: "repertoires",
@@ -99,7 +107,6 @@ export const NAVIGATION: NavGroup[] = [
                 label: "Scan a position",
                 icon: "scan",
                 route: "/scan",
-                owns: ["/scan-book"],
                 keywords: "screenshot image capture book diagram",
             },
             {

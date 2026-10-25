@@ -99,6 +99,11 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Show in Finder** (folder row, or ⋯ in the header) opens the folder.
 - [ ] **Sorting**: Modified puts the newest first and is remembered after a restart.
 - [ ] **Search**: finds files in any folder; Esc clears it; opening a result's folder clears it.
+- [ ] **Books**: every PDF in the Library appears, the last read first, with its page; a card
+      opens the reader at that page; "n scanned diagrams" opens their folder.
+- [ ] **Books → Add PDF…**: the book lands in Library / Books (created if missing).
+- [ ] **Sidebar**: Books is highlighted while reading a PDF or scanning a whole book.
+- [ ] **Databases**: after importing one, the search form appears; Delete… asks first.
 
 ## PDF reader (P4.4)
 

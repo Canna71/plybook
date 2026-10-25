@@ -166,4 +166,10 @@ body,
         font-size: var(--rc-text-lg);
         margin-bottom: var(--rc-space-2);
     }
+
+    p {
+        max-width: 64ch;
+        margin-left: auto;
+        margin-right: auto;
+    }
 }

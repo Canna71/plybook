@@ -66,7 +66,7 @@ Rust changed.
 
 ```
 src/
-  index.tsx, App.tsx       router: / /game /analysis /play /puzzles /puzzle /library /history /boardeditor /settings /guess /databases
+  index.tsx, App.tsx       router: / /game /analysis /play /puzzles /puzzle /library /books /reader /history /boardeditor /settings /guess /databases
   Views/                   route pages. GameView = file load/save/puzzle wrapper around GameManager.
                            Play, Puzzles, History, LibraryFolder, Sidebar, Layout. obsoleted/ is dead code.
   components/game/         GameManager.tsx (the hub: state, board area), AnalysisPanel.tsx (the panel:

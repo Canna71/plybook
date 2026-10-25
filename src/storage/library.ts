@@ -60,6 +60,29 @@ export async function listAllFiles(
     return nested.flat();
 }
 
+/** Library/Scanned: each book's folder with how many diagrams (PGN files) it holds. */
+export async function listScanned(): Promise<Map<string, number>> {
+    const root = `${LIBRARY_ROOT}${sep()}Scanned`;
+    const scanned = new Map<string, number>();
+    try {
+        const folders = await readDir(root, {
+            baseDir: BaseDirectory.AppLocalData,
+        });
+        for (const f of folders.filter((f) => f.isDirectory)) {
+            const files = await readDir(`${root}${sep()}${f.name}`, {
+                baseDir: BaseDirectory.AppLocalData,
+            });
+            scanned.set(
+                f.name,
+                files.filter((x) => kindOf(x.name, false) === "games").length,
+            );
+        }
+    } catch {
+        // nothing scanned yet
+    }
+    return scanned;
+}
+
 export type ImportResult = { imported: string[]; skipped: string[] };
 
 /** Copies the files just dropped on the window into a Library folder. */
