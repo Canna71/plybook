@@ -89,16 +89,29 @@ const ButtonBar: Component = () => {
         <>
             <Show when={game() && currentPath() && hasMoves()}>
                 <div class="pgnviewer-buttonbar are-small">
-                    <Button onClick={onRewind} disabled={!canRewind()}>
+                    <Button
+                        title="Start (↑ or Home; ? lists all shortcuts)"
+                        onClick={onRewind}
+                        disabled={!canRewind()}
+                    >
                         <IconPlayerTrackPrevFilled />
                     </Button>
-                    <Button onClick={onPrev} disabled={!canGoBack()}>
+                    <Button
+                        title="Previous move (←)"
+                        onClick={onPrev}
+                        disabled={!canGoBack()}
+                    >
                         <IconPlayerSkipBackFilled />
                     </Button>
-                    <Button onClick={onNext} disabled={!canMoveNext()}>
+                    <Button
+                        title="Next move (→)"
+                        onClick={onNext}
+                        disabled={!canMoveNext()}
+                    >
                         <IconPlayerSkipForwardFilled />
                     </Button>
                     <Button
+                        title="End of the game (↓ or End goes to the end of the line shown)"
                         onClick={onFastForward}
                         disabled={!canFastForward()}
                     >

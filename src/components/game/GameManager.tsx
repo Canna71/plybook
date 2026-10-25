@@ -7,6 +7,8 @@ import {
     createMemo,
     createSignal,
     Match,
+    onCleanup,
+    onMount,
     Setter,
     Show,
     Signal,
@@ -15,6 +17,7 @@ import {
 } from "solid-js";
 import { makeGameInternal, Path } from "../../models/pgn";
 import { movesFromText } from "../../models/booktext";
+import { ShortcutsHelp, useShortcuts } from "./useShortcuts";
 import { makeSanVariation } from "chessops/san";
 import { GameModel } from "../../models/GameModel";
 import ButtonBar from "./Buttonbar";
@@ -295,7 +298,9 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const turn = createMemo(() => position().turn as Color);
 
-    const orientation = createMemo(() => {
+    // turned round by the "flip" shortcut
+    const [flipped, setFlipped] = createSignal(false);
+    const baseOrientation = (): Color => {
         const engCol = engineColor?.();
         if (playingEngine) {
             return otherColor(engCol);
@@ -310,7 +315,10 @@ const GameManager: Component<GameManagerOptions> = ({
         }
         const sp = g.initial.pos.turn;
         return sp;
-    });
+    };
+    const orientation = createMemo(() =>
+        flipped() ? otherColor(baseOrientation()) : baseOrientation(),
+    );
 
     const isPuzzleMode = createMemo(() => {
         return typeof onPuzzleFinished === "function";
@@ -752,6 +760,43 @@ const GameManager: Component<GameManagerOptions> = ({
         },
     });
 
+    // #region keyboard
+
+    let container: HTMLDivElement | undefined;
+    // a side panel (the PDF reader's notes) takes keys only after a click inside it, so the
+    // page around it keeps its arrows
+    const [active, setActive] = createSignal(!compact);
+    if (compact) {
+        const onPointer = (e: PointerEvent) =>
+            setActive(!!container?.contains(e.target as Node));
+        onMount(() => {
+            document.addEventListener("pointerdown", onPointer, true);
+            onCleanup(() =>
+                document.removeEventListener("pointerdown", onPointer, true),
+            );
+        });
+    }
+    const showShortcuts = createSignal(false);
+    useShortcuts({
+        game,
+        currentPath,
+        setCurrentPath,
+        flip: () => setFlipped((f) => !f),
+        engineAnalysisOn: engineAnalysisOnSignal,
+        threatOn: threatOnSignal,
+        playBestMove: () => {
+            // only lines for the position shown, not one analysed a moment ago
+            if (threatFen() || analyzedFen() !== fen()) return;
+            const uci = engineInfo[0]?.pv?.[0];
+            const move = uci && parseUci(uci);
+            if (move && "from" in move) applyMove(move);
+        },
+        canNavigate: () => !isPuzzleMode() && !(playingEngine && isPlayingOn()),
+        isActive: active,
+        help: showShortcuts,
+    });
+    // #endregion
+
     // #region tooltip
     const { reference, ply, showTooltip } = useTooltip();
 
@@ -762,6 +807,7 @@ const GameManager: Component<GameManagerOptions> = ({
             <GameContext.Provider value={gameContext}>
                 <TooltipContext.Provider value={{ showTooltip }}>
                     <div
+                        ref={container}
                         class="pgnviewer-container"
                         classList={{ compact }}
                         style={
@@ -938,6 +984,7 @@ const GameManager: Component<GameManagerOptions> = ({
                     </div>
                 </TooltipContext.Provider>
             </GameContext.Provider>
+            <ShortcutsHelp open={showShortcuts} />
             <Show when={reference()}>
                 <Tooltip
                     plyData={ply}
