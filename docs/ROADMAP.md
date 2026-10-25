@@ -128,6 +128,49 @@ How this file is used:
     best and game moves found. `models/guess.ts`, `engine/search.ts` with tests.
   - Known limits: scores are kept for the session only (no history of training results);
     promotion candidates are always queens.
+- [ ] **P2.8 Reasons in chess terms** (requested by the owner 2026-10-25; research first).
+  Say *why* a move is good or bad the way a coach would: "it stops the knight from reaching
+  f7", "it pins the bishop and wins it next move", "after this the back rank is weak",
+  instead of "it gives away 10% of winning chances". Today's explanations (P2.4a) give the
+  verdict, static facts (hanging, pinned) and the refutation line, but rarely the idea.
+  - Research to do (a short report in `docs/` before building):
+    - What the move *prevents*: the opponent's threat before and after it (P2.2's null-move
+      search), named ("Ng5 was threatening Nxf7, forking queen and rook").
+    - What it *threatens or prepares*: the engine line's next moves, read for a motif.
+    - The *motif* in a line: fork, pin, skewer, discovered attack, double check, back-rank
+      mate, overloaded or removed defender, deflection, decoy, trapped piece, zwischenzug,
+      promotion. Small, tested detectors over the positions of the engine's lines.
+    - *Positional* reasons when there's no tactic: piece activity (mobility), king safety
+      (attackers near the king, open files), pawn structure (passed, isolated, doubled,
+      weak squares, outposts), development, space, exchanges that favour one side.
+    - The *role* of the move: defence, prophylaxis, attack, development, simplification,
+      improving the worst piece.
+    - Prior work to read: move-by-move commentary generation (e.g. Jhamtani et al. 2018,
+      "Learning to Generate Move-by-move Commentary for Chess Games"), concept probing of
+      engines (McGrath et al. 2022 on AlphaZero), how human coaches and books phrase
+      reasons, and the Lichess puzzle theme vocabulary.
+  - A way to measure it: the Lichess puzzle set (P3.3) tags every puzzle with its themes
+    (fork, pin, skewer, backRankMate, …). Run the detectors on the puzzles' solutions and
+    compare with the tags (precision/recall) before trusting them in explanations.
+  - Then: templates that turn detected reasons into sentences (extending `models/explain.ts`),
+    shown in the Engine section and the review; optionally a model to phrase them better
+    from the structured facts (P2.4b), never to calculate.
+- [ ] **P2.9 Tutor mode when playing** (requested by the owner 2026-10-25): the engine plays
+  at your level and coaches during the game.
+  - Strength: "as bad as needed". Pick the engine's move by a target winning chance near
+    your level (from the engine's MultiPV lines), sometimes a human-like mistake (Maia's
+    policy, P2.5) rather than random blunders; your level from your games and puzzle rating,
+    adjusted as you play.
+  - Coaching, by what the position needs:
+    - an immediate real threat against you: "Watch out: your queen is attacked" (P2.2);
+    - a decisively good move available: "There's something strong here", then a hint on
+      request (the piece, then the square), not the move outright;
+    - your move drops a lot of winning chances: "Are you sure?" with the reason (P2.8)
+      and "Take it back?";
+    - the engine's own deliberate mistake: a chance for you to spot it.
+  - Settings: level (or automatic), how chatty the tutor is, take-backs allowed; a short
+    summary after the game (best moments, the mistakes, what to train).
+  - Builds on P2.1–P2.5, P2.8 for the reasons, and the Play screen (no clocks in tutor mode).
 
 ## Phase 3: databases and imports
 
