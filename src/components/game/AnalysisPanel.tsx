@@ -5,7 +5,7 @@
 import { Accessor, Component, Show, useContext } from "solid-js";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import { MoveStat } from "../../engine/lc0";
-import { activeProfile } from "../../engine/engineprofiles";
+import { analysisProfile } from "../../engine/engineprofiles";
 import { GameContext } from "./GameContext";
 import { ViewMode } from "./PgnEditBar";
 import PgnEditBar from "./PgnEditBar";
@@ -68,9 +68,9 @@ const AnalysisPanel: Component<{
                     <EngineInfoViewer engineInfo={props.engineInfo} />
                     <Show when={!props.engineInfo.length}>
                         <p class="panel-hint">
-                            {activeProfile()?.singleNode
-                                ? `${activeProfile()!.name} plays like a human and gives no evaluation. For engine lines, choose a full-strength engine such as Stockfish in Settings.`
-                                : "Thinking…"}
+                            {analysisProfile()
+                                ? "Thinking…"
+                                : "Analysis needs a full-strength engine such as Stockfish: add one in Settings."}
                         </p>
                     </Show>
                 </PanelSection>

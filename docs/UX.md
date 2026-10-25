@@ -242,3 +242,10 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
     local values: promotion, puzzle and clock state); still on the refactor list.
   - Fixed on the way: `hasMoves` returned the move count instead of a boolean
     (`length ?? 0 > 0`), in GameManager and the button bar.
+- 2026-10-25, the owner's call on engines: analysis, review, training and explanations always
+  use a full-strength engine; the engine selected in Settings is only the one you play
+  against. `analysisProfile()` is the one chosen in Settings → Engines → "Analysis" (setting
+  `engine.analysisProfile`), else the first full-strength engine; Maia-style engines never
+  analyse. `useChessEngine` uses it everywhere except Play. Settings → Engines has two
+  columns: "Play against" and "Analysis".
+- 2026-10-25: step 4 approved by the owner and merged into `develop`.

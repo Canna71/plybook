@@ -30,6 +30,8 @@ import {
     removeProfile,
     saveProfile,
     setActiveProfile,
+    analysisProfile,
+    ANALYSIS_ENGINE_SETTING,
 } from "../../engine/engineprofiles";
 const log = anylogger("enginesettings");
 
@@ -279,8 +281,9 @@ const EngineSettings: Component = () => {
 
             <p class="settings-help">
                 Engines are UCI programs such as Stockfish or Lc0. They can live
-                anywhere on your computer. The selected engine is used for
-                analysis, review and playing.
+                anywhere on your computer. Choose the one you play against, and
+                the one that analyses, reviews and explains (a full-strength
+                engine: human-like ones such as Maia only play).
             </p>
 
             <div class="buttons-bar">
@@ -305,7 +308,12 @@ const EngineSettings: Component = () => {
                 <table class="table is-hoverable engines-table">
                     <thead>
                         <tr>
-                            <th>Use</th>
+                            <th title="The engine you play against">
+                                Play against
+                            </th>
+                            <th title="The engine that analyses, reviews and explains">
+                                Analysis
+                            </th>
                             <th>Name</th>
                             <th>Location</th>
                             <th></th>
@@ -316,7 +324,7 @@ const EngineSettings: Component = () => {
                             each={profiles()}
                             fallback={
                                 <tr>
-                                    <td colspan="4">
+                                    <td colspan="5">
                                         No engines found. Add one above.
                                     </td>
                                 </tr>
@@ -335,6 +343,31 @@ const EngineSettings: Component = () => {
                                             }
                                             onChange={() =>
                                                 setActiveProfile(profile.id)
+                                            }
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            type="radio"
+                                            name="analysis-engine"
+                                            title={
+                                                profile.singleNode
+                                                    ? "Human-like engines only play"
+                                                    : undefined
+                                            }
+                                            disabled={
+                                                profile.missing ||
+                                                profile.singleNode
+                                            }
+                                            checked={
+                                                analysisProfile()?.id ===
+                                                profile.id
+                                            }
+                                            onChange={() =>
+                                                void setSettingValue(
+                                                    ANALYSIS_ENGINE_SETTING,
+                                                    profile.id,
+                                                )
                                             }
                                         />
                                     </td>

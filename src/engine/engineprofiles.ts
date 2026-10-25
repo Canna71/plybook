@@ -123,9 +123,16 @@ export function humanProfile(): EngineProfile | undefined {
     return candidates.find((p) => p.id === wanted) ?? candidates[0];
 }
 
-/** A full-strength profile to judge moves: the selected one unless it is Maia-style. */
+/** The engine for analysis, review and training: a profile id, or "" for automatic. */
+export const ANALYSIS_ENGINE_SETTING = "engine.analysisProfile";
+
+/**
+ * The full-strength engine that analyses, reviews and explains: the one chosen in Settings,
+ * else the first full-strength one. The engine selected to play against (`activeProfile`)
+ * plays only; a Maia-style (human-like) engine never analyses.
+ */
 export function analysisProfile(): EngineProfile | undefined {
-    const active = activeProfile();
-    if (active && !active.singleNode) return active;
-    return profiles().find((p) => !p.singleNode && !p.missing);
+    const strong = profiles().filter((p) => !p.singleNode && !p.missing);
+    const wanted = getSettingValue<string>(ANALYSIS_ENGINE_SETTING, "");
+    return strong.find((p) => p.id === wanted) ?? strong[0];
 }

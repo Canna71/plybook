@@ -20,7 +20,10 @@ export interface AppSettings {
         ui?: "system" | "light" | "dark";
     };
     engine?: {
+        /** The engine to play against */
         lastUsed?: string;
+        /** The engine for analysis, review and training; "" picks the first full-strength one */
+        analysisProfile?: string;
         /** Maia-style profile for human-move hints: "" first one, "off" none */
         human?: string;
         analysis: {
@@ -93,6 +96,7 @@ const DEFAULT: AppSettings = {
     },
     engine: {
         lastUsed: "",
+        analysisProfile: "",
         human: "",
         analysis: {
             depth: 30,

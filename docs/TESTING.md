@@ -55,6 +55,9 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Moves**: readable, side lines clearly set apart, the current move easy to spot.
 - [ ] **PDF reader notes** still work in their side panel (they share this editor).
 - [ ] **Play and puzzles** look right with the new layout.
+- [ ] **Engines split**: with Maia as "Play against", analysis, game review, puzzles' hints and
+      Guess the move still use Stockfish; playing uses Maia. Choosing another full-strength
+      engine in the "Analysis" column switches analysis to it.
 
 ## PDF reader (P4.4)
 
