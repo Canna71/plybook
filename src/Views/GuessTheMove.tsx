@@ -20,6 +20,7 @@ import { Key } from "chessground/types";
 import anylogger from "anylogger";
 import { Chessboard } from "../components/common/chessboard";
 import Button from "../components/common/Button";
+import TrainerPanel, { TrainerStatus } from "../components/game/TrainerPanel";
 import { makeErrorToast } from "../components/common/Toast";
 import { drawBrushes } from "../components/common/utils";
 import { analysisProfile, startEngine } from "../engine/engineprofiles";
@@ -269,16 +270,20 @@ const GuessTheMove: Component = () => {
 
     const score = createMemo(() => summary(results()));
 
+    const colorName = () => (side() === "white" ? "White" : "Black");
+    const status = (): TrainerStatus => {
+        const r = result();
+        if (!turn()) return "solved";
+        if (!r) return "solving";
+        return r.foundBest ? "good" : "wrong";
+    };
+
     return (
         <div class="guess_view">
             <div class="guess-board">
                 <Chessboard config={config} />
             </div>
             <div class="guess-panel">
-                <h1 class="title is-5">
-                    Guess the move:{" "}
-                    {NameWithoutExtension(baseName(path() ?? ""))}
-                </h1>
                 <div class="field is-grouped is-grouped-multiline">
                     <Show when={(games()?.length ?? 0) > 1}>
                         <div class="control">
@@ -334,24 +339,60 @@ const GuessTheMove: Component = () => {
                     </p>
                 </Show>
 
-                <p class="guess-score">
-                    Move {Math.min(index() + 1, turns().length)} of{" "}
-                    {turns().length} · best move found {score().foundBest}/
-                    {score().turns} · game move found {score().foundPlayed}/
-                    {score().turns}
-                </p>
-
-                <Show
-                    when={turn()}
-                    fallback={
-                        <p>Finished. Pick another game or side to go on.</p>
+                <TrainerPanel
+                    title={`Guess the move · ${NameWithoutExtension(baseName(path() ?? ""))}`}
+                    progress={() =>
+                        turns().length
+                            ? `Move ${Math.min(index() + 1, turns().length)} of ${turns().length}`
+                            : undefined
+                    }
+                    side={side}
+                    prompt={() =>
+                        turn()
+                            ? `What would you play as ${colorName()}?`
+                            : "Game finished."
+                    }
+                    status={status}
+                    message={() => {
+                        const r = result();
+                        if (!turn())
+                            return "Pick another game or side to go on.";
+                        if (!r)
+                            return `Move a piece to add a candidate (up to ${MAX_CANDIDATES}), then reveal.`;
+                        return r.foundBest
+                            ? "You had the best move among your candidates."
+                            : "The best move was not among your candidates.";
+                    }}
+                    note={() =>
+                        score().turns
+                            ? `Best move found ${score().foundBest}/${score().turns} · game move found ${score().foundPlayed}/${score().turns}`
+                            : undefined
+                    }
+                    actions={
+                        <Show
+                            when={result()}
+                            fallback={
+                                <Show when={turn()}>
+                                    <Button
+                                        class={`is-primary ${thinking() ? "is-loading" : ""}`}
+                                        disabled={candidates().length === 0}
+                                        onClick={reveal}
+                                    >
+                                        Reveal
+                                    </Button>
+                                </Show>
+                            }
+                        >
+                            <Button
+                                class="is-primary"
+                                onClick={() => setIndex((i) => i + 1)}
+                            >
+                                Next move
+                            </Button>
+                        </Show>
                     }
                 >
-                    <Show when={!result()}>
-                        <p>
-                            Move a piece to add a candidate (up to{" "}
-                            {MAX_CANDIDATES}), then reveal.
-                        </p>
+                    <Show when={turn() && !result()}>
                         <div class="tags">
                             <For each={candidates()}>
                                 {(uci) => (
@@ -369,15 +410,8 @@ const GuessTheMove: Component = () => {
                                 )}
                             </For>
                         </div>
-                        <Button
-                            class={`is-primary ${thinking() ? "is-loading" : ""}`}
-                            disabled={candidates().length === 0}
-                            onClick={reveal}
-                        >
-                            Reveal
-                        </Button>
                     </Show>
-                    <Show when={result()}>
+                    <Show when={turn() && result()}>
                         {(r) => (
                             <>
                                 <p>
@@ -387,17 +421,6 @@ const GuessTheMove: Component = () => {
                                         {" "}
                                         · engine: <strong>{r().bestSan}</strong>
                                     </Show>
-                                </p>
-                                <p
-                                    class={
-                                        r().foundBest
-                                            ? "has-text-success"
-                                            : "has-text-danger"
-                                    }
-                                >
-                                    {r().foundBest
-                                        ? "You had the best move among your candidates."
-                                        : "The best move was not among your candidates."}
                                 </p>
                                 <table class="table is-narrow">
                                     <tbody>
@@ -432,16 +455,10 @@ const GuessTheMove: Component = () => {
                                         </For>
                                     </tbody>
                                 </table>
-                                <Button
-                                    class="is-primary"
-                                    onClick={() => setIndex((i) => i + 1)}
-                                >
-                                    Next
-                                </Button>
                             </>
                         )}
                     </Show>
-                </Show>
+                </TrainerPanel>
             </div>
         </div>
     );

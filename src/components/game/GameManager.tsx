@@ -7,6 +7,7 @@ import {
     createMemo,
     createSignal,
     Match,
+    on,
     onCleanup,
     onMount,
     Setter,
@@ -58,11 +59,9 @@ import { makePgn, parsePgn } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { Config } from "chessground/config";
-import Button from "../common/Button";
-import { IconCircleXFilled } from "@tabler/icons-solidjs";
-import HintButtons from "./HintButtons";
 import { setSectionOpen } from "./PanelSection";
 import AnalysisPanel from "./AnalysisPanel";
+import TrainerPanel, { TrainerStatus } from "./TrainerPanel";
 import anylogger from "anylogger";
 import { showAlert } from "../common/Alert";
 import { gameEnd, timeoutEnd } from "../../models/play";
@@ -85,6 +84,11 @@ export type GameManagerOptions = {
         hintUsed: number,
         retries: number,
     ) => void;
+    /** Puzzles: the training frame's title, a note (a rating change) and its actions */
+    puzzleTitle?: Accessor<string>;
+    puzzleNote?: Accessor<string | undefined>;
+    onNextPuzzle?: () => void;
+    onAnalyzePuzzle?: () => void;
     onGameFinished?: () => void;
     editable?: Accessor<boolean>;
     /** Board above the moves, for a side panel (the PDF reader's notes) */
@@ -151,6 +155,10 @@ const GameManager: Component<GameManagerOptions> = ({
     onGameFinished,
     compact,
     onReady,
+    puzzleTitle,
+    puzzleNote,
+    onNextPuzzle,
+    onAnalyzePuzzle,
 }) => {
     // #region Game State
     const [currentPath, setCurrentPath] = createSignal<Path | undefined>(
@@ -188,6 +196,17 @@ const GameManager: Component<GameManagerOptions> = ({
     const [hintMove, setHintMove] = createSignal<string | undefined>(undefined);
     const [hintUsed, setHintUsed] = createSignal(0);
     const [retries, setRetries] = createSignal(0);
+    // the training frame: right moves so far, and whether it's solved
+    const [goodMoves, setGoodMoves] = createSignal(0);
+    const [puzzleSolved, setPuzzleSolved] = createSignal(false);
+    const puzzleStatus = (): TrainerStatus =>
+        puzzleSolved()
+            ? "solved"
+            : wrongPuzzleMove()
+              ? "wrong"
+              : goodMoves() > 0
+                ? "good"
+                : "solving";
 
     // #endregion
     const isEditable = () => {
@@ -225,6 +244,7 @@ const GameManager: Component<GameManagerOptions> = ({
                 setHintMove(undefined);
                 return false;
             }
+            setGoodMoves((n) => n + 1);
         }
         return true;
     };
@@ -576,29 +596,32 @@ const GameManager: Component<GameManagerOptions> = ({
                     const move = next.data.move as NormalMove;
                     applyMove(move);
                 } else {
-                    // Puzzle finished
-                    // track the performance
+                    // solved: the training frame says so (and tracks the performance)
                     onPuzzleFinished?.(true, hintUsed(), retries());
-                    // setSuccessModalOpen(true);
-                    showAlert({
-                        icon: "success",
-                        title: "Puzzle Solved",
-                        message: "Great, you solved it!",
-                    });
+                    setPuzzleSolved(true);
                 }
             } else {
                 setHintMove(next?.data.uci);
                 if (!next) {
                     onPuzzleFinished?.(true, hintUsed(), retries());
-                    showAlert({
-                        icon: "success",
-                        title: "Puzzle Solved",
-                        message: "Great, you solved it!",
-                    });
+                    setPuzzleSolved(true);
                 }
             }
         }
     });
+
+    // the next puzzle starts the frame afresh
+    createEffect(
+        on(
+            () => initialPgn?.(),
+            () => {
+                setGoodMoves(0);
+                setPuzzleSolved(false);
+                setRetries(0);
+                setHintUsed(0);
+            },
+        ),
+    );
 
     createEffect(() => {
         const hint = hintType();
@@ -978,26 +1001,6 @@ const GameManager: Component<GameManagerOptions> = ({
                                         />
                                     </Show>
                                 </div>
-                                <Show
-                                    when={isPuzzleMode() && wrongPuzzleMove()}
-                                >
-                                    <div class="pgnviewer-wrong-move">
-                                        <Button
-                                            class="is-danger is-outlined"
-                                            onClick={onResetPuzzle}
-                                        >
-                                            <IconCircleXFilled />
-                                            Wrong move try again
-                                        </Button>
-                                    </div>
-                                </Show>
-                                <Show when={isPuzzleMode()}>
-                                    <div class="puzzle-hint-buttons">
-                                        <HintButtons
-                                            setHintType={setHintType}
-                                        />
-                                    </div>
-                                </Show>
                             </Show>
                             <Show
                                 when={viewMode() === ViewMode.STARTING_POSITION}
@@ -1012,6 +1015,30 @@ const GameManager: Component<GameManagerOptions> = ({
                             <VDivider ref={divider!} />
                         </Show>
                         <AnalysisPanel
+                            trainer={
+                                <Show when={isPuzzleMode()}>
+                                    <TrainerPanel
+                                        title={puzzleTitle?.() ?? "Puzzle"}
+                                        side={orientation}
+                                        status={puzzleStatus}
+                                        note={puzzleNote}
+                                        onHintPiece={() =>
+                                            setHintType(HintType.Piece)
+                                        }
+                                        onHintMove={() =>
+                                            setHintType(HintType.Move)
+                                        }
+                                        onRetry={onResetPuzzle}
+                                        onNext={onNextPuzzle}
+                                        nextLabel={
+                                            puzzleSolved()
+                                                ? "Next puzzle"
+                                                : "Skip"
+                                        }
+                                        onAnalyze={onAnalyzePuzzle}
+                                    />
+                                </Show>
+                            }
                             engineInfo={engineInfo}
                             engineCallable={engineCallable}
                             humanMoves={humanMoves}

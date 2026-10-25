@@ -52,7 +52,7 @@ import { join, sep } from "@tauri-apps/api/path";
 import { BaseDirectory, mkdir } from "@tauri-apps/plugin-fs";
 import { getDatabaseGame } from "../storage/gamedb";
 import { makeGame } from "../models/pgn";
-import { pendingPgn } from "../paste/pending";
+import { pendingPgn, setPendingPgn } from "../paste/pending";
 import { listRepertoires, setRepertoire } from "../storage/repertoire";
 import { Color } from "chessops";
 import { recordRecent } from "../storage/recent";
@@ -83,6 +83,10 @@ const GameView = () => {
             : undefined;
     // only the first try at a puzzle counts, as on Lichess
     let recordedPuzzle: string | undefined;
+    // the last rating seen, to show its change after the next puzzle
+    let puzzleRating: number | undefined;
+    /** Shown in the training frame once a puzzle ends: the rating change */
+    const [puzzleNote, setPuzzleNote] = createSignal<string>();
 
     /** A game from an imported database (read-only: Save copies it to the Library) */
     const databaseGameId = () =>
@@ -237,6 +241,7 @@ const GameView = () => {
         batch(() => {
             setNewPgn(pgnText); // this is to avoid detecting changes on the new pgn
             setOriginalPgn(pgnText);
+            setPuzzleNote(undefined);
         });
         setModified(false);
     });
@@ -326,8 +331,18 @@ const GameView = () => {
             if (recordedPuzzle === lichessId) return;
             recordedPuzzle = lichessId;
             const firstTry = solved && hintUsed === 0 && retries === 0;
-            const rating = await recordPuzzleAttempt(lichessId, firstTry);
-            makeToast(`Puzzle rating: ${Math.round(rating)}`);
+            const before = puzzleRating;
+            const rating = Math.round(
+                await recordPuzzleAttempt(lichessId, firstTry),
+            );
+            puzzleRating = rating;
+            const change =
+                before !== undefined && rating !== before
+                    ? ` (${rating > before ? "+" : ""}${rating - before})`
+                    : "";
+            setPuzzleNote(
+                `${firstTry ? "Solved on the first try." : "Counted as missed: the first try is what counts."} Your puzzle rating: ${rating}${change}`,
+            );
             return;
         }
         // puzzle solved
@@ -406,17 +421,6 @@ const GameView = () => {
                 </div>
 
                 <Show when={isEditable() || isPuzzleMode()}>
-                    <Show when={isPuzzleMode()}>
-                        <div class="navbar-item">
-                            <Button
-                                class="is-primary is-outlined"
-                                onClick={onNextPuzzle}
-                            >
-                                Next Puzzle
-                            </Button>
-                        </div>
-                    </Show>
-
                     <Show when={filePath() && !isPuzzleMode()}>
                         <div class="navbar-item">
                             <Button
@@ -491,6 +495,15 @@ const GameView = () => {
                 onPuzzleFinished={isPuzzleMode() ? onPuzzleFinished : undefined}
                 editable={isEditable}
                 defaultEngineAnalysisOn={isEngineAnalysisOn()}
+                puzzleTitle={() =>
+                    lichessPuzzleId() ? "Lichess puzzle" : displayedName()
+                }
+                puzzleNote={puzzleNote}
+                onNextPuzzle={onNextPuzzle}
+                onAnalyzePuzzle={() => {
+                    setPendingPgn(newPgn() ?? originalPgn() ?? "");
+                    navigate("/analysis?source=pasted");
+                }}
             />
         </>
     );

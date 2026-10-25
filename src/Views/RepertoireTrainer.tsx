@@ -14,6 +14,7 @@ import { DrawShape } from "chessground/draw";
 import { Key } from "chessground/types";
 import { Chessboard } from "../components/common/chessboard";
 import Button from "../components/common/Button";
+import TrainerPanel, { TrainerStatus } from "../components/game/TrainerPanel";
 import { drawBrushes } from "../components/common/utils";
 import {
     Card,
@@ -220,77 +221,95 @@ const RepertoireTrainer: Component = () => {
         return next ? next.toLocaleString() : undefined;
     };
 
+    /** Shows the move to play; the position counts as missed. */
+    const showMove = () => {
+        const s = step();
+        if (!s?.userMove) return;
+        record(s.fenBefore, false);
+        setFeedback({ kind: "new", text: `Here you play ${s.san}.` });
+    };
+    const canShowMove = () => {
+        const kind = feedback()?.kind;
+        return !!step()?.userMove && kind !== "new" && kind !== "wrong";
+    };
+
+    const caughtUp = () => !!data() && !line();
+    const status = (): TrainerStatus => {
+        if (caughtUp()) return "solved";
+        switch (feedback()?.kind) {
+            case "right":
+                return "good";
+            case "wrong":
+                return "wrong";
+            case "done":
+                return "solved";
+            default:
+                return "solving";
+        }
+    };
+
     return (
         <div class="repertoire_view">
             <div class="repertoire-board">
                 <Chessboard config={config} />
             </div>
             <div class="repertoire-panel">
-                <h1 class="title is-5">
-                    {NameWithoutExtension(baseName(path()))}
-                </h1>
                 <Show when={!loaded.loading && !loaded()}>
+                    <h1 class="title is-5">
+                        {NameWithoutExtension(baseName(path()))}
+                    </h1>
                     <p class="notification is-warning is-light">
                         This file is not a repertoire. Open it and choose
                         "Repertoire for White" or "for Black" in its toolbar.
                     </p>
                 </Show>
-                <Show when={stats()}>
-                    {(s) => (
-                        <p class="block">
-                            Playing {data()!.side} · {s().due} to review ·{" "}
-                            {s().new} new
-                        </p>
-                    )}
-                </Show>
-                <Show when={feedback()}>
-                    {(f) => (
-                        <p
-                            class={`notification is-light ${
-                                {
-                                    new: "is-info",
-                                    right: "is-success",
-                                    wrong: "is-danger",
-                                    done: "is-success",
-                                }[f().kind]
-                            }`}
-                        >
-                            {f().text}
-                        </p>
-                    )}
-                </Show>
-                <Show when={data() && !line()}>
-                    <p class="notification is-success is-light">
-                        All caught up.
-                        <Show when={later()}> Next review: {later()}.</Show>
-                    </p>
-                </Show>
-                <div class="buttons">
-                    <Show when={finished()}>
-                        <Button class="is-primary" onClick={nextLine}>
-                            Next line
-                        </Button>
-                    </Show>
-                    <Show when={line() && !finished()}>
-                        <Button onClick={nextLine} title="Leave this line">
-                            Skip line
-                        </Button>
-                    </Show>
-                    <Button
-                        onClick={() =>
-                            navigate(`/game?path=${encodeURIComponent(path())}`)
+                <Show when={data()}>
+                    <TrainerPanel
+                        title={NameWithoutExtension(baseName(path()))}
+                        progress={() => {
+                            const s = stats();
+                            return s && `${s.due} to review · ${s.new} new`;
+                        }}
+                        side={() => data()?.side ?? "white"}
+                        prompt={() =>
+                            caughtUp()
+                                ? "All caught up."
+                                : finished()
+                                  ? "Line complete."
+                                  : `Play your repertoire move for ${data()?.side === "black" ? "Black" : "White"}.`
+                        }
+                        status={status}
+                        message={() =>
+                            caughtUp()
+                                ? later() && `Next review: ${later()}.`
+                                : feedback()?.kind === "done"
+                                  ? "Every move of this line played."
+                                  : feedback()?.text
+                        }
+                        onHintMove={canShowMove() ? showMove : undefined}
+                        onNext={line() ? nextLine : undefined}
+                        nextLabel={finished() ? "Next line" : "Skip line"}
+                        actions={
+                            <Button
+                                onClick={() =>
+                                    navigate(
+                                        `/game?path=${encodeURIComponent(path())}`,
+                                    )
+                                }
+                            >
+                                Edit repertoire
+                            </Button>
                         }
                     >
-                        Edit repertoire
-                    </Button>
-                </div>
-                <Show when={line()}>
-                    <p class="repertoire-line">
-                        {line()!
-                            .slice(0, index())
-                            .map((s) => s.san)
-                            .join(" ")}
-                    </p>
+                        <Show when={line() && index() > 0}>
+                            <p class="repertoire-line">
+                                {line()!
+                                    .slice(0, index())
+                                    .map((s) => s.san)
+                                    .join(" ")}
+                            </p>
+                        </Show>
+                    </TrainerPanel>
                 </Show>
             </div>
         </div>

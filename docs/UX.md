@@ -264,3 +264,25 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
   - Scan: a page header with Capture from screen, Choose an image and Scan a whole book; the
     scanned picture appears in the editor's panel, next to the board, to compare square by
     square; then the three actions.
+- 2026-10-25: step 5 approved by the owner and merged into `develop`.
+- 2026-10-25, step 6 (training feels like training) ready for review:
+  - One frame for every trainer, `TrainerPanel.tsx`: a title with progress on the right, the
+    task with a disc in the colour to move ("Find the best move for White."), a status line
+    that changes colour and icon (your move / good move / not the move / solved), a note
+    (rating change, score), the trainer's own content, then the actions (Hint, Show the move,
+    Next or Skip, Analyze once solved). The state also shows on the left edge, and the solved
+    frame is tinted. Prompt and status text can be replaced for trainers that ask something else.
+  - Puzzles and mistakes (`GameView` + `GameManager`): the frame sits at the top of the panel.
+    The modal "solved" alert, the "wrong move" button under the board, the separate hint
+    buttons and the header's "Next Puzzle" are gone: everything is in the frame. Lichess
+    puzzles show the rating and its change in the frame instead of a toast. Analyze opens the
+    puzzle in the analysis workspace (as a pasted game: Save copies it to the Library).
+  - Repertoire trainer: the frame replaces the coloured notifications; "Show the move" added
+    (the position counts as missed); Skip line / Next line and Edit repertoire in its actions;
+    the line so far under the status.
+  - Guess the move: the frame holds the task, "Move n of m", the verdict and the running score;
+    Reveal and Next move are its actions. Game and side pickers stay above it.
+  - Fixed on the way: the Guess the move and repertoire boards were stretched to the window's
+    height and clipped on the right; they now stay square (`align-self: flex-start`).
+  - Not done: a progress bar across a session of puzzles (needs a notion of a session, left
+    for P2.9 / Today).

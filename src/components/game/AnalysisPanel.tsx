@@ -2,7 +2,7 @@
 // (PanelSection): Engine, Moves, About this position, Game review, Explorer. Split out of
 // GameManager; it reads the game from GameContext and takes the engine's output as props.
 
-import { Accessor, Component, Show, useContext } from "solid-js";
+import { Accessor, Component, JSX, Show, useContext } from "solid-js";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import { MoveStat } from "../../engine/lc0";
 import { analysisProfile } from "../../engine/engineprofiles";
@@ -23,6 +23,8 @@ import Explorer from "./Explorer";
 import PgnTextArea from "./PgnTextArea";
 
 const AnalysisPanel: Component<{
+    /** The training frame, first, in puzzles */
+    trainer?: JSX.Element;
     engineInfo: EngineInfo[];
     /** The engine is analysing (switched on, not playing, not reviewing) */
     engineCallable: Accessor<boolean>;
@@ -50,6 +52,7 @@ const AnalysisPanel: Component<{
 
     return (
         <div class="pgnviewer-sidebar">
+            {props.trainer}
             {/* one toolbar: the engine on the left, the game's tools on the right */}
             <Show when={!isPuzzleMode()}>
                 <div class="workspace-toolbar">

@@ -70,6 +70,23 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       Accept and Cancel work.
 - [ ] **Small window**: the editor drops to one column and scrolls.
 
+## UX overhaul, step 6: the training frame (branch feature/ux-overhaul)
+
+- [ ] **Puzzle, wrong move**: the frame turns red ("Not the move") with Try again; Try again
+      puts the position back.
+- [ ] **Puzzle, right move then solved**: "Good move: keep going" in green, then "Solved!"
+      with a tinted frame, Next puzzle (primary) and Analyze. No alert pops up.
+- [ ] **Hint / Show the move**: highlight the piece / the move; both disappear once solved.
+- [ ] **Lichess puzzle**: after solving or missing it, the frame shows your rating and its
+      change (from the second puzzle on); Next puzzle picks another one.
+- [ ] **Analyze from a solved puzzle**: opens it in the analysis workspace with its moves.
+- [ ] **Mistakes** (from a reviewed game): Next / Skip stays within the mistakes folder.
+- [ ] **Repertoire trainer**: "4 to review · 2 new" top right; a new move says "New move: play
+      …" with a green arrow; a wrong move turns the frame red with a red arrow; Show the move;
+      Skip line / Next line; "All caught up" with the next review date.
+- [ ] **Guess the move**: the board is square and whole; add candidates, Reveal, the verdict
+      (green or red) and the score under it; Next move; "Game finished" at the end.
+
 ## PDF reader (P4.4)
 
 - [ ] **Text below the diagram** (P4.4e, needs work): "Text below the diagram: …" shows the
