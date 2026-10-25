@@ -4,7 +4,7 @@
 // call this: `import.meta.env.DEV` is false there and the module is dropped.
 //
 // A command: { "id": "any unique value", "go": "/route", "click": "css selector",
-//              "key": "ArrowRight", "theme": "light" | "dark" | "" }
+//              "type": "text", "key": "ArrowRight", "theme": "light" | "dark" | "" }
 
 import anylogger from "anylogger";
 const log = anylogger("devdriver");
@@ -14,6 +14,8 @@ type Command = {
     go?: string;
     click?: string;
     key?: string;
+    /** Text for the focused field (after the click) */
+    type?: string;
     theme?: "light" | "dark" | "";
 };
 
@@ -44,6 +46,14 @@ export function startDevDriver(navigate: (to: string) => void) {
                 const el = document.querySelector<HTMLElement>(cmd.click);
                 if (el) el.click();
                 else log.warn("nothing matches", cmd.click);
+            }
+            // text into the focused field, as if typed
+            if (cmd.type !== undefined) {
+                const el = document.activeElement as HTMLInputElement | null;
+                if (el && "value" in el) {
+                    el.value = cmd.type;
+                    el.dispatchEvent(new Event("input", { bubbles: true }));
+                }
             }
             if (cmd.key) {
                 document.dispatchEvent(

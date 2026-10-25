@@ -75,6 +75,8 @@ src/
   components/common/       chessboard wrapper, TreeView, Modal, Alert, Select, MarkdownEditor, utils.tsx
   components/boardeditor/  position editor
   components/sidebar/      Library file browser
+  components/shell/        app shell: CommandPalette (⌘K), PageHeader; the sidebar is Views/Sidebar.tsx,
+                           its screens and groups in models/navigation.ts (a new screen goes there)
   models/                  pgn.ts (chessops tree -> view model, Path type), GameModel.ts (immutable game ops),
                            settings.ts (JSON settings in AppConfig, Solid store), puzzles.ts (score formula)
   engine/                  uciengine.ts (UCI protocol parser) over executableuci.ts (talks to Rust engine_* commands),

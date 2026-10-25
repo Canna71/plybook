@@ -1,0 +1,144 @@
+// the app's sidebar (Sidebar.tsx)
+.app-sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--rc-space-2);
+    gap: var(--rc-space-2);
+    background-color: var(--rc-surface);
+    font-size: var(--rc-text-sm);
+
+    .nav-groups {
+        flex: 1;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--rc-space-3);
+    }
+
+    .nav-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .nav-group-label {
+        padding: 0 var(--rc-space-2) var(--rc-space-1);
+        font-size: var(--rc-text-xs);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--rc-text-muted);
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: var(--rc-space-2);
+        padding: 5px var(--rc-space-2);
+        border-radius: var(--rc-radius);
+        color: var(--rc-text);
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+        white-space: nowrap;
+        font: inherit;
+
+        svg {
+            width: 18px;
+            height: 18px;
+            flex: none;
+            color: var(--rc-text-muted);
+        }
+
+        &:hover {
+            background-color: var(--rc-surface-2);
+            color: var(--rc-text-strong);
+        }
+
+        &.is-active {
+            background-color: var(--rc-surface-2);
+            color: var(--rc-text-strong);
+            font-weight: 600;
+            box-shadow: inset 3px 0 0 var(--rc-accent);
+
+            svg {
+                color: var(--rc-accent);
+            }
+        }
+    }
+
+    .nav-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    // the command palette's entry, like a search field
+    .nav-search {
+        border: 1px solid var(--rc-border);
+        background-color: var(--rc-bg);
+        color: var(--rc-text-muted);
+
+        kbd {
+            margin-left: auto;
+            font-family: inherit;
+            font-size: var(--rc-text-xs);
+            color: var(--rc-text-muted);
+        }
+    }
+
+    .nav-files-toggle {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
+
+    .nav-files {
+        // the tree's own rows
+        font-size: var(--rc-text-sm);
+    }
+
+    .nav-footer {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        border-top: 1px solid var(--rc-border);
+        padding-top: var(--rc-space-2);
+    }
+
+    // icons only
+    &.collapsed {
+        align-items: center;
+
+        .nav-label,
+        .nav-group-label {
+            display: none;
+        }
+
+        .nav-group + .nav-group {
+            border-top: 1px solid var(--rc-border);
+            padding-top: var(--rc-space-2);
+        }
+
+        .nav-item {
+            justify-content: center;
+            padding: 6px;
+        }
+
+        .nav-search {
+            border: none;
+            background: none;
+        }
+    }
+}

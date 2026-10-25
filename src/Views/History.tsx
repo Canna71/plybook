@@ -3,6 +3,7 @@ import { getHistoryGames } from "../storage/db";
 import Button from "../components/common/Button";
 import { formatDate } from "../components/common/utils";
 import { useNavigate } from "@solidjs/router";
+import PageHeader from "../components/shell/PageHeader";
 import "./History.scss";
 
 const History: Component = () => {
@@ -18,11 +19,12 @@ const History: Component = () => {
 
     return (
         <div class="history_view">
-            <div class="buttons-bar">
-                <Button class="is-primary is-outlined" onClick={refetch}>
-                    Refresh
-                </Button>
-            </div>
+            <PageHeader
+                title="History"
+                description="Your games against the engine, newest first. Click one to replay or analyse it."
+            >
+                <Button onClick={refetch}>Refresh</Button>
+            </PageHeader>
             <div class="table-container">
                 <table class="table history_table is-hoverable">
                     <thead>

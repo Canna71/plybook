@@ -183,3 +183,22 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
     Settings, dialogs, toasts. Left for later steps: the analysis board can overflow the
     window height (step 4), the board editor's "Advanced settings" box (step 5), empty
     states (step 7).
+- 2026-10-25: step 1 approved by the owner and merged into `develop`.
+- 2026-10-25, step 2 (app shell) ready for review:
+  - Sidebar (`Views/Sidebar.tsx`): Today · Study (Analysis, Library, Repertoires) · Train
+    (Puzzles) · Play (Play the engine) · Games (History, Databases) · Tools (Scan a
+    position, Board editor), Settings at the bottom; icons; the current screen highlighted
+    (an open game counts as Library, a puzzle as Puzzles: `models/navigation.ts`, tested).
+    "Collapse" turns it into an icon rail (remembered). Board editor and Analysis are in
+    the navigation for the first time.
+  - Changed from the plan: the Library tree stays in the sidebar for now, as a collapsible
+    "Files" section, until the Library screen is redone (step 7); removing it first would
+    make files harder to reach in between.
+  - Command palette (`components/shell/CommandPalette.tsx`, ranking in `models/commands.ts`,
+    tested): ⌘K / Ctrl+K anywhere, or "Go to…" at the top of the sidebar; screens, actions
+    (new analysis, capture from screen, scan a book, import a database, light/dark, collapse
+    the sidebar) and every PGN/PDF in the Library. ↑ ↓ Enter Esc.
+  - `PageHeader` (title, what the screen is for, actions on the right) on Puzzles, History,
+    Databases, Repertoires, Settings. Analysis, Library and Scan get theirs in steps 4–7.
+  - Puzzles showed "Loading..." for ever without puzzles of your own: now an empty state that
+    says how to get some.

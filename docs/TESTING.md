@@ -19,6 +19,19 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Dialogs**: Analysis Settings (gear in analysis): title bar, sliders with values on the
       right, Close on the right.
 
+## UX overhaul, step 2: navigation (branch feature/ux-overhaul)
+
+- [ ] **Sidebar**: the groups make sense; the highlighted entry follows you (open a game from
+      Files: Library is highlighted; open a puzzle: Puzzles).
+- [ ] **Collapse**: "Collapse" at the bottom turns the sidebar into icons (hover shows names);
+      it stays collapsed after a restart; the expand button brings it back.
+- [ ] **⌘K**: from any screen, also while typing in a field: type part of a screen, an action
+      or a file name ("ital", "dark", "databases"), ↑ ↓ to choose, Enter opens, Esc closes.
+- [ ] **Files**: the "Files" section folds and unfolds (remembered) and still opens games,
+      folders and PDFs.
+- [ ] **Headers**: Puzzles, History, Databases, Repertoires, Settings start with a title, a
+      line on what the screen is for, and their buttons on the right.
+
 ## PDF reader (P4.4)
 
 - [ ] **Text below the diagram** (P4.4e, needs work): "Text below the diagram: …" shows the
