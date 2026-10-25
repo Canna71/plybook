@@ -30,6 +30,8 @@ export interface AppSettings {
             elo?: number;
             /** Polyglot book the engine plays from ("" for none) */
             book?: string;
+            /** Clocks for games against the engine, "minutes+seconds" ("" for none) */
+            timeControl?: string;
         };
         review?: {
             depth?: number;
@@ -77,6 +79,7 @@ const DEFAULT: AppSettings = {
             depth: 30,
             elo: 1000,
             book: "",
+            timeControl: "",
         },
         // per position: a 40-move game takes about a minute
         review: {

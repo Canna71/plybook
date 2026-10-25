@@ -318,7 +318,15 @@ How this file is used:
   them. `models/shortcuts.ts` (tested) + `components/game/useShortcuts.tsx`.
 - [x] **O.3 Arrows and highlights** saved to PGN (`[%cal]`, `[%csl]`): already done; shapes
   drawn on the board (right-drag) are stored on the move (`GameModel.updateShapes`).
-- [ ] **O.4 Clocks** and time controls when playing.
+- [x] **O.4 Clocks** and time controls when playing (`feature/clocks`; owner review pending):
+  "Time control" on the Play page (no clock, 1+0, 3+2, 5+3, 10+5, 15+10, 30+20; setting
+  `engine.playing.timeControl`) applies to the next game. Both clocks show above and below
+  the board (the running one highlighted, red under ten seconds); Fischer increment; a flag
+  fall ends the game (a draw if the other side cannot mate). The engine plays on its clock
+  (`go wtime btime winc binc` instead of depth/movetime). The PGN gets `[TimeControl]` and
+  `[%clk]` on every move, so History keeps the times. `models/clock.ts` (tested),
+  `components/game/useGameClock.tsx`. Not yet: pausing, different times per side, the
+  playing strength's own time limits (Maia/single-node profiles answer instantly anyway).
 - [ ] **O.5 Board image / GIF export.**
 - [ ] **O.6 Backups** of Library and database; app auto-update.
 - [ ] **O.7 CI**: Rust `cargo check`/`clippy`. (Vitest runs in CI since P1.2.)

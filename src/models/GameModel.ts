@@ -409,6 +409,19 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
+    /** The time left after the move at `path` (PGN `[%clk]`), in seconds. */
+    public updateClock(path: Path, seconds: number): GameModel {
+        const pgnNode = this.findPgnNode(path);
+        if (!pgnNode || !isChildNode(pgnNode)) return this;
+        const comments = (pgnNode.data.comments ?? []).map(parseComment2);
+        if (!comments.length) comments.push({ text: "", shapes: [] });
+        comments[0].clock = seconds;
+        // a comment with no text is kept as a placeholder, as for shapes and evaluations
+        comments[0].text = comments[0].text || EMPTY_COMMENT;
+        pgnNode.data.comments = comments.map((c) => makeComment2(c));
+        return this.getNewGameModel();
+    }
+
     public updateEvaluation(path: Path, evaluation: Evaluation): GameModel {
         const pgnNode = this.findPgnNode(path);
         const node = nodeAtPathFrom(this.moves, path);

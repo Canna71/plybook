@@ -57,10 +57,13 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
         // TODO: put in settings or somewhere else
         this.setOption("Threads", options.threads || 1);
         let goCommand = "go";
+        const clock = options.clock;
         if (options.nodes) {
             goCommand += ` nodes ${options.nodes}`;
+        } else if (clock) {
+            goCommand += ` wtime ${clock.wtime} btime ${clock.btime} winc ${clock.winc} binc ${clock.binc}`;
         } else if (options.depth) goCommand += ` depth ${options.depth}`;
-        if (!options.nodes && options.movetime)
+        if (!options.nodes && !clock && options.movetime)
             goCommand += ` movetime ${options.movetime}`;
         if (options.multipv) {
             this.setOption("MultiPV", options.multipv);

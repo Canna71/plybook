@@ -8,9 +8,14 @@ import {
     Accessor,
     Signal,
     createMemo,
+    untrack,
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { IChessEngine, EngineInfo } from "../../engine/engineinterfaces";
+import {
+    AnalysisOptions,
+    IChessEngine,
+    EngineInfo,
+} from "../../engine/engineinterfaces";
 import { activeProfile, startEngine } from "../../engine/engineprofiles";
 import { makeMove } from "../common/utils";
 import { makeErrorToast } from "../common/Toast";
@@ -49,6 +54,8 @@ export type ChessEngineOptions = {
     fen: Accessor<string>;
     hintMoveSignal: Signal<string | undefined>;
     wrongPuzzleMove: Accessor<NormalMove | undefined>;
+    /** In a game with clocks, both clocks now: the engine plays on its time */
+    clockTimes?: () => AnalysisOptions["clock"];
 };
 
 export function useChessEngine(options: ChessEngineOptions) {
@@ -446,6 +453,10 @@ export function useChessEngine(options: ChessEngineOptions) {
                 movetime: getSettingValue("engine.playing.movetime", 10000),
                 multipv: 1,
                 threads: getSettingValue("engine.threads", 1),
+                // untracked: the clocks tick, the search must not restart with them
+                clock: enginesTurn
+                    ? untrack(() => options.clockTimes?.())
+                    : undefined,
             };
 
             // while the position is in the chosen book, the engine plays a book move
