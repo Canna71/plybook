@@ -169,3 +169,17 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
     body and right-aligned buttons, sliders that keep their value inside the dialog, focus
     rings for keyboard use, thin scrollbars, toasts that follow the theme (bottom right).
   - Not yet: layout changes (step 2+), page headers, empty states applied to screens.
+- 2026-10-25, step 1 polish (owner asked whether it could be better), checked with
+  screenshots and measured contrast (WCAG):
+  - Primary buttons: a deeper green with white text (4.7:1); Bulma had kept dark text, chosen
+    at build time for its own default colour.
+  - Placeholders were 1.7–2.2:1 and stand in for labels on the Databases filters: now the
+    muted text colour (about 3.9:1; real labels come with that screen's redesign).
+  - Buttons with an icon and text ("Clear", "Save") were squeezed as if icon-only (CSS can't
+    see text nodes): `Button` now marks icon-only buttons itself (`.is-icon`).
+  - The board editor's FEN box showed "undefined" without a position.
+  - Toasts moved to bottom centre (bottom right covered the game navigator's "+").
+  - Seen and fine in both themes: Databases, Puzzles, Repertoires, Scan, Play, History,
+    Settings, dialogs, toasts. Left for later steps: the analysis board can overflow the
+    window height (step 4), the board editor's "Advanced settings" box (step 5), empty
+    states (step 7).

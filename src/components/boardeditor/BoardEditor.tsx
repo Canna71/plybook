@@ -321,7 +321,7 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
                 <input
                     class="input"
                     type="text"
-                    value={props.fen()}
+                    value={props.fen() ?? ""}
                     onChange={onFenChange}
                     onClick={onClick}
                 />

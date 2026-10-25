@@ -9,8 +9,11 @@
     --bulma-scheme-s: 9%;
     // accents: a calm green for primary actions, a clear blue for links and focus
     --bulma-primary-h: 153;
-    --bulma-primary-s: 48%;
-    --bulma-primary-l: 40%;
+    --bulma-primary-s: 52%;
+    --bulma-primary-l: 33%;
+    // Bulma picks the text colour on primary at build time, for its own default colour:
+    // white reads better on this deeper green (about 5:1)
+    --bulma-primary-invert-l: 100%;
     --bulma-link-h: 214;
     --bulma-link-s: 72%;
     --bulma-link-l: 52%;

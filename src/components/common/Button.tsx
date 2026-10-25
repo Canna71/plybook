@@ -1,4 +1,4 @@
-import { Component, JSX } from "solid-js";
+import { Component, createSignal, JSX, onMount } from "solid-js";
 
 interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
     // variant?: 'primary' | 'secondary' | 'outline';
@@ -31,8 +31,20 @@ const Button: Component<ButtonProps> = (props) => {
     //     }
     // };
 
+    // icon-only buttons are styled square (_base.scss); CSS can't see text nodes, so check here
+    let el: HTMLButtonElement | undefined;
+    const [iconOnly, setIconOnly] = createSignal(false);
+    onMount(() =>
+        setIconOnly(!el?.textContent?.trim() && !!el?.querySelector("svg")),
+    );
+
     return (
-        <button {...props} class={`button ${props.class || ""}`}>
+        <button
+            ref={el}
+            {...props}
+            class={`button ${props.class || ""}`}
+            classList={{ "is-icon": iconOnly() }}
+        >
             {props.children}
         </button>
     );

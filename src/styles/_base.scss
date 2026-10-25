@@ -33,8 +33,8 @@ body,
         height: 1.25em;
     }
 
-    // a button holding only an icon
-    &:has(> svg:only-child) {
+    // a button holding only an icon (Button.tsx adds .is-icon; CSS can't see text nodes)
+    &.is-icon {
         width: 2.15em;
         padding: 0;
     }
@@ -75,6 +75,13 @@ body,
 
     .input {
         height: 2.15em;
+    }
+
+    // placeholders often stand in for labels (the Databases filters): readable, ~5:1
+    .input::placeholder,
+    .textarea::placeholder {
+        color: var(--rc-text-muted);
+        opacity: 1;
     }
 
     // selects keep Bulma's own height (forcing one clips the text), with tighter padding
