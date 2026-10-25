@@ -47,6 +47,10 @@ export interface AppSettings {
             theme?: string;
         };
     };
+    backup?: {
+        /** A backup a day in <AppLocalData>/Backups, the last seven kept */
+        auto?: boolean;
+    };
     reader?: {
         /** Where each PDF was left, by Library path (written as a whole: paths have dots) */
         places?: Record<string, ReaderPlace>;
@@ -94,6 +98,9 @@ const DEFAULT: AppSettings = {
         lichess: {
             theme: "",
         },
+    },
+    backup: {
+        auto: true,
     },
     reader: {
         places: {},

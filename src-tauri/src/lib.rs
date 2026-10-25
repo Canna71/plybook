@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 // use tauri::Manager;
+mod backup;
 mod books;
 mod capture;
 mod db;
@@ -18,6 +19,7 @@ fn greet(name: &str) -> String {
 }
 
 // use serde::{Deserialize, Serialize};
+use backup::*;
 use books::*;
 use capture::*;
 use db::*;
@@ -111,7 +113,11 @@ pub fn run() {
             book_import,
             book_remove,
             book_moves,
-            export_save
+            export_save,
+            backup_create,
+            backup_restore,
+            backup_auto,
+            backup_open_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
