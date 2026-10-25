@@ -108,7 +108,13 @@ Each page costs a few model runs (64 tiles each); a framed diagram usually needs
   (6% of the page below the diagram, in its column) and the following text (30%);
   `turnFromText` sets the side to move; `movesFromText` finds the longest run of moves that
   can be played from a position (figurines, `0-0`, numbers must match the side to move,
-  words between moves end a run, bracketed side lines dropped).
+  words between moves end a run, bracketed side lines dropped). An unreadable symbol right
+  before a move is a chess-font piece: `runFrom` tries each piece for it, keeps each symbol to
+  one piece through the line, and `agreed` takes the longest reading, stopping where equally
+  long readings differ. Open problems: P4.4f in the roadmap.
+- The editor's `previewMovesFromText` (reactive: it reads the editor's game and path) shows
+  what a text would add before it's added: the text below the diagram, and the selection
+  ("As moves: …"), each with its own buttons.
 - Library: "Add PDF…" in a folder copies the file into the Library (`writeDataFile` takes
   bytes); `.pdf` files open in the reader from the folder view and the sidebar tree.
 

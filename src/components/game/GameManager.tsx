@@ -15,6 +15,7 @@ import {
 } from "solid-js";
 import { makeGameInternal, Path } from "../../models/pgn";
 import { movesFromText } from "../../models/booktext";
+import { makeSanVariation } from "chessops/san";
 import { GameModel } from "../../models/GameModel";
 import ButtonBar from "./Buttonbar";
 import {
@@ -98,6 +99,8 @@ export type GameManagerApi = {
      * line where they differ from the game; how many moves were added.
      */
     addMovesFromText: (text: string) => number;
+    /** The moves `addMovesFromText` would add, numbered ("4.c3 Nf6"); reactive */
+    previewMovesFromText: (text: string) => string | undefined;
 };
 
 type PromotionData = {
@@ -714,6 +717,18 @@ const GameManager: Component<GameManagerOptions> = ({
     } as GameContextType;
     // #endregion
 
+    /** Moves in `text` that fit the move shown, or else the start of the game. */
+    const textMoves = (text: string) => {
+        const g = game();
+        if (!g) return undefined;
+        for (const from of [currentPath() ?? Path.root, Path.root]) {
+            const position = g.getPosition(from);
+            const { moves } = movesFromText(text, position);
+            if (moves.length) return { from, position, moves };
+        }
+        return undefined;
+    };
+
     onReady?.({
         addComment: (text) => {
             const path = currentPath();
@@ -722,18 +737,18 @@ const GameManager: Component<GameManagerOptions> = ({
         },
         addMovesFromText: (text) => {
             const g = game();
-            if (!g) return 0;
-            for (const from of [currentPath() ?? Path.root, Path.root]) {
-                const { moves } = movesFromText(text, g.getPosition(from));
-                if (!moves.length) continue;
-                const [next, path] = g.applyMoves(from, moves);
-                batch(() => {
-                    setCurrentPath(path);
-                    setGame(next);
-                });
-                return moves.length;
-            }
-            return 0;
+            const found = textMoves(text);
+            if (!g || !found) return 0;
+            const [next, path] = g.applyMoves(found.from, found.moves);
+            batch(() => {
+                setCurrentPath(path);
+                setGame(next);
+            });
+            return found.moves.length;
+        },
+        previewMovesFromText: (text) => {
+            const found = textMoves(text);
+            return found && makeSanVariation(found.position, found.moves);
         },
     });
 

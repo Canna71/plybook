@@ -47,6 +47,24 @@ describe("movesFromText", () => {
         ]);
     });
 
+    it("reads a chess font's unknown piece symbol as the only piece that fits", () => {
+        const start =
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        // the knight glyph comes out as some other character: "f3" is not a pawn move
+        expect(sans("1 e4 e5 2 f3 c6 3 c4", start)).toEqual([
+            "e4",
+            "e5",
+            "Nf3",
+            "Nc6",
+            "Bc4",
+        ]);
+        // two kinds of piece could go there: stop rather than guess
+        expect(sans("4.c3 Lf6", ITALIAN)).toEqual(["c3"]); // Nf6 or Qf6
+        expect(sans("4.Ùe2", ITALIAN)).toEqual([]); // Qe2, Ke2 or Be2
+        // only a knight plays "ge7"
+        expect(sans("4.c3 Lge7", ITALIAN)).toEqual(["c3", "Nge7"]);
+    });
+
     it("leaves out bracketed side lines", () => {
         expect(sans("4.c3 Nf6 (4...d6 5.d4) 5.d4 exd4")).toEqual([
             "c3",

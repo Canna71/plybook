@@ -12,15 +12,9 @@ import {
 } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useNavigate, useSearchParams } from "@solidjs/router";
-import { Chess, Color } from "chessops";
+import { Color } from "chessops";
 import { parseFen } from "chessops/fen";
-import { makeSanVariation } from "chessops/san";
-import {
-    movesFromText,
-    TextItem,
-    textNearDiagram,
-    turnFromText,
-} from "../models/booktext";
+import { TextItem, textNearDiagram, turnFromText } from "../models/booktext";
 import { Config } from "chessground/config";
 import anylogger from "anylogger";
 import { Chessboard } from "../components/common/chessboard";
@@ -320,7 +314,8 @@ const PdfReader: Component = () => {
         file: string;
         pgn: string;
     }>();
-    let notesApi: GameManagerApi | undefined;
+    // a signal: previews of the moves a text would add follow the notes' editor
+    const [notesApi, setNotesApi] = createSignal<GameManagerApi>();
     // the editor re-writes the PGN as it loads it: that is not a change worth saving
     let baseline = "";
     let loading = false;
@@ -361,7 +356,7 @@ const PdfReader: Component = () => {
         on(selected, async (d) => {
             void writeNotes();
             setNotesGame(undefined);
-            notesApi = undefined;
+            setNotesApi(undefined);
             if (!d) return;
             const p = scannedPosition(d.read, d.turn);
             if (!p.legal) return;
@@ -438,33 +433,31 @@ const PdfReader: Component = () => {
             d.orientation;
         setSelected({ ...d, turn, following: near.following });
     };
-    /** The moves the text gives from the diagram, numbered ("4.c3 Nf6 5.d4"). */
-    const textLine = () => {
-        const s = selected();
-        const fen = position()?.legal ? position()!.fen : undefined;
-        if (!s?.following || !fen) return undefined;
-        const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
-        const { moves } = movesFromText(s.following, pos);
-        return moves.length ? makeSanVariation(pos, moves) : undefined;
+    /**
+     * What the notes would get from a text, numbered ("4.c3 Nf6 5.d4"): played from the move
+     * shown in the notes, or else from the diagram. Follows the notes as they change.
+     */
+    const preview = (text: string | undefined) =>
+        text ? notesApi()?.previewMovesFromText(text) : undefined;
+    const followingLine = () => preview(selected()?.following);
+    const selectedLine = () => preview(quote()?.text);
+    const clearQuote = () => {
+        setQuote(undefined);
+        document.getSelection()?.removeAllRanges();
     };
-    const addTextMoves = (text: string) => {
-        const added = notesApi?.addMovesFromText(text) ?? 0;
-        makeToast(
-            added
-                ? `Added ${added} moves to the notes`
-                : "No moves in that text fit the position shown",
-        );
-        return added;
+    const addFollowing = () =>
+        notesApi()?.addMovesFromText(selected()?.following ?? "");
+    const addSelectedMoves = () => {
+        if (notesApi()?.addMovesFromText(quote()?.text ?? "")) clearQuote();
     };
     // #endregion
 
     /** The selected text, as a comment on the move shown in the notes. */
     const addQuote = () => {
         const q = quote();
-        if (!q || !notesApi) return;
-        notesApi.addComment(bookQuote(q.text, q.page));
-        setQuote(undefined);
-        document.getSelection()?.removeAllRanges();
+        if (!q || !notesApi()) return;
+        notesApi()!.addComment(bookQuote(q.text, q.page));
+        clearQuote();
     };
     // #endregion
 
@@ -671,54 +664,76 @@ const PdfReader: Component = () => {
                                         initalPgn={() => game.pgn}
                                         setPgn={onNotesChange}
                                         editable={() => true}
-                                        onReady={(api) => (notesApi = api)}
+                                        onReady={(api) => setNotesApi(api)}
                                     />
                                 </div>
                             )}
                         </Show>
-                        <Show when={notesGame() && textLine()}>
+                        <Show when={notesGame() && followingLine()}>
                             <div class="reader-text-moves">
                                 <span>
-                                    From the text: <strong>{textLine()}</strong>
+                                    Text below the diagram:{" "}
+                                    <strong>{followingLine()}</strong>
                                 </span>
                                 <Button
                                     class="is-small is-info is-light"
                                     title="Play these moves in the notes, from the move shown or from the diagram"
-                                    onClick={() =>
-                                        addTextMoves(selected()!.following!)
-                                    }
+                                    onClick={addFollowing}
                                 >
                                     Add these moves
                                 </Button>
                             </div>
                         </Show>
-                        <div class="buttons">
-                            <Button
-                                class="is-small"
-                                disabled={!notesGame() || !quote()}
-                                title="Select text on a page first: it becomes a comment on the move shown"
-                                onClick={addQuote}
-                            >
-                                Add selected text as a comment
-                            </Button>
-                            <Button
-                                class="is-small"
-                                disabled={!notesGame() || !quote()}
-                                title="Select moves in the text first (e.g. 12...Nf6 13.Bd3): they are played from the move shown"
-                                onClick={() => {
-                                    if (addTextMoves(quote()!.text)) {
-                                        setQuote(undefined);
-                                        document
-                                            .getSelection()
-                                            ?.removeAllRanges();
+                        <Show when={notesGame()}>
+                            <div class="reader-selection">
+                                <Show
+                                    when={quote()}
+                                    fallback={
+                                        <p class="reader-hint">
+                                            Select text on a page to add it
+                                            here, as moves or as a comment.
+                                        </p>
                                     }
-                                }}
-                            >
-                                Add selected moves
-                            </Button>
-                        </div>
-                        <Show when={quote()}>
-                            <p class="reader-quote">“{quote()!.text}”</p>
+                                >
+                                    <p class="reader-quote">
+                                        Selected (p. {quote()!.page}): “
+                                        {quote()!.text}”
+                                    </p>
+                                    <p class="reader-selection-moves">
+                                        As moves:{" "}
+                                        {selectedLine() ? (
+                                            <strong>{selectedLine()}</strong>
+                                        ) : (
+                                            <em>
+                                                none that fit the move shown
+                                            </em>
+                                        )}
+                                    </p>
+                                    <div class="buttons">
+                                        <Button
+                                            class="is-small is-info"
+                                            disabled={!selectedLine()}
+                                            title="Play these moves from the move shown in the notes (or from the diagram)"
+                                            onClick={addSelectedMoves}
+                                        >
+                                            Add as moves
+                                        </Button>
+                                        <Button
+                                            class="is-small"
+                                            title="The text becomes a comment on the move shown in the notes"
+                                            onClick={addQuote}
+                                        >
+                                            Add as a comment
+                                        </Button>
+                                        <Button
+                                            class="is-small is-text"
+                                            onClick={clearQuote}
+                                        >
+                                            Clear
+                                        </Button>
+                                    </div>
+                                </Show>
+                            </div>
                         </Show>
                         <div class="buttons">
                             <Button

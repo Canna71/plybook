@@ -14,6 +14,19 @@ function addFromText(pgn: string, path: Path, text: string) {
     return { game: next, end, pgn: next.pgn() };
 }
 
+describe("GameModel.withStartingPosition", () => {
+    it("sets the position with the standard SetUp tag only", () => {
+        const start =
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        const pgn = makeGame(`[Setup "1"]\n${diagram}`)
+            .withStartingPosition(start)
+            .pgn();
+        expect(pgn).toContain(`[FEN "${start}"]`);
+        expect(pgn).toContain('[SetUp "1"]');
+        expect(pgn).not.toContain('[Setup "1"]');
+    });
+});
+
 describe("GameModel.applyMoves", () => {
     it("plays several moves in a row", () => {
         const { game } = addFromText(diagram, Path.root, "4.c3 Nf6 5.d4");

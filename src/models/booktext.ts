@@ -69,9 +69,20 @@ type Token = {
     number?: number;
     black?: boolean;
     san?: string;
+    /**
+     * A symbol we can't read stands right before the move ("Ìf3"): a piece drawn with a chess
+     * font, so not a pawn move whatever the letters say
+     */
+    unknownPiece?: boolean;
+    /** That symbol: a book draws each piece with the same one throughout */
+    glyph?: string;
     /** Words come between this and the token before: prose, not a line of moves */
     afterWords: boolean;
 };
+
+type Run = { sans: string[]; moves: Move[] };
+
+const PIECES = ["N", "B", "R", "Q", "K"];
 
 function tokens(text: string): Token[] {
     let t = normalizeChessText(text);
@@ -87,39 +98,111 @@ function tokens(text: string): Token[] {
         end = m.index + m[0].length;
         if (m[1])
             out.push({ number: +m[1], black: m[2] === "...", afterWords });
-        else out.push({ san: m[3], afterWords });
+        else {
+            const before = t[m.index - 1];
+            const unknownPiece =
+                before !== undefined &&
+                !/[\s\d.([\]{}"'“‘,;:!?+-]/.test(before) &&
+                !/^[KQRBNO]/.test(m[3]);
+            out.push({
+                san: m[3],
+                unknownPiece,
+                glyph: unknownPiece ? before : undefined,
+                afterWords,
+            });
+        }
     }
     return out;
+}
+
+/**
+ * Of several readings, the one that plays the most moves; when readings that play as many
+ * disagree, only the moves they share (no guessing between them).
+ */
+function agreed(runs: Run[]): Run {
+    const longest = Math.max(0, ...runs.map((r) => r.sans.length));
+    const top = runs.filter((r) => r.sans.length === longest);
+    if (!top.length) return { sans: [], moves: [] };
+    let n = 0;
+    while (n < longest && top.every((r) => r.sans[n] === top[0].sans[n])) n++;
+    return { sans: top[0].sans.slice(0, n), moves: top[0].moves.slice(0, n) };
+}
+
+/**
+ * The moves from token `i` on, played from `pos`. An unknown piece symbol is tried as each
+ * piece it could be (keeping each symbol to one piece, and each piece to one symbol), and
+ * the readings are compared with `agreed`.
+ */
+function runFrom(
+    list: Token[],
+    i: number,
+    pos: Position,
+    glyphs: Map<string, string>,
+    played: boolean,
+): Run {
+    const run: Run = { sans: [], moves: [] };
+    const p = pos.clone();
+    for (; i < list.length; i++) {
+        const t = list[i];
+        const anyPlayed = played || run.sans.length > 0;
+        if (anyPlayed && t.afterWords) break;
+        if (t.number !== undefined) {
+            if ((p.turn === "black") !== t.black && anyPlayed) break;
+            continue;
+        }
+        if (t.unknownPiece) {
+            const known = glyphs.get(t.glyph!);
+            const taken = new Set(glyphs.values());
+            const pieces = known
+                ? [known]
+                : PIECES.filter((x) => !taken.has(x));
+            const readings: Run[] = [];
+            for (const piece of pieces) {
+                const move = parseSan(p, piece + t.san);
+                if (!move) continue;
+                const q = p.clone();
+                const san = makeSanAndPlay(q, move);
+                const rest = runFrom(
+                    list,
+                    i + 1,
+                    q,
+                    new Map(glyphs).set(t.glyph!, piece),
+                    true,
+                );
+                readings.push({
+                    sans: [san, ...rest.sans],
+                    moves: [move, ...rest.moves],
+                });
+            }
+            const tail = agreed(readings);
+            return {
+                sans: [...run.sans, ...tail.sans],
+                moves: [...run.moves, ...tail.moves],
+            };
+        }
+        const move = parseSan(p, t.san!);
+        if (!move) break;
+        run.moves.push(move);
+        run.sans.push(makeSanAndPlay(p, move));
+    }
+    return run;
 }
 
 /**
  * The longest run of moves in `text` that can be played one after the other from `pos`,
  * as SAN. Move numbers must agree with whose move it is ("12..." before a White move ends a
  * run), words between two moves end it (prose: "the pawn on e5"), evaluation signs
- * between moves are skipped and bracketed side lines left out.
+ * between moves are skipped and bracketed side lines left out. A move after a symbol we can't
+ * read (a chess font's piece) is read as whichever piece makes the line play on longest, the
+ * same symbol always being the same piece; a piece symbol the PDF drops entirely can't be told
+ * from a pawn move.
  */
-export function movesFromText(
-    text: string,
-    pos: Position,
-): { sans: string[]; moves: Move[] } {
+export function movesFromText(text: string, pos: Position): Run {
     const list = tokens(text);
-    let best: { sans: string[]; moves: Move[] } = { sans: [], moves: [] };
+    let best: Run = { sans: [], moves: [] };
     for (let start = 0; start < list.length; start++) {
         if (!list[start].san) continue;
-        const p = pos.clone();
-        const run: { sans: string[]; moves: Move[] } = { sans: [], moves: [] };
-        for (let i = start; i < list.length; i++) {
-            const t = list[i];
-            if (i > start && t.afterWords) break;
-            if (t.number !== undefined) {
-                if ((p.turn === "black") !== t.black && run.sans.length) break;
-                continue;
-            }
-            const move = parseSan(p, t.san!);
-            if (!move) break;
-            run.moves.push(move);
-            run.sans.push(makeSanAndPlay(p, move));
-        }
+        const run = runFrom(list, start, pos, new Map(), false);
         if (run.sans.length > best.sans.length) best = run;
     }
     return best;
