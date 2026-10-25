@@ -7,6 +7,7 @@ mod db;
 mod engine;
 mod export;
 mod games;
+mod library;
 mod lichess_puzzles;
 mod migrate;
 mod net;
@@ -26,6 +27,7 @@ use db::*;
 use engine::*;
 use export::*;
 use games::*;
+use library::*;
 use lichess_puzzles::*;
 use net::*;
 use repertoire::*;
@@ -50,6 +52,8 @@ pub fn run() {
         .manage(EngineProcesses::default())
         .manage(ApprovedExecutables::default())
         .manage(Secrets::default())
+        .manage(DroppedFiles::default())
+        .on_window_event(library::on_window_event)
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .setup(|app| {
@@ -84,6 +88,7 @@ pub fn run() {
             engine_write,
             engine_kill,
             open_library_path,
+            library_import_dropped,
             online_fetch_games,
             online_lichess_game,
             gamedb_list,

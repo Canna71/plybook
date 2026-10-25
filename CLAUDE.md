@@ -82,7 +82,8 @@ src/
                            settings.ts (JSON settings in AppConfig, Solid store), puzzles.ts (score formula)
   engine/                  uciengine.ts (UCI protocol parser) over executableuci.ts (talks to Rust engine_* commands),
                            engineprofiles.ts (profiles, startEngine, humanProfile), lc0.ts (Maia move stats)
-  storage/                 fs.ts (Tauri fs wrappers: Library, settings, themes), db.ts (invoke() wrappers for db.rs)
+  storage/                 fs.ts (Tauri fs wrappers: Library, settings, themes), db.ts (invoke() wrappers for db.rs),
+                           library.ts (Library listings with dates, search walk, dropped-file import)
   theming/                 dynamic CSS loading for board/piece themes (src/assets/styles)
 src-tauri/src/
   lib.rs                   plugin setup, setup hook, command registration (generate_handler!)
@@ -92,6 +93,8 @@ src-tauri/src/
   lichess_puzzles.rs       Lichess puzzle CSV import/download, pick by theme and rating, puzzle Elo
   capture.rs               "Capture from screen" for the scanner (macOS screencapture -i, hides the window)
   repertoire.rs            repertoire files and their spaced-repetition cards
+  library.rs               files dropped on the window (paths kept from the window event) copied into
+                           a Library folder: the webview names only the folder, never a source path
   secrets.rs               API tokens in the OS keychain, never returned to the webview
   books.rs                 Polyglot opening books (binary search on disk) in <AppLocalData>/Books
   net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts

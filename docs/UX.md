@@ -286,3 +286,22 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
     height and clipped on the right; they now stay square (`align-self: flex-start`).
   - Not done: a progress bar across a session of puzzles (needs a notion of a session, left
     for P2.9 / Today).
+- 2026-10-25: step 6 approved by the owner and merged into `develop`. The dev driver gained
+  `move` (UCI moves played by clicking squares), so trainers can be checked end to end.
+- 2026-10-25, step 7a (the Library as a browser):
+  - The Library root listed only files, and the root holds only folders, so it said "No
+    Items". Now every folder lists its folders first, then games and PDF books, with an icon
+    and kind, modified date, when you last opened it (from `recent.files`) and size. Name or
+    Modified sorting (remembered: `library.sort`); names compare without extensions and with
+    numbers in order ("Game 2" before "Game 10", "04 copy" before "04 copy 2").
+  - A page header with the folder's name and breadcrumb; actions: search, New (study,
+    folder), Import… (several PGN or PDF files), and ⋯ (Show in Finder, Refresh).
+  - Search covers the whole Library (walked once a search starts), every word in any order,
+    with each result's folder under its name. Opening a folder ends the search.
+  - Row actions moved into a ⋯ menu (Open, Rename, Show in Finder for folders, Delete…).
+    Delete now asks first (it deleted at once before) and forgets the file in Today's list.
+  - Drag and drop from the Finder: Tauri gives the webview no file contents on a drop, and the
+    webview's fs scope must not widen, so Rust keeps the dropped paths (window event) and
+    `library_import_dropped(folder)` copies the PGN/PDF ones into the folder, numbering
+    duplicates. A dashed frame shows while files are dragged over the Library.
+  - Empty folder: an empty state saying what can be done.

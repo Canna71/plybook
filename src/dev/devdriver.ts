@@ -104,8 +104,11 @@ export function startDevDriver(navigate: (to: string) => void) {
         setTimeout(() => {
             if (cmd.click) {
                 const el = document.querySelector<HTMLElement>(cmd.click);
-                if (el) el.click();
-                else log.warn("nothing matches", cmd.click);
+                if (el) {
+                    // fields take "type" after a click, as when clicked by hand
+                    el.focus();
+                    el.click();
+                } else log.warn("nothing matches", cmd.click);
             }
             // text into the focused field, as if typed
             if (cmd.type !== undefined) {
