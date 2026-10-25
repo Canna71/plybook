@@ -27,6 +27,22 @@ describe("GameModel.withStartingPosition", () => {
     });
 });
 
+describe("GameModel.updateClock", () => {
+    it("writes the time left on the move, keeping its comment", () => {
+        const first = addFromText(diagram, Path.root, "4.c3 Nf6");
+        const c3 = first.game.pathAtMainlinePly(1);
+        const nf6 = first.game.pathAtMainlinePly(2);
+        let game = first.game.insertComment(c3, "A quiet move");
+        game = game.updateClock(c3, 295.5).updateClock(nf6, 3723);
+        const pgn = game.pgn();
+        expect(pgn).toContain("{ A quiet move [%clk 0:04:55.5] }");
+        expect(pgn).toContain("[%clk 1:02:03]");
+        const back = makeGame(pgn);
+        expect(back.mainline.map((p) => p.san)).toEqual(["c3", "Nf6"]);
+        expect(back.mainline[0].comments).toEqual(["A quiet move"]);
+    });
+});
+
 describe("GameModel.applyMoves", () => {
     it("plays several moves in a row", () => {
         const { game } = addFromText(diagram, Path.root, "4.c3 Nf6 5.d4");

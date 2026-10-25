@@ -72,7 +72,9 @@ import HintButtons from "./HintButtons";
 import SidebarTabs from "./SidebarTabs";
 import anylogger from "anylogger";
 import { showAlert } from "../common/Alert";
-import { gameEnd } from "../../models/play";
+import { gameEnd, timeoutEnd } from "../../models/play";
+import { pgnTimeControl } from "../../models/clock";
+import { ClockFace, GameClock, useGameClock } from "./useGameClock";
 const log = anylogger("gamemanager");
 
 export type GameManagerOptions = {
@@ -478,6 +480,11 @@ const GameManager: Component<GameManagerOptions> = ({
 
         const [appliedGame, newPath] = g.applyMoves(path, [move]);
         let newGameModel = appliedGame;
+        // with clocks: the mover's clock stops, its time left goes on the move
+        const left =
+            playingEngine && isPlayingOn() ? gameClock?.press() : undefined;
+        if (left !== undefined)
+            newGameModel = newGameModel.updateClock(newPath, left);
         // only games against the engine end with a result and an alert
         const end =
             playingEngine && isPlayingOn()
@@ -669,7 +676,42 @@ const GameManager: Component<GameManagerOptions> = ({
         playingEngine: () => !!playingEngine,
         hintMoveSignal: [hintMove, setHintMove],
         wrongPuzzleMove,
+        clockTimes: () => gameClock?.times(),
     });
+
+    // clocks for games against the engine (made here: they end the game on time)
+    const gameClock: GameClock | undefined = playingEngine
+        ? useGameClock({
+              playing: isPlayingOn,
+              turn,
+              onStart: (tc) => {
+                  const g = game();
+                  if (g)
+                      setGame(
+                          g.updateHeaders(
+                              new Map([["TimeControl", pgnTimeControl(tc)]]),
+                          ),
+                      );
+              },
+              onFlag: (color) => {
+                  const g = game();
+                  if (!g || !isPlayingOn()) return;
+                  const end = timeoutEnd(
+                      g.getPosition(currentPath() ?? Path.root),
+                      color,
+                      engineColor?.(),
+                  );
+                  batch(() => {
+                      setIsPlayingOn(false);
+                      setGame(
+                          g.updateHeaders(new Map([["Result", end.result]])),
+                      );
+                  });
+                  setTimeout(() => showAlert(end), 100);
+                  onGameFinished?.();
+              },
+          })
+        : undefined;
 
     // what players at the Maia net's level would play, during plain analysis only
     const { humanMoves, humanProfileName } = useHumanMoves(() =>
@@ -828,6 +870,12 @@ const GameManager: Component<GameManagerOptions> = ({
                                     viewMode() === ViewMode.PGN
                                 }
                             >
+                                <Show when={gameClock}>
+                                    <ClockFace
+                                        clock={gameClock!}
+                                        color={otherColor(orientation())}
+                                    />
+                                </Show>
                                 <Show when={!isPuzzleMode()}>
                                     <PlayerNameSelector
                                         color={"black"}
@@ -870,6 +918,12 @@ const GameManager: Component<GameManagerOptions> = ({
                                             blackPlayer,
                                             setBlackPlayer as Setter<string>,
                                         ]}
+                                    />
+                                </Show>
+                                <Show when={gameClock}>
+                                    <ClockFace
+                                        clock={gameClock!}
+                                        color={orientation()}
                                     />
                                 </Show>
                                 <Show

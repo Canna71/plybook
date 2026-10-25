@@ -86,6 +86,17 @@ describe("UCIEngine", () => {
         vi.runAllTimers();
         expect(sent).toContain("setoption name MultiPV value 3");
         expect(sent.at(-1)).toBe("go depth 18 movetime 1000");
+
+        // with clocks the engine manages its time: no depth or movetime
+        engine.analyzeFromFenOrMoves(fen, {
+            depth: 18,
+            movetime: 1000,
+            clock: { wtime: 300000, btime: 295000, winc: 3000, binc: 3000 },
+        });
+        vi.runAllTimers();
+        expect(sent.at(-1)).toBe(
+            "go wtime 300000 btime 295000 winc 3000 binc 3000",
+        );
         vi.useRealTimers();
     });
 

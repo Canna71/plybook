@@ -8,6 +8,8 @@ export interface AnalysisOptions {
     nodes?: number;
     /** Only search these moves (UCI) */
     searchmoves?: string[];
+    /** A game with clocks: the engine manages its own time (instead of depth and movetime) */
+    clock?: { wtime: number; btime: number; winc: number; binc: number };
 }
 
 // Types for the parsed information
