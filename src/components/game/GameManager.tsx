@@ -300,7 +300,7 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const turn = createMemo(() => position().turn as Color);
 
-    // turned round by the "flip" shortcut
+    // turned round by the "flip" shortcut where the PGN can't record it (playing, puzzles)
     const [flipped, setFlipped] = createSignal(false);
     const baseOrientation = (): Color => {
         const engCol = engineColor?.();
@@ -823,7 +823,17 @@ const GameManager: Component<GameManagerOptions> = ({
         game,
         currentPath,
         setCurrentPath,
-        flip: () => setFlipped((f) => !f),
+        // as the Flip Board button when editing (saved in the PGN); else the view only
+        flip: () => {
+            const g = game();
+            if (g && !playingEngine && isEditable() && !isPuzzleMode())
+                setGame(
+                    g.updateHeaders(
+                        new Map([["Orientation", otherColor(orientation())]]),
+                    ),
+                );
+            else setFlipped((f) => !f);
+        },
         engineAnalysisOn: engineAnalysisOnSignal,
         threatOn: threatOnSignal,
         playBestMove: () => {

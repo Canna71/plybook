@@ -34,6 +34,7 @@
     "chessops": "^0.14.1",
     "dompurify": "3.2.4",
     "es-toolkit": "^1.27.0",
+    "gifenc": "1.0.3",
     "loadcss": "^0.0.2",
     "onnxruntime-web": "1.26.0",
     "pdfjs-dist": "6.4.299",

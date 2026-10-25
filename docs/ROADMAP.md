@@ -311,7 +311,8 @@ How this file is used:
   tab (from the review's or the PGN's `[%eval]`).
 - [x] **O.2 Keyboard-driven analysis** (`feature/keyboard`; owner review pending): ← → (or
   K J) previous/next move, ↑/Home start, ↓/End end of the line shown, Shift+↑/↓ previous/next
-  variation, F flip the board (new: there was no flip before), L engine on/off, X threat,
+  variation, F flip the board (as the Flip Board button, saved in the PGN's `Orientation`;
+  only the view while playing or in a puzzle), L engine on/off, X threat,
   Space play the engine's best move, ? the shortcuts dialog. Keys typed in text fields and
   keys with Cmd/Ctrl/Alt are left alone; moving through the game is off while playing the
   engine or solving a puzzle. In the PDF reader the notes take keys only after a click inside
@@ -327,7 +328,15 @@ How this file is used:
   `[%clk]` on every move, so History keeps the times. `models/clock.ts` (tested),
   `components/game/useGameClock.tsx`. Not yet: pausing, different times per side, the
   playing strength's own time limits (Maia/single-node profiles answer instantly anyway).
-- [ ] **O.5 Board image / GIF export.**
+- [x] **O.5 Board image / GIF export** (`feature/board-export`; owner review pending): three
+  buttons next to Flip Board: copy the board as an image, save it as a PNG (800 px), save the
+  line shown as an animated GIF (400 px, a move a second, from the start through the move
+  shown and on to the end of its line). Drawn on a canvas with the board and piece theme in
+  use (read from a hidden board), last move highlighted. Files are written by a Rust command
+  (`export.rs`, `export_save`) that opens the save dialog itself and takes the bytes raw, so
+  the webview's fs scope stays as it is. `gifenc` (MIT) encodes GIFs. Pure parts tested
+  (`models/boardframes.ts`, `export.rs`). Not yet: arrows/circles and coordinates on the
+  image, choosing the GIF's size and speed.
 - [ ] **O.6 Backups** of Library and database; app auto-update.
 - [ ] **O.7 CI**: Rust `cargo check`/`clippy`. (Vitest runs in CI since P1.2.)
 
