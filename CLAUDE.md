@@ -153,7 +153,8 @@ User data locations (resolved by Tauri from the bundle identifier):
   single-threaded) and pdf.js's image decoders; `font-src data:` lets pdf.js load PDF fonts
   (chess diagrams are often drawn with chess fonts). pdf.js's worker is a bundled asset; its
   decoders and standard fonts are served from `/pdfjs`, which `tools/copy-pdfjs-assets.mjs`
-  fills from node_modules on every `pnpm dev` / `pnpm build` (git-ignored).
+  fills from node_modules on every `pnpm dev` / `pnpm build` (git-ignored). `frame-src` allows
+  only `https://www.youtube-nocookie.com`, for the video player (`components/video`).
 - The CSP is enforced only in built apps, not under `tauri dev`: check styling changes in a
   build. Board and piece themes are injected `<style>` elements with `data:` images, and
   solid-toast injects its styles too, hence `style-src 'unsafe-inline'` and `img-src data:`;
@@ -185,6 +186,8 @@ Read it before starting feature work, and update an item's status in the same br
 `docs/SCANNING.md` explains position recognition, book scanning and the PDF reader (`src/scan`,
 `BookScanView`, `PdfReader`): the pipeline, why each step exists, how to test it, and known limits.
 Read it before touching recognition, and keep it current.
+`docs/TESTING.md` lists what the owner still has to try by hand (things automated checks can't
+confirm). Add steps there for every feature or fix that needs the running app, in its branch.
 
 ## Claude Code setup in this repo
 

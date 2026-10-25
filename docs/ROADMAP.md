@@ -285,8 +285,16 @@ How this file is used:
 
 ## Integrations
 
-- [ ] **I.1 YouTube**: attach a video with a timestamp to a position (PGN comment), play it in an
-  embedded player. Needs a narrow CSP `frame-src` for youtube-nocookie.com.
+- [x] **I.1 YouTube** (`feature/youtube`; owner review pending): attach a video with a timestamp
+  to a position (PGN comment), play it in an embedded player. The YouTube button in the editor
+  toolbar takes a link and a start time and adds `https://youtu.be/ID?t=123` as a comment on
+  the move shown (a plain link, readable in any PGN tool). Any YouTube link in a comment, also
+  in imported PGNs, shows as a "▶ 2:03" chip; a click plays it in a floating player
+  (youtube-nocookie.com embed; CSP `frame-src https://www.youtube-nocookie.com` only) that
+  stays open while you move through the game. "Open in browser" (Rust `open_youtube`, which
+  builds the URL from a checked video id) is the fallback: YouTube may refuse to play embedded
+  in an app not served over http(s) (macOS Tauri's `tauri://`). `models/youtube.ts` (tested),
+  `components/video/`.
 - [-] **I.2 Chessable**: no public API; courses only export to chess.com. Covered by P3.6 with
   PGNs the user owns.
 - [ ] **I.3 "Open in ReChess" from the browser** (decided 2026-10-24: later): register a

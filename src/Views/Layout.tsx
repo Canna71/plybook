@@ -12,6 +12,7 @@ import { parsePasted } from "../paste/pasted";
 import { makeErrorToast } from "../components/common/Toast";
 import "./Layout.scss";
 import { VDivider } from "../components/common/VDivider";
+import { VideoPlayer } from "../components/video/VideoPlayer";
 import { useSplitter } from "../components/common/utils";
 import { getSettingValue, setSettingValue } from "../models/settings";
 
@@ -76,6 +77,7 @@ const Layout: ParentComponent = (props) => {
             <VDivider ref={divider} />
 
             <main class="main-content">{props.children}</main>
+            <VideoPlayer />
         </main>
     );
 };
