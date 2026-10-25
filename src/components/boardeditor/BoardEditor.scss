@@ -1,28 +1,120 @@
+// piece trays above and below the board: one square high, the board's width
 .pieces-toolbar {
     width: 100%;
     display: flex;
     justify-content: center;
-    // make the height of the toolbar one eigth of the width of the board
-    aspect-ratio: 8 / 1; /* Width to height ratio */
-    background-color: #f0f0f06e;
+    aspect-ratio: 8 / 1;
+    background-color: var(--rc-surface-2);
+    border-radius: var(--rc-radius-small);
 
     piece {
-        cursor: pointer;
+        cursor: grab;
         pointer-events: auto;
-        aspect-ratio: 1 / 1; /* Width to height ratio */
+        aspect-ratio: 1 / 1;
         height: 100%;
         position: relative;
         display: inline-block;
     }
 }
 
+// the editor (BoardEditor.tsx): board and trays on the left, settings on the right; one
+// column when the editor is narrow (inside the analysis board column, say)
 .board-editor-container {
-    .board-editor-toolbar {
+    // sized by its parent: the board is sized from it, in width and height. A size
+    // container has no width of its own: in a centring parent it would shrink to nothing
+    container-type: size;
+    width: 100%;
+    align-self: stretch;
+    height: 100%;
+    min-height: 0;
+    overflow: auto;
+
+    .board-editor-layout {
         display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
+        flex-direction: column;
+        gap: var(--rc-space-4);
+        min-height: 0;
     }
 
-}
+    .board-editor-board {
+        // one column: the full width
+        width: 100cqw;
+        flex: none;
 
+        .board-editor-stack {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+    }
+
+    .board-editor-panel {
+        display: flex;
+        flex-direction: column;
+        gap: var(--rc-space-1);
+
+        .label {
+            margin-bottom: var(--rc-space-1);
+            color: var(--rc-text-muted);
+        }
+
+        .field {
+            margin-bottom: var(--rc-space-2);
+        }
+    }
+
+    .board-editor-help {
+        color: var(--rc-text-muted);
+        font-size: var(--rc-text-sm);
+        margin-bottom: var(--rc-space-2);
+    }
+
+    .board-editor-castling {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        justify-content: start;
+        gap: var(--rc-space-1) var(--rc-space-4);
+        font-size: var(--rc-text-sm);
+
+        span {
+            color: var(--rc-text-muted);
+        }
+    }
+
+    .board-editor-fen {
+        display: flex;
+        gap: var(--rc-space-1);
+
+        .input {
+            font-family: var(--bulma-family-code);
+            font-size: var(--rc-text-xs);
+        }
+    }
+
+    .board-editor-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--rc-space-2);
+        padding-top: var(--rc-space-3);
+        border-top: 1px solid var(--rc-border);
+    }
+
+    // two columns: the board as large as the height allows (the trays add a quarter of its
+    // height) and the width left by the panel, the panel right beside it
+    @container (min-width: 760px) {
+        .board-editor-layout {
+            flex-direction: row;
+            height: 100%;
+        }
+
+        .board-editor-board {
+            width: min(calc(100cqw - 300px - var(--rc-space-4)), calc(100cqh / 1.25));
+        }
+
+        .board-editor-panel {
+            flex: 0 0 300px;
+            overflow: auto;
+        }
+    }
+}

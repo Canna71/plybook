@@ -59,6 +59,17 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       Guess the move still use Stockfish; playing uses Maia. Choosing another full-strength
       engine in the "Analysis" column switches analysis to it.
 
+## UX overhaul, step 5: board editor and Scan (branch feature/ux-overhaul)
+
+- [ ] **Board editor**: drag pieces from the trays and off the board; side to move, castling,
+      en passant and the FEN stay in step; Flip swaps the trays too; Analyze / Play / Find
+      open the position.
+- [ ] **Scan**: capture or paste a board: the picture shows under the settings, next to the
+      board; fix a square and Analyze.
+- [ ] **Change the starting position** (analysis → More): the editor fits the board column;
+      Accept and Cancel work.
+- [ ] **Small window**: the editor drops to one column and scrolls.
+
 ## PDF reader (P4.4)
 
 - [ ] **Text below the diagram** (P4.4e, needs work): "Text below the diagram: …" shows the

@@ -2,15 +2,15 @@ import { Chessboard } from "../common/chessboard";
 import { Config } from "chessground/config";
 import {
     Accessor,
-    Component,
     createEffect,
     createSignal,
+    ParentComponent,
     Setter,
+    Show,
 } from "solid-js";
 import { Api } from "chessground/api";
 import { PiecesToolbar } from "./PiecesToolbar";
 import { Piece, Role } from "chessground/types";
-import ToggleSwitch from "../common/ToggleSwitch";
 import { INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
 import { makeSquare, parseSquare, squareFromCoords } from "chessops/util";
 import Select from "../common/Select";
@@ -19,8 +19,12 @@ import { getEnPassantSquares } from "../common/utils";
 
 import "./BoardEditor.scss";
 import Button from "../common/Button";
-import { IconCopy, IconRestore } from "@tabler/icons-solidjs";
-import Collapsible from "../common/Collapsible";
+import {
+    IconChess,
+    IconCopy,
+    IconRestore,
+    IconSwitchVertical,
+} from "@tabler/icons-solidjs";
 import { makeToast } from "../common/Toast";
 import anylogger from "anylogger";
 const log = anylogger("boardeditor");
@@ -30,7 +34,8 @@ export type BoardEditorProps = {
     setFen: Setter<string | undefined>;
 };
 
-const BoardEditor: Component<BoardEditorProps> = (props) => {
+/** The children are the screen's own actions, shown under the settings. */
+const BoardEditor: ParentComponent<BoardEditorProps> = (props) => {
     const [selectedPiece, _setSelectedPiece] = createSignal<Piece | null>(null);
     const [deleteMode, _setDeleteMode] = createSignal(false);
     const [api, setApi] = createSignal<Api | undefined>(undefined);
@@ -252,82 +257,164 @@ const BoardEditor: Component<BoardEditorProps> = (props) => {
     };
 
     return (
+        // the board with its piece trays on the left, the settings on the right (one column
+        // when narrow: a container query in BoardEditor.scss)
         <div class="board-editor-container">
-            <div class="is-flex is-flex-direction-row is-align-items-center is-gap-1 is-flex-wrap-wrap">
-                <div class="is-flex is-flex-direction-row is-align-items-center is-gap-1">
-                    <ToggleSwitch
-                        toggleSignal={[whitesTurn, setWhitesTurn]}
-                        labels={["Black's turn", "White's turn"]}
-                    />
-
-                    <ToggleSwitch
-                        toggleSignal={[flip, setFlip]}
-                        labels={["A1⇄H8", "H8⇄A1"]}
-                    />
-                </div>
-                <div class="is-flex is-flex-direction-row is-align-items-center is-gap-1">
-                    <Button onClick={onClear}>
-                        <IconRestore />
-                        Clear
-                    </Button>
-                    <Button onClick={onStartingPosition}>
-                        Starting Position
-                    </Button>
-                </div>
-            </div>
-
-            <Collapsible title="Advanced settings" class="mt-4">
-                <label class="label">Castling rights:</label>
-                <div class="fixed-grid mb-4">
-                    <div class="grid">
-                        <ToggleSwitch
-                            toggleSignal={[blackQueenside, setBlackQueenside]}
-                            labels={["Black O-O-O", "Black O-O-O"]}
+            <div class="board-editor-layout">
+                <div class="board-editor-board">
+                    <div class="board-editor-stack">
+                        <PiecesToolbar
+                            color={flip() ? "white" : "black"}
+                            onDrop={onDrop}
                         />
-                        <ToggleSwitch
-                            toggleSignal={[blackKingside, setBlackKingside]}
-                            labels={["Black O-O", "Black O-O"]}
+                        <Chessboard
+                            onChessboardClick={onChessboardClick}
+                            setApi={setApi}
+                            config={config}
                         />
-                        <ToggleSwitch
-                            toggleSignal={[whiteQueenside, setWhiteQueenside]}
-                            labels={["White O-O-O", "White O-O-O"]}
-                        />
-                        <ToggleSwitch
-                            toggleSignal={[whiteKingside, setWhiteKingside]}
-                            labels={["White O-O", "White O-O"]}
+                        <PiecesToolbar
+                            color={flip() ? "black" : "white"}
+                            onDrop={onDrop}
                         />
                     </div>
                 </div>
-                <div class="field">
-                    <div class="is-flex is-flex-direction-row is-align-items-baseline">
-                        <label class="label">En passant:</label>
+
+                <div class="board-editor-panel">
+                    <p class="board-editor-help">
+                        Drag pieces from the trays onto the board, between
+                        squares, or off the board to remove them.
+                    </p>
+
+                    <div class="field">
+                        <label class="label is-small">To move</label>
+                        <div class="buttons has-addons">
+                            <Button
+                                class={
+                                    whitesTurn() ? "is-selected is-primary" : ""
+                                }
+                                onClick={() => setWhitesTurn(true)}
+                            >
+                                White
+                            </Button>
+                            <Button
+                                class={
+                                    !whitesTurn()
+                                        ? "is-selected is-primary"
+                                        : ""
+                                }
+                                onClick={() => setWhitesTurn(false)}
+                            >
+                                Black
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label is-small">Board</label>
+                        <div class="buttons">
+                            <Button
+                                onClick={() => setFlip((f) => !f)}
+                                title="Turn the board round"
+                            >
+                                <IconSwitchVertical />
+                                Flip
+                            </Button>
+                            <Button onClick={onStartingPosition}>
+                                <IconChess />
+                                Starting position
+                            </Button>
+                            <Button onClick={onClear}>
+                                <IconRestore />
+                                Clear
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label is-small">Castling</label>
+                        <div class="board-editor-castling">
+                            <span>White</span>
+                            <label class="checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={whiteKingside()}
+                                    onChange={(e) =>
+                                        setWhiteKingside(
+                                            e.currentTarget.checked,
+                                        )
+                                    }
+                                />{" "}
+                                O-O
+                            </label>
+                            <label class="checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={whiteQueenside()}
+                                    onChange={(e) =>
+                                        setWhiteQueenside(
+                                            e.currentTarget.checked,
+                                        )
+                                    }
+                                />{" "}
+                                O-O-O
+                            </label>
+                            <span>Black</span>
+                            <label class="checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={blackKingside()}
+                                    onChange={(e) =>
+                                        setBlackKingside(
+                                            e.currentTarget.checked,
+                                        )
+                                    }
+                                />{" "}
+                                O-O
+                            </label>
+                            <label class="checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={blackQueenside()}
+                                    onChange={(e) =>
+                                        setBlackQueenside(
+                                            e.currentTarget.checked,
+                                        )
+                                    }
+                                />{" "}
+                                O-O-O
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label is-small">En passant</label>
                         <Select
                             options={availableEnPassant}
                             selectedValue={enPassant}
                             setSelectedValue={setEnPassant}
                         />
                     </div>
-                </div>
-            </Collapsible>
 
-            <PiecesToolbar color="black" onDrop={onDrop} />
-            <Chessboard
-                onChessboardClick={onChessboardClick}
-                setApi={setApi}
-                config={config}
-            />
-            <PiecesToolbar color="white" onDrop={onDrop} />
-            <div class="board-editor-toolbar">
-                <input
-                    class="input"
-                    type="text"
-                    value={props.fen() ?? ""}
-                    onChange={onFenChange}
-                    onClick={onClick}
-                />
-                <Button onClick={onCopy}>
-                    <IconCopy />
-                </Button>
+                    <div class="field">
+                        <label class="label is-small">FEN</label>
+                        <div class="board-editor-fen">
+                            <input
+                                class="input"
+                                type="text"
+                                value={props.fen() ?? ""}
+                                onChange={onFenChange}
+                                onClick={onClick}
+                            />
+                            <Button onClick={onCopy} title="Copy the FEN">
+                                <IconCopy />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <Show when={props.children}>
+                        <div class="board-editor-actions">{props.children}</div>
+                    </Show>
+                </div>
             </div>
         </div>
     );
