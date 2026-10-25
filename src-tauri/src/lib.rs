@@ -4,6 +4,7 @@ mod books;
 mod capture;
 mod db;
 mod engine;
+mod export;
 mod games;
 mod lichess_puzzles;
 mod migrate;
@@ -21,6 +22,7 @@ use books::*;
 use capture::*;
 use db::*;
 use engine::*;
+use export::*;
 use games::*;
 use lichess_puzzles::*;
 use net::*;
@@ -108,7 +110,8 @@ pub fn run() {
             book_list,
             book_import,
             book_remove,
-            book_moves
+            book_moves,
+            export_save
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

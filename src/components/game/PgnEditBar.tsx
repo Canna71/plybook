@@ -1,4 +1,11 @@
-import { Component, useContext, batch, Show, Accessor } from "solid-js";
+import {
+    Component,
+    useContext,
+    batch,
+    Show,
+    Accessor,
+    createSignal,
+} from "solid-js";
 import Button from "../common/Button";
 import { GameContext } from "./GameContext";
 import { updateGameFromPgnString, useFen } from "../common/utils";
@@ -6,10 +13,18 @@ import { StartingPositionIcon } from "../common/Icons";
 import {
     IconBrackets,
     IconCheck,
+    IconCopy,
+    IconGif,
+    IconPhotoDown,
     IconPlayerPlayFilled,
     IconSwitchVertical,
     IconTextPlus,
 } from "@tabler/icons-solidjs";
+import { boardGif, boardPng, copyPng } from "../../export/boardexport";
+import { frameAt, lineFrames } from "../../models/boardframes";
+import { Path } from "../../models/pgn";
+import { saveExport } from "../../storage/exports";
+import { makeErrorToast, makeToast } from "../common/Toast";
 import { useNavigate } from "@solidjs/router";
 
 export enum ViewMode {
@@ -74,6 +89,42 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
         });
     };
 
+    // #region export: the board as an image, the line as a GIF
+    const [exporting, setExporting] = createSignal(false);
+    const exportName = () => game()?.title() || "board";
+    const exportTask = async (task: () => Promise<string | undefined>) => {
+        setExporting(true);
+        try {
+            const done = await task();
+            if (done) makeToast(done);
+        } catch (err) {
+            makeErrorToast(`Export failed: ${String(err)}`);
+        } finally {
+            setExporting(false);
+        }
+    };
+    const pngNow = () =>
+        boardPng(frameAt(game()!, currentPath() ?? Path.root), orientation());
+    const onCopyImage = () =>
+        exportTask(async () => {
+            await copyPng(await pngNow());
+            return "Board image copied";
+        });
+    const onSaveImage = () =>
+        exportTask(async () => {
+            const bytes = new Uint8Array(await (await pngNow()).arrayBuffer());
+            const path = await saveExport(bytes, "png", exportName());
+            return path && `Saved ${path}`;
+        });
+    const onSaveGif = () =>
+        exportTask(async () => {
+            const frames = lineFrames(game()!, currentPath() ?? Path.root);
+            const bytes = await boardGif(frames, orientation());
+            const path = await saveExport(bytes, "gif", exportName());
+            return path && `Saved ${path}`;
+        });
+    // #endregion
+
     const onEditDescription = () => {
         setIsEditingDescription(true);
     };
@@ -103,8 +154,29 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
     return (
         <div class="buttons-bar are-small">
             <Show when={props.isEditable()}>
-                <Button onClick={onFLipBoard} title="Flip Board">
+                <Button onClick={onFLipBoard} title="Flip Board (F)">
                     <IconSwitchVertical />
+                </Button>
+                <Button
+                    onClick={onCopyImage}
+                    disabled={exporting()}
+                    title="Copy the board as an image"
+                >
+                    <IconCopy />
+                </Button>
+                <Button
+                    onClick={onSaveImage}
+                    disabled={exporting()}
+                    title="Save the board as a PNG image…"
+                >
+                    <IconPhotoDown />
+                </Button>
+                <Button
+                    onClick={onSaveGif}
+                    disabled={exporting()}
+                    title="Save the line shown as an animated GIF…"
+                >
+                    <IconGif />
                 </Button>
 
                 <Show when={isEditingDescription()}>

@@ -89,6 +89,7 @@ src-tauri/src/
   books.rs                 Polyglot opening books (binary search on disk) in <AppLocalData>/Books
   net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts
   engine.rs                engine process management (engine_list/spawn/write/kill) + open_library_path
+  export.rs                export_save: save dialog + write for exported images/GIFs (raw bytes body)
   migrate.rs               one-time move of user data from the old "rechess" identifier folders
 src-tauri/capabilities/    webview permissions (default.json, desktop.json)
 ```
