@@ -195,11 +195,14 @@ confirm). Add steps there for every feature or fix that needs the running app, i
 ## Looking at the running app
 
 For UI work, Claude can see the app: with `pnpm tauri dev` running, `tools/shot.sh <name>
-['{"go":"/analysis","click":"css","key":"ArrowRight","theme":"light"}']` sends a command to the
+['{"go":"/analysis","click":"css","key":"ArrowRight","theme":"light","move":"e2e4 g1f3"}']`
+sends a command to the
 dev-only driver (`src/dev/devdriver.ts`, which polls `public/dev-driver.json`; never in
 production builds) and captures the app window to `$SHOTS/<name>.png`. It needs the Screen
 Recording permission for the terminal/editor running it; `tools/winid` is built from
-`tools/winid.swift` on first use. Dev builds have no CSP, so check CSP-sensitive things in a
+`tools/winid.swift` on first use. `move` plays UCI moves on the largest board by clicking
+their squares (dev builds set chessground's `trustAllEvents` for this), so puzzles, trainers
+and play go through their normal move handling. Dev builds have no CSP, so check CSP-sensitive things in a
 built app as well. The webview's console errors and warnings appear in the `pnpm tauri dev`
 terminal as `[webview] …` (`tools/vite-devlog.ts`, dev server only).
 
