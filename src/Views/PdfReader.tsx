@@ -620,28 +620,30 @@ const PdfReader: Component = () => {
                                 Page {selected()!.page}, diagram{" "}
                                 {selected()!.index}
                             </strong>
-                            <Show when={!hasNotes(selected()!)}>
-                                <div class="select is-small">
-                                    <select
-                                        title="Whose move it is in the diagram"
-                                        value={selected()!.turn}
-                                        onChange={(e) =>
-                                            setSelected({
-                                                ...selected()!,
-                                                turn: e.currentTarget
-                                                    .value as Color,
-                                            })
-                                        }
-                                    >
-                                        <option value="white">
-                                            White to move
-                                        </option>
-                                        <option value="black">
-                                            Black to move
-                                        </option>
-                                    </select>
-                                </div>
-                            </Show>
+                            {/* hidden, not removed, once there are notes: the board below must not move */}
+                            <div
+                                class="select is-small"
+                                style={{
+                                    visibility: hasNotes(selected()!)
+                                        ? "hidden"
+                                        : "visible",
+                                }}
+                            >
+                                <select
+                                    title="Whose move it is in the diagram"
+                                    value={selected()!.turn}
+                                    onChange={(e) =>
+                                        setSelected({
+                                            ...selected()!,
+                                            turn: e.currentTarget
+                                                .value as Color,
+                                        })
+                                    }
+                                >
+                                    <option value="white">White to move</option>
+                                    <option value="black">Black to move</option>
+                                </select>
+                            </div>
                             <button
                                 class="delete"
                                 title="Close the notes"
