@@ -350,7 +350,10 @@ How this file is used:
   (`before-restore-*.zip`), replaces the tables, and copies the files over (files not in the
   backup are kept). Zip entries are confined to the known folders (no path escapes).
   `src-tauri/src/backup.rs` with tests, `components/settings/Backups.tsx`.
-- [ ] **O.7 CI**: Rust `cargo check`/`clippy`. (Vitest runs in CI since P1.2.)
+- [x] **O.7 CI** (`feature/rust-ci`): a `rust` job on macOS and Windows runs `cargo fmt
+  --check`, `cargo clippy --all-targets -- -D warnings` and `cargo test` (cached with
+  rust-cache; the frontend is built first because Tauri embeds `dist`). Checked locally on
+  macOS; Windows is confirmed by the first CI run. (Vitest runs in CI since P1.2.)
 
 ## Known refactor targets (do them when touching the code)
 

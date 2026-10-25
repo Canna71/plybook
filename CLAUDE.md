@@ -26,7 +26,8 @@ pnpm build:mac            # signed macOS .app; needs APPLE_SIGNING_IDENTITY (see
                           # builds lose macOS permissions (Screen Recording) on every rebuild
 pnpm tauri icon ./tools/Logo.png   # regenerate app icons
 
-# Rust: NOT checked by CI. Run these locally whenever src-tauri/ changes.
+# Rust: CI runs fmt --check, clippy -D warnings and tests (macOS and Windows); run them
+# locally whenever src-tauri/ changes.
 cd src-tauri && cargo check
 cd src-tauri && cargo clippy
 cd src-tauri && cargo fmt --check
@@ -37,11 +38,11 @@ Rust 1.97 or newer is required (`rust-version` in Cargo.toml, for pgn-reader 0.2
 Building the Rust side needs a C compiler for the bundled SQLite: the Xcode command line tools on
 macOS, the MSVC build tools on Windows. (No LLVM/libclang since SurrealDB was removed.)
 
-Unit tests use **Vitest** (`vitest.config.ts`, Node environment, no Solid plugin) and cover pure
-modules: `src/models/review.test.ts`, `src/models/pgn.test.ts`. Keep tested modules free of Tauri
-and settings imports (`settings.ts` touches `window` on import). Rust has a few `cargo test` unit
-tests (`net.rs`). Otherwise verify by typecheck, lint, build, `cargo check`, and by running the app.
-Next candidates for tests: `src/models/GameModel.ts`, `src/engine/uciengine.ts`.
+Unit tests use **Vitest** (`vitest.config.ts`, Node environment, no Solid plugin) and cover the
+pure modules (`src/models/*.test.ts`, `src/engine/*.test.ts`, `src/scan/*.test.ts`, ...; the
+scanner's run the real ONNX model). Keep tested modules free of Tauri and settings imports
+(`settings.ts` touches `window` on import). Rust modules have `cargo test` unit tests (temp
+folders and in-memory stores, no network or keychain). UI behaviour is verified by running the app.
 
 Before pushing: `pnpm typecheck && pnpm lint && pnpm test && pnpm build`, plus `cargo check` if
 Rust changed.
@@ -51,8 +52,11 @@ Rust changed.
 
 - **`develop` is the working branch.** Branch from `develop` and open PRs against `develop`.
   `main` is behind and only receives merges from `develop`.
-- CI (`.github/workflows/ci.yml`) runs on every PR and on pushes to `main`: typecheck, lint, test, build
-  on `macos-latest` and `windows-latest`. It does not build or check Rust.
+- CI (`.github/workflows/ci.yml`) runs on every PR and on pushes to `main`, on `macos-latest`
+  and `windows-latest`: typecheck, lint, test, build (frontend job), and `cargo fmt --check`,
+  `cargo clippy --all-targets -- -D warnings`, `cargo test` (rust job, which builds the
+  frontend first because Tauri embeds `dist`). A clippy warning fails CI, also one that only
+  shows on Windows (e.g. an import used only in a macOS `#[cfg]` branch).
 - Feature branches are named `feature/<topic>`. Commit messages loosely follow Conventional
   Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `style:`, `build:`).
 - The prettier reformat commit is listed in `.git-blame-ignore-revs`
