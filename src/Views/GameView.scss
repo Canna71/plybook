@@ -12,6 +12,19 @@
 
     .game-name {
         flex: 1;
+    }
 
+    // a labelled setting of the file (repertoire, puzzle priority)
+    .header-field {
+        display: flex;
+        align-items: center;
+        gap: var(--rc-space-1);
+    }
+
+    .header-field-label {
+        font-size: var(--rc-text-xs);
+        color: var(--rc-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
 }

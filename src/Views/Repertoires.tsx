@@ -42,7 +42,7 @@ const Repertoires: Component = () => {
             <PageHeader
                 title="Repertoires"
                 description={
-                    'A repertoire is a PGN file in your Library with your lines and the opponent\'s replies as variations. Open the file and choose "Repertoire for White" or "for Black" in its toolbar; then train it here. Moves come back on a spaced-repetition schedule.'
+                    'A repertoire is a PGN file in your Library with your lines and the opponent\'s replies as variations. Open the file and set "Repertoire" to "For White" or "For Black" in its header; then train it here. Moves come back on a spaced-repetition schedule.'
                 }
             />
             <table class="table is-fullwidth is-narrow">

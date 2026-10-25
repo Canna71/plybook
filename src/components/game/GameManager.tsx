@@ -69,12 +69,19 @@ import { Config } from "chessground/config";
 import Button from "../common/Button";
 import { IconCircleXFilled } from "@tabler/icons-solidjs";
 import HintButtons from "./HintButtons";
-import SidebarTabs from "./SidebarTabs";
+import PanelSection, { setSectionOpen } from "./PanelSection";
+import ReviewPanel from "./ReviewPanel";
+import Moves from "./Moves";
+import Explorer from "./Explorer";
 import anylogger from "anylogger";
 import { showAlert } from "../common/Alert";
 import { gameEnd, timeoutEnd } from "../../models/play";
 import { pgnTimeControl } from "../../models/clock";
 import { ClockFace, GameClock, useGameClock } from "./useGameClock";
+import { EvalBar } from "./EvalBar";
+
+/** The board / divider / panel columns, as the divider leaves them */
+const WORKSPACE_COLUMNS = "layout.workspace.columns";
 const log = anylogger("gamemanager");
 
 export type GameManagerOptions = {
@@ -205,8 +212,9 @@ const GameManager: Component<GameManagerOptions> = ({
     // eslint-disable-next-line prefer-const -- assigned by Solid via ref={...}
     let chessBoardDiv: HTMLDivElement | null = null;
 
+    // dragging the divider sizes the panel; the board takes the rest
     const divider = useSplitter((layout) => {
-        setSettingValue("layout.playing.columnsTemplate", layout);
+        setSettingValue(WORKSPACE_COLUMNS, layout);
     });
     // #endregion
 
@@ -802,6 +810,28 @@ const GameManager: Component<GameManagerOptions> = ({
         },
     });
 
+    // #region eval bar: the engine's evaluation of the position shown, else one saved in the
+    // PGN ([%eval] from a review); not while playing the engine or solving a puzzle
+    const shownEvaluation = () => {
+        const f = fen();
+        if (threatFen()) return undefined;
+        return (
+            evaluationAt(f) ??
+            game()?.dataAt(currentPath() ?? Path.root)?.evaluation
+        );
+    };
+    const showEvalBar = () =>
+        !compact &&
+        !playingEngine &&
+        !isPuzzleMode() &&
+        (engineAnalysisOnSignal[0]() || !!shownEvaluation());
+    // #endregion
+
+    // a review shows its progress in its section: open it
+    createEffect(() => {
+        if (isReviewing()) untrack(() => setSectionOpen("review", true));
+    });
+
     // #region keyboard
 
     let container: HTMLDivElement | undefined;
@@ -866,76 +896,98 @@ const GameManager: Component<GameManagerOptions> = ({
                             compact
                                 ? undefined
                                 : {
+                                      // the board takes what the panel leaves
                                       "grid-template-columns": getSettingValue(
-                                          "layout.playing.columnsTemplate",
-                                          "400px 5px 1fr",
+                                          WORKSPACE_COLUMNS,
+                                          "1fr 5px 440px",
                                       ),
                                   }
                         }
                     >
-                        <div class="pgnviewer-content">
+                        <div
+                            class="pgnviewer-content"
+                            classList={{
+                                // the board fits the column's width and height
+                                "board-fit": !compact,
+                                "with-eval-bar": showEvalBar(),
+                            }}
+                        >
                             <Show
                                 when={
                                     viewMode() === ViewMode.MOVES ||
                                     viewMode() === ViewMode.PGN
                                 }
                             >
-                                <Show when={gameClock}>
-                                    <ClockFace
-                                        clock={gameClock!}
-                                        color={otherColor(orientation())}
-                                    />
-                                </Show>
-                                <Show when={!isPuzzleMode()}>
-                                    <PlayerNameSelector
-                                        color={"black"}
-                                        orientation={orientation}
-                                        whitePlayerSignal={[
-                                            whitePlayer,
-                                            setWhitePlayer as Setter<string>,
-                                        ]}
-                                        blackPlayerSignal={[
-                                            blackPlayer,
-                                            setBlackPlayer as Setter<string>,
-                                        ]}
-                                    />
-                                </Show>
-                                <div
-                                    ref={chessBoardDiv!}
-                                    class="pgnviewer-chessboard"
-                                >
-                                    <Chessboard config={config} />
-                                    <Show when={!!promotionData()}>
-                                        <PiecesPopup
-                                            chessBoardDiv={chessBoardDiv}
-                                            promotingCell={() =>
-                                                promotionData()?.promotionCell
-                                            }
-                                            onSelected={onPromotionSelected}
-                                            color={turn}
+                                <div class="board-player">
+                                    <Show when={!isPuzzleMode()}>
+                                        <PlayerNameSelector
+                                            color={"black"}
+                                            orientation={orientation}
+                                            whitePlayerSignal={[
+                                                whitePlayer,
+                                                setWhitePlayer as Setter<string>,
+                                            ]}
+                                            blackPlayerSignal={[
+                                                blackPlayer,
+                                                setBlackPlayer as Setter<string>,
+                                            ]}
+                                        />
+                                    </Show>
+                                    <Show when={gameClock}>
+                                        <ClockFace
+                                            clock={gameClock!}
+                                            color={otherColor(orientation())}
                                         />
                                     </Show>
                                 </div>
-                                <Show when={!isPuzzleMode()}>
-                                    <PlayerNameSelector
-                                        color={"white"}
-                                        orientation={orientation}
-                                        whitePlayerSignal={[
-                                            whitePlayer,
-                                            setWhitePlayer as Setter<string>,
-                                        ]}
-                                        blackPlayerSignal={[
-                                            blackPlayer,
-                                            setBlackPlayer as Setter<string>,
-                                        ]}
-                                    />
-                                </Show>
-                                <Show when={gameClock}>
-                                    <ClockFace
-                                        clock={gameClock!}
-                                        color={orientation()}
-                                    />
-                                </Show>
+                                <div class="board-row">
+                                    <Show when={showEvalBar()}>
+                                        <EvalBar
+                                            evaluation={shownEvaluation}
+                                            turn={turn}
+                                            orientation={orientation}
+                                        />
+                                    </Show>
+                                    <div
+                                        ref={chessBoardDiv!}
+                                        class="pgnviewer-chessboard"
+                                    >
+                                        <Chessboard config={config} />
+                                        <Show when={!!promotionData()}>
+                                            <PiecesPopup
+                                                chessBoardDiv={chessBoardDiv}
+                                                promotingCell={() =>
+                                                    promotionData()
+                                                        ?.promotionCell
+                                                }
+                                                onSelected={onPromotionSelected}
+                                                color={turn}
+                                            />
+                                        </Show>
+                                    </div>
+                                </div>
+                                <div class="board-player">
+                                    <Show when={!isPuzzleMode()}>
+                                        <PlayerNameSelector
+                                            color={"white"}
+                                            orientation={orientation}
+                                            whitePlayerSignal={[
+                                                whitePlayer,
+                                                setWhitePlayer as Setter<string>,
+                                            ]}
+                                            blackPlayerSignal={[
+                                                blackPlayer,
+                                                setBlackPlayer as Setter<string>,
+                                            ]}
+                                        />
+                                    </Show>
+                                    <Show when={gameClock}>
+                                        <ClockFace
+                                            clock={gameClock!}
+                                            color={orientation()}
+                                        />
+                                    </Show>
+                                </div>
                                 <Show
                                     when={isPuzzleMode() && wrongPuzzleMove()}
                                 >
@@ -970,16 +1022,14 @@ const GameManager: Component<GameManagerOptions> = ({
                             <VDivider ref={divider!} />
                         </Show>
                         <div class="pgnviewer-sidebar">
+                            {/* one toolbar: the engine on the left, the game's tools on the right */}
                             <Show when={!isPuzzleMode()}>
-                                <PgnEditBar isEditable={isEditable} />
-                            </Show>
-                            <Show
-                                when={
-                                    !isPuzzleMode() &&
-                                    viewMode() === ViewMode.MOVES
-                                }
-                            >
-                                <EngineControl />
+                                <div class="workspace-toolbar">
+                                    <Show when={viewMode() === ViewMode.MOVES}>
+                                        <EngineControl />
+                                    </Show>
+                                    <PgnEditBar isEditable={isEditable} />
+                                </div>
                             </Show>
                             <Show
                                 when={
@@ -989,30 +1039,12 @@ const GameManager: Component<GameManagerOptions> = ({
                                     !isPuzzleMode()
                                 }
                             >
-                                <Show when={!threatFen()}>
-                                    <WhatIf engineInfo={engineInfo} />
-                                </Show>
-                                <PositionFacts />
-                                <HumanMoves
-                                    moves={humanMoves()}
-                                    name={humanProfileName()}
-                                    fen={fen()}
-                                    engineInfo={engineInfo}
-                                />
-                                <TablebaseInfo />
-                                <EngineInfoViewer engineInfo={engineInfo} />
-                            </Show>
-
-                            <Show
-                                when={
-                                    hasMoves() &&
-                                    viewMode() === ViewMode.MOVES &&
-                                    !isPuzzleMode()
-                                }
-                            >
-                                {/* <Moves /> */}
-                                <SidebarTabs />
-                                {/* </div> */}
+                                <PanelSection id="engine" title="Engine">
+                                    <Show when={!threatFen()}>
+                                        <WhatIf engineInfo={engineInfo} />
+                                    </Show>
+                                    <EngineInfoViewer engineInfo={engineInfo} />
+                                </PanelSection>
                             </Show>
 
                             <Show
@@ -1021,7 +1053,70 @@ const GameManager: Component<GameManagerOptions> = ({
                                     !isPuzzleMode()
                                 }
                             >
-                                <ButtonBar />
+                                <PanelSection id="moves" title="Moves" grow>
+                                    <Show
+                                        when={hasMoves()}
+                                        fallback={
+                                            <p class="panel-hint">
+                                                {playingEngine
+                                                    ? "Choose the engine's colour and start a new game."
+                                                    : "Make a move on the board, or paste a PGN or a FEN (⌘V)."}
+                                            </p>
+                                        }
+                                    >
+                                        <div class="pgnviewer-moves-wrapper">
+                                            <Moves />
+                                        </div>
+                                    </Show>
+                                    <ButtonBar />
+                                </PanelSection>
+                            </Show>
+
+                            <Show
+                                when={
+                                    engineCallable() &&
+                                    !playingEngine &&
+                                    !isReviewing() &&
+                                    !isPuzzleMode() &&
+                                    viewMode() === ViewMode.MOVES
+                                }
+                            >
+                                <PanelSection
+                                    id="insights"
+                                    title="About this position"
+                                >
+                                    <PositionFacts />
+                                    <HumanMoves
+                                        moves={humanMoves()}
+                                        name={humanProfileName()}
+                                        fen={fen()}
+                                        engineInfo={engineInfo}
+                                    />
+                                    <TablebaseInfo />
+                                </PanelSection>
+                            </Show>
+
+                            <Show
+                                when={
+                                    !isPlayingOn() &&
+                                    !isPuzzleMode() &&
+                                    viewMode() === ViewMode.MOVES
+                                }
+                            >
+                                <PanelSection
+                                    id="review"
+                                    title="Game review"
+                                    defaultOpen={false}
+                                >
+                                    <ReviewPanel />
+                                </PanelSection>
+                                <PanelSection
+                                    id="explorer"
+                                    title="Explorer"
+                                    defaultOpen={false}
+                                >
+                                    <Explorer />
+                                </PanelSection>
                             </Show>
 
                             <Show when={viewMode() === ViewMode.PGN}>

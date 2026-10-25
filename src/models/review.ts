@@ -69,7 +69,7 @@ export function whiteCp(evaluation: Evaluation, turn: Color): number {
     return evaluation.pawns * 100;
 }
 
-/** Lichess win %: 50 at equality, about 75 at +2 pawns, capped at +-10 pawns. */
+/** Lichess win %: 50 at equality, about 68 at +2 pawns, capped at +-10 pawns. */
 export function winPercent(cp: number): number {
     const clamped = Math.max(-1000, Math.min(1000, cp));
     return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * clamped)) - 1);

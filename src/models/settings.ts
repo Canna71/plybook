@@ -77,6 +77,10 @@ export interface AppSettings {
         playing: {
             columnsTemplate?: string;
         };
+        /** Board, divider and panel of the chess screens; the board takes the rest */
+        workspace?: {
+            columns?: string;
+        };
     };
     _timestamp?: number;
 }
@@ -134,6 +138,9 @@ const DEFAULT: AppSettings = {
         filesOpen: true,
         playing: {
             columnsTemplate: "400px 5px 1fr",
+        },
+        workspace: {
+            columns: "1fr 5px 440px",
         },
     },
 };

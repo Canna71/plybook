@@ -132,9 +132,9 @@ const GameView = () => {
     );
     const repertoireOptions = () =>
         [
-            { value: "", label: "Not a repertoire" },
-            { value: "white", label: "Repertoire for White" },
-            { value: "black", label: "Repertoire for Black" },
+            { value: "", label: "No" },
+            { value: "white", label: "For White" },
+            { value: "black", label: "For Black" },
         ] as Option[];
     const onChangeRepertoire = async (value: string) => {
         await setRepertoire(filePath()!, (value || undefined) as Color);
@@ -433,7 +433,8 @@ const GameView = () => {
                         </div>
                     </Show>
                     <Show when={filePath() && !isPuzzleMode()}>
-                        <div class="navbar-item">
+                        <div class="navbar-item header-field">
+                            <span class="header-field-label">Repertoire</span>
                             <Select
                                 title="Drill this file's lines with spaced repetition"
                                 options={repertoireOptions}
@@ -457,9 +458,10 @@ const GameView = () => {
                         </Show>
                     </Show>
                     <Show when={filePath()}>
-                        <div class="navbar-item">
+                        <div class="navbar-item header-field">
+                            <span class="header-field-label">Puzzle</span>
                             <Select
-                                title={"Puzzle Priority"}
+                                title="How often this file comes up as a puzzle"
                                 options={puzzlePriorities}
                                 selectedValue={puzzlePriority}
                                 setSelectedValue={
