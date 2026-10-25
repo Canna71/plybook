@@ -1,6 +1,7 @@
-import { onCleanup, onMount, ParentComponent } from "solid-js";
+import { onCleanup, onMount, ParentComponent, Show } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import Sidebar from "./Sidebar";
+import Sidebar, { sidebarCollapsed } from "./Sidebar";
+import { CommandPalette } from "../components/shell/CommandPalette";
 import { invoke } from "@tauri-apps/api/core";
 import {
     pastedImage,
@@ -72,8 +73,11 @@ const Layout: ParentComponent = (props) => {
     }
     onCleanup(() => document.removeEventListener("paste", onPaste));
 
+    // collapsed: a narrow column of icons, not resizable
     const gridTemplateColumns = () =>
-        getSettingValue("layout.columnsTemplate", "180px 5px 1fr");
+        sidebarCollapsed()
+            ? "52px 0px 1fr"
+            : getSettingValue("layout.columnsTemplate", "200px 5px 1fr");
 
     return (
         <main
@@ -84,10 +88,13 @@ const Layout: ParentComponent = (props) => {
                 <Sidebar />
             </aside>
 
-            <VDivider ref={divider} />
+            <Show when={!sidebarCollapsed()} fallback={<div />}>
+                <VDivider ref={divider} />
+            </Show>
 
             <main class="main-content">{props.children}</main>
             <VideoPlayer />
+            <CommandPalette />
         </main>
     );
 };

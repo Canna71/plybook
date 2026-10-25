@@ -61,6 +61,10 @@ export interface AppSettings {
     };
     layout: {
         columnsTemplate?: string;
+        /** The sidebar shows icons only */
+        sidebarCollapsed?: boolean;
+        /** The sidebar's Files tree is open */
+        filesOpen?: boolean;
         playing: {
             columnsTemplate?: string;
         };
@@ -110,7 +114,9 @@ const DEFAULT: AppSettings = {
         pages: {},
     },
     layout: {
-        columnsTemplate: "180px 5px 1fr",
+        columnsTemplate: "200px 5px 1fr",
+        sidebarCollapsed: false,
+        filesOpen: true,
         playing: {
             columnsTemplate: "400px 5px 1fr",
         },

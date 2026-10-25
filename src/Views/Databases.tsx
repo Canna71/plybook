@@ -13,6 +13,7 @@ import {
     listDatabases,
     searchGames,
 } from "../storage/gamedb";
+import PageHeader from "../components/shell/PageHeader";
 import "./Databases.scss";
 
 const PAGE = 100;
@@ -91,7 +92,10 @@ const Databases: Component = () => {
 
     return (
         <div class="databases_view">
-            <div class="buttons-bar">
+            <PageHeader
+                title="Databases"
+                description="Game collections you imported (TWIC, Lichess, Lumbra…), searchable by player, opening or position."
+            >
                 <Button
                     class={`is-primary ${importing() ? "is-loading" : ""}`}
                     onClick={runImport}
@@ -99,7 +103,7 @@ const Databases: Component = () => {
                 >
                     Import PGN database…
                 </Button>
-            </div>
+            </PageHeader>
             <Show when={importing() && progress()}>
                 {(p) => (
                     <div class="import-progress">

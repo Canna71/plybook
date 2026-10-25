@@ -2,6 +2,7 @@ import { Component, createResource, For } from "solid-js";
 import { listPuzzles, pickPuzzle, Study } from "../storage/db";
 import Button from "../components/common/Button";
 import { formatDate, round } from "../components/common/utils";
+import PageHeader from "../components/shell/PageHeader";
 import "./Puzzles.scss";
 import LichessPuzzles from "../components/puzzles/LichessPuzzles";
 import { useNavigate } from "@solidjs/router";
@@ -28,19 +29,21 @@ const Puzzles: Component = () => {
 
     return (
         <div class="puzzles_view ">
-            <LichessPuzzles />
-            <div class="buttons-bar">
+            <PageHeader
+                title="Puzzles"
+                description="Your own puzzles (studies marked as puzzles, mistakes from reviewed games) and the Lichess puzzle set."
+            >
                 <Button class="is-primary" onClick={() => nextPuzzle()}>
-                    Pick Puzzle
+                    Pick a puzzle
                 </Button>
                 <Button
-                    class="is-primary is-outlined"
                     title="Puzzles made from the mistakes in your reviewed games"
                     onClick={async () => nextPuzzle(await mistakesFolder())}
                 >
                     Train my mistakes
                 </Button>
-            </div>
+            </PageHeader>
+            <LichessPuzzles />
             <div class="table-container">
                 <table class="table puzzles_table is-hoverable">
                     <thead>
@@ -55,7 +58,21 @@ const Puzzles: Component = () => {
                             each={puzzles()}
                             fallback={
                                 <tr>
-                                    <td>Loading...</td>
+                                    <td colspan="3" class="rc-empty">
+                                        {puzzles.loading ? (
+                                            "Loading…"
+                                        ) : (
+                                            <>
+                                                <strong>
+                                                    No puzzles of your own yet
+                                                </strong>
+                                                Open a study and give it a
+                                                puzzle priority, or review a
+                                                game and turn its mistakes into
+                                                puzzles.
+                                            </>
+                                        )}
+                                    </td>
                                 </tr>
                             }
                         >

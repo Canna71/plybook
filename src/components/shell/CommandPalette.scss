@@ -1,0 +1,78 @@
+// the command palette (CommandPalette.tsx)
+.command-palette-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.25);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 12vh;
+}
+
+.command-palette {
+    width: min(560px, calc(100vw - 32px));
+    background-color: var(--rc-bg);
+    border: 1px solid var(--rc-border-strong);
+    border-radius: var(--bulma-radius-large);
+    box-shadow: var(--rc-shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .command-palette-input {
+        border: none;
+        border-bottom: 1px solid var(--rc-border);
+        outline: none;
+        padding: var(--rc-space-3) var(--rc-space-4);
+        font: inherit;
+        font-size: var(--rc-text-lg);
+        background: transparent;
+        color: var(--rc-text-strong);
+
+        &::placeholder {
+            color: var(--rc-text-muted);
+        }
+    }
+
+    .command-palette-results {
+        max-height: 50vh;
+        overflow: auto;
+        padding: var(--rc-space-1);
+        margin: 0;
+        list-style: none;
+
+        li {
+            display: flex;
+            align-items: baseline;
+            gap: var(--rc-space-3);
+            padding: 6px var(--rc-space-3);
+            border-radius: var(--rc-radius);
+            cursor: pointer;
+            color: var(--rc-text);
+
+            &.selected {
+                background-color: var(--rc-surface-2);
+                color: var(--rc-text-strong);
+            }
+        }
+
+        .command-label {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .command-hint {
+            font-size: var(--rc-text-xs);
+            color: var(--rc-text-muted);
+            white-space: nowrap;
+        }
+
+        .command-empty {
+            color: var(--rc-text-muted);
+            cursor: default;
+        }
+    }
+}

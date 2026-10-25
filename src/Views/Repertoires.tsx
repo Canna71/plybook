@@ -8,6 +8,7 @@ import {
     setRepertoire,
 } from "../storage/repertoire";
 import { baseName, NameWithoutExtension } from "../storage/fs";
+import PageHeader from "../components/shell/PageHeader";
 import "./Repertoires.scss";
 
 /** The user's repertoires with what is due, to train or edit. */
@@ -38,13 +39,12 @@ const Repertoires: Component = () => {
 
     return (
         <div class="repertoires_view">
-            <h1 class="title is-5">Repertoires</h1>
-            <p class="block">
-                A repertoire is a PGN file in your Library with your lines and
-                the opponent's replies as variations. Open the file and choose
-                "Repertoire for White" or "for Black" in its toolbar; then train
-                it here. Moves come back on a spaced-repetition schedule.
-            </p>
+            <PageHeader
+                title="Repertoires"
+                description={
+                    'A repertoire is a PGN file in your Library with your lines and the opponent\'s replies as variations. Open the file and choose "Repertoire for White" or "for Black" in its toolbar; then train it here. Moves come back on a spaced-repetition schedule.'
+                }
+            />
             <table class="table is-fullwidth is-narrow">
                 <tbody>
                     <For
