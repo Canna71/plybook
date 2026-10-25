@@ -55,6 +55,7 @@ import { makeGame } from "../models/pgn";
 import { pendingPgn } from "../paste/pending";
 import { listRepertoires, setRepertoire } from "../storage/repertoire";
 import { Color } from "chessops";
+import { recordRecent } from "../storage/recent";
 import anylogger from "anylogger";
 const log = anylogger("gameview");
 
@@ -221,6 +222,9 @@ const GameView = () => {
         } else if (typeof searchParams.path === "string") {
             try {
                 pgnText = await readDataFile(searchParams.path);
+                // for Today's "Continue" (a puzzle isn't something to continue)
+                if (location.pathname !== "/puzzle")
+                    recordRecent(searchParams.path, "game");
             } catch (e) {
                 // Shows message
                 message("Error reading file: \n" + searchParams.path, {

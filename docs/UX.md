@@ -202,3 +202,17 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
     Databases, Repertoires, Settings. Analysis, Library and Scan get theirs in steps 4–7.
   - Puzzles showed "Loading..." for ever without puzzles of your own: now an empty state that
     says how to get some.
+- 2026-10-25: step 2 approved by the owner and merged into `develop`.
+- 2026-10-25, step 3 (Today) ready for review (`Views/Home.tsx`, logic in `models/today.ts`,
+  tested):
+  - Greeting and date; tiles for Openings (moves due and new, "Train" opens the repertoire
+    with the most due), Puzzles (your Lichess puzzle rating, "Next puzzle"), Mistakes
+    (positions from reviewed games, "Train"); each says what to do when empty.
+  - Continue: the last games/studies and books opened (with the page reached), newest
+    first. Recorded by the game screen (not puzzles) and the reader in the `recent.files`
+    setting (`storage/recent.ts`).
+  - Recent games: the last three against the engine.
+  - Get started: a checklist (engine, account, Lichess puzzles, repertoire, a PDF book) that
+    ticks itself as things get done; "Hide" dismisses it (`today.hideSetup`).
+  - Not shown yet: synced online games waiting for review (the sync has no "reviewed" flag;
+    a later step can add one).
