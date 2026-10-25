@@ -1,0 +1,116 @@
+// the training frame (TrainerPanel.tsx)
+.trainer-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rc-space-2);
+    padding: var(--rc-space-3) var(--rc-space-3) var(--rc-space-4);
+    margin-bottom: var(--rc-space-3);
+    border: 1px solid var(--rc-border);
+    border-left: 4px solid var(--rc-border-strong);
+    border-radius: var(--rc-radius);
+    background-color: var(--rc-surface);
+
+    .trainer-title {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--rc-space-2);
+        font-size: var(--rc-text-xs);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--rc-text-muted);
+    }
+
+    .trainer-progress {
+        text-transform: none;
+        letter-spacing: normal;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .trainer-prompt {
+        display: flex;
+        align-items: center;
+        gap: var(--rc-space-2);
+        font-size: var(--rc-text-lg);
+        font-weight: 600;
+        color: var(--rc-text-strong);
+    }
+
+    // a disc in the colour of the side to move
+    .trainer-side {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1px solid var(--rc-border-strong);
+        flex: none;
+
+        &.white {
+            background-color: #f0efed;
+        }
+
+        &.black {
+            background-color: #2b2926;
+        }
+    }
+
+    .trainer-status {
+        display: flex;
+        align-items: center;
+        gap: var(--rc-space-2);
+        min-height: 2em;
+        color: var(--rc-text-muted);
+
+        svg {
+            width: 18px;
+            height: 18px;
+            flex: none;
+        }
+    }
+
+    .trainer-note {
+        font-size: var(--rc-text-sm);
+        color: var(--rc-text-muted);
+    }
+
+    .trainer-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--rc-space-2);
+    }
+
+    // the state shows in the panel's left edge and the status line
+    &.good {
+        border-left-color: var(--rc-accent);
+
+        .trainer-status {
+            color: var(--rc-accent);
+            font-weight: 600;
+        }
+    }
+
+    &.wrong {
+        border-left-color: var(--rc-danger);
+
+        .trainer-status {
+            color: var(--rc-danger);
+            font-weight: 600;
+        }
+    }
+
+    &.solved {
+        border-left-color: var(--rc-accent);
+        background-color: hsla(
+            var(--bulma-primary-h),
+            var(--bulma-primary-s),
+            var(--bulma-primary-l),
+            0.12
+        );
+
+        .trainer-status {
+            color: var(--rc-accent);
+            font-weight: 700;
+            font-size: var(--rc-text-lg);
+        }
+    }
+}

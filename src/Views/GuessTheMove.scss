@@ -7,18 +7,16 @@
 
     .guess-board {
         flex: 0 0 auto;
-        width: min(80vh, 60%);
+        width: min(calc(100vh - 64px), 60%);
+        // not stretched to the row's height: the board stays square
+        align-self: flex-start;
         aspect-ratio: 1;
     }
 
     .guess-panel {
         flex: 1;
         min-width: 260px;
-
-        .guess-score {
-            margin-bottom: 10px;
-            opacity: 0.85;
-        }
+        max-width: 440px;
 
         .tags {
             min-height: 2em;
