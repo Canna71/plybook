@@ -36,6 +36,8 @@ export function Chessboard(props: ChessboardProps) {
             return;
         }
         const api = Chessground(wrapper, props.config());
+        // the dev driver plays moves with synthetic clicks (src/dev/devdriver.ts)
+        if (import.meta.env.DEV) api.state.trustAllEvents = true;
         setApi(api);
         props.setApi?.(api);
         // chessground caches where the board is and forgets it only on resize or scroll: a

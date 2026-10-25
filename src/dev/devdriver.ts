@@ -4,7 +4,8 @@
 // call this: `import.meta.env.DEV` is false there and the module is dropped.
 //
 // A command: { "id": "any unique value", "go": "/route", "click": "css selector",
-//              "type": "text", "key": "ArrowRight", "theme": "light" | "dark" | "" }
+//              "type": "text", "key": "ArrowRight", "theme": "light" | "dark" | "",
+//              "move": "e2e4 g1f3" }
 
 import anylogger from "anylogger";
 const log = anylogger("devdriver");
@@ -17,9 +18,59 @@ type Command = {
     /** Text for the focused field (after the click) */
     type?: string;
     theme?: "light" | "dark" | "";
+    /** Moves on the main board, as UCI, separated by spaces */
+    move?: string;
 };
 
 const POLL = 500;
+const MOVE_GAP = 700;
+
+/** The largest board on screen: the main one, not a preview */
+function mainBoard(): HTMLElement | undefined {
+    let best: HTMLElement | undefined;
+    let size = 0;
+    for (const el of document.querySelectorAll<HTMLElement>("cg-board")) {
+        const r = el.getBoundingClientRect();
+        if (r.width * r.height > size) {
+            size = r.width * r.height;
+            best = el;
+        }
+    }
+    return best;
+}
+
+/** Clicks a square as a user would: press on the board, release on the document. */
+function clickSquare(board: HTMLElement, square: string) {
+    const r = board.getBoundingClientRect();
+    const white = !board.closest(".orientation-black");
+    const file = square.charCodeAt(0) - 97;
+    const rank = square.charCodeAt(1) - 49;
+    const col = white ? file : 7 - file;
+    const row = white ? 7 - rank : rank;
+    const at = {
+        clientX: r.left + ((col + 0.5) * r.width) / 8,
+        clientY: r.top + ((row + 0.5) * r.height) / 8,
+        button: 0,
+        bubbles: true,
+    };
+    board.dispatchEvent(new MouseEvent("mousedown", at));
+    document.dispatchEvent(new MouseEvent("mouseup", at));
+}
+
+/** Plays each move by clicking its two squares (click-to-move), one after another. */
+function playMoves(moves: string) {
+    moves
+        .split(/\s+/)
+        .filter((m) => /^[a-h][1-8][a-h][1-8]/.test(m))
+        .forEach((uci, i) =>
+            setTimeout(() => {
+                const board = mainBoard();
+                if (!board) return log.warn("no board for", uci);
+                clickSquare(board, uci.slice(0, 2));
+                clickSquare(board, uci.slice(2, 4));
+            }, i * MOVE_GAP),
+        );
+}
 
 export function startDevDriver(navigate: (to: string) => void) {
     let last: string | undefined;
@@ -72,6 +123,7 @@ export function startDevDriver(navigate: (to: string) => void) {
                     }),
                 );
             }
+            if (cmd.move) playMoves(cmd.move);
         }, 300);
     }, POLL);
     return () => clearInterval(timer);
