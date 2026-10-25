@@ -307,9 +307,17 @@ How this file is used:
 
 ## Other
 
-- [ ] **O.1 Eval graph** in analysis (shared with P1.2).
-- [ ] **O.2 Keyboard-driven analysis** and shortcuts help.
-- [ ] **O.3 Arrows and highlights** saved to PGN (`[%cal]`, `[%csl]`).
+- [x] **O.1 Eval graph** in analysis: done with P1.2, the clickable graph in the Evaluation
+  tab (from the review's or the PGN's `[%eval]`).
+- [x] **O.2 Keyboard-driven analysis** (`feature/keyboard`; owner review pending): ← → (or
+  K J) previous/next move, ↑/Home start, ↓/End end of the line shown, Shift+↑/↓ previous/next
+  variation, F flip the board (new: there was no flip before), L engine on/off, X threat,
+  Space play the engine's best move, ? the shortcuts dialog. Keys typed in text fields and
+  keys with Cmd/Ctrl/Alt are left alone; moving through the game is off while playing the
+  engine or solving a puzzle. In the PDF reader the notes take keys only after a click inside
+  them. `models/shortcuts.ts` (tested) + `components/game/useShortcuts.tsx`.
+- [x] **O.3 Arrows and highlights** saved to PGN (`[%cal]`, `[%csl]`): already done; shapes
+  drawn on the board (right-drag) are stored on the move (`GameModel.updateShapes`).
 - [ ] **O.4 Clocks** and time controls when playing.
 - [ ] **O.5 Board image / GIF export.**
 - [ ] **O.6 Backups** of Library and database; app auto-update.

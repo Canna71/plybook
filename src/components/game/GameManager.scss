@@ -330,3 +330,15 @@
 .pgnviewer-move {
     cursor: pointer;
 }
+
+// the keyboard shortcuts dialog (useShortcuts.tsx)
+.shortcuts-help kbd {
+    display: inline-block;
+    min-width: 1.8em;
+    margin-right: 4px;
+    padding: 0 6px;
+    border: 1px solid var(--bulma-border);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.85em;
+}
