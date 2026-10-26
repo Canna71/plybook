@@ -36,6 +36,7 @@ import {
 import { saveMistakePuzzles } from "../../storage/mistakes";
 import { explainMove } from "../../models/explain";
 import { explainLines } from "../../engine/explainer";
+import BoardText from "./BoardText";
 import { getAccounts } from "../../online/onlinegames";
 import "./Review.scss";
 
@@ -107,6 +108,15 @@ const Review: Component = () => {
             ...(await explainLines(before, after)),
         }),
     );
+
+    /** The positions a moment's explanation talks about: before and after the move. */
+    const momentFens = (m: ReviewedMove) => {
+        const data = game()?.dataAt(m.path);
+        return [
+            m.fenBefore,
+            data && "fen" in data ? data.fen : undefined,
+        ].filter((f): f is string => !!f);
+    };
 
     /** Why the move was bad: the review data, and the engine lines once they arrive. */
     const momentExplanation = (m: ReviewedMove) => {
@@ -315,7 +325,10 @@ const Review: Component = () => {
                                     >
                                         {(text) => (
                                             <p class="moment-explanation">
-                                                {text()}
+                                                <BoardText
+                                                    text={text()}
+                                                    fens={() => momentFens(m)}
+                                                />
                                             </p>
                                         )}
                                     </Show>

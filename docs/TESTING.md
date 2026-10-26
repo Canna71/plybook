@@ -117,6 +117,15 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       the answer and the better move.
 - [ ] **No slowdown**: the main analysis keeps running while the explainer searches (it is a
       second engine process, one thread).
+- [ ] **Positional reasons (R3)**: quiet moves get a reason: "It develops the knight",
+      "It castles: …", "puts the rook on the open d-file", "creates a passed pawn", "puts the
+      knight on an outpost on d5"; a quiet bad move says what it costs ("weakens the pawns in
+      front of the king"). Note any that feel wrong.
+- [ ] **Hover in explanations**: moves and squares in the Engine section's and the review's
+      explanations are bold; hovering a square circles it on the board, hovering a move draws
+      its arrow (moves later in a line draw on the current board, where their pieces are not
+      yet). The PGN editor's comments still highlight squares as before, and comment arrows to
+      or from a1 now show (a1 was dropped).
 
 ## UX overhaul, step 8: settings and polish (branch feature/ux-overhaul)
 

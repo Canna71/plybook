@@ -7,7 +7,10 @@ import { existsSync, readFileSync } from "fs";
 import { it } from "vitest";
 import { Chess, NormalMove, parseUci } from "chessops";
 import { makeFen, parseFen } from "chessops/fen";
-import { makeSan } from "chessops/san";
+import { makeSan, parseSan } from "chessops/san";
+import { parsePgn, startingPosition } from "chessops/pgn";
+import { makeUci } from "chessops";
+import { positionalReasons } from "./positional";
 import { factsFromFen } from "../models/facts";
 import { lineMotifs, mainReasons, Motif } from "./motifs";
 import {
@@ -152,6 +155,37 @@ function inspect(p: Puzzle) {
         ].join("\n"),
     );
 }
+
+const PGN_FILE = process.env.PGN_FILE;
+
+/**
+ * R3 check by hand: an annotated game (PGN_FILE), each main-line move with the annotator's
+ * comment next to the positional reasons found for it. No tags exist for positional ideas.
+ */
+it.skipIf(!PGN_FILE || !existsSync(PGN_FILE ?? ""))(
+    "positional, by hand",
+    () => {
+        for (const game of parsePgn(readFileSync(PGN_FILE!, "utf8"))) {
+            const pos = startingPosition(game.headers).unwrap();
+            for (const node of game.moves.mainline()) {
+                const move = parseSan(pos, node.san);
+                if (!move) break;
+                const fen = makeFen(pos.toSetup());
+                const reasons = positionalReasons(fen, makeUci(move));
+                const comment = (node.comments ?? [])
+                    .join(" ")
+                    .replace(/\[%[^\]]*\]|%EMPTY%/g, "")
+                    .replace(/\s+/g, " ")
+                    .trim();
+                if (reasons.length || comment)
+                    console.log(
+                        `${pos.fullmoves}${pos.turn === "white" ? "." : "..."} ${node.san}: ${reasons.map((r) => (r.good ? "+ " : "- ") + r.text).join("; ") || "-"}${comment ? `\n      book: ${comment.slice(0, 160)}` : ""}`,
+                    );
+                pos.play(move);
+            }
+        }
+    },
+);
 
 const STOCKFISH = process.env.STOCKFISH;
 const THREATS = Number(process.env.THREATS ?? 0);

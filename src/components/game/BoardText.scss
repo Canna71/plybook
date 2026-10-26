@@ -1,0 +1,20 @@
+// squares and moves in explanations (BoardText.tsx): hover to see them on the board
+.board-text .board-ref {
+    font-weight: 600;
+    color: var(--rc-text-strong);
+    text-decoration: underline dotted;
+    text-decoration-color: var(--rc-border-strong);
+    text-underline-offset: 3px;
+    cursor: pointer;
+    border-radius: var(--rc-radius-small);
+
+    &:hover {
+        text-decoration-color: var(--rc-accent);
+        background-color: hsla(
+            var(--bulma-primary-h),
+            var(--bulma-primary-s),
+            var(--bulma-primary-l),
+            0.15
+        );
+    }
+}

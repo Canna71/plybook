@@ -1,5 +1,6 @@
 import { Component, createResource, Show, untrack, useContext } from "solid-js";
 import { explainThreats } from "../../engine/explainer";
+import BoardText from "./BoardText";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import { PlyData } from "../../models/pgn";
 import { CLASS_NAGS, ReviewedMove } from "../../models/review";
@@ -118,14 +119,25 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
                         <Show when={CLASS_NAGS[verdict()!.class]}>
                             {(nag) => <NagIcon nag={nag()} />}
                         </Show>
-                        <span>{explanation().join(" ")}</span>
+                        <BoardText
+                            text={explanation().join(" ")}
+                            fens={() =>
+                                [before()?.fen, move()?.fen].filter(
+                                    (f): f is string => !!f,
+                                )
+                            }
+                        />
                     </div>
                 </Show>
                 {/* a bad move's explanation already follows the reply line */}
                 <Show when={!isBad() && outcome()?.sans.length}>
                     <div class="what-if-line">
-                        Then {outcome()!.sans.join(" ")}:{" "}
-                        <strong>{describeOutcome(outcome()!)}</strong>
+                        Then{" "}
+                        <BoardText
+                            text={outcome()!.sans.join(" ")}
+                            fens={() => [move()!.fen]}
+                        />
+                        : <strong>{describeOutcome(outcome()!)}</strong>
                     </div>
                 </Show>
             </div>

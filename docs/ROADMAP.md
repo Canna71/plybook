@@ -143,6 +143,11 @@ How this file is used:
   - R4 done 2026-10-26 (before R3, by the owner's choice): explanations in the Engine section
     and the review's key moments name ideas ("It stops Qxf7#", "White answers Nxf7, a fork of
     …"); a background explainer engine runs the extra searches. Next: R3.
+  - Moves and squares in explanations light up on the board when hovered (owner's request).
+  - R3 done 2026-10-26: `src/reasons/positional.ts` (development, castling, centre, open files,
+    passed pawns, outposts, activity, the king's pawn shield, isolated pawns), tested, checked
+    against annotated games; good moves say what they build, quiet bad moves what they cost.
+    Left for later: SF17 piece values. Next: R5 (the tutor, P2.9).
   Say *why* a move is good or bad the way a coach would: "it stops the knight from reaching
   f7", "it pins the bishop and wins it next move", "after this the back rank is weak",
   instead of "it gives away 10% of winning chances". Today's explanations (P2.4a) give the
