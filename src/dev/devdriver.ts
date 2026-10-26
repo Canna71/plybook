@@ -5,7 +5,7 @@
 //
 // A command: { "id": "any unique value", "go": "/route", "click": "css selector",
 //              "type": "text", "key": "ArrowRight", "theme": "light" | "dark" | "",
-//              "move": "e2e4 g1f3", "scroll": "css selector" }
+//              "move": "e2e4 g1f3", "scroll": "css selector", "hover": "css selector" }
 
 import anylogger from "anylogger";
 const log = anylogger("devdriver");
@@ -22,6 +22,8 @@ type Command = {
     move?: string;
     /** Scrolls this element into view (after the other commands) */
     scroll?: string;
+    /** Moves the mouse onto this element (mouseenter and mouseover) */
+    hover?: string;
 };
 
 const POLL = 500;
@@ -133,6 +135,15 @@ export function startDevDriver(navigate: (to: string) => void) {
                 const el = document.querySelector(cmd.scroll);
                 if (el) el.scrollIntoView({ block: "center" });
                 else log.warn("nothing matches", cmd.scroll);
+            }
+            if (cmd.hover) {
+                const el = document.querySelector(cmd.hover);
+                if (el) {
+                    el.dispatchEvent(new MouseEvent("mouseenter"));
+                    el.dispatchEvent(
+                        new MouseEvent("mouseover", { bubbles: true }),
+                    );
+                } else log.warn("nothing matches", cmd.hover);
             }
         }, 300);
     }, POLL);

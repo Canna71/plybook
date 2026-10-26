@@ -66,29 +66,32 @@ export function useCurrentData(
 }
 export function toShapes(
     highlightedSquares: Accessor<string[]>,
-    _highlightedMoves: Accessor<string[]>,
+    highlightedMoves: Accessor<string[]>,
     data: Initial | PlyData,
 ) {
-    let autoShapes =
+    let autoShapes: DrawShape[] =
         highlightedSquares().length > 0
             ? highlightedSquares().map((hs) => ({
                   orig: hs as Key,
                   brush: "green",
               }))
             : [];
-    // TODO: how can we display moves regardless of the position?
-    // autoShapes = autoShapes.concat(
-    //     highlightedMoves().map((hm) => {
-    //         const move =
-    //         const [from, to] = hm.split("-");
-    //         return { orig: from as Key, dest: to as Key, brush: "green" };
-    //     }),
-    // );
+    // moves resolved in their position ("g5-f7", from explanations) are arrows; a bare SAN
+    // from a PGN comment ("e4") cannot be placed without its position, so it is not drawn
+    autoShapes = autoShapes.concat(
+        highlightedMoves()
+            .filter((hm) => /^[a-h][1-8]-[a-h][1-8]$/.test(hm))
+            .map((hm) => {
+                const [from, to] = hm.split("-");
+                return { orig: from as Key, dest: to as Key, brush: "green" };
+            }),
+    );
     if (data?.shapes) {
         autoShapes = autoShapes.concat(
             data.shapes.map((s) => {
                 const orig = makeSquare(s.from);
-                const dest = s.to && makeSquare(s.to);
+                // a1 is square 0: test for undefined, not truthiness
+                const dest = s.to !== undefined ? makeSquare(s.to) : undefined;
                 return { orig, dest, brush: s.color };
             }),
         );

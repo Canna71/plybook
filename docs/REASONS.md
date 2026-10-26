@@ -176,6 +176,11 @@ read "leading to promoting".
   started on the first request, one search at a time, cached by position and move. The
   Engine section asks it for the move's threats; the game review's open key moment asks it for
   the best line and the answer (depth 16 or 1.5 s), which the review does not keep.
+- Text that points at the board (the owner's request): moves and squares in explanations are
+  marked and light up on the board when hovered, as squares in PGN comments do.
+  `models/boardtext.ts` splits the text and resolves each move in the positions it talks
+  about, following a line move by move; `components/game/BoardText.tsx` renders it; the
+  board draws "from-to" entries of `highlightedMovesSignal` as arrows.
 - Hanging piece: the detector now gets the square the previous move *captured* on (if it
   did), not the previous move: "Qg4?? Bxg4" is a free queen, not a recapture. Recall 0.37 →
   0.47 on the held-out puzzles, precision unchanged (0.98).

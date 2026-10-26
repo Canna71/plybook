@@ -208,7 +208,9 @@ production builds) and captures the app window to `$SHOTS/<name>.png`. It needs 
 Recording permission for the terminal/editor running it; `tools/winid` is built from
 `tools/winid.swift` on first use. `move` plays UCI moves on the largest board by clicking
 their squares (dev builds set chessground's `trustAllEvents` for this), so puzzles, trainers
-and play go through their normal move handling. Dev builds have no CSP, so check CSP-sensitive things in a
+and play go through their normal move handling. `scroll` brings an element into view and
+`hover` sends it mouseenter/mouseover (`click` also focuses fields, for `type`). Changing
+`devdriver.ts` reloads the page, so change it before setting up a position. Dev builds have no CSP, so check CSP-sensitive things in a
 built app as well. The webview's console errors and warnings appear in the `pnpm tauri dev`
 terminal as `[webview] …` (`tools/vite-devlog.ts`, dev server only).
 
