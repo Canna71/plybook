@@ -7,7 +7,9 @@ import { existsSync, readFileSync } from "fs";
 import { it } from "vitest";
 import { Chess, parseUci } from "chessops";
 import { makeFen, parseFen } from "chessops/fen";
+import { makeSan } from "chessops/san";
 import { factsFromFen } from "../models/facts";
+import { lineMotifs, mainReasons, Motif } from "./motifs";
 
 const CSV = process.env.PUZZLES_CSV;
 const LIMIT = Number(process.env.PUZZLES_LIMIT ?? 20_000);
@@ -61,6 +63,31 @@ const factsDetector: Detector = (puzzle) => {
     return found;
 };
 
+/** The motif detectors (motifs.ts) after ranking, from the position the solver faces. */
+const motifDetector: Detector = (puzzle) => {
+    const pos = Chess.fromSetup(parseFen(puzzle.fen).unwrap()).unwrap();
+    pos.play(parseUci(puzzle.moves[0])!);
+    const reasons = lineMotifs(
+        makeFen(pos.toSetup()),
+        puzzle.moves.slice(1),
+        puzzle.moves[0],
+    );
+    return new Set(mainReasons(reasons).map((r) => r.motif));
+};
+
+const MOTIFS: Motif[] = [
+    "mate",
+    "backRankMate",
+    "smotheredMate",
+    "doubleCheck",
+    "fork",
+    "pin",
+    "skewer",
+    "discoveredAttack",
+    "hangingPiece",
+    "promotion",
+];
+
 type Score = { tp: number; fp: number; fn: number };
 
 function measure(puzzles: Puzzle[], detect: Detector, themes: string[]) {
@@ -92,8 +119,39 @@ function measure(puzzles: Puzzle[], detect: Detector, themes: string[]) {
     }));
 }
 
+/** One puzzle in detail: its position, line, tags and what the detectors found. */
+function inspect(p: Puzzle) {
+    const pos = Chess.fromSetup(parseFen(p.fen).unwrap()).unwrap();
+    pos.play(parseUci(p.moves[0])!);
+    const fen = makeFen(pos.toSetup());
+    const sans = p.moves.slice(1).map((uci) => {
+        const move = parseUci(uci)!;
+        const san = makeSan(pos, move);
+        pos.play(move);
+        return san;
+    });
+    console.log(
+        [
+            `https://lichess.org/training/${p.id}`,
+            fen,
+            sans.join(" "),
+            `tags: ${[...p.themes].join(" ")}`,
+            `found: ${JSON.stringify(lineMotifs(fen, p.moves.slice(1)))}`,
+        ].join("\n"),
+    );
+}
+
 it.skipIf(!CSV || !existsSync(CSV))("detectors vs Lichess themes", () => {
     const puzzles = readPuzzles(CSV!);
+    const one = process.env.PUZZLE;
+    if (one) {
+        for (const id of one.split(","))
+            inspect(puzzles.find((p) => p.id === id)!);
+        return;
+    }
     console.log(`${puzzles.length} puzzles`);
+    console.log("baseline: facts.ts");
     console.table(measure(puzzles, factsDetector, ["fork", "pin"]));
+    console.log("motifs.ts, ranked");
+    console.table(measure(puzzles, motifDetector, MOTIFS));
 });

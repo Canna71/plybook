@@ -98,6 +98,47 @@ disagreement is checked by hand and the detector is right, it is noted, not "fix
 Targets before a motif appears in explanations: precision ≥ 0.8 with recall ≥ 0.6 against the
 tags, after ranking.
 
+### R1 results (`src/reasons/motifs.ts`, 2026-10-26)
+
+Tuned on the first 20,000 puzzles, then checked on the next 20,000 ("held out"), which were
+not looked at while tuning:
+
+| Motif | Tagged | Precision | Recall | Held out P / R | Verdict |
+|---|---|---|---|---|---|
+| mate | 6,525 | 0.99 | 1.00 | 1.00 / 1.00 | use |
+| smotheredMate | 93 | 1.00 | 1.00 | 1.00 / 1.00 | use |
+| backRankMate | 682 | 0.64 | 1.00 | 0.65 / 1.00 | use: the extras checked by hand are back-rank mates Lichess did not tag (Qe1# against pawns on g2/h2) |
+| doubleCheck | 119 | 0.98 | 1.00 | 1.00 / 1.00 | use |
+| fork | 2,528 | 0.85 | 0.76 | 0.86 / 0.77 | use |
+| skewer | 412 | 0.79 | 0.97 | 0.81 / 0.94 | use |
+| discoveredAttack | 1,002 | 0.79 | 0.96 | 0.82 / 0.95 | use |
+| hangingPiece | 770 | 0.98 | 0.35 | 0.98 / 0.37 | use: rarely said, right when said |
+| promotion | 492 | 0.98 | 1.00 | 0.99 / 1.00 | use |
+| pin | 1,178 | 0.53 | 0.38 | 0.53 / 0.35 | not yet: about half the extras checked by hand are real pins, but too many are not |
+
+What made the difference, rule by rule:
+- **The line must cash in.** A fork, skewer, pin or discovered attack counts only if a later
+  move of the line takes one of the targets (or the target is the king). Fork precision went
+  from 0.55 (facts.ts) to 0.85.
+- **Mate first.** In a line that mates, forks, pins and hanging pieces on the way are not the
+  point (fork 0.55 → 0.65 on its own).
+- **A gain, not a trade.** A skewer whose second piece is defended (Rxe5+ Kxe5) or is a pawn is
+  not a skewer; taking a pinned piece of equal value that is defended is a trade (skewer 0.58 →
+  0.79).
+- **Hanging piece as Lichess means it:** the first move takes an undefended piece that is not
+  a pawn and not a recapture of the opponent's last capture, and the material holds two moves
+  later (0.33 → 0.98).
+- **Back-rank mate:** every square in front of the king holds its own piece (0.28 → 0.64).
+- **Pins:** relative pins (to the queen or a rook) count, a pawn in front of a piece does not;
+  three uses: taking a pinned piece for a gain, attacking a pinned piece that cannot escape,
+  and taking on a square whose only defenders are pinned. A piece that just stepped in to block
+  a check and is taken is won by the check, not the pin.
+
+The tags are not ground truth: some extras are motifs Lichess did not tag (skewer Rxa6+ … Rxf6
+looked like one but is a trade, and the detector was right to refuse it; Bb4 Ra7 Bxc5 is a pin
+Lichess left untagged). `PUZZLE=<id>[,<id>] pnpm eval:reasons` prints a puzzle's position,
+line in SAN, tags and every reason found, to check such cases.
+
 ## Plan
 
 - **R1, motif detectors** (`src/reasons/motifs.ts`, tested): fork, pin (relative too), skewer,
