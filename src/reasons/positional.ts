@@ -1,0 +1,278 @@
+// Positional reasons (P2.8 R3, docs/REASONS.md): what a move does when there is no tactic or
+// threat to name. Compares the board before and after the move, from the mover's side:
+// development, castling, the centre, rooks on open files, passed pawns, outposts, piece
+// activity, the king's pawn shield, pawn weaknesses. No engine: pure rules, for tests.
+
+import {
+    Chess,
+    Color,
+    makeSquare,
+    opposite,
+    parseSquare,
+    parseUci,
+    Position,
+    Role,
+    Square,
+    SquareSet,
+} from "chessops";
+import { attacks } from "chessops/attacks";
+import { parseFen } from "chessops/fen";
+
+export type PositionalKind =
+    | "develops"
+    | "castles"
+    | "centre"
+    | "openFile"
+    | "passedPawn"
+    | "outpost"
+    | "activates"
+    | "weakensKing"
+    | "isolatedPawn";
+
+export type PositionalReason = {
+    kind: PositionalKind;
+    /** Good for the side that moved */
+    good: boolean;
+    /** A verb phrase for "It …": "develops the knight", "weakens the king's pawn shield" */
+    text: string;
+};
+
+const positionOf = (fen: string): Position | undefined => {
+    const setup = parseFen(fen);
+    const pos = setup.isOk ? Chess.fromSetup(setup.value) : undefined;
+    return pos?.isOk ? pos.value : undefined;
+};
+
+const file = (sq: Square) => sq & 7;
+const rank = (sq: Square) => sq >> 3;
+const FILES = "abcdefgh";
+/** Rank counted from the side's own back rank: 0 to 7 */
+const relRank = (sq: Square, color: Color) =>
+    color === "white" ? rank(sq) : 7 - rank(sq);
+
+const pawnsOf = (pos: Position, color: Color) =>
+    pos.board.pawn.intersect(pos.board[color]);
+
+const onFile = (set: SquareSet, f: number) =>
+    [...set].filter((sq) => file(sq) === f);
+
+/** No pawns of the other side ahead of it on its file or the files beside. */
+function isPassed(pos: Position, sq: Square, color: Color): boolean {
+    const theirs = pawnsOf(pos, opposite(color));
+    return ![...theirs].some(
+        (p) =>
+            Math.abs(file(p) - file(sq)) <= 1 &&
+            relRank(p, color) > relRank(sq, color),
+    );
+}
+
+/** No pawn of its side on the files beside it. */
+const isIsolated = (pos: Position, sq: Square, color: Color) =>
+    ![...pawnsOf(pos, color)].some((p) => Math.abs(file(p) - file(sq)) === 1);
+
+/** Squares a piece controls (attacks), excluding its own pieces' squares. */
+const reach = (pos: Position, sq: Square) => {
+    const piece = pos.board.get(sq)!;
+    return attacks(piece, sq, pos.board.occupied).diff(pos.board[piece.color]);
+};
+
+/** No pawn of the other side can ever attack it (none on the files beside, behind it). */
+function safeFromPawns(pos: Position, sq: Square, color: Color): boolean {
+    const theirs = pawnsOf(pos, opposite(color));
+    return ![...theirs].some(
+        (p) =>
+            Math.abs(file(p) - file(sq)) === 1 &&
+            relRank(p, color) > relRank(sq, color),
+    );
+}
+
+const HOME: Record<Color, Record<string, Role>> = {
+    white: { b1: "knight", g1: "knight", c1: "bishop", f1: "bishop" },
+    black: { b8: "knight", g8: "knight", c8: "bishop", f8: "bishop" },
+};
+const CENTRE = ["d4", "e4", "d5", "e5"].map((s) => parseSquare(s)!);
+
+/** The positional reasons of `uci` in `fen`, good ones first. Empty if illegal. */
+export function positionalReasons(
+    fen: string,
+    uci: string,
+): PositionalReason[] {
+    const before = positionOf(fen);
+    const move = parseUci(uci);
+    if (!before || !move || !("from" in move) || !before.isLegal(move))
+        return [];
+    const after = before.clone();
+    after.play(move);
+    const me = before.turn;
+    const them = opposite(me);
+    const piece = before.board.get(move.from)!;
+    const reasons: PositionalReason[] = [];
+    const add = (kind: PositionalKind, good: boolean, text: string) =>
+        reasons.push({ kind, good, text });
+    const opening = before.fullmoves <= 15;
+    // a capture trades or wins material: its point is not the centre or activity
+    const capture =
+        before.board.has(move.to) ||
+        (piece.role === "pawn" && file(move.from) !== file(move.to));
+    // where the piece is now (castling moves the king to the c or g file)
+    const castles =
+        piece.role === "king" && Math.abs(file(move.from) - file(move.to)) > 1;
+    const to = castles ? (after.board.kingOf(me) ?? move.to) : move.to;
+
+    // development and castling
+    if (castles) {
+        add(
+            "castles",
+            true,
+            "castles: the king is safer and a rook comes into play",
+        );
+    } else if (opening && HOME[me][makeSquare(move.from)] === piece.role) {
+        add("develops", true, `develops the ${piece.role}`);
+    }
+
+    // the centre, early: a pawn on d4, e4 (d5, e5)
+    if (
+        opening &&
+        !capture &&
+        piece.role === "pawn" &&
+        CENTRE.includes(move.to)
+    ) {
+        add("centre", true, "takes a share of the centre");
+    }
+
+    // a rook to an open file (no pawns) or a half-open one (none of ours)
+    if (piece.role === "rook" || (piece.role === "queen" && !opening)) {
+        const f = file(to);
+        const ours = onFile(pawnsOf(after, me), f).length;
+        const theirs = onFile(pawnsOf(after, them), f).length;
+        const fromFile = file(move.from) === f;
+        if (!fromFile && ours === 0) {
+            add(
+                "openFile",
+                true,
+                `puts the ${piece.role} on the ${theirs === 0 ? "open" : "half-open"} ${FILES[f]}-file`,
+            );
+        }
+    }
+
+    // passed pawns: made by this move, or pushed
+    if (piece.role === "pawn") {
+        const wasPassed = isPassed(before, move.from, me);
+        if (isPassed(after, move.to, me)) {
+            add(
+                "passedPawn",
+                true,
+                wasPassed
+                    ? `pushes the passed pawn to ${makeSquare(move.to)}`
+                    : `creates a passed pawn on ${makeSquare(move.to)}`,
+            );
+        }
+    } else {
+        // a capture can make a passed pawn of ours (taking the pawn that stopped it)
+        const madePassed = [...pawnsOf(after, me)].find(
+            (p) => isPassed(after, p, me) && !isPassed(before, p, me),
+        );
+        if (madePassed !== undefined) {
+            add(
+                "passedPawn",
+                true,
+                `gives a passed pawn on ${makeSquare(madePassed)}`,
+            );
+        }
+    }
+
+    // an outpost: a knight (or bishop) in the other half, defended by a pawn, safe from pawns
+    if (
+        (piece.role === "knight" || piece.role === "bishop") &&
+        relRank(to, me) >= 3 &&
+        relRank(to, me) <= 5 &&
+        !after
+            .kingAttackers(to, me, after.board.occupied)
+            .intersect(after.board.pawn)
+            .isEmpty() &&
+        safeFromPawns(after, to, me)
+    ) {
+        add(
+            "outpost",
+            true,
+            `puts the ${piece.role} on an outpost on ${makeSquare(to)}`,
+        );
+    }
+
+    // activity: a long-range piece that controls many more squares (not a queen out early,
+    // which gets chased; not a rook already said to be on an open file)
+    const saidFile = reasons.some((r) => r.kind === "openFile");
+    if (
+        !castles &&
+        !capture &&
+        !saidFile &&
+        (piece.role === "bishop" ||
+            piece.role === "rook" ||
+            (piece.role === "queen" && !opening))
+    ) {
+        const gain = reach(after, to).size() - reach(before, move.from).size();
+        if (gain >= 4) {
+            add(
+                "activates",
+                true,
+                `activates the ${piece.role}: it now controls ${reach(after, to).size()} squares`,
+            );
+        }
+    }
+
+    // the king's pawn shield: a pawn in front of our castled king moves, while the opponent
+    // still has a queen to attack it with (in an endgame the king wants out anyway)
+    const king = before.board.kingOf(me);
+    const theyHaveQueen = !before.board.queen
+        .intersect(before.board[them])
+        .isEmpty();
+    if (
+        theyHaveQueen &&
+        piece.role === "pawn" &&
+        king !== undefined &&
+        relRank(king, me) === 0 &&
+        (file(king) >= 5 || file(king) <= 2) &&
+        Math.abs(file(move.from) - file(king)) <= 1 &&
+        relRank(move.from, me) === 1 &&
+        !opening
+    ) {
+        add("weakensKing", false, "weakens the pawns in front of the king");
+    }
+
+    // isolated pawns made by the move: ours (bad) and theirs (good, by taking a neighbour).
+    // Doubled pawns are left out: a move only doubles its own pawns, by a capture that is
+    // usually a fair trade, and the opponent's only when they take back.
+    for (const [color, good] of [
+        [me, false],
+        [them, true],
+    ] as const) {
+        // a pawn that moved is compared with where it came from
+        const origin = (p: Square) =>
+            color === me && piece.role === "pawn" && p === move.to
+                ? move.from
+                : p;
+        const newIsolated = [...pawnsOf(after, color)].find(
+            (p) =>
+                isIsolated(after, p, color) &&
+                !(
+                    pawnsOf(before, color).has(origin(p)) &&
+                    isIsolated(before, origin(p), color)
+                ),
+        );
+        if (newIsolated !== undefined) {
+            const sq = makeSquare(newIsolated);
+            add(
+                "isolatedPawn",
+                good,
+                color === me
+                    ? `isolates its own pawn on ${sq}`
+                    : `leaves the opponent an isolated pawn on ${sq}`,
+            );
+        }
+    }
+
+    return [
+        ...reasons.filter((r) => r.good),
+        ...reasons.filter((r) => !r.good),
+    ];
+}

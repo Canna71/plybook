@@ -185,6 +185,30 @@ read "leading to promoting".
   did), not the previous move: "Qg4?? Bxg4" is a free queen, not a recapture. Recall 0.37 →
   0.47 on the held-out puzzles, precision unchanged (0.98).
 
+### R3 results (`src/reasons/positional.ts`, 2026-10-26)
+
+Rules over the board before and after a move, from the mover's side, each good or bad for it:
+development (a minor piece off its home square in the first 15 moves), castling, the centre
+(a quiet pawn move to d4/e4/d5/e5 early), a rook (or a queen after the opening) to an open or
+half-open file, passed pawns created or pushed (also by a capture that removes the pawn that
+stopped one), an outpost (a knight or bishop on the 4th–6th rank, defended by a pawn, that no
+enemy pawn can ever attack), activity (a bishop, rook or later queen that controls 4+ more
+squares), the king's pawn shield (a pawn in front of the castled king moves while the
+opponent has a queen), isolated pawns (ours made by the move: bad; theirs, by taking a
+neighbour: good). In explanations: a good move gets up to two of the good ones ("It castles:
+the king is safer and a rook comes into play"); a bad move that loses nothing at once gets
+its costs.
+
+Checked by hand against annotated games (`PGN_FILE=… pnpm eval:reasons -t positional` prints
+every move with its reasons and the annotator's comment): on a Capablanca game "a5 isolates
+its own pawn on a5" sits next to "Black must lose time assuring the safety of this Pawn", "Nc6
+develops the knight" next to "This move develops his Knight". Taken out after that check:
+doubled pawns (a move doubles only its own pawns, by a capture that is usually a fair trade),
+"the centre" and "activates" for captures (trades, not claims), an early queen "activated"
+(the book's point is that it gets chased), the pawn shield in queenless endgames, and a
+rook's "activates" when its open file is already said. Not done yet: SF17 piece values (the
+`eval` command), mobility of the whole army, space, weak squares.
+
 ## Plan
 
 - **R1, motif detectors** (`src/reasons/motifs.ts`, tested): fork, pin (relative too), skewer,

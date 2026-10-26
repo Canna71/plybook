@@ -9,6 +9,7 @@ import { Fact, factsFromFen } from "./facts";
 import { MoveClass } from "./review";
 import { describeOutcome, lineOutcome } from "./whatif";
 import { describeIdea, LineIdea, lineIdea } from "../reasons/threats";
+import { positionalReasons } from "../reasons/positional";
 
 export type ExplainInput = {
     /** The position before the move */
@@ -231,6 +232,16 @@ export function explainMove(input: ExplainInput): string[] {
         sentences.push(`It threatens ${describeIdea(input.threats.created)}.`);
     }
 
+    // the positional side (no engine): development, files, pawns, the king's shelter
+    const positional = positionalReasons(input.fenBefore, input.uci);
+    if (!bad) {
+        const good = positional.filter((r) => r.good).slice(0, 2);
+        if (good.length) {
+            const also = sentences.length > 1 ? "It also " : "It ";
+            sentences.push(`${also}${joinAnd(good.map((r) => r.text))}.`);
+        }
+    }
+
     // the opponent's answer and where it leads
     const reply = input.replyPv?.[0] && play(moved.fen, input.replyPv[0]);
     // what the answer does, named: a fork, a skewer… (taking back is not a free piece)
@@ -240,6 +251,13 @@ export function explainMove(input: ExplainInput): string[] {
         bad && input.replyPv?.length
             ? lineIdea(moved.fen, input.replyPv, capturedSquare || undefined)
             : undefined;
+    // a bad move that loses nothing at once: what it costs in the position
+    if (bad && !replyIdea?.motif && !replyIdea?.mates) {
+        const costs = positional.filter((r) => !r.good).slice(0, 2);
+        if (costs.length) {
+            sentences.push(`It ${joinAnd(costs.map((r) => r.text))}.`);
+        }
+    }
     if (bad && reply) {
         if (reply.san.endsWith("#")) {
             sentences.push(
