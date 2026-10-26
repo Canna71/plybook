@@ -10,6 +10,15 @@ import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { factsFromFen } from "../models/facts";
 import { lineMotifs, mainReasons, Motif } from "./motifs";
+import {
+    createdThreat,
+    describeIdea,
+    isThreat,
+    lineIdea,
+    playUci,
+} from "./threats";
+import { nullMoveFen } from "../models/threat";
+import { Uci } from "./uci.eval-helper";
 
 const CSV = process.env.PUZZLES_CSV;
 const LIMIT = Number(process.env.PUZZLES_LIMIT ?? 20_000);
@@ -140,6 +149,47 @@ function inspect(p: Puzzle) {
         ].join("\n"),
     );
 }
+
+const STOCKFISH = process.env.STOCKFISH;
+const THREATS = Number(process.env.THREATS ?? 0);
+
+/**
+ * R2 spot check with a real engine: for the first THREATS puzzles, what the blunder failed to
+ * stop (the solver's threat before it) and what the solver's first move threatens next. No
+ * tags exist for these, so the sentences are printed for checking by hand.
+ */
+it.skipIf(!CSV || !STOCKFISH || !THREATS)("threats, by hand", async () => {
+    const engine = new Uci(STOCKFISH!);
+    await engine.init();
+    for (const p of readPuzzles(CSV!).slice(0, THREATS)) {
+        const pos = Chess.fromSetup(parseFen(p.fen).unwrap()).unwrap();
+        const fenBefore = makeFen(pos.toSetup()); // the opponent, about to blunder
+        const blunder = parseUci(p.moves[0])!;
+        const blunderSan = makeSan(pos, blunder);
+        pos.play(blunder);
+        const fenAfter = makeFen(pos.toSetup()); // the solver to move
+        const first = makeSan(pos, parseUci(p.moves[1])!);
+
+        // the solver's threat before the blunder, and whether the blunder stopped it
+        const passedBefore = nullMoveFen(fenBefore);
+        const threatBefore = passedBefore
+            ? lineIdea(passedBefore, await engine.pv(passedBefore, 12))
+            : undefined;
+        // the solver's first move, and what it threatens if the opponent passed
+        const afterFirst = playUci(fenAfter, p.moves[1]);
+        const passedAfter = afterFirst && nullMoveFen(afterFirst);
+        const ourPv = passedAfter ? await engine.pv(passedAfter, 12) : [];
+        const created = createdThreat(fenAfter, p.moves[1], ourPv);
+        console.log(
+            [
+                `https://lichess.org/training/${p.id}  [${[...p.themes].join(" ")}]`,
+                `  before ${blunderSan}, the threat was: ${isThreat(threatBefore) ? describeIdea(threatBefore) : "none"}`,
+                `  ${first} threatens: ${created ? describeIdea(created) : "nothing more"}`,
+            ].join("\n"),
+        );
+    }
+    engine.quit();
+});
 
 it.skipIf(!CSV || !existsSync(CSV))("detectors vs Lichess themes", () => {
     const puzzles = readPuzzles(CSV!);

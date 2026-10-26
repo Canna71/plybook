@@ -136,6 +136,10 @@ How this file is used:
     pin, skewer, discovered attack, hanging piece, promotion; ranking), tested, measured on
     40,000 puzzles: all but pin meet the bar or are right where the tags miss (see the report).
     Pins stay out of explanations until they improve. Next: R2 (threats prevented/created).
+  - R2 done 2026-10-26: `src/reasons/threats.ts` (what a move stops and threatens, named with
+    the motifs, in words) and `src/engine/threatsearch.ts` (the two short null-move searches),
+    tested, checked by hand with Stockfish on real puzzles. Next: R3 (positional reasons), or
+    R4 first to show R1–R2 in the app.
   Say *why* a move is good or bad the way a coach would: "it stops the knight from reaching
   f7", "it pins the bishop and wins it next move", "after this the back rank is weak",
   instead of "it gives away 10% of winning chances". Today's explanations (P2.4a) give the

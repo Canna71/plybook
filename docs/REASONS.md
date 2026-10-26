@@ -139,6 +139,29 @@ looked like one but is a trade, and the detector was right to refuse it; Bb4 Ra7
 Lichess left untagged). `PUZZLE=<id>[,<id>] pnpm eval:reasons` prints a puzzle's position,
 line in SAN, tags and every reason found, to check such cases.
 
+### R2 results (`src/reasons/threats.ts`, `src/engine/threatsearch.ts`, 2026-10-26)
+
+- `lineIdea(fen, pv)`: what a line does for the side playing it: its first move, the most
+  important *trusted* motif (pins excluded until they improve) with the pieces it is about,
+  the material won once captures settle, mate.
+- `stoppedThreat(fenBefore, uci, threatPv, replyPv?)`: the opponent's threat in the null-move
+  position before the move, replayed after it. It counts as stopped when it no longer wins as
+  much (or no longer mates), and the engine's actual reply does not get as much either.
+- `createdThreat(fenBefore, uci, ourPv)`: our line in the null-move position after the move.
+- `describeIdea`: "Nxf7, a fork of the queen on d8 and the rook on h8", "Qxf7#", "Rxd8+, then
+  mate on the back rank", "Nxe3+, a discovered check by the queen on g5", "Bxc2, winning the
+  rook on c2, which nothing defends".
+- `moveThreats(engine, fenBefore, uci)`: the two searches (depth 12 or 0.5 s each) through
+  `searchOnce`; the engine must be idle. Tested with a scripted engine.
+
+No tag set measures threats, so the check is by hand: `STOCKFISH=… THREATS=40 pnpm eval:reasons
+-t threats` prints, for real puzzles and real Stockfish lines, what the blunder failed to stop
+and what the solver's first move threatens. On 40 held-out puzzles the sentences read right,
+e.g. quiet moves explained by what they set up: "Reh8 threatens Rh1#", "Qg6 threatens Qxg7#",
+"Kh2 threatens Qxh7#". Fixed on the way: a hanging piece was named after the capture (the
+capturing piece), discovered checks were called attacks on the king, motifs later in a line
+read "leading to promoting".
+
 ## Plan
 
 - **R1, motif detectors** (`src/reasons/motifs.ts`, tested): fork, pin (relative too), skewer,
