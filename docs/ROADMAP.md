@@ -140,6 +140,9 @@ How this file is used:
     the motifs, in words) and `src/engine/threatsearch.ts` (the two short null-move searches),
     tested, checked by hand with Stockfish on real puzzles. Next: R3 (positional reasons), or
     R4 first to show R1–R2 in the app.
+  - R4 done 2026-10-26 (before R3, by the owner's choice): explanations in the Engine section
+    and the review's key moments name ideas ("It stops Qxf7#", "White answers Nxf7, a fork of
+    …"); a background explainer engine runs the extra searches. Next: R3.
   Say *why* a move is good or bad the way a coach would: "it stops the knight from reaching
   f7", "it pins the bishop and wins it next move", "after this the back rank is weak",
   instead of "it gives away 10% of winning chances". Today's explanations (P2.4a) give the

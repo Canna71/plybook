@@ -80,7 +80,10 @@ src/
   models/                  pgn.ts (chessops tree -> view model, Path type), GameModel.ts (immutable game ops),
                            settings.ts (JSON settings in AppConfig, Solid store), puzzles.ts (score formula)
   engine/                  uciengine.ts (UCI protocol parser) over executableuci.ts (talks to Rust engine_* commands),
-                           engineprofiles.ts (profiles, startEngine, humanProfile), lc0.ts (Maia move stats)
+                           engineprofiles.ts (profiles, startEngine, humanProfile), lc0.ts (Maia move stats),
+                           explainer.ts (a background second engine for the searches behind explanations)
+  reasons/                 move reasons in chess terms (docs/REASONS.md): motifs.ts (tactics in a line),
+                           threats.ts (what a move stops and threatens, in words); *.eval.ts = measurements
   storage/                 fs.ts (Tauri fs wrappers: Library, settings, themes), db.ts (invoke() wrappers for db.rs),
                            library.ts (Library listings with dates, search walk, dropped-file import)
   theming/                 dynamic CSS loading for board/piece themes (src/assets/styles)

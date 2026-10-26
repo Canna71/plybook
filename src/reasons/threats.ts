@@ -24,6 +24,11 @@ export const TRUSTED: ReadonlySet<Motif> = new Set<Motif>([
     "promotion",
 ]);
 
+/** How far into a line its idea is looked for (like a puzzle: a few moves, cashed in). */
+const IDEA_PLIES = 8;
+/** The motif must start within this ply: our first three moves */
+const IDEA_START = 4;
+
 /** What a line does for the side that plays it. */
 export type LineIdea = {
     /** The side playing the line */
@@ -75,19 +80,24 @@ function piecesOf(fen: string, pv: string[], reason: Reason): string[] {
     ];
 }
 
-/** What `pv` achieves from `fen` for the side to move there. */
+/**
+ * What `pv` achieves from `fen` for the side to move there. `lastCapture`: the square where
+ * the move that led to `fen` captured, if it did (taking back is not winning a free piece).
+ */
 export function lineIdea(
     fen: string,
     pv: string[],
-    previousUci?: string,
+    lastCapture?: string,
 ): LineIdea | undefined {
     const pos = positionOf(fen);
     const first = pv[0] && parseUci(pv[0]);
     if (!pos || !first || !pos.isLegal(first)) return undefined;
     const side = pos.turn;
     const outcome = lineOutcome(fen, pv, side);
-    const reason = mainReasons(lineMotifs(fen, pv, previousUci)).find((r) =>
-        TRUSTED.has(r.motif),
+    // the idea of a move is in its next few moves, not deep in a long engine line
+    const near = pv.slice(0, IDEA_PLIES);
+    const reason = mainReasons(lineMotifs(fen, near, lastCapture)).find(
+        (r) => TRUSTED.has(r.motif) && r.ply <= IDEA_START,
     );
     return {
         side,
@@ -136,7 +146,7 @@ export function createdThreat(
 ): LineIdea | undefined {
     const after = playUci(fenBefore, uci);
     const passed = after && nullMoveFen(after);
-    const idea = passed ? lineIdea(passed, ourPv, uci) : undefined;
+    const idea = passed ? lineIdea(passed, ourPv) : undefined;
     return isThreat(idea) ? idea : undefined;
 }
 

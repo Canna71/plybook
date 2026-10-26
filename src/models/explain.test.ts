@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { explainMove } from "./explain";
+import { lineIdea } from "../reasons/threats";
 
 describe("explainMove", () => {
     it("explains a blunder that allows mate and names the better move", () => {
@@ -33,7 +34,7 @@ describe("explainMove", () => {
         expect(text).toEqual([
             "Qg4 is a blunder: it gives away 40% of White's winning chances.",
             "It leaves the queen on g4 undefended and attacked.",
-            "Black answers Bxg4.",
+            "Black answers Bxg4, winning the queen on g4, which nothing defends.",
             "After Bxg4 f3: Black wins material (+9).",
             "Better was exd5.",
         ]);
@@ -63,6 +64,51 @@ describe("explainMove", () => {
         expect(text).toEqual([
             "Bxc6 is a mistake: it gives away 11% of White's winning chances.",
         ]);
+    });
+
+    it("says what a move stops and what it threatens", () => {
+        // 1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.Ng5: Black's Qe7 stops Nxf7 (a fork);
+        // White's Ng5 threatens it
+        const afterNg5 =
+            "r1bqkb1r/pppp1ppp/2n2n2/4p1N1/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 5 4";
+        const passedAfterNg5 =
+            "r1bqkb1r/pppp1ppp/2n2n2/4p1N1/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 5 5";
+        const fork = lineIdea(passedAfterNg5, ["g5f7", "d8e7", "f7h8"])!;
+        expect(
+            explainMove({
+                fenBefore: afterNg5,
+                uci: "d8e7",
+                verdict: { class: "good", loss: 2 },
+                threats: { stopped: fork },
+            }),
+        ).toContain(
+            "It stops Nxf7, a fork of the queen on d8 and the rook on h8.",
+        );
+        expect(
+            explainMove({
+                fenBefore:
+                    "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+                uci: "f3g5",
+                verdict: { class: "best", loss: 0 },
+                threats: { created: fork },
+            }),
+        ).toContain(
+            "It threatens Nxf7, a fork of the queen on d8 and the rook on h8.",
+        );
+    });
+
+    it("names what the opponent's answer does", () => {
+        // the same position, but Black plays a6 and allows the fork: Nxf7 was the point
+        const text = explainMove({
+            fenBefore:
+                "r1bqkb1r/pppp1ppp/2n2n2/4p1N1/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 5 4",
+            uci: "a7a6",
+            verdict: { class: "blunder", loss: 30 },
+            replyPv: ["g5f7", "d8e7", "f7h8"],
+        });
+        expect(text).toContain(
+            "White answers Nxf7, a fork of the queen on d8 and the rook on h8.",
+        );
     });
 
     it("keeps pawn moves in lower case", () => {

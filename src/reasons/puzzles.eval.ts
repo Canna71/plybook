@@ -5,7 +5,7 @@
 
 import { existsSync, readFileSync } from "fs";
 import { it } from "vitest";
-import { Chess, parseUci } from "chessops";
+import { Chess, NormalMove, parseUci } from "chessops";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { factsFromFen } from "../models/facts";
@@ -75,11 +75,14 @@ const factsDetector: Detector = (puzzle) => {
 /** The motif detectors (motifs.ts) after ranking, from the position the solver faces. */
 const motifDetector: Detector = (puzzle) => {
     const pos = Chess.fromSetup(parseFen(puzzle.fen).unwrap()).unwrap();
-    pos.play(parseUci(puzzle.moves[0])!);
+    const setUp = parseUci(puzzle.moves[0])! as NormalMove;
+    // the opponent's move took something there: taking back is not a free piece
+    const captured = pos.board.has(setUp.to);
+    pos.play(setUp);
     const reasons = lineMotifs(
         makeFen(pos.toSetup()),
         puzzle.moves.slice(1),
-        puzzle.moves[0],
+        captured ? puzzle.moves[0].slice(2, 4) : undefined,
     );
     return new Set(mainReasons(reasons).map((r) => r.motif));
 };

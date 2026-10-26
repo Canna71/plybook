@@ -10,6 +10,7 @@ import {
     makeSquare,
     NormalMove,
     opposite,
+    parseSquare,
     parseUci,
     Role,
     Square,
@@ -359,7 +360,7 @@ function doubleChecks(steps: Step[]): Reason[] {
  * The first move takes a piece (not a pawn) nobody defended, which is not just taking back
  * what the opponent's last move took, and the material stays won two moves later.
  */
-function hanging(steps: Step[], previous?: NormalMove): Reason[] {
+function hanging(steps: Step[], lastCapture?: Square): Reason[] {
     const first = steps[0];
     if (!first?.ours) return [];
     const taken = first.before.board.get(first.move.to);
@@ -367,7 +368,7 @@ function hanging(steps: Step[], previous?: NormalMove): Reason[] {
     const me = first.before.turn;
     if (!attackersOf(first.before, first.move.to, opposite(me)).isEmpty())
         return [];
-    if (previous?.to === first.move.to) return []; // a recapture
+    if (lastCapture === first.move.to) return []; // a recapture
     const later = steps[2]?.after;
     if (later && balance(later, me) < balance(first.after, me)) return [];
     return [
@@ -435,15 +436,15 @@ function mates(steps: Step[]): Reason[] {
 
 /**
  * Every motif found in `line` (UCI moves from `fen`), for the side to move in `fen`.
- * `previousUci`, the move that led to `fen`, tells a recapture from a free piece.
+ * `lastCapture`, the square where the move that led to `fen` captured (if it did), tells
+ * taking back from taking a free piece.
  */
 export function lineMotifs(
     fen: string,
     line: string[],
-    previousUci?: string,
+    lastCapture?: string,
 ): Reason[] {
     const steps = playLine(fen, line);
-    const previous = previousUci ? parseUci(previousUci) : undefined;
     if (!steps?.length) return [];
     const all = [
         ...mates(steps),
@@ -452,10 +453,7 @@ export function lineMotifs(
         ...pinned(steps),
         ...skewers(steps),
         ...discoveries(steps),
-        ...hanging(
-            steps,
-            previous && "from" in previous ? previous : undefined,
-        ),
+        ...hanging(steps, lastCapture ? parseSquare(lastCapture) : undefined),
         ...promotions(steps),
     ];
     // one reason per motif and squares (two rules may find the same pin)

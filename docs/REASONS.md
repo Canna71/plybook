@@ -162,6 +162,24 @@ e.g. quiet moves explained by what they set up: "Reh8 threatens Rh1#", "Qg6 thre
 capturing piece), discovered checks were called attacks on the king, motifs later in a line
 read "leading to promoting".
 
+### R4 results (in the app, 2026-10-26)
+
+- `models/explain.ts` uses R1–R2: the opponent's answer and the better move are named when
+  their line has a trusted motif ("White answers Nxf7, a fork of the queen on d8 and the rook
+  on h8"), and a good move says what it stops and threatens ("g6 is the engine's choice. It
+  stops Qxf7#. It threatens gxh5, winning the queen on h5, which nothing defends."). A threat
+  that already says "winning the queen on h5" replaces "it attacks the undefended queen".
+- A line's idea is looked for in its first 8 plies, starting within the first 5: a long
+  engine line otherwise "explained" …d5 by a discovered attack of rooks after both sides
+  castled.
+- `engine/explainer.ts`: a second instance of the analysis engine (1 thread, 16 MB hash),
+  started on the first request, one search at a time, cached by position and move. The
+  Engine section asks it for the move's threats; the game review's open key moment asks it for
+  the best line and the answer (depth 16 or 1.5 s), which the review does not keep.
+- Hanging piece: the detector now gets the square the previous move *captured* on (if it
+  did), not the previous move: "Qg4?? Bxg4" is a free queen, not a recapture. Recall 0.37 →
+  0.47 on the held-out puzzles, precision unchanged (0.98).
+
 ## Plan
 
 - **R1, motif detectors** (`src/reasons/motifs.ts`, tested): fork, pin (relative too), skewer,

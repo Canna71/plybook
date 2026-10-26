@@ -8,6 +8,7 @@ import { makeSan } from "chessops/san";
 import { Fact, factsFromFen } from "./facts";
 import { MoveClass } from "./review";
 import { describeOutcome, lineOutcome } from "./whatif";
+import { describeIdea, LineIdea, lineIdea } from "../reasons/threats";
 
 export type ExplainInput = {
     /** The position before the move */
@@ -21,6 +22,8 @@ export type ExplainInput = {
     bestPv?: string[];
     /** The engine's line after the move: the opponent's best answer first */
     replyPv?: string[];
+    /** What the move stops and threatens (engine/threatsearch.ts), when searched */
+    threats?: { stopped?: LineIdea; created?: LineIdea };
 };
 
 const SIDE = { white: "White", black: "Black" };
@@ -66,6 +69,12 @@ const VALUES: Record<Role, number> = {
     queen: 9,
     king: 0,
 };
+
+/** The move takes something. */
+function isCaptureAt(fen: string, uci: string): boolean {
+    const setup = parseFen(fen);
+    return setup.isOk && setup.value.board.has(parseSquare(uci.slice(2, 4))!);
+}
 
 /** A capture of something at least as valuable as the capturing piece. */
 function isExchange(fen: string, uci: string): boolean {
@@ -128,10 +137,20 @@ function solvedPhrase(fact: Fact): string | undefined {
     }
 }
 
-/** Gains and repairs of a move for `side`, as verb phrases. */
-function achievements(before: Fact[], after: Fact[], side: Color): string[] {
+/**
+ * Gains and repairs of a move for `side`, as verb phrases. `told`: squares already explained
+ * by a threat ("It threatens gxh5, winning the queen"), not to be said twice.
+ */
+function achievements(
+    before: Fact[],
+    after: Fact[],
+    side: Color,
+    told: string[] = [],
+): string[] {
     const created = newFacts(before, after).filter(
-        (f) => f.victim === opposite(side),
+        (f) =>
+            f.victim === opposite(side) &&
+            !(f.kind === "hanging" && told.includes(squareOf(f))),
     );
     // a forked piece is not worth a second mention as merely attacked
     const forked = new Set(created.flatMap((f) => f.targetSquares ?? []));
@@ -181,8 +200,9 @@ export function explainMove(input: ExplainInput): string[] {
             verdict.class === "mistake" ||
             verdict.class === "blunder");
 
-    // what the move does for its own side
-    const done = achievements(before, after, side);
+    // what the move does for its own side (less what its threat will say)
+    const threatened = input.threats?.created?.motif?.squares ?? [];
+    const done = achievements(before, after, side, threatened);
     // what it leaves behind; a capturing piece open to recapture is an exchange, not a weakness
     const exchange = isExchange(input.fenBefore, input.uci);
     const weaknesses = newFacts(before, after)
@@ -203,13 +223,34 @@ export function explainMove(input: ExplainInput): string[] {
         sentences.push(`It ${joinAnd(done)}.`);
     }
 
+    // the ideas: the threat it stops, the one it makes (the null-move searches)
+    if (!bad && input.threats?.stopped) {
+        sentences.push(`It stops ${describeIdea(input.threats.stopped)}.`);
+    }
+    if (!bad && input.threats?.created) {
+        sentences.push(`It threatens ${describeIdea(input.threats.created)}.`);
+    }
+
     // the opponent's answer and where it leads
     const reply = input.replyPv?.[0] && play(moved.fen, input.replyPv[0]);
+    // what the answer does, named: a fork, a skewer… (taking back is not a free piece)
+    const capturedSquare =
+        isCaptureAt(input.fenBefore, input.uci) && input.uci.slice(2, 4);
+    const replyIdea =
+        bad && input.replyPv?.length
+            ? lineIdea(moved.fen, input.replyPv, capturedSquare || undefined)
+            : undefined;
     if (bad && reply) {
         if (reply.san.endsWith("#")) {
             sentences.push(
                 `${SIDE[opponent]} answers ${reply.san}, checkmate.`,
             );
+        } else if (replyIdea?.motif || replyIdea?.mates) {
+            sentences.push(
+                `${SIDE[opponent]} answers ${describeIdea(replyIdea)}.`,
+            );
+            const result = consequence(moved.fen, input.replyPv!, opponent);
+            if (result) sentences.push(result);
         } else {
             const replyGains = newFacts(after, factsFromFen(reply.fen))
                 .filter((f) => f.victim === side)
@@ -225,7 +266,14 @@ export function explainMove(input: ExplainInput): string[] {
     // the better move
     if (bad && input.bestUci && input.bestUci !== input.uci) {
         const best = play(input.fenBefore, input.bestUci);
-        if (best) {
+        const bestIdea =
+            input.bestPv?.[0] === input.bestUci
+                ? lineIdea(input.fenBefore, input.bestPv)
+                : undefined;
+        if (best && (bestIdea?.motif || bestIdea?.mates)) {
+            // the better move's idea, named: "Better was Nxf7, a fork of …"
+            sentences.push(`Better was ${describeIdea(bestIdea)}.`);
+        } else if (best) {
             const bestDone = achievements(before, factsFromFen(best.fen), side);
             const why = bestDone.length ? `: it ${joinAnd(bestDone)}` : "";
             sentences.push(`Better was ${best.san}${why}.`);

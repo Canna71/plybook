@@ -61,8 +61,8 @@ describe("lineMotifs", () => {
         const fen = "2Q2bk1/5p1p/p5p1/2p3P1/4B3/7P/qPr2P2/2K4R w - - 0 33";
         const line = ["e4c2", "a2a1", "c2b1"];
         expect(motifs(fen, line)).toContain("hangingPiece");
-        // had Black just taken on c2, Bxc2 would be taking back
-        expect(motifs(fen, line, "d3c2")).not.toContain("hangingPiece");
+        // had Black's last move taken something on c2, Bxc2 would be taking back
+        expect(motifs(fen, line, "c2")).not.toContain("hangingPiece");
     });
 
     it("finds nothing in an illegal or empty line", () => {

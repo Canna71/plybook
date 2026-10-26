@@ -5,7 +5,7 @@
 //
 // A command: { "id": "any unique value", "go": "/route", "click": "css selector",
 //              "type": "text", "key": "ArrowRight", "theme": "light" | "dark" | "",
-//              "move": "e2e4 g1f3" }
+//              "move": "e2e4 g1f3", "scroll": "css selector" }
 
 import anylogger from "anylogger";
 const log = anylogger("devdriver");
@@ -20,6 +20,8 @@ type Command = {
     theme?: "light" | "dark" | "";
     /** Moves on the main board, as UCI, separated by spaces */
     move?: string;
+    /** Scrolls this element into view (after the other commands) */
+    scroll?: string;
 };
 
 const POLL = 500;
@@ -127,6 +129,11 @@ export function startDevDriver(navigate: (to: string) => void) {
                 );
             }
             if (cmd.move) playMoves(cmd.move);
+            if (cmd.scroll) {
+                const el = document.querySelector(cmd.scroll);
+                if (el) el.scrollIntoView({ block: "center" });
+                else log.warn("nothing matches", cmd.scroll);
+            }
         }, 300);
     }, POLL);
     return () => clearInterval(timer);
