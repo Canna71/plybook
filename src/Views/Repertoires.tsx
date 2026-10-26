@@ -1,5 +1,5 @@
 import { Component, createResource, For, Show } from "solid-js";
-import { useNavigate } from "@solidjs/router";
+import { A, useNavigate } from "@solidjs/router";
 import Button from "../components/common/Button";
 import { counts } from "../models/repertoire";
 import {
@@ -51,7 +51,22 @@ const Repertoires: Component = () => {
                         each={repertoires()}
                         fallback={
                             <tr>
-                                <td>No repertoires yet.</td>
+                                <td class="rc-empty">
+                                    <strong>No repertoires yet</strong>
+                                    <p>
+                                        Make a study with the openings you play,
+                                        then choose “Repertoire: For White” or
+                                        “For Black” in its header.
+                                    </p>
+                                    <p class="repertoires-empty-action">
+                                        <A
+                                            class="button is-primary"
+                                            href="/library?path=Library"
+                                        >
+                                            Open the Library
+                                        </A>
+                                    </p>
+                                </td>
                             </tr>
                         }
                     >

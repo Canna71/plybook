@@ -129,6 +129,11 @@ html, body {
     input[type=range]:focus {
         outline: none;
     }
+
+    // the track hides the outline: keyboard focus rings the thumb instead
+    input[type=range]:focus-visible::-webkit-slider-thumb {
+        box-shadow: 0 0 0 3px var(--rc-focus);
+    }
     
     input[type=range]:focus::-webkit-slider-runnable-track {
         background: #ccc;
