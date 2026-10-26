@@ -1,5 +1,4 @@
 #![allow(non_snake_case)]
-// use tauri::Manager;
 mod backup;
 mod books;
 mod capture;
@@ -13,13 +12,7 @@ mod migrate;
 mod net;
 mod repertoire;
 mod secrets;
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 
-// use serde::{Deserialize, Serialize};
 use backup::*;
 use books::*;
 use capture::*;
@@ -33,14 +26,6 @@ use net::*;
 use repertoire::*;
 use secrets::*;
 
-// use add_capability to enable an arbitrary engine to run
-// #[tauri::command]
-// // #[tokio::main]
-// async fn enable_program() -> Result<None> {
-//    app.
-
-//     Ok(None)
-// }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -64,7 +49,6 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            greet,
             init_db,
             upsert_study,
             list_puzzles,

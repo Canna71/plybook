@@ -68,7 +68,7 @@ Rust changed.
 src/
   index.tsx, App.tsx       router: / /game /analysis /play /puzzles /puzzle /library /books /reader /history /boardeditor /settings /guess /databases
   Views/                   route pages. GameView = file load/save/puzzle wrapper around GameManager.
-                           Play, Puzzles, History, LibraryFolder, Sidebar, Layout. obsoleted/ is dead code.
+                           Play, Puzzles, History, LibraryFolder, Books, Sidebar, Layout.
   components/game/         GameManager.tsx (the hub: state, board area), AnalysisPanel.tsx (the panel:
                            toolbar + PanelSection sections), EvalBar, GameContext.tsx (shared signals),
                            useChessEngine.tsx (engine state), Moves/Ply (move tree), Review,
@@ -180,8 +180,6 @@ User data locations (resolved by Tauri from the bundle identifier):
   `components/common/chessboard.tsx` clears it at every press, because a board moved by the
   layout around it (a panel above it changing) would otherwise put moves on the wrong squares.
 - Paths in routes must be URL-encoded (`encodeURIComponent`) because file names can contain `&#?+`.
-- Dead code you can ignore or delete: `src/Views/obsoleted/`, `Views/GameEditView.tsx`,
-  `components/Analysis.tsx`, `models/FENcoder.ts`, Rust `greet`.
 - Known refactor targets: split `GameManager.tsx`, make `useChessEngine` an explicit state machine,
   a typed settings schema, split `components/common/utils.tsx`, add Vitest + Rust CI.
 
