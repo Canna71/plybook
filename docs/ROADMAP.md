@@ -128,7 +128,8 @@ How this file is used:
     best and game moves found. `models/guess.ts`, `engine/search.ts` with tests.
   - Known limits: scores are kept for the session only (no history of training results);
     promotion candidates are always queens.
-- [ ] **P2.8 Reasons in chess terms** (requested by the owner 2026-10-25; research first).
+- [x] **P2.8 Reasons in chess terms** (requested by the owner 2026-10-25; research first;
+  done 2026-10-26, merged; still open: pins below the bar, SF17 piece values).
   - Status 2026-10-26: research done, report in `docs/REASONS.md` (prior work, the kinds of
     reasons and how to compute each, a measuring harness `pnpm eval:reasons` against the
     Lichess puzzle themes with a baseline, and the plan R1–R5). Building starts with R1.
@@ -174,7 +175,8 @@ How this file is used:
   - Then: templates that turn detected reasons into sentences (extending `models/explain.ts`),
     shown in the Engine section and the review; optionally a model to phrase them better
     from the structured facts (P2.4b), never to calculate.
-- [ ] **P2.9 Tutor mode when playing** (requested by the owner 2026-10-25): the engine plays
+- [x] **P2.9 Tutor mode when playing** (requested by the owner 2026-10-25; done 2026-10-26,
+  merged; owner testing pending): the engine plays
   at your level and coaches during the game.
   - Strength: "as bad as needed". Pick the engine's move by a target winning chance near
     your level (from the engine's MultiPV lines), sometimes a human-like mistake (Maia's
@@ -458,7 +460,9 @@ How this file is used:
 
 ## UX overhaul (requested 2026-10-24, after the feature work above)
 
-- [ ] **U.1 UI overhaul for a better user experience.** Many features were added quickly, each
+- [x] **U.1 UI overhaul for a better user experience** (steps 1–8 done and merged by
+  2026-10-26, plan and log in `docs/UX.md`; still open: splitting `GameManager.tsx`, a contrast
+  pass on the newest screens). Many features were added quickly, each
   in its own corner; this pass makes the app feel like one product. Proposed scope, to agree on
   before starting (a short design doc with mock-ups first):
   - **Information architecture**: a home/dashboard with what to do today (repertoire reviews
