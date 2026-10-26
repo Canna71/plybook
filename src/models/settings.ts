@@ -71,6 +71,10 @@ export interface AppSettings {
         /** The page each PDF was left at, before `places`; still read for older books */
         pages?: Record<string, number>;
     };
+    library?: {
+        /** The Library browser's order: "name" or "modified" (newest first) */
+        sort?: string;
+    };
     layout: {
         columnsTemplate?: string;
         /** The sidebar shows icons only */
@@ -135,6 +139,9 @@ const DEFAULT: AppSettings = {
     reader: {
         places: {},
         pages: {},
+    },
+    library: {
+        sort: "name",
     },
     layout: {
         columnsTemplate: "200px 5px 1fr",

@@ -10,6 +10,7 @@ import {
     IconChevronDown,
     IconChevronRight,
     IconDatabase,
+    IconFolders,
     IconHistory,
     IconHome,
     IconLayoutBoard,
@@ -38,7 +39,8 @@ import "./Sidebar.scss";
 const ICONS: Record<string, () => JSX.Element> = {
     home: () => <IconHome />,
     analysis: () => <IconChessKnight />,
-    library: () => <IconBooks />,
+    library: () => <IconFolders />,
+    book: () => <IconBooks />,
     repertoire: () => <IconRoute />,
     puzzle: () => <IconPuzzle />,
     play: () => <IconSwords />,

@@ -119,218 +119,232 @@ const Databases: Component = () => {
                 )}
             </Show>
 
-            <table class="table is-narrow databases-table">
-                <tbody>
-                    <For
-                        each={databases()}
-                        fallback={
-                            <tr>
-                                <td>
-                                    No databases yet. Import a PGN file to
-                                    search its games by player, opening or
-                                    position.
-                                </td>
-                            </tr>
-                        }
-                    >
-                        {(db) => (
-                            <tr>
-                                <td>
-                                    <strong>{db.name}</strong>
-                                </td>
-                                <td>{db.gameCount.toLocaleString()} games</td>
-                                <td class="source">{db.source}</td>
-                                <td>
-                                    <Button
-                                        class="is-small is-danger is-outlined"
-                                        onClick={() => remove(db)}
-                                    >
-                                        Delete
-                                    </Button>
-                                </td>
-                            </tr>
-                        )}
-                    </For>
-                </tbody>
-            </table>
-
-            <form class="search-form" onSubmit={search}>
-                <div class="field is-grouped is-grouped-multiline">
-                    <div class="control">
-                        <div class="select is-small">
-                            <select
-                                value={form().databaseId ?? ""}
-                                onChange={(e) =>
-                                    update({
-                                        databaseId: e.currentTarget.value
-                                            ? +e.currentTarget.value
-                                            : undefined,
-                                    })
-                                }
-                            >
-                                <option value="">All databases</option>
-                                <For each={databases()}>
-                                    {(db) => (
-                                        <option value={db.id}>{db.name}</option>
-                                    )}
-                                </For>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="control">
-                        <input
-                            class="input is-small"
-                            placeholder="Player (either colour)"
-                            value={form().player ?? ""}
-                            onInput={(e) =>
-                                update({ player: e.currentTarget.value })
-                            }
-                        />
-                    </div>
-                    <div class="control">
-                        <input
-                            class="input is-small eco"
-                            placeholder="ECO (e.g. B9)"
-                            value={form().eco ?? ""}
-                            onInput={(e) =>
-                                update({ eco: e.currentTarget.value })
-                            }
-                        />
-                    </div>
-                    <div class="control">
-                        <div class="select is-small">
-                            <select
-                                value={form().result ?? ""}
-                                onChange={(e) =>
-                                    update({ result: e.currentTarget.value })
-                                }
-                            >
-                                <option value="">Any result</option>
-                                <option value="1-0">1-0</option>
-                                <option value="1/2-1/2">½-½</option>
-                                <option value="0-1">0-1</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="control">
-                        <input
-                            class="input is-small elo"
-                            type="number"
-                            placeholder="Min Elo"
-                            value={form().minElo ?? ""}
-                            onInput={(e) =>
-                                update({
-                                    minElo: e.currentTarget.value
-                                        ? +e.currentTarget.value
-                                        : undefined,
-                                })
-                            }
-                        />
-                    </div>
-                    <div class="control is-expanded">
-                        <input
-                            class="input is-small"
-                            placeholder="Position (FEN): games that reached it in their first 30 plies"
-                            value={form().fen ?? ""}
-                            onInput={(e) =>
-                                update({ fen: e.currentTarget.value })
-                            }
-                        />
-                    </div>
-                    <div class="control">
-                        <button
-                            class="button is-small is-primary"
-                            type="submit"
-                        >
-                            Search
-                        </button>
-                    </div>
+            <Show
+                when={
+                    !databases.loading && !databases()?.length && !importing()
+                }
+            >
+                <div class="rc-empty">
+                    <strong>No databases yet</strong>
+                    <p>
+                        Import a large PGN file to search its games by player,
+                        opening, result or position: The Week in Chess, the
+                        Lichess database (.pgn.zst) or Lumbra's Gigabase, for
+                        example. Your own games and studies belong in the
+                        Library.
+                    </p>
                 </div>
-            </form>
+            </Show>
 
-            <div class="results-bar">
-                <Show when={results()}>
-                    {(r) => (
-                        <>
-                            {r().total.toLocaleString()} games
-                            <Show when={r().total > PAGE}>
-                                {" · "}
-                                <Button
-                                    class="is-small"
-                                    disabled={(query().offset ?? 0) === 0}
-                                    onClick={() => page(-1)}
-                                >
-                                    Previous
-                                </Button>{" "}
-                                {(query().offset ?? 0) + 1}–
-                                {Math.min(
-                                    (query().offset ?? 0) + PAGE,
-                                    r().total,
-                                )}{" "}
-                                <Button
-                                    class="is-small"
-                                    disabled={
-                                        (query().offset ?? 0) + PAGE >=
-                                        r().total
-                                    }
-                                    onClick={() => page(1)}
-                                >
-                                    Next
-                                </Button>
-                            </Show>
-                        </>
-                    )}
-                </Show>
-            </div>
-            <div class="table-container">
-                <table class="table is-narrow is-hoverable is-fullwidth games-table">
-                    <thead>
-                        <tr>
-                            <th>White</th>
-                            <th>Black</th>
-                            <th>Result</th>
-                            <th>Date</th>
-                            <th>ECO</th>
-                            <th>Event</th>
-                            <th>Moves</th>
-                            <th>Database</th>
-                        </tr>
-                    </thead>
+            <Show when={databases()?.length}>
+                <table class="table is-narrow databases-table">
                     <tbody>
-                        <For each={results()?.games}>
-                            {(game) => (
-                                <tr
-                                    class="game-row"
-                                    onClick={() =>
-                                        navigate(
-                                            `/game?source=database&id=${game.id}`,
-                                        )
-                                    }
-                                >
+                        <For each={databases()}>
+                            {(db) => (
+                                <tr>
                                     <td>
-                                        {game.white}
-                                        {game.whiteElo
-                                            ? ` (${game.whiteElo})`
-                                            : ""}
+                                        <strong>{db.name}</strong>
                                     </td>
                                     <td>
-                                        {game.black}
-                                        {game.blackElo
-                                            ? ` (${game.blackElo})`
-                                            : ""}
+                                        {db.gameCount.toLocaleString()} games
                                     </td>
-                                    <td>{game.result}</td>
-                                    <td>{game.date}</td>
-                                    <td title={game.opening}>{game.eco}</td>
-                                    <td>{game.event}</td>
-                                    <td>{Math.ceil(game.plies / 2)}</td>
-                                    <td>{nameOf(game.databaseId)}</td>
+                                    <td class="source">{db.source}</td>
+                                    <td>
+                                        <Button
+                                            class="is-small"
+                                            onClick={() => remove(db)}
+                                        >
+                                            Delete…
+                                        </Button>
+                                    </td>
                                 </tr>
                             )}
                         </For>
                     </tbody>
                 </table>
-            </div>
+
+                <form class="search-form" onSubmit={search}>
+                    <div class="field is-grouped is-grouped-multiline">
+                        <div class="control">
+                            <div class="select is-small">
+                                <select
+                                    value={form().databaseId ?? ""}
+                                    onChange={(e) =>
+                                        update({
+                                            databaseId: e.currentTarget.value
+                                                ? +e.currentTarget.value
+                                                : undefined,
+                                        })
+                                    }
+                                >
+                                    <option value="">All databases</option>
+                                    <For each={databases()}>
+                                        {(db) => (
+                                            <option value={db.id}>
+                                                {db.name}
+                                            </option>
+                                        )}
+                                    </For>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control">
+                            <input
+                                class="input is-small"
+                                placeholder="Player (either colour)"
+                                value={form().player ?? ""}
+                                onInput={(e) =>
+                                    update({ player: e.currentTarget.value })
+                                }
+                            />
+                        </div>
+                        <div class="control">
+                            <input
+                                class="input is-small eco"
+                                placeholder="ECO (e.g. B9)"
+                                value={form().eco ?? ""}
+                                onInput={(e) =>
+                                    update({ eco: e.currentTarget.value })
+                                }
+                            />
+                        </div>
+                        <div class="control">
+                            <div class="select is-small">
+                                <select
+                                    value={form().result ?? ""}
+                                    onChange={(e) =>
+                                        update({
+                                            result: e.currentTarget.value,
+                                        })
+                                    }
+                                >
+                                    <option value="">Any result</option>
+                                    <option value="1-0">1-0</option>
+                                    <option value="1/2-1/2">½-½</option>
+                                    <option value="0-1">0-1</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control">
+                            <input
+                                class="input is-small elo"
+                                type="number"
+                                placeholder="Min Elo"
+                                value={form().minElo ?? ""}
+                                onInput={(e) =>
+                                    update({
+                                        minElo: e.currentTarget.value
+                                            ? +e.currentTarget.value
+                                            : undefined,
+                                    })
+                                }
+                            />
+                        </div>
+                        <div class="control is-expanded">
+                            <input
+                                class="input is-small"
+                                placeholder="Position (FEN): games that reached it in their first 30 plies"
+                                value={form().fen ?? ""}
+                                onInput={(e) =>
+                                    update({ fen: e.currentTarget.value })
+                                }
+                            />
+                        </div>
+                        <div class="control">
+                            <button
+                                class="button is-small is-primary"
+                                type="submit"
+                            >
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="results-bar">
+                    <Show when={results()}>
+                        {(r) => (
+                            <>
+                                {r().total.toLocaleString()} games
+                                <Show when={r().total > PAGE}>
+                                    {" · "}
+                                    <Button
+                                        class="is-small"
+                                        disabled={(query().offset ?? 0) === 0}
+                                        onClick={() => page(-1)}
+                                    >
+                                        Previous
+                                    </Button>{" "}
+                                    {(query().offset ?? 0) + 1}–
+                                    {Math.min(
+                                        (query().offset ?? 0) + PAGE,
+                                        r().total,
+                                    )}{" "}
+                                    <Button
+                                        class="is-small"
+                                        disabled={
+                                            (query().offset ?? 0) + PAGE >=
+                                            r().total
+                                        }
+                                        onClick={() => page(1)}
+                                    >
+                                        Next
+                                    </Button>
+                                </Show>
+                            </>
+                        )}
+                    </Show>
+                </div>
+                <div class="table-container">
+                    <table class="table is-narrow is-hoverable is-fullwidth games-table">
+                        <thead>
+                            <tr>
+                                <th>White</th>
+                                <th>Black</th>
+                                <th>Result</th>
+                                <th>Date</th>
+                                <th>ECO</th>
+                                <th>Event</th>
+                                <th>Moves</th>
+                                <th>Database</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <For each={results()?.games}>
+                                {(game) => (
+                                    <tr
+                                        class="game-row"
+                                        onClick={() =>
+                                            navigate(
+                                                `/game?source=database&id=${game.id}`,
+                                            )
+                                        }
+                                    >
+                                        <td>
+                                            {game.white}
+                                            {game.whiteElo
+                                                ? ` (${game.whiteElo})`
+                                                : ""}
+                                        </td>
+                                        <td>
+                                            {game.black}
+                                            {game.blackElo
+                                                ? ` (${game.blackElo})`
+                                                : ""}
+                                        </td>
+                                        <td>{game.result}</td>
+                                        <td>{game.date}</td>
+                                        <td title={game.opening}>{game.eco}</td>
+                                        <td>{game.event}</td>
+                                        <td>{Math.ceil(game.plies / 2)}</td>
+                                        <td>{nameOf(game.databaseId)}</td>
+                                    </tr>
+                                )}
+                            </For>
+                        </tbody>
+                    </table>
+                </div>
+            </Show>
         </div>
     );
 };

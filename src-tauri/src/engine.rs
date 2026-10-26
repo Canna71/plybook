@@ -45,7 +45,10 @@ pub enum EngineEvent {
     },
 }
 
-fn app_local_dir<R: Runtime>(app: &AppHandle<R>, folder: &str) -> Result<PathBuf, String> {
+pub(crate) fn app_local_dir<R: Runtime>(
+    app: &AppHandle<R>,
+    folder: &str,
+) -> Result<PathBuf, String> {
     app.path()
         .app_local_data_dir()
         .map(|dir| dir.join(folder))
@@ -53,7 +56,7 @@ fn app_local_dir<R: Runtime>(app: &AppHandle<R>, folder: &str) -> Result<PathBuf
 }
 
 /// Resolves `relative` inside `root`, rejecting anything that escapes it (`..`, symlinks).
-fn resolve_inside(root: &Path, relative: &str) -> Result<PathBuf, String> {
+pub(crate) fn resolve_inside(root: &Path, relative: &str) -> Result<PathBuf, String> {
     let root = root.canonicalize().map_err(|e| e.to_string())?;
     let path = root
         .join(relative)

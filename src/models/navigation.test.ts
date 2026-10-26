@@ -6,10 +6,10 @@ describe("navigation", () => {
         expect(activeNavItem("/")?.id).toBe("today");
         expect(activeNavItem("/analysis")?.id).toBe("analysis");
         expect(activeNavItem("/game")?.id).toBe("library");
-        expect(activeNavItem("/reader")?.id).toBe("library");
+        expect(activeNavItem("/reader")?.id).toBe("books");
         expect(activeNavItem("/puzzle")?.id).toBe("puzzles");
         expect(activeNavItem("/repertoire")?.id).toBe("repertoires");
-        expect(activeNavItem("/scan-book")?.id).toBe("scan");
+        expect(activeNavItem("/scan-book")?.id).toBe("books");
         expect(activeNavItem("/settings")?.id).toBe("settings");
         expect(activeNavItem("/nowhere")).toBeUndefined();
     });

@@ -1,18 +1,146 @@
+// the Library browser (LibraryFolder.tsx)
 .library-folder {
+    position: relative;
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
+    padding: 0 var(--rc-space-4);
 
-    .table-container {
-        flex: 1;
-        overflow: auto;
-        .files_table {
-            td {
-                white-space: nowrap;
-            }
+    .breadcrumb {
+        font-size: var(--rc-text-sm);
+        margin: 0;
+    }
+
+    .library-search {
+        width: 240px;
+
+        .icon svg {
+            width: 18px;
+            height: 18px;
         }
     }
 
+    .library-list {
+        flex: 1;
+        overflow: auto;
+        padding-bottom: var(--rc-space-4);
+    }
 
+    th {
+        white-space: nowrap;
+
+        // the name takes the room, also when no row says so
+        &:first-child {
+            width: 100%;
+        }
+    }
+
+    // the sortable headings look like the others, the active one stronger
+    .library-sort {
+        all: unset;
+        cursor: pointer;
+
+        &:hover,
+        &.active {
+            color: var(--rc-text-strong);
+        }
+
+        &.active::after {
+            content: " ↓";
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--rc-focus);
+            outline-offset: 2px;
+        }
+    }
+
+    td {
+        vertical-align: middle;
+    }
+
+    .library-name {
+        width: 100%;
+
+        > * {
+            vertical-align: middle;
+        }
+
+        a {
+            display: inline-block;
+            color: var(--rc-text-strong);
+            font-weight: 500;
+        }
+    }
+
+    // a search result's folder, under its name
+    .library-where {
+        display: block;
+        font-size: var(--rc-text-xs);
+        font-weight: 400;
+        color: var(--rc-text-muted);
+    }
+
+    .library-icon {
+        display: inline-flex;
+        margin-right: var(--rc-space-2);
+        color: var(--rc-text-muted);
+
+        svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        &.folder {
+            color: var(--rc-link);
+        }
+
+        &.book {
+            color: var(--rc-danger);
+        }
+    }
+
+    .library-kind,
+    .library-date,
+    .library-size {
+        white-space: nowrap;
+        color: var(--rc-text-muted);
+        font-size: var(--rc-text-sm);
+    }
+
+    .library-size {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .library-actions {
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    // files dragged over the window
+    &.dropping .library-list {
+        opacity: 0.4;
+    }
+
+    .library-drop {
+        position: absolute;
+        inset: var(--rc-space-3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--rc-space-2);
+        border: 2px dashed var(--rc-accent);
+        border-radius: var(--rc-radius);
+        color: var(--rc-accent);
+        font-size: var(--rc-text-lg);
+        font-weight: 600;
+        pointer-events: none;
+
+        svg {
+            width: 28px;
+            height: 28px;
+        }
+    }
 }

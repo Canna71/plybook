@@ -87,6 +87,24 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Guess the move**: the board is square and whole; add candidates, Reveal, the verdict
       (green or red) and the score under it; Next move; "Game finished" at the end.
 
+## UX overhaul, step 7: Library and books (branch feature/ux-overhaul)
+
+- [ ] **Drag and drop**: drag PGN and PDF files from the Finder onto the Library: a dashed
+      frame appears; on drop they are copied into the open folder ("Added …"); a second drop
+      of the same file adds "name (1)"; an image or a folder is skipped with a message.
+- [ ] **Import…**: pick several PGN/PDF files at once; they appear in the folder.
+- [ ] **New → New folder / New study**: created with the name selected for renaming; Enter
+      keeps the new name; the sidebar's Files tree updates.
+- [ ] **Delete…**: asks first; Cancel keeps the file; a deleted file leaves Today's Continue.
+- [ ] **Show in Finder** (folder row, or ⋯ in the header) opens the folder.
+- [ ] **Sorting**: Modified puts the newest first and is remembered after a restart.
+- [ ] **Search**: finds files in any folder; Esc clears it; opening a result's folder clears it.
+- [ ] **Books**: every PDF in the Library appears, the last read first, with its page; a card
+      opens the reader at that page; "n scanned diagrams" opens their folder.
+- [ ] **Books → Add PDF…**: the book lands in Library / Books (created if missing).
+- [ ] **Sidebar**: Books is highlighted while reading a PDF or scanning a whole book.
+- [ ] **Databases**: after importing one, the search form appears; Delete… asks first.
+
 ## PDF reader (P4.4)
 
 - [ ] **Text below the diagram** (P4.4e, needs work): "Text below the diagram: …" shows the
