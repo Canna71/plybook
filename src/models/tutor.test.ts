@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
     hintSteps,
+    MoveRecord,
+    nextLevel,
     pickTutorMove,
+    summarizeGame,
     shouldAsk,
     standsOut,
     tutorLevel,
@@ -102,6 +105,67 @@ describe("standsOut", () => {
         ).toBeUndefined();
         // the best is not good enough to matter
         expect(standsOut([{ uci: "a", win: 55 }])).toBeUndefined();
+    });
+});
+
+describe("summarizeGame", () => {
+    const records: MoveRecord[] = [
+        { label: "1. e4", loss: 0 },
+        { label: "5. Ba6", loss: 30, allowed: "hangingPiece" },
+        { label: "9. Qh5", loss: 18, allowed: "fork" },
+        { label: "12. Nf3", loss: 9 },
+        { label: "14. Rd1", loss: 0, chance: { found: true, motif: "pin" } },
+        {
+            label: "16. a3",
+            loss: 22,
+            allowed: "fork",
+            chance: { found: false, motif: "fork" },
+        },
+    ];
+
+    it("picks the worst moves, the finds, the misses and what to train", () => {
+        const s = summarizeGame(records, "loss");
+        expect(s.mistakes.map((r) => r.label)).toEqual([
+            "5. Ba6",
+            "16. a3",
+            "9. Qh5",
+        ]);
+        expect(s.found.map((r) => r.label)).toEqual(["14. Rd1"]);
+        expect(s.missed.map((r) => r.label)).toEqual(["16. a3"]);
+        // forks came up three times (two allowed, one missed), a hanging piece once
+        expect(s.train).toEqual(["fork", "hangingPiece"]);
+    });
+
+    it("is empty for a clean game", () => {
+        expect(summarizeGame([{ label: "1. e4", loss: 2 }], "win")).toEqual({
+            result: "win",
+            mistakes: [],
+            found: [],
+            missed: [],
+            train: [],
+        });
+    });
+});
+
+describe("nextLevel", () => {
+    const clean = summarizeGame([], "win");
+    it("goes up after a win, down after a loss with mistakes, within limits", () => {
+        expect(nextLevel(1200, clean)).toBe(1300);
+        expect(nextLevel(2200, clean)).toBe(2200);
+        const bad = summarizeGame(
+            [
+                { label: "1", loss: 30 },
+                { label: "2", loss: 20 },
+            ],
+            "loss",
+        );
+        expect(nextLevel(1200, bad)).toBe(1100);
+        expect(nextLevel(600, bad)).toBe(600);
+        // a narrow loss without mistakes, or a draw with some: the same level
+        expect(nextLevel(1200, summarizeGame([], "loss"))).toBe(1200);
+        expect(
+            nextLevel(1200, summarizeGame([{ label: "1", loss: 20 }], "draw")),
+        ).toBe(1200);
     });
 });
 

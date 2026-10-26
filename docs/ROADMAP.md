@@ -205,8 +205,14 @@ How this file is used:
       and Take it back / Keep my move, "There's something strong here" with Hint / More,
       "Watch out: White threatens …", and "I've just made a mistake. Can you find how to take
       advantage of it?". No clock in tutor games; the opponent is "Tutor" with your rating.
-    - Next: T4, a short summary after the game (best moments, mistakes, what to train), and
-      the level set automatically from your games and puzzle rating.
+    - T4 done: when a game ends (a result or a resignation) the tutor's panel sums it up:
+      the result, your costliest moves and what they allowed, strong moves you found or
+      missed, and buttons to train those themes (a Lichess puzzle of the theme near your
+      puzzle rating). "Your level: Automatic" (setting `tutor.auto`, on by default) moves the
+      level up 100 after a win (or a clean draw) and down 100 after a lost game with two or
+      more mistakes (600–2200). Take-backs leave no trace in the summary.
+    - Left for later: starting the automatic level from your puzzle rating or online games,
+      and a tutor for the opening (repertoire) phase.
 
 ## Phase 3: databases and imports
 

@@ -80,6 +80,8 @@ export interface AppSettings {
         on?: boolean;
         /** Your rating, which the tutor plays and coaches at */
         elo?: number;
+        /** The level follows your results: up after a win, down after a lost game of mistakes */
+        auto?: boolean;
         /** "quiet", "normal" or "chatty": how readily it asks about your moves */
         chattiness?: string;
         /** "Take it back?" after a mistake */
@@ -154,6 +156,7 @@ const DEFAULT: AppSettings = {
     tutor: {
         on: false,
         elo: 1200,
+        auto: true,
         chattiness: "normal",
         takebacks: true,
     },

@@ -22,6 +22,8 @@ const PlayView = () => {
         getSettingValue<string>(TIME_CONTROL_SETTING, "") ?? "",
     );
     const tutorOn = () => !!getSettingValue<boolean>(TUTOR_SETTING, false);
+    const tutorAuto = () => !!getSettingValue<boolean>("tutor.auto", true);
+    const tutorElo = () => getSettingValue<number>("tutor.elo", 1200) ?? 1200;
 
     // Saved after every move, so History has the game even if it is left unfinished
     createEffect(
@@ -87,21 +89,27 @@ const PlayView = () => {
                         </label>
                     }
                 >
-                    <label title="Your rating, roughly: the tutor plays and coaches at it">
+                    <label title="Your rating, roughly: the tutor plays and coaches at it. Automatic: it goes up after a win and down after a lost game full of mistakes">
                         Your level{" "}
                         <span class="select is-small">
                             <select
-                                value={getSettingValue<number>(
-                                    "tutor.elo",
-                                    1200,
-                                )}
-                                onChange={(e) =>
+                                value={tutorAuto() ? "auto" : tutorElo()}
+                                onChange={(e) => {
+                                    const value = e.currentTarget.value;
                                     void setSettingValue(
-                                        "tutor.elo",
-                                        +e.currentTarget.value,
-                                    )
-                                }
+                                        "tutor.auto",
+                                        value === "auto",
+                                    );
+                                    if (value !== "auto")
+                                        void setSettingValue(
+                                            "tutor.elo",
+                                            +value,
+                                        );
+                                }}
                             >
+                                <option value="auto">
+                                    Automatic ({tutorElo()})
+                                </option>
                                 <For each={TUTOR_LEVELS}>
                                     {(elo) => (
                                         <option value={elo}>{elo}</option>

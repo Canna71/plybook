@@ -43,6 +43,29 @@
         flex-wrap: wrap;
     }
 
+    // the summary at the end of a game
+    .tutor-summary {
+        display: flex;
+        flex-direction: column;
+        gap: var(--rc-space-2);
+        color: var(--rc-text);
+
+        .tutor-result {
+            font-size: var(--rc-text-lg);
+            font-weight: 600;
+            color: var(--rc-text-strong);
+        }
+
+        .tutor-actions {
+            align-items: center;
+        }
+
+        .tutor-next {
+            font-size: var(--rc-text-sm);
+            color: var(--rc-text-muted);
+        }
+    }
+
     .tutor-hint {
         display: flex;
         flex-direction: column;

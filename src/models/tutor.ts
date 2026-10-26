@@ -115,6 +115,86 @@ export function standsOut(candidates: Candidate[]): Candidate | undefined {
     return first;
 }
 
+// #region after the game (T4)
+
+/** One of your moves, as the tutor saw it. */
+export type MoveRecord = {
+    /** "12." or "12..." and the move: "12. Nf3" */
+    label: string;
+    /** Win chance it gave away (0 for the best move) */
+    loss: number;
+    /** The motif of the opponent's answer, when your move allowed one ("fork") */
+    allowed?: string;
+    /** A move stood out in that position: did you find it? */
+    chance?: { found: boolean; motif?: string };
+};
+
+export type GameResult = "win" | "draw" | "loss";
+
+export type GameSummary = {
+    result?: GameResult;
+    /** Your moves that cost the most, worst first (at most three) */
+    mistakes: MoveRecord[];
+    /** Strong moves you found */
+    found: MoveRecord[];
+    /** Strong moves you missed */
+    missed: MoveRecord[];
+    /** Puzzle themes to train (Lichess theme names), the most frequent first */
+    train: string[];
+};
+
+/** What counts as a mistake in the summary: the "normal" chattiness threshold. */
+const SUMMARY_MISTAKE = 15;
+
+/** The game in a few lines: your worst moves, your best finds, what to train. */
+export function summarizeGame(
+    records: MoveRecord[],
+    result?: GameResult,
+): GameSummary {
+    const mistakes = records
+        .filter((r) => r.loss >= SUMMARY_MISTAKE)
+        .sort((a, b) => b.loss - a.loss)
+        .slice(0, 3);
+    const found = records.filter((r) => r.chance?.found);
+    const missed = records.filter((r) => r.chance && !r.chance.found);
+    // themes: what your mistakes allowed, and the chances you missed
+    const counts = new Map<string, number>();
+    for (const motif of [
+        ...mistakes.map((r) => r.allowed),
+        ...missed.map((r) => r.chance?.motif),
+    ]) {
+        if (motif) counts.set(motif, (counts.get(motif) ?? 0) + 1);
+    }
+    const train = [...counts]
+        .sort((a, b) => b[1] - a[1])
+        .map(([motif]) => motif);
+    return { result, mistakes, found, missed, train };
+}
+
+/** Level limits for the automatic level */
+const ELO_RANGE = [600, 2200];
+/** How far one game moves the automatic level */
+const ELO_STEP = 100;
+
+/**
+ * The next game's level, when it is set automatically: up after a win (or a draw with no
+ * mistakes), down after a loss with several mistakes, else the same.
+ */
+export function nextLevel(elo: number, summary: GameSummary): number {
+    const many = summary.mistakes.length >= 2;
+    let next = elo;
+    if (
+        summary.result === "win" ||
+        (summary.result === "draw" && !summary.mistakes.length)
+    ) {
+        next = elo + ELO_STEP;
+    } else if (summary.result === "loss" && many) {
+        next = elo - ELO_STEP;
+    }
+    return Math.max(ELO_RANGE[0], Math.min(ELO_RANGE[1], next));
+}
+// #endregion
+
 const NAMES = {
     pawn: "a pawn",
     knight: "the knight",

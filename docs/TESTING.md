@@ -142,6 +142,12 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Its mistakes**: now and then "I've just made a mistake. Can you find how to take
       advantage of it?" Is there really something to find?
 - [ ] **Without the tutor**: Play works as before (clock, the chosen engine and level).
+- [ ] **After the game (T4)**: resign or finish a game: the summary shows the result, your
+      costliest moves ("it allowed a fork"), strong moves found or missed, and Train buttons
+      that open a puzzle of that theme (needs the Lichess puzzles downloaded). A move you took
+      back is not in it.
+- [ ] **Automatic level**: "Your level: Automatic (1200)"; win a game: 1300 next time; lose
+      one with several mistakes: 1100. Picking a number turns Automatic off.
 
 ## UX overhaul, step 8: settings and polish (branch feature/ux-overhaul)
 
