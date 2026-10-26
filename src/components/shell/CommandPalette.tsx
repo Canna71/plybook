@@ -17,6 +17,7 @@ import { useNavigate } from "@solidjs/router";
 import { rankCommands } from "../../models/commands";
 import { allNavItems } from "../../models/navigation";
 import { getSettingValue, setSettingValue } from "../../models/settings";
+import { SETTINGS_SECTIONS } from "../../models/settingsSections";
 import { listAppData } from "../../storage/fs";
 import "./CommandPalette.scss";
 
@@ -71,6 +72,12 @@ export const CommandPalette = () => {
             keywords: item.keywords,
             hint: "Screen",
             run: go(item.route),
+        })),
+        ...SETTINGS_SECTIONS.map((s) => ({
+            label: `Settings: ${s.label}`,
+            keywords: s.keywords,
+            hint: "Settings",
+            run: go(`/settings?section=${s.id}`),
         })),
         {
             label: "New analysis",

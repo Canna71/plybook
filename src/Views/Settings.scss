@@ -1,7 +1,86 @@
 .settings_view {
     height: 100%;
-    overflow: auto;
-    padding: 0 16px 16px;
+    display: flex;
+    flex-direction: column;
+    padding: 0 var(--rc-space-4);
+
+    // sections on the left, the open one on the right, each scrolling on its own
+    .settings-layout {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        gap: var(--rc-space-5);
+    }
+
+    .settings-nav {
+        flex: none;
+        width: 200px;
+        display: flex;
+        flex-direction: column;
+        gap: var(--rc-space-3);
+
+        .icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        ul {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        button {
+            all: unset;
+            box-sizing: border-box;
+            display: block;
+            width: 100%;
+            padding: var(--rc-space-2) var(--rc-space-3);
+            border-radius: var(--rc-radius);
+            color: var(--rc-text);
+            cursor: pointer;
+
+            &:hover {
+                background-color: var(--rc-surface-2);
+            }
+
+            &.active {
+                background-color: var(--rc-surface-2);
+                color: var(--rc-text-strong);
+                font-weight: 600;
+            }
+
+            &:focus-visible {
+                outline: 2px solid var(--rc-focus);
+                outline-offset: -2px;
+            }
+        }
+
+        .settings-nav-empty {
+            color: var(--rc-text-muted);
+            font-size: var(--rc-text-sm);
+            padding: 0 var(--rc-space-3);
+        }
+    }
+
+    .settings-content {
+        flex: 1;
+        min-width: 0;
+        overflow: auto;
+        padding-bottom: var(--rc-space-6);
+
+        // the sections' own headings, quieter than the page title
+        h2.title.is-4 {
+            font-size: var(--rc-text-lg);
+            font-weight: 600;
+            margin-bottom: var(--rc-space-3);
+        }
+
+        h2.title.is-5 {
+            font-size: var(--rc-text-md);
+            font-weight: 600;
+        }
+    }
 
     .buttons-bar {
         margin-bottom: 10px;

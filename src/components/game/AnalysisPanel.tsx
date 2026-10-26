@@ -3,6 +3,7 @@
 // GameManager; it reads the game from GameContext and takes the engine's output as props.
 
 import { Accessor, Component, JSX, Show, useContext } from "solid-js";
+import { A } from "@solidjs/router";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import { MoveStat } from "../../engine/lc0";
 import { analysisProfile } from "../../engine/engineprofiles";
@@ -71,9 +72,17 @@ const AnalysisPanel: Component<{
                     <EngineInfoViewer engineInfo={props.engineInfo} />
                     <Show when={!props.engineInfo.length}>
                         <p class="panel-hint">
-                            {analysisProfile()
-                                ? "Thinking…"
-                                : "Analysis needs a full-strength engine such as Stockfish: add one in Settings."}
+                            <Show
+                                when={!analysisProfile()}
+                                fallback="Thinking…"
+                            >
+                                Analysis needs a full-strength engine such as
+                                Stockfish:{" "}
+                                <A href="/settings?section=engines">
+                                    add one in Settings
+                                </A>
+                                .
+                            </Show>
                         </p>
                     </Show>
                 </PanelSection>

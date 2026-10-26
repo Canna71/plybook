@@ -68,14 +68,14 @@ export function setupSteps(s: SetupState): SetupStep[] {
             id: "engines",
             label: "Add a chess engine",
             why: "Stockfish or Lc0, for analysis, game review and playing.",
-            route: "/settings",
+            route: "/settings?section=engines",
             done: s.engines > 0,
         },
         {
             id: "accounts",
             label: "Link your chess.com or Lichess account",
             why: "Your games come into the Library, ready to review.",
-            route: "/settings",
+            route: "/settings?section=accounts",
             done: s.accounts > 0,
         },
         {
