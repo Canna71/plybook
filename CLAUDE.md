@@ -73,9 +73,8 @@ src/
                            toolbar + PanelSection sections), EvalBar, GameContext.tsx (shared signals),
                            useChessEngine.tsx (engine state), Moves/Ply (move tree), Review,
                            EngineControl, EngineInfoViewer, Comments, PgnEditBar, SidebarTabs
-  components/common/       chessboard wrapper, TreeView, Modal, Alert, Select, MarkdownEditor, utils.tsx
+  components/common/       chessboard wrapper, Menu, Modal, Alert, Select, MarkdownEditor, utils.tsx
   components/boardeditor/  position editor
-  components/sidebar/      Library file browser
   components/shell/        app shell: CommandPalette (⌘K), PageHeader; the sidebar is Views/Sidebar.tsx,
                            its screens and groups in models/navigation.ts (a new screen goes there)
   models/                  pgn.ts (chessops tree -> view model, Path type), GameModel.ts (immutable game ops),

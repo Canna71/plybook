@@ -105,6 +105,17 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Sidebar**: Books is highlighted while reading a PDF or scanning a whole book.
 - [ ] **Databases**: after importing one, the search form appears; Delete… asks first.
 
+## UX overhaul, step 8: settings and polish (branch feature/ux-overhaul)
+
+- [ ] **Settings**: every section still works as before (engines add/edit/test, opening
+      books, accounts sync, Lichess token, backups and restore, appearance).
+- [ ] **Find a setting**: "token", "dark", "restore", "maia" open the right section.
+- [ ] **⌘K → "Settings: Engines"** opens that section; Today's "Add a chess engine" too.
+- [ ] **Keyboard in menus**: Tab to a ⋯ button, Enter opens it on the first item, arrows
+      move, Esc closes and focus is back on the button.
+- [ ] **Rename in the Library**: the field is clearly a field; Esc keeps the old name.
+- [ ] **Sidebar**: no Files tree any more. Is anything harder to reach without it?
+
 ## PDF reader (P4.4)
 
 - [ ] **Text below the diagram** (P4.4e, needs work): "Text below the diagram: …" shows the

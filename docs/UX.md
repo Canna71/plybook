@@ -319,3 +319,24 @@ Each step ends with something to look at and a short list in `docs/TESTING.md`.
     the results table appear once there is something to search. Delete is a plain button
     with "…" (it asks first) instead of a red one on every row.
   - Empty states keep their text to a readable width (64ch).
+- 2026-10-26: step 7 approved by the owner and merged into `develop`.
+- 2026-10-26, step 8 (settings and polish):
+  - 8a, dead code removed: `Views/obsoleted/`, `GameEditView.tsx`, `components/Analysis.tsx`,
+    `models/FENcoder.ts`, the Rust `greet` command and commented-out leftovers in `App.tsx`
+    and `lib.rs`. Nothing referenced them.
+  - 8b, Settings in sections (`models/settingsSections.ts`, tested): Appearance, Engines,
+    Opening books, Accounts (online accounts and the Lichess token together), Backups. A list
+    on the left with "Find a setting" (names and keywords, e.g. "token" → Accounts, "dark" →
+    Appearance), one section at a time on the right, the open one in the URL
+    (`/settings?section=engines`). The command palette lists each section ("Settings:
+    Engines"); Today's checklist and the "add an engine" hints link straight to theirs.
+  - 8c, keyboard and screen readers: menus open on their first item from the keyboard,
+    arrows / Home / End move, Esc closes and returns focus to the button; icon-only buttons
+    and menu triggers take their title as their accessible name; the rename field looks like
+    a field (border, focus ring, a usable width) and Esc keeps the old name; range sliders
+    show focus on the thumb (their outline was removed).
+  - 8d, the sidebar's Files tree is gone, as planned once the Library became a browser (step
+    7): the Library and Books screens, search and ⌘K reach every file. `FileBrowser`,
+    `TreeView` and the `layout.filesOpen` setting went with it.
+  - Empty states: Repertoires has one with "Open the Library"; empty states inside tables are
+    centred (Bulma's `td:not([align])` rule made them inherit left alignment).

@@ -79,8 +79,6 @@ export interface AppSettings {
         columnsTemplate?: string;
         /** The sidebar shows icons only */
         sidebarCollapsed?: boolean;
-        /** The sidebar's Files tree is open */
-        filesOpen?: boolean;
         playing: {
             columnsTemplate?: string;
         };
@@ -146,7 +144,6 @@ const DEFAULT: AppSettings = {
     layout: {
         columnsTemplate: "200px 5px 1fr",
         sidebarCollapsed: false,
-        filesOpen: true,
         playing: {
             columnsTemplate: "400px 5px 1fr",
         },

@@ -1,14 +1,12 @@
 // The app's sidebar (UX overhaul, step 2): screens grouped by purpose (models/navigation.ts),
-// the current one highlighted, a search entry for the command palette, the Library's files,
-// and a toggle that collapses everything to icons.
+// the current one highlighted, a search entry for the command palette, and a toggle that
+// collapses everything to icons. (Files are in the Library screen since step 7.)
 
 import { Component, For, JSX, Show } from "solid-js";
-import { A, useLocation, useNavigate } from "@solidjs/router";
+import { A, useLocation } from "@solidjs/router";
 import {
     IconBooks,
     IconChessKnight,
-    IconChevronDown,
-    IconChevronRight,
     IconDatabase,
     IconFolders,
     IconHistory,
@@ -23,9 +21,6 @@ import {
     IconSettings,
     IconSwords,
 } from "@tabler/icons-solidjs";
-import FileBrowser, {
-    FileBrowserFile,
-} from "../components/sidebar/FileBrowser";
 import {
     activeNavItem,
     NAVIGATION,
@@ -52,7 +47,6 @@ const ICONS: Record<string, () => JSX.Element> = {
 };
 
 const COLLAPSED = "layout.sidebarCollapsed";
-const FILES_OPEN = "layout.filesOpen";
 
 export const sidebarCollapsed = () =>
     !!getSettingValue<boolean>(COLLAPSED, false);
@@ -60,23 +54,9 @@ export const sidebarCollapsed = () =>
 const isMac = navigator.platform.toUpperCase().includes("MAC");
 
 const Sidebar: Component = () => {
-    const navigate = useNavigate();
     const location = useLocation();
     const collapsed = sidebarCollapsed;
-    const filesOpen = () => getSettingValue<boolean>(FILES_OPEN, true);
     const active = () => activeNavItem(location.pathname)?.id;
-
-    const onFileClick = (file: FileBrowserFile) => {
-        if (file.isDirectory) {
-            navigate(`/library?path=${encodeURIComponent(file.path)}`);
-        } else if (file.name.endsWith(".pgn")) {
-            navigate(
-                `/game?path=${encodeURIComponent(file.path)}&source=library`,
-            );
-        } else if (file.name.toLowerCase().endsWith(".pdf")) {
-            navigate(`/reader?path=${encodeURIComponent(file.path)}`);
-        }
-    };
 
     const link = (item: NavItem) => (
         <A
@@ -113,34 +93,6 @@ const Sidebar: Component = () => {
                         </div>
                     )}
                 </For>
-
-                <Show when={!collapsed()}>
-                    <div class="nav-group nav-files">
-                        <button
-                            class="nav-group-label nav-files-toggle"
-                            onClick={() =>
-                                void setSettingValue(FILES_OPEN, !filesOpen())
-                            }
-                        >
-                            {filesOpen() ? (
-                                <IconChevronDown />
-                            ) : (
-                                <IconChevronRight />
-                            )}
-                            Files
-                        </button>
-                        <Show when={filesOpen()}>
-                            <FileBrowser
-                                onNodeClick={onFileClick}
-                                rootFolder={{
-                                    path: "Library",
-                                    name: "Library",
-                                    isDirectory: true,
-                                }}
-                            />
-                        </Show>
-                    </div>
-                </Show>
             </div>
 
             <div class="nav-footer">

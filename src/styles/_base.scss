@@ -173,3 +173,8 @@ body,
         margin-right: auto;
     }
 }
+
+// in a table cell too (Bulma's td:not([align]) would make it inherit left)
+.table td.rc-empty {
+    text-align: center;
+}
