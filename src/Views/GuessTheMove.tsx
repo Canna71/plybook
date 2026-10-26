@@ -9,7 +9,7 @@ import {
     onCleanup,
     Show,
 } from "solid-js";
-import { useSearchParams } from "@solidjs/router";
+import { A, useSearchParams } from "@solidjs/router";
 import { Chess, Color, parseSquare, parseUci } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 import { parseFen } from "chessops/fen";
@@ -334,8 +334,10 @@ const GuessTheMove: Component = () => {
 
                 <Show when={!analysisProfile()}>
                     <p class="notification is-warning is-light">
-                        Add a full-strength engine such as Stockfish in Settings
-                        to judge your candidates.
+                        <A href="/settings?section=engines">
+                            Add a full-strength engine
+                        </A>{" "}
+                        such as Stockfish to judge your candidates.
                     </p>
                 </Show>
 

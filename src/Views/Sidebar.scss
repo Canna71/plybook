@@ -89,26 +89,6 @@
         }
     }
 
-    .nav-files-toggle {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        text-align: left;
-
-        svg {
-            width: 14px;
-            height: 14px;
-        }
-    }
-
-    .nav-files {
-        // the tree's own rows
-        font-size: var(--rc-text-sm);
-    }
-
     .nav-footer {
         display: flex;
         flex-direction: column;

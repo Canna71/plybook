@@ -3,6 +3,10 @@
     height: 100%;
     overflow: auto;
 
+    .repertoires-empty-action {
+        margin-top: var(--rc-space-3);
+    }
+
     .actions {
         display: flex;
         gap: 5px;

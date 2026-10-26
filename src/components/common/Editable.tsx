@@ -23,6 +23,12 @@ const Editable: Component<EditableProps> = (props) => {
         if (e.key === "Enter") {
             e.preventDefault();
             (e.target as HTMLElement).blur();
+        } else if (e.key === "Escape") {
+            // keep the name it had
+            e.preventDefault();
+            setValue(props.initialValue);
+            ref!.textContent = props.initialValue;
+            ref!.blur();
         }
     };
 
@@ -44,6 +50,7 @@ const Editable: Component<EditableProps> = (props) => {
             ref={ref!}
             class="editable-text"
             contentEditable={props.editable()}
+            role={props.editable() ? "textbox" : undefined}
             onInput={handleInput}
             onKeyDown={handleKeyDown}
             onBlur={() => props.onSave?.(value())}
