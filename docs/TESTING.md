@@ -105,6 +105,19 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Sidebar**: Books is highlighted while reading a PDF or scanning a whole book.
 - [ ] **Databases**: after importing one, the search form appears; Delete… asks first.
 
+## Reasons in chess terms, P2.8 R4 (branch feature/reasons)
+
+- [ ] **Engine section, good moves**: play 1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.Ng5: after a moment
+      it says "It threatens Nxf7, a fork of the queen on d8 and the rook on h8". 1.e4 e5 2.Qh5
+      Nc6 3.Bc4 g6: "It stops Qxf7#".
+- [ ] **Engine section, bad moves**: the answer is named ("White answers Nxf7, a fork …").
+- [ ] **Your own games**: do the reasons read right? Note any that are wrong or odd, with the
+      position (that is what tunes the detectors).
+- [ ] **Game review**: open a key moment; within a couple of seconds its explanation names
+      the answer and the better move.
+- [ ] **No slowdown**: the main analysis keeps running while the explainer searches (it is a
+      second engine process, one thread).
+
 ## UX overhaul, step 8: settings and polish (branch feature/ux-overhaul)
 
 - [ ] **Settings**: every section still works as before (engines add/edit/test, opening

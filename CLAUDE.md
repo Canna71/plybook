@@ -80,7 +80,10 @@ src/
   models/                  pgn.ts (chessops tree -> view model, Path type), GameModel.ts (immutable game ops),
                            settings.ts (JSON settings in AppConfig, Solid store), puzzles.ts (score formula)
   engine/                  uciengine.ts (UCI protocol parser) over executableuci.ts (talks to Rust engine_* commands),
-                           engineprofiles.ts (profiles, startEngine, humanProfile), lc0.ts (Maia move stats)
+                           engineprofiles.ts (profiles, startEngine, humanProfile), lc0.ts (Maia move stats),
+                           explainer.ts (a background second engine for the searches behind explanations)
+  reasons/                 move reasons in chess terms (docs/REASONS.md): motifs.ts (tactics in a line),
+                           threats.ts (what a move stops and threatens, in words); *.eval.ts = measurements
   storage/                 fs.ts (Tauri fs wrappers: Library, settings, themes), db.ts (invoke() wrappers for db.rs),
                            library.ts (Library listings with dates, search walk, dropped-file import)
   theming/                 dynamic CSS loading for board/piece themes (src/assets/styles)
@@ -189,6 +192,9 @@ Read it before starting feature work, and update an item's status in the same br
 `docs/SCANNING.md` explains position recognition, book scanning and the PDF reader (`src/scan`,
 `BookScanView`, `PdfReader`): the pipeline, why each step exists, how to test it, and known limits.
 Read it before touching recognition, and keep it current.
+`docs/REASONS.md` is the plan for explaining moves in chess terms (P2.8): the kinds of reasons,
+how each is computed, and `pnpm eval:reasons`, which measures detectors against the Lichess
+puzzle themes. Read it before touching `models/explain.ts` or `src/reasons`.
 `docs/TESTING.md` lists what the owner still has to try by hand (things automated checks can't
 confirm). Add steps there for every feature or fix that needs the running app, in its branch.
 

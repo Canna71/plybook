@@ -129,6 +129,20 @@ How this file is used:
   - Known limits: scores are kept for the session only (no history of training results);
     promotion candidates are always queens.
 - [ ] **P2.8 Reasons in chess terms** (requested by the owner 2026-10-25; research first).
+  - Status 2026-10-26: research done, report in `docs/REASONS.md` (prior work, the kinds of
+    reasons and how to compute each, a measuring harness `pnpm eval:reasons` against the
+    Lichess puzzle themes with a baseline, and the plan R1–R5). Building starts with R1.
+  - R1 done 2026-10-26: `src/reasons/motifs.ts` (mate and named mates, double check, fork,
+    pin, skewer, discovered attack, hanging piece, promotion; ranking), tested, measured on
+    40,000 puzzles: all but pin meet the bar or are right where the tags miss (see the report).
+    Pins stay out of explanations until they improve. Next: R2 (threats prevented/created).
+  - R2 done 2026-10-26: `src/reasons/threats.ts` (what a move stops and threatens, named with
+    the motifs, in words) and `src/engine/threatsearch.ts` (the two short null-move searches),
+    tested, checked by hand with Stockfish on real puzzles. Next: R3 (positional reasons), or
+    R4 first to show R1–R2 in the app.
+  - R4 done 2026-10-26 (before R3, by the owner's choice): explanations in the Engine section
+    and the review's key moments name ideas ("It stops Qxf7#", "White answers Nxf7, a fork of
+    …"); a background explainer engine runs the extra searches. Next: R3.
   Say *why* a move is good or bad the way a coach would: "it stops the knight from reaching
   f7", "it pins the bishop and wins it next move", "after this the back rank is weak",
   instead of "it gives away 10% of winning chances". Today's explanations (P2.4a) give the

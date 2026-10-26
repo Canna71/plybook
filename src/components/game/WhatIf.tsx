@@ -1,4 +1,5 @@
-import { Component, Show, useContext } from "solid-js";
+import { Component, createResource, Show, untrack, useContext } from "solid-js";
+import { explainThreats } from "../../engine/explainer";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import { PlyData } from "../../models/pgn";
 import { CLASS_NAGS, ReviewedMove } from "../../models/review";
@@ -65,7 +66,23 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
         return m && pv && mover ? lineOutcome(m.fen, pv, mover) : undefined;
     };
 
-    // why, in words: facts, the opponent's answer and the better move
+    // what the move stops and threatens: two short searches by the explainer engine, in the
+    // background (keyed by position and move, so a deepening analysis does not restart them)
+    const [threats] = createResource(
+        () => {
+            const m = move();
+            const b = before();
+            return m && b ? { fen: b.fen, uci: m.uci } : undefined;
+        },
+        ({ fen, uci }) =>
+            explainThreats(
+                fen,
+                uci,
+                untrack(() => best()?.pv),
+            ),
+    );
+
+    // why, in words: facts, ideas, the opponent's answer and the better move
     const explanation = () => {
         const m = move();
         const b = before();
@@ -79,6 +96,7 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
             bestUci: typeof bestUci === "string" ? bestUci : undefined,
             bestPv: lineAt(b.fen),
             replyPv: best()?.pv,
+            threats: threats.latest,
         });
     };
     const isBad = () =>

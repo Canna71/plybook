@@ -1,6 +1,7 @@
 import {
     Component,
     createMemo,
+    createResource,
     createSignal,
     For,
     Show,
@@ -34,6 +35,7 @@ import {
 } from "../../models/mistakes";
 import { saveMistakePuzzles } from "../../storage/mistakes";
 import { explainMove } from "../../models/explain";
+import { explainLines } from "../../engine/explainer";
 import { getAccounts } from "../../online/onlinegames";
 import "./Review.scss";
 
@@ -88,16 +90,41 @@ const Review: Component = () => {
     const player = (color: Color) =>
         game()?.players[color].name ?? (color === "white" ? "White" : "Black");
 
-    /** Why the move was bad, from the review data alone (no engine lines). */
+    // the open key moment's engine lines, from the explainer in the background: they let the
+    // explanation name what the answer and the better move do ("a fork of …")
+    const openMoment = () =>
+        moments().find((m) => m.path.path === currentPath()?.path);
+    const [momentLines] = createResource(
+        () => {
+            const m = openMoment();
+            const data = m && game()?.dataAt(m.path);
+            return m?.fenBefore && data && "fen" in data
+                ? { before: m.fenBefore, after: data.fen }
+                : undefined;
+        },
+        async ({ before, after }) => ({
+            before,
+            ...(await explainLines(before, after)),
+        }),
+    );
+
+    /** Why the move was bad: the review data, and the engine lines once they arrive. */
     const momentExplanation = (m: ReviewedMove) => {
         const data = game()?.dataAt(m.path);
         if (!m.fenBefore || !data || !("uci" in data)) return undefined;
+        // lines of another moment, still loading, are not this one's
+        const lines =
+            momentLines.latest?.before === m.fenBefore
+                ? momentLines.latest
+                : undefined;
         return (
             explainMove({
                 fenBefore: m.fenBefore,
                 uci: data.uci,
                 verdict: m,
                 bestUci: m.bestUci,
+                bestPv: lines?.bestPv,
+                replyPv: lines?.replyPv,
             }).join(" ") || undefined
         );
     };
@@ -202,7 +229,8 @@ const Review: Component = () => {
             when={reviewed().length > 0}
             fallback={
                 <div class="review-empty">
-                    No evaluations yet. Click Analyze Game to review it.
+                    No evaluations yet. Click “Review the game” to have the
+                    engine judge every move.
                 </div>
             }
         >

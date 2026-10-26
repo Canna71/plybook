@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { IUCIInterface } from "./iuciinterface";
 import { UCIEngine } from "./uciengine";
 import { searchOnce } from "./search";
+import { moveThreats } from "./threatsearch";
 
 function fakeEngine() {
     const sent: string[] = [];
@@ -54,5 +55,57 @@ describe("searchOnce", () => {
         expect((await result).bestmove).toBeUndefined();
         // a later info does not throw or reach the finished search
         output("info depth 3 multipv 1 score cp 0 pv a1a2");
+    });
+});
+
+describe("moveThreats", () => {
+    /** An engine that answers each position with a scripted line. */
+    function scriptedEngine(lines: Record<string, string>) {
+        let respond: (line: string) => void = () => {};
+        let fen = "";
+        const uci: IUCIInterface = {
+            sendCommand: (command) => {
+                if (command.startsWith("position fen "))
+                    fen = command.slice(13);
+                if (command.startsWith("go")) {
+                    const pv = Object.entries(lines).find(([f]) =>
+                        fen.startsWith(f),
+                    )?.[1];
+                    setTimeout(() => {
+                        if (pv)
+                            respond(
+                                `info depth 12 multipv 1 score cp 0 pv ${pv}`,
+                            );
+                        respond(`bestmove ${pv?.split(" ")[0] ?? "(none)"}`);
+                    });
+                }
+            },
+            onResponse: (callback) => (respond = callback),
+            init: async () => {},
+            close: () => {},
+        };
+        return new UCIEngine(uci);
+    }
+
+    it("searches both null-move positions and names the threat the move creates", async () => {
+        // 1.e4 e5 2.Qh5 Nc6, White plays 3.Bc4: if Black passed, Qxf7#
+        const before =
+            "r1bqkbnr/pppp1ppp/2n5/4p2Q/4P3/8/PPPP1PPP/RNB1KBNR w KQkq - 2 3";
+        const engine = scriptedEngine({
+            // Black to move after White passes (before Bc4): nothing much
+            "r1bqkbnr/pppp1ppp/2n5/4p2Q/4P3/8/PPPP1PPP/RNB1KBNR b": "g8f6",
+            // White to move after Black passes (after Bc4): mate
+            "r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w": "h5f7",
+        });
+        const threats = await moveThreats(engine, before, "f1c4");
+        expect(threats.created?.san).toBe("Qxf7#");
+        expect(threats.stopped).toBeUndefined();
+    });
+
+    it("returns nothing for an illegal move", async () => {
+        const engine = scriptedEngine({});
+        expect(
+            await moveThreats(engine, "8/8/8/8/8/8/8/K6k w - - 0 1", "e2e4"),
+        ).toEqual({});
     });
 });
