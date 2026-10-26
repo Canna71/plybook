@@ -190,6 +190,23 @@ How this file is used:
   - Settings: level (or automatic), how chatty the tutor is, take-backs allowed; a short
     summary after the game (best moments, the mistakes, what to train).
   - Builds on P2.1–P2.5, P2.8 for the reasons, and the Play screen (no clocks in tutor mode).
+  - Status 2026-10-26 (`feature/tutor`), steps T1–T3 done:
+    - T1 `models/tutor.ts` (tested): the move for your level (a loss allowance and a target
+      win chance from your rating, so it eases off when winning), deliberate believable
+      mistakes (10–30% loss, never a collapse), when to ask about your move (by chattiness:
+      only blunders / mistakes / every slip), a move that stands out, hints in steps (the
+      piece, then the square).
+    - T2 `components/game/useTutor.tsx`: plays the engine's moves from 6 candidate lines on
+      the background explainer engine (the normal engine stays out of the game); judges your
+      move from the same search; checks your turn for a standout move and the opponent's
+      threat (null move).
+    - T3 Play screen: Tutor switch, your level, what it asks about; the tutor's panel with
+      "Are you sure about Ba6? It leaves the bishop on a6 undefended … Black answers Nxa6 …"
+      and Take it back / Keep my move, "There's something strong here" with Hint / More,
+      "Watch out: White threatens …", and "I've just made a mistake. Can you find how to take
+      advantage of it?". No clock in tutor games; the opponent is "Tutor" with your rating.
+    - Next: T4, a short summary after the game (best moments, mistakes, what to train), and
+      the level set automatically from your games and puzzle rating.
 
 ## Phase 3: databases and imports
 

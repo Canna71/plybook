@@ -68,6 +68,8 @@ import { gameEnd, timeoutEnd } from "../../models/play";
 import { pgnTimeControl } from "../../models/clock";
 import { ClockFace, GameClock, useGameClock } from "./useGameClock";
 import { EvalBar } from "./EvalBar";
+import { TUTOR_SETTING, useTutor } from "./useTutor";
+import TutorPanel from "./TutorPanel";
 
 /** The board / divider / panel columns, as the divider leaves them */
 const WORKSPACE_COLUMNS = "layout.workspace.columns";
@@ -191,6 +193,9 @@ const GameManager: Component<GameManagerOptions> = ({
     const [engineColor, setEngineColor] = createSignal<Color | undefined>(
         undefined,
     );
+    /** Playing the tutor instead of the plain engine (setting tutor.on, Play screen) */
+    const tutorOn = () =>
+        !!playingEngine && !!getSettingValue<boolean>(TUTOR_SETTING, false);
 
     const [hintType, setHintType] = createSignal(HintType.None);
     const [hintMove, setHintMove] = createSignal<string | undefined>(undefined);
@@ -698,7 +703,23 @@ const GameManager: Component<GameManagerOptions> = ({
         hintMoveSignal: [hintMove, setHintMove],
         wrongPuzzleMove,
         clockTimes: () => gameClock?.times(),
+        tutor: tutorOn,
     });
+
+    // the tutor plays the engine's moves and coaches (Play screen, tutor on)
+    const tutor = playingEngine
+        ? useTutor({
+              on: tutorOn,
+              playing: isPlayingOn,
+              engineColor: () => engineColor?.(),
+              game,
+              setGame,
+              path: currentPath,
+              setPath: setCurrentPath,
+              fen,
+              applyMove,
+          })
+        : undefined;
 
     // clocks for games against the engine (made here: they end the game on time)
     const gameClock: GameClock | undefined = playingEngine
@@ -1016,28 +1037,33 @@ const GameManager: Component<GameManagerOptions> = ({
                         </Show>
                         <AnalysisPanel
                             trainer={
-                                <Show when={isPuzzleMode()}>
-                                    <TrainerPanel
-                                        title={puzzleTitle?.() ?? "Puzzle"}
-                                        side={orientation}
-                                        status={puzzleStatus}
-                                        note={puzzleNote}
-                                        onHintPiece={() =>
-                                            setHintType(HintType.Piece)
-                                        }
-                                        onHintMove={() =>
-                                            setHintType(HintType.Move)
-                                        }
-                                        onRetry={onResetPuzzle}
-                                        onNext={onNextPuzzle}
-                                        nextLabel={
-                                            puzzleSolved()
-                                                ? "Next puzzle"
-                                                : "Skip"
-                                        }
-                                        onAnalyze={onAnalyzePuzzle}
-                                    />
-                                </Show>
+                                <>
+                                    <Show when={isPuzzleMode()}>
+                                        <TrainerPanel
+                                            title={puzzleTitle?.() ?? "Puzzle"}
+                                            side={orientation}
+                                            status={puzzleStatus}
+                                            note={puzzleNote}
+                                            onHintPiece={() =>
+                                                setHintType(HintType.Piece)
+                                            }
+                                            onHintMove={() =>
+                                                setHintType(HintType.Move)
+                                            }
+                                            onRetry={onResetPuzzle}
+                                            onNext={onNextPuzzle}
+                                            nextLabel={
+                                                puzzleSolved()
+                                                    ? "Next puzzle"
+                                                    : "Skip"
+                                            }
+                                            onAnalyze={onAnalyzePuzzle}
+                                        />
+                                    </Show>
+                                    <Show when={tutor && tutorOn()}>
+                                        <TutorPanel tutor={tutor!} />
+                                    </Show>
+                                </>
                             }
                             engineInfo={engineInfo}
                             engineCallable={engineCallable}

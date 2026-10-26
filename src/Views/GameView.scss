@@ -1,7 +1,8 @@
 .game-header {
     display: flex;
-    justify-content: space-between;
     justify-content: right;
+    align-items: center;
+    gap: var(--rc-space-4);
     // padding: 8px;
     border-bottom: 1px solid var(--bulma-border);
     margin-bottom: 8px;

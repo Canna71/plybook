@@ -31,6 +31,7 @@ import { getSettingValue, setSettingValue } from "../../models/settings";
 import Modal from "../common/Modal";
 import { StartingPositionIcon } from "../common/Icons";
 import { activeProfile } from "../../engine/engineprofiles";
+import { TUTOR_SETTING } from "./useTutor";
 import { ENGINE_BOOK_SETTING, listBooks } from "../../storage/books";
 
 const EngineControl = () => {
@@ -144,12 +145,19 @@ const EngineControl = () => {
                 const playerColor = c === "white" ? "Black" : "White";
 
                 const profile = activeProfile();
-                const engineElo = getSettingValue("engine.playing.elo", 1000)!;
+                // with the tutor on, the tutor plays (at the player's level), not the engine
+                const tutor = !!getSettingValue<boolean>(TUTOR_SETTING, false);
+                const engineElo = tutor
+                    ? getSettingValue("tutor.elo", 1200)!
+                    : getSettingValue("engine.playing.elo", 1000)!;
                 const currentDate = new Date().toISOString();
                 const headers = new Map([
-                    [engineColorTitleCase, profile?.name ?? "Engine"],
+                    [
+                        engineColorTitleCase,
+                        tutor ? "Tutor" : (profile?.name ?? "Engine"),
+                    ],
                     // the Elo setting only means something to engines that limit their strength
-                    ...(profile?.limitStrength !== false
+                    ...(tutor || profile?.limitStrength !== false
                         ? [
                               [
                                   engineColorTitleCase + "Elo",

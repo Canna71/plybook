@@ -75,6 +75,16 @@ export interface AppSettings {
         /** The Library browser's order: "name" or "modified" (newest first) */
         sort?: string;
     };
+    tutor?: {
+        /** Play against the tutor instead of the plain engine (Play screen) */
+        on?: boolean;
+        /** Your rating, which the tutor plays and coaches at */
+        elo?: number;
+        /** "quiet", "normal" or "chatty": how readily it asks about your moves */
+        chattiness?: string;
+        /** "Take it back?" after a mistake */
+        takebacks?: boolean;
+    };
     layout: {
         columnsTemplate?: string;
         /** The sidebar shows icons only */
@@ -140,6 +150,12 @@ const DEFAULT: AppSettings = {
     },
     library: {
         sort: "name",
+    },
+    tutor: {
+        on: false,
+        elo: 1200,
+        chattiness: "normal",
+        takebacks: true,
     },
     layout: {
         columnsTemplate: "200px 5px 1fr",

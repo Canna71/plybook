@@ -60,6 +60,8 @@ export type ChessEngineOptions = {
     wrongPuzzleMove: Accessor<NormalMove | undefined>;
     /** In a game with clocks, both clocks now: the engine plays on its time */
     clockTimes?: () => AnalysisOptions["clock"];
+    /** The tutor plays the engine's moves (useTutor): this engine stays out of the game */
+    tutor?: Accessor<boolean>;
 };
 
 export function useChessEngine(options: ChessEngineOptions) {
@@ -131,7 +133,8 @@ export function useChessEngine(options: ChessEngineOptions) {
             !!engine() &&
             options.playingEngine() &&
             isPlayingOn() &&
-            !!options.engineColor?.();
+            !!options.engineColor?.() &&
+            !options.tutor?.();
         // check if the current position is the last one
         if (!tmp) return false;
         const node = game()?.nodeAt(options.path() || Path.root);
