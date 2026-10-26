@@ -6,7 +6,7 @@
 import anylogger from "anylogger";
 import { analysisProfile, startEngine } from "./engineprofiles";
 import { AnalysisOptions, IChessEngine } from "./engineinterfaces";
-import { searchOnce } from "./search";
+import { searchOnce, SearchResult } from "./search";
 import { moveThreats, MoveThreats } from "./threatsearch";
 const log = anylogger("explainer");
 
@@ -59,6 +59,20 @@ function enqueue<T>(
     queue = result;
     cache.set(key, result);
     return result;
+}
+
+/**
+ * One search by the explainer engine, queued behind the others and not cached (the tutor's
+ * multi-line searches: each position is searched when it comes up). Lines are scored from
+ * White's point of view, as searchOnce gives them.
+ */
+export function explainerSearch(
+    fen: string,
+    options: AnalysisOptions,
+): Promise<SearchResult | undefined> {
+    return enqueue(new Map(), fen, (engine) =>
+        searchOnce(engine, fen, options),
+    );
 }
 
 export type MoveLines = {

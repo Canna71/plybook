@@ -120,6 +120,8 @@ export function startDevDriver(navigate: (to: string) => void) {
                 if (el && "value" in el) {
                     el.value = cmd.type;
                     el.dispatchEvent(new Event("input", { bubbles: true }));
+                    // selects (and some fields) listen for change instead
+                    el.dispatchEvent(new Event("change", { bubbles: true }));
                 }
             }
             if (cmd.key) {

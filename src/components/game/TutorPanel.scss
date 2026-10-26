@@ -1,0 +1,116 @@
+// the tutor's corner (TutorPanel.tsx)
+.tutor-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rc-space-2);
+    padding: var(--rc-space-3);
+    margin-bottom: var(--rc-space-3);
+    border: 1px solid var(--rc-border);
+    border-left: 4px solid var(--rc-accent);
+    border-radius: var(--rc-radius);
+    background-color: var(--rc-surface);
+
+    .tutor-title {
+        display: flex;
+        justify-content: space-between;
+        font-size: var(--rc-text-xs);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--rc-text-muted);
+    }
+
+    .tutor-level {
+        text-transform: none;
+        letter-spacing: normal;
+        font-weight: 500;
+    }
+
+    // a question waits for an answer: it stands out
+    .tutor-question {
+        padding: var(--rc-space-3);
+        border-radius: var(--rc-radius);
+        background-color: color-mix(in srgb, var(--rc-danger) 12%, transparent);
+        color: var(--rc-text-strong);
+        display: flex;
+        flex-direction: column;
+        gap: var(--rc-space-2);
+    }
+
+    .tutor-actions {
+        display: flex;
+        gap: var(--rc-space-2);
+        flex-wrap: wrap;
+    }
+
+    // the summary at the end of a game
+    .tutor-summary {
+        display: flex;
+        flex-direction: column;
+        gap: var(--rc-space-2);
+        color: var(--rc-text);
+
+        .tutor-result {
+            font-size: var(--rc-text-lg);
+            font-weight: 600;
+            color: var(--rc-text-strong);
+        }
+
+        .tutor-actions {
+            align-items: center;
+        }
+
+        .tutor-next {
+            font-size: var(--rc-text-sm);
+            color: var(--rc-text-muted);
+        }
+    }
+
+    .tutor-hint {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--rc-space-1);
+        color: var(--rc-text-strong);
+    }
+
+    .tutor-messages {
+        display: flex;
+        flex-direction: column;
+        gap: var(--rc-space-2);
+    }
+
+    .tutor-message {
+        display: flex;
+        gap: var(--rc-space-2);
+        align-items: flex-start;
+        color: var(--rc-text);
+
+        svg {
+            flex: none;
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+        }
+
+        &.warning svg {
+            color: var(--rc-danger);
+        }
+
+        &.chance svg,
+        &.mistake svg {
+            color: var(--rc-accent);
+        }
+
+        // the newest message reads first; older ones fade back
+        &.older {
+            color: var(--rc-text-muted);
+            font-size: var(--rc-text-sm);
+        }
+    }
+
+    .tutor-quiet {
+        color: var(--rc-text-muted);
+        font-size: var(--rc-text-sm);
+    }
+}

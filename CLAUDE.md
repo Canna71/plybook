@@ -69,7 +69,9 @@ src/
   index.tsx, App.tsx       router: / /game /analysis /play /puzzles /puzzle /library /books /reader /history /boardeditor /settings /guess /databases
   Views/                   route pages. GameView = file load/save/puzzle wrapper around GameManager.
                            Play, Puzzles, History, LibraryFolder, Books, Sidebar, Layout.
-  components/game/         GameManager.tsx (the hub: state, board area), AnalysisPanel.tsx (the panel:
+  components/game/         useTutor.tsx + TutorPanel.tsx (the tutor in Play: plays through the explainer
+                           engine, decisions in models/tutor.ts),
+                           GameManager.tsx (the hub: state, board area), AnalysisPanel.tsx (the panel:
                            toolbar + PanelSection sections), EvalBar, GameContext.tsx (shared signals),
                            useChessEngine.tsx (engine state), Moves/Ply (move tree), Review,
                            EngineControl, EngineInfoViewer, Comments, PgnEditBar, SidebarTabs

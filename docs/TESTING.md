@@ -127,6 +127,28 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Tutor mode, P2.9 T1–T3 (branch feature/tutor)
+
+- [ ] **Turn it on**: Play → tick Tutor, choose your level and what it asks about; the time
+      control disappears (tutor games have no clock); start a game: the opponent is "Tutor".
+- [ ] **Its strength**: does it feel like a fair fight at your level? When it is clearly
+      winning, does it ease off? Too easy, too hard: note your level and the game.
+- [ ] **"Are you sure?"**: play a clear mistake (e.g. a piece where a pawn takes it): it asks,
+      with the reason; Take it back restores your turn; Keep my move lets the game go on.
+- [ ] **Warnings**: leave something hanging for the tutor to attack: "Watch out: … threatens
+      …" appears on your turn.
+- [ ] **Chances**: when one move is much better than the rest, "There's something strong
+      here"; Hint shows the piece, More the square.
+- [ ] **Its mistakes**: now and then "I've just made a mistake. Can you find how to take
+      advantage of it?" Is there really something to find?
+- [ ] **Without the tutor**: Play works as before (clock, the chosen engine and level).
+- [ ] **After the game (T4)**: resign or finish a game: the summary shows the result, your
+      costliest moves ("it allowed a fork"), strong moves found or missed, and Train buttons
+      that open a puzzle of that theme (needs the Lichess puzzles downloaded). A move you took
+      back is not in it.
+- [ ] **Automatic level**: "Your level: Automatic (1200)"; win a game: 1300 next time; lose
+      one with several mistakes: 1100. Picking a number turns Automatic off.
+
 ## UX overhaul, step 8: settings and polish (branch feature/ux-overhaul)
 
 - [ ] **Settings**: every section still works as before (engines add/edit/test, opening
