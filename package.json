@@ -12,7 +12,8 @@
     "build:mac": "test -n \"$APPLE_SIGNING_IDENTITY\" || { echo 'Set APPLE_SIGNING_IDENTITY (security find-identity -v -p codesigning), see README'; exit 1; } && tauri build --bundles app",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval:reasons": "vitest run --config vitest.eval.config.ts"
   },
   "license": "MIT",
   "dependencies": {

@@ -129,6 +129,9 @@ How this file is used:
   - Known limits: scores are kept for the session only (no history of training results);
     promotion candidates are always queens.
 - [ ] **P2.8 Reasons in chess terms** (requested by the owner 2026-10-25; research first).
+  - Status 2026-10-26: research done, report in `docs/REASONS.md` (prior work, the kinds of
+    reasons and how to compute each, a measuring harness `pnpm eval:reasons` against the
+    Lichess puzzle themes with a baseline, and the plan R1–R5). Building starts with R1.
   Say *why* a move is good or bad the way a coach would: "it stops the knight from reaching
   f7", "it pins the bishop and wins it next move", "after this the back rank is weak",
   instead of "it gives away 10% of winning chances". Today's explanations (P2.4a) give the
