@@ -146,7 +146,7 @@ const EngineControl = () => {
 
                 const profile = activeProfile();
                 // with the tutor on, the tutor plays (at the player's level), not the engine
-                const tutor = !!getSettingValue<boolean>(TUTOR_SETTING, false);
+                const tutor = !!getSettingValue(TUTOR_SETTING, false);
                 const engineElo = tutor
                     ? getSettingValue("tutor.elo", 1200)!
                     : getSettingValue("engine.playing.elo", 1000)!;
@@ -306,10 +306,7 @@ const EngineControl = () => {
                         Opening book:{" "}
                         <div class="select is-small">
                             <select
-                                value={getSettingValue<string>(
-                                    ENGINE_BOOK_SETTING,
-                                    "",
-                                )}
+                                value={getSettingValue(ENGINE_BOOK_SETTING, "")}
                                 onChange={(e) =>
                                     setSettingValue(
                                         ENGINE_BOOK_SETTING,

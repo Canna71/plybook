@@ -81,10 +81,8 @@ export function useTutor(o: {
         setMessages((all) => [...all, { id: nextId++, kind, text, fens }]);
 
     const chattiness = () =>
-        (getSettingValue<string>("tutor.chattiness", "normal") ??
-            "normal") as Chattiness;
-    const level = () =>
-        tutorLevel(getSettingValue<number>("tutor.elo", 1200) ?? 1200);
+        getSettingValue("tutor.chattiness", "normal") as Chattiness;
+    const level = () => tutorLevel(getSettingValue("tutor.elo", 1200));
 
     // your win chance when it was your turn: what your move is measured against
     let yourWinBefore: number | undefined;
@@ -173,7 +171,7 @@ export function useTutor(o: {
             data &&
             "uci" in data &&
             before &&
-            getSettingValue<boolean>("tutor.takebacks", true) &&
+            getSettingValue("tutor.takebacks", true) &&
             shouldAsk(yourWinBefore, yourWinAfter, chattiness());
         if (ask) {
             const loss = yourWinBefore! - yourWinAfter;
@@ -270,8 +268,8 @@ export function useTutor(o: {
         if (!result) return;
         const s = summarizeGame(records, result);
         setSummary(s);
-        if (getSettingValue<boolean>("tutor.auto", true)) {
-            const elo = getSettingValue<number>("tutor.elo", 1200) ?? 1200;
+        if (getSettingValue("tutor.auto", true)) {
+            const elo = getSettingValue("tutor.elo", 1200);
             const next = nextLevel(elo, s);
             if (next !== elo) void setSettingValue("tutor.elo", next);
         }

@@ -424,7 +424,7 @@ const EngineSettings: Component = () => {
                 <label class="label">Human moves in analysis</label>
                 <div class="select">
                     <select
-                        value={getSettingValue<string>(HUMAN_SETTING, "")}
+                        value={getSettingValue(HUMAN_SETTING, "")}
                         onChange={(e) =>
                             setSettingValue(
                                 HUMAN_SETTING,

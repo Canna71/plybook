@@ -19,11 +19,7 @@ import { Config } from "chessground/config";
 import anylogger from "anylogger";
 import { Chessboard } from "../components/common/chessboard";
 import Button from "../components/common/Button";
-import {
-    getSettingValue,
-    ReaderPlace,
-    setSettingValue,
-} from "../models/settings";
+import { getSettingValue, setSettingValue } from "../models/settings";
 import { PAGE_SIZE } from "../scan/pages";
 import {
     findText,
@@ -174,10 +170,7 @@ const PdfReader: Component = () => {
         clearTimeout(saveTimer);
         saveTimer = undefined;
         if (!doc()) return;
-        const places = getSettingValue<Record<string, ReaderPlace>>(
-            PLACES_SETTING,
-            {},
-        );
+        const places = getSettingValue(PLACES_SETTING, {});
         void setSettingValue(PLACES_SETTING, {
             ...places,
             [path()]: { ...place, zoom: zoom() },
@@ -216,14 +209,8 @@ const PdfReader: Component = () => {
     createEffect(
         on(aspect, (a) => {
             if (!a) return;
-            const saved = getSettingValue<Record<string, ReaderPlace>>(
-                PLACES_SETTING,
-                {},
-            )?.[path()];
-            const page = getSettingValue<Record<string, number>>(
-                PAGES_SETTING,
-                {},
-            )?.[path()];
+            const saved = getSettingValue(PLACES_SETTING, {})[path()];
+            const page = getSettingValue(PAGES_SETTING, {})[path()];
             place = saved
                 ? { page: saved.page, offset: saved.offset }
                 : { page: page ?? 1, offset: 0 };

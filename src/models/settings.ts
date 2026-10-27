@@ -27,13 +27,19 @@ export interface AppSettings {
         analysisProfile?: string;
         /** Maia-style profile for human-move hints: "" first one, "off" none */
         human?: string;
+        /** Engine threads for analysis, review and play */
+        threads?: number;
         analysis: {
             depth?: number;
+            /** Milliseconds per position */
+            movetime?: number;
             multipv?: number;
             showArrows?: boolean;
         };
         playing: {
             depth?: number;
+            /** Milliseconds per move, without clocks */
+            movetime?: number;
             elo?: number;
             /** Polyglot book the engine plays from ("" for none) */
             book?: string;
@@ -81,8 +87,8 @@ export interface AppSettings {
         pages?: Record<string, number>;
     };
     library?: {
-        /** The Library browser's order: "name" or "modified" (newest first) */
-        sort?: string;
+        /** The Library browser's order: by name, or modified (newest first) */
+        sort?: "name" | "modified";
     };
     tutor?: {
         /** Play against the tutor instead of the plain engine (Play screen) */
@@ -107,6 +113,8 @@ export interface AppSettings {
         workspace?: {
             columns?: string;
         };
+        /** The analysis panel's sections, open or folded, by id */
+        panel?: Record<string, boolean>;
     };
     _timestamp?: number;
 }
@@ -121,13 +129,16 @@ const DEFAULT: AppSettings = {
         lastUsed: "",
         analysisProfile: "",
         human: "",
+        threads: 1,
         analysis: {
             depth: 30,
+            movetime: 10000,
             multipv: 3,
             showArrows: false,
         },
         playing: {
             depth: 30,
+            movetime: 10000,
             elo: 1000,
             book: "",
             timeControl: "",
@@ -183,6 +194,7 @@ const DEFAULT: AppSettings = {
         workspace: {
             columns: "1fr 5px 440px",
         },
+        panel: {},
     },
 };
 
@@ -218,13 +230,51 @@ export async function saveSettings() {
     await writeConfigFile("settings.json", settings);
 }
 
-export function getSettingValue<T>(path: string, defaultValue?: T) {
-    // const settings = await loadSettings();
-    const value = get(settings, path, defaultValue);
-    return value;
+// Settings are read and written by dotted path ("engine.playing.elo"). The paths and their
+// value types come from AppSettings, so a mistyped key or a wrong value fails typecheck.
+// A Record (keyed by user data, such as Library paths) is a leaf: written as a whole.
+
+type Leaf = string | number | boolean | unknown[];
+/** A record keyed by any string, rather than an object with known keys */
+type IsRecord<T> = string extends keyof T ? true : false;
+
+/** Every dotted path into AppSettings, objects as well as their fields */
+export type SettingPath<T = AppSettings> = {
+    [K in keyof T & string]-?: NonNullable<T[K]> extends Leaf
+        ? K
+        : IsRecord<NonNullable<T[K]>> extends true
+          ? K
+          : K | `${K}.${SettingPath<NonNullable<T[K]>>}`;
+}[keyof T & string];
+
+/** The value at a path; undefined when a step on the way is optional and unset */
+export type SettingValue<
+    P extends string,
+    T = AppSettings,
+> = P extends `${infer K}.${infer Rest}`
+    ? K extends keyof T
+        ? SettingValue<Rest, NonNullable<T[K]>>
+        : never
+    : P extends keyof T
+      ? T[P]
+      : never;
+
+/** The value at `path`, else `fallback` (the defaults in DEFAULT come first) */
+export function getSettingValue<P extends SettingPath>(
+    path: P,
+    fallback: NonNullable<SettingValue<P>>,
+): NonNullable<SettingValue<P>>;
+export function getSettingValue<P extends SettingPath>(
+    path: P,
+): SettingValue<P> | undefined;
+export function getSettingValue(path: string, fallback?: unknown) {
+    return get(settings, path, fallback);
 }
 
-export async function setSettingValue(path: string, value: any) {
+export async function setSettingValue<P extends SettingPath>(
+    path: P,
+    value: SettingValue<P>,
+) {
     const args = [...path.split("."), value];
     (setSettings as Function)(...args);
     await saveSettings();

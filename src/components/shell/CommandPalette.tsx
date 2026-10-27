@@ -122,7 +122,7 @@ export const CommandPalette = () => {
             run: () =>
                 void setSettingValue(
                     "layout.sidebarCollapsed",
-                    !getSettingValue<boolean>("layout.sidebarCollapsed", false),
+                    !getSettingValue("layout.sidebarCollapsed", false),
                 ),
         },
         ...(files() ?? []).map((f) => ({

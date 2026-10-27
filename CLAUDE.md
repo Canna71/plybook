@@ -141,8 +141,11 @@ User data locations (resolved by Tauri from the bundle identifier):
   error; avoid adding new ones.
 - Logging: use `anylogger` (`const log = anylogger("module")`), not `console.log`.
 - Imports are relative; there are no path aliases.
-- Settings keys are dotted strings (e.g. `engine.playing.elo`). Read and write the exact same key
-  and keep defaults in `settings.ts` DEFAULT rather than scattering fallbacks.
+- Settings keys are dotted strings (e.g. `engine.playing.elo`), typed from `AppSettings`: a new
+  setting goes in the interface first (a key not there fails typecheck), and its default in
+  `settings.ts` DEFAULT rather than in scattered fallbacks. A `Record` (keyed by user data such
+  as Library paths) is read and written as a whole. Don't pass type arguments to
+  `getSettingValue`; the path gives the type.
 
 ### SolidJS
 
@@ -194,8 +197,7 @@ User data locations (resolved by Tauri from the bundle identifier):
   `components/common/chessboard.tsx` clears it at every press, because a board moved by the
   layout around it (a panel above it changing) would otherwise put moves on the wrong squares.
 - Paths in routes must be URL-encoded (`encodeURIComponent`) because file names can contain `&#?+`.
-- Known refactor targets:
-  a typed settings schema, split `components/common/utils.tsx`, add Vitest + Rust CI.
+- Known refactor target: split `components/common/utils.tsx`.
 
 ## Roadmap
 

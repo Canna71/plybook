@@ -62,9 +62,7 @@ const MiB = (bytes: number) => `${Math.round(bytes / 2 ** 20)} MB`;
 const LichessPuzzles: Component = () => {
     const navigate = useNavigate();
     const [stats, { refetch }] = createResource(puzzleStats);
-    const [theme, setTheme] = createSignal(
-        getSettingValue<string>(THEME_SETTING, ""),
-    );
+    const [theme, setTheme] = createSignal(getSettingValue(THEME_SETTING, ""));
     const [size, setSize] = createSignal(SIZES[0].min);
     const [progress, setProgress] = createSignal<PuzzleImportEvent>();
     const [busy, setBusy] = createSignal(false);

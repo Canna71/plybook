@@ -77,10 +77,7 @@ const Home: Component = () => {
 
     const recent = () => recentFiles().slice(0, 5);
     const bookPage = (path: string) =>
-        getSettingValue<Record<string, { page: number }>>(
-            "reader.places",
-            {},
-        )?.[path]?.page;
+        getSettingValue("reader.places", {})[path]?.page;
     const openRecent = (path: string, kind: string) =>
         navigate(
             kind === "book"
@@ -91,14 +88,13 @@ const Home: Component = () => {
     const steps = () =>
         setupSteps({
             engines: profiles()?.length ?? 0,
-            accounts:
-                getSettingValue<unknown[]>("online.accounts", [])?.length ?? 0,
+            accounts: getSettingValue("online.accounts", []).length,
             lichessPuzzles: lichess()?.count ?? 0,
             repertoires: openings()?.count ?? 0,
             books: recentFiles().filter((f) => f.kind === "book").length,
         });
     const showSetup = () =>
-        !getSettingValue<boolean>("today.hideSetup", false) &&
+        !getSettingValue("today.hideSetup", false) &&
         steps().some((s) => !s.done);
 
     const trainOpenings = () => {

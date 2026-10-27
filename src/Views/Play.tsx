@@ -19,11 +19,11 @@ const PlayView = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
     const [newPgn, setNewPgn] = createSignal<string | undefined>(undefined);
     const [timeControl, setTimeControl] = createSignal(
-        getSettingValue<string>(TIME_CONTROL_SETTING, "") ?? "",
+        getSettingValue(TIME_CONTROL_SETTING, ""),
     );
-    const tutorOn = () => !!getSettingValue<boolean>(TUTOR_SETTING, false);
-    const tutorAuto = () => !!getSettingValue<boolean>("tutor.auto", true);
-    const tutorElo = () => getSettingValue<number>("tutor.elo", 1200) ?? 1200;
+    const tutorOn = () => getSettingValue(TUTOR_SETTING, false);
+    const tutorAuto = () => getSettingValue("tutor.auto", true);
+    const tutorElo = () => getSettingValue("tutor.elo", 1200);
 
     // Saved after every move, so History has the game even if it is left unfinished
     createEffect(
@@ -122,12 +122,10 @@ const PlayView = () => {
                         Asks about{" "}
                         <span class="select is-small">
                             <select
-                                value={
-                                    getSettingValue<string>(
-                                        "tutor.chattiness",
-                                        "normal",
-                                    ) ?? "normal"
-                                }
+                                value={getSettingValue(
+                                    "tutor.chattiness",
+                                    "normal",
+                                )}
                                 onChange={(e) =>
                                     void setSettingValue(
                                         "tutor.chattiness",

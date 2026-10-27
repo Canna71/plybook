@@ -25,7 +25,7 @@ export const openBackupsFolder = () => invoke<void>("backup_open_folder");
 /** The daily backup, if due and switched on (a while after start, not to slow it down). */
 export function scheduleAutoBackup(delay = 30_000) {
     setTimeout(async () => {
-        if (!getSettingValue<boolean>(AUTO_BACKUP_SETTING, true)) return;
+        if (!getSettingValue(AUTO_BACKUP_SETTING, true)) return;
         try {
             const path = await invoke<string | null>("backup_auto");
             if (path) log.info("automatic backup", path);

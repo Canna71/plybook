@@ -4,6 +4,8 @@
 
 import { Color } from "chessops";
 import { AnalysisOptions } from "./engineinterfaces";
+// types only: settings.ts itself touches window on import
+import type { SettingPath, SettingValue } from "../models/settings";
 
 export type EngineTask =
     | { kind: "idle" }
@@ -66,7 +68,11 @@ export const sameTask = (a: EngineTask, b: EngineTask) =>
             (a.kind !== "play" ||
                 a.enginesTurn === (b as typeof a).enginesTurn)));
 
-export type Setting = <T>(key: string, fallback: T) => T;
+/** getSettingValue with a fallback */
+export type Setting = <P extends SettingPath>(
+    path: P,
+    fallback: NonNullable<SettingValue<P>>,
+) => NonNullable<SettingValue<P>>;
 
 export type SearchPlan = {
     options: AnalysisOptions;
