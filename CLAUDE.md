@@ -52,6 +52,10 @@ Rust changed.
 
 - **`develop` is the working branch.** Branch from `develop` and open PRs against `develop`.
   `main` is behind and only receives merges from `develop`.
+- Releases: a `vX.Y.Z` tag matching `package.json` (the app's version; `tauri.conf.json` reads
+  it) runs `.github/workflows/release.yml` into a draft GitHub release with the updater files
+  (`tauri.release.conf.json` turns them on, so local builds need no signing key). The
+  one-time key and secret setup is in the README.
 - CI (`.github/workflows/ci.yml`) runs on every PR and on pushes to `main`, on `macos-latest`
   and `windows-latest`: typecheck, lint, test, build (frontend job), and `cargo fmt --check`,
   `cargo clippy --all-targets -- -D warnings`, `cargo test` (rust job, which builds the
@@ -88,7 +92,8 @@ src/
                            threats.ts (what a move stops and threatens, in words); *.eval.ts = measurements
   online/                  onlinegames.ts (chess.com/Lichess sync into Library/Online), autosync.ts (sync on
                            start and review new games in the background, listed on Today)
-  storage/                 fs.ts (Tauri fs wrappers: Library, settings, themes), db.ts (invoke() wrappers for db.rs),
+  storage/                 updates.ts (the updater: check, install, the check on start; X.1),
+                           fs.ts (Tauri fs wrappers: Library, settings, themes), db.ts (invoke() wrappers for db.rs),
                            library.ts (Library listings with dates, search walk, dropped-file import)
   theming/                 dynamic CSS loading for board/piece themes (src/assets/styles)
 src-tauri/src/

@@ -36,6 +36,11 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
         label: "Backups",
         keywords: "backup restore save copy daily automatic zip data",
     },
+    {
+        id: "updates",
+        label: "Updates",
+        keywords: "update upgrade new version release install about",
+    },
 ];
 
 /** Sections whose name or keywords hold every word of the query, best (name) matches first. */

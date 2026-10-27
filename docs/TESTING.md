@@ -127,6 +127,23 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## App auto-update, X.1 (branch feature/auto-update)
+
+Needs the one-time setup in the README (Releases and updates): the key, the secrets, a public
+repository.
+
+- [ ] **First release**: tag `v0.1.0`, push it; the Release workflow's three jobs pass and a
+      draft release holds the .dmg, .app.tar.gz (+ .sig) for both Macs, the Windows installers
+      and latest.json. Publish it.
+- [ ] **macOS install**: the .dmg opens without "unidentified developer" (notarized).
+- [ ] **An update**: with 0.1.0 installed, release 0.1.1 the same way. After a restart, about
+      20 s in, "ReChess 0.1.1 is available"; Settings → Updates shows it with its notes;
+      "Install and restart" downloads (bar), restarts, and Updates shows 0.1.1. Library,
+      settings and puzzles are untouched.
+- [ ] **Windows**: the same update from 0.1.0 to 0.1.1 on Windows.
+- [ ] **Check now** with no newer release: "ReChess is up to date". Switching off "Check for a
+      new version when ReChess starts": no toast on the next start.
+
 ## Auto sync and review, P1.4 (branch feature/auto-sync)
 
 - [ ] **Add an account** (Settings → Accounts) and play a game online; restart ReChess after

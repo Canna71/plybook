@@ -42,4 +42,5 @@ keyring = { version = "3.6", features = ["apple-native", "windows-native"] }
 zip = { version = "2.2", default-features = false, features = ["deflate"] }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
 tauri-plugin-window-state = "2"
