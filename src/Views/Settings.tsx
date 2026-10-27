@@ -11,6 +11,7 @@ import LichessToken from "../components/settings/LichessToken";
 import OpeningBooks from "../components/settings/OpeningBooks";
 import Backups from "../components/settings/Backups";
 import Appearance from "../components/settings/Appearance";
+import Updates from "../components/settings/Updates";
 import PageHeader from "../components/shell/PageHeader";
 import { findSections, sectionById } from "../models/settingsSections";
 import "./Settings.scss";
@@ -95,6 +96,9 @@ const Settings: Component = () => {
                     </Show>
                     <Show when={current().id === "backups"}>
                         <Backups />
+                    </Show>
+                    <Show when={current().id === "updates"}>
+                        <Updates />
                     </Show>
                 </div>
             </div>

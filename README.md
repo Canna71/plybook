@@ -48,6 +48,42 @@ pnpm build:mac        # tauri build --bundles app, refuses to run unsigned
 After the first signed build, remove old `rechess` entries in System Settings → Privacy &
 Security → Screen Recording, grant the permission again and reopen ReChess once.
 
+### Releases and updates
+
+The app checks `latest.json` on the newest GitHub release a little after start (Settings →
+Updates) and installs an update only if its signature matches the `pubkey` in
+`src-tauri/tauri.conf.json`. The repository must be public, so the app can download releases
+without logging in.
+
+One-time setup:
+
+1. Generate the updater key, and keep the private half and its password safe (losing it means
+   installed apps can no longer update):
+   ```bash
+   pnpm tauri signer generate -w ~/.tauri/rechess.key
+   ```
+   Put the public key (the contents of `~/.tauri/rechess.key.pub`) in `tauri.conf.json`
+   `plugins.updater.pubkey`.
+2. Add the repository secrets (Settings → Secrets and variables → Actions):
+   - `TAURI_SIGNING_PRIVATE_KEY` (the contents of `~/.tauri/rechess.key`) and
+     `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`;
+   - for macOS, a **Developer ID Application** certificate (an "Apple Development" one is not
+     enough to give the app to others): `APPLE_CERTIFICATE` (the exported .p12, base64:
+     `base64 -i cert.p12 | pbcopy`), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`
+     (`Developer ID Application: Your Name (TEAMID)`), and for notarization `APPLE_ID`,
+     `APPLE_PASSWORD` (an app-specific password from account.apple.com) and `APPLE_TEAM_ID`.
+
+To release, set the new `version` in `package.json` (the app reads its version from there), commit,
+and push a matching tag:
+
+```bash
+git tag v0.2.0 && git push origin v0.2.0
+```
+
+`.github/workflows/release.yml` builds macOS (Apple silicon and Intel) and Windows into a
+**draft** release. Write the notes (they are shown in the app), then publish it: from then on the
+apps offer it. Windows installers are not code-signed, so SmartScreen warns on a first install.
+
 ### To build icons:
 
 ```bash

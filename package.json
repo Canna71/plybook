@@ -27,6 +27,7 @@
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "@tauri-apps/plugin-fs": "^2.0.0",
     "@tauri-apps/plugin-process": "^2.2.0",
+    "@tauri-apps/plugin-updater": "^2.14.0",
     "@tauri-apps/plugin-window-state": "^2.2.0",
     "animate.css": "^4.1.1",
     "anylogger": "^1.0.11",

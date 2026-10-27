@@ -70,6 +70,10 @@ export interface AppSettings {
         /** A backup a day in <AppLocalData>/Backups, the last seven kept */
         auto?: boolean;
     };
+    updates?: {
+        /** Look for a new version a little after start (built apps only) */
+        check?: boolean;
+    };
     reader?: {
         /** Where each PDF was left, by Library path (written as a whole: paths have dots) */
         places?: Record<string, ReaderPlace>;
@@ -152,6 +156,9 @@ const DEFAULT: AppSettings = {
     },
     backup: {
         auto: true,
+    },
+    updates: {
+        check: true,
     },
     reader: {
         places: {},

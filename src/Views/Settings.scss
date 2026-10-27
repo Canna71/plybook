@@ -98,6 +98,11 @@
         opacity: 0.8;
     }
 
+    // release notes, shown as text with their line breaks
+    .update-notes {
+        white-space: pre-wrap;
+    }
+
     .accounts-table .actions {
         white-space: nowrap;
         display: flex;
