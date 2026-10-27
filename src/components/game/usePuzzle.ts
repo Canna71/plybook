@@ -93,6 +93,8 @@ export function usePuzzle(o: PuzzleOptions) {
         const node = o.game()?.nodeAt(path!);
         if (!node) return;
         const next = node.children[0];
+        // a game without moves (a file that did not load) is not a solved puzzle
+        if (!next && (path?.size() ?? 0) === 0) return;
         if (o.turn() !== o.orientation()) {
             if (next) o.applyMove(next.data.move as NormalMove);
             else finish();
