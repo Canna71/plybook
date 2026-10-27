@@ -18,6 +18,7 @@ export const TRUSTED: ReadonlySet<Motif> = new Set<Motif>([
     "backRankMate",
     "doubleCheck",
     "fork",
+    "pin",
     "skewer",
     "discoveredAttack",
     "hangingPiece",
@@ -60,12 +61,14 @@ export function playUci(fen: string, uci: string): string | undefined {
 
 /**
  * "queen on d8": the pieces on a reason's squares where it happens: after the move, or before
- * it for a capture (a hanging piece is named, not the piece that took it). Kings go first,
- * without a square: "king".
+ * it for a capture (a hanging piece is named, not the piece that took it) and for a pin (the
+ * pinned piece may be the one taken). Kings go first, without a square: "king"; a pin keeps
+ * its order, the pinned piece and then what it shields.
  */
 function piecesOf(fen: string, pv: string[], reason: Reason): string[] {
     const pos = positionOf(fen)!;
-    const upTo = reason.motif === "hangingPiece" ? reason.ply : reason.ply + 1;
+    const before = reason.motif === "hangingPiece" || reason.motif === "pin";
+    const upTo = before ? reason.ply : reason.ply + 1;
     for (const uci of pv.slice(0, upTo)) pos.play(parseUci(uci)!);
     const names = reason.squares.map((sq) => {
         const piece = pos.board.get(parseSquare(sq)!);
@@ -73,6 +76,7 @@ function piecesOf(fen: string, pv: string[], reason: Reason): string[] {
         return piece.role === "king" ? "king" : `${piece.role} on ${sq}`;
     });
     const [actor, ...targets] = names;
+    if (reason.motif === "pin") return names;
     return [
         actor,
         ...targets.filter((t) => t === "king"),
@@ -183,7 +187,7 @@ function motifWords(motif: Reason & { pieces: string[] }): string {
         case "promotion":
             return "a promotion";
         case "pin":
-            return `a pin of ${the(targets[0] ?? "")}`;
+            return `a pin of ${the(targets[0] ?? "")} to ${the(targets[1] ?? "")}`;
     }
 }
 

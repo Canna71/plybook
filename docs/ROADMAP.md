@@ -138,7 +138,8 @@ How this file is used:
   - Known limits: scores are kept for the session only (no history of training results);
     promotion candidates are always queens.
 - [x] **P2.8 Reasons in chess terms** (requested by the owner 2026-10-25; research first;
-  done 2026-10-26, merged; still open: pins below the bar, SF17 piece values).
+  done 2026-10-26, merged; pins brought up to the bar and named 2026-10-27; still open: SF17
+  piece values).
   - Status 2026-10-26: research done, report in `docs/REASONS.md` (prior work, the kinds of
     reasons and how to compute each, a measuring harness `pnpm eval:reasons` against the
     Lichess puzzle themes with a baseline, and the plan R1–R5). Building starts with R1.

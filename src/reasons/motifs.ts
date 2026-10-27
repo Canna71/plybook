@@ -127,9 +127,11 @@ function behind(pos: Chess, from: Square, through: Square): Square[] {
         .sort((a, b) => between(from, a).size() - between(from, b).size());
 }
 
-/** Pins in `pos` by `color`'s sliders: the pinned square and what it shields. */
-function pins(pos: Chess, color: Color): { pinned: Square; to: Square }[] {
-    const result: { pinned: Square; to: Square }[] = [];
+type Pin = { by: Square; pinned: Square; to: Square };
+
+/** Pins in `pos` by `color`'s sliders: the pinning piece, the pinned one and what it shields. */
+function pins(pos: Chess, color: Color): Pin[] {
+    const result: Pin[] = [];
     const enemy = opposite(color);
     for (const from of pos.board[color].intersect(
         pos.board.bishop.union(pos.board.rook).union(pos.board.queen),
@@ -144,8 +146,10 @@ function pins(pos: Chess, color: Color): { pinned: Square; to: Square }[] {
             // a pawn in front of a piece is hardly pinned; in front of its king it is
             const toKing = pos.board.get(next)!.role === "king";
             if (!toKing && pos.board.get(target)!.role === "pawn") continue;
+            // a king in front is in check or x-rayed, not pinned
+            if (pos.board.get(target)!.role === "king") continue;
             if (valueAt(pos, next) > valueAt(pos, target)) {
-                result.push({ pinned: target, to: next });
+                result.push({ by: from, pinned: target, to: next });
             }
         }
     }
@@ -191,18 +195,34 @@ function forks(steps: Step[]): Reason[] {
 /**
  * We win a piece that could not move away: pinned to its king or to something worth more.
  * Taking it must gain something (it is worth more than our piece, or undefended): an even
- * trade of a pinned piece is a trade, not a pin.
+ * trade of a pinned piece is a trade, not a pin. A pinned pawn is not the point (taking it is
+ * taking a pawn), nor is a pin whose pinning piece is taken at once, a pin our move did not
+ * make, or taking a piece the opponent could have unpinned and did not have to (the pin must
+ * have held through their move). Measured in docs/REASONS.md.
  */
 function pinned(steps: Step[]): Reason[] {
     const result: Reason[] = [];
     const last = steps.at(-1)!.ply;
+    // the pinning piece is not taken at once (then the pin never mattered)
+    const survives = (ply: number, by: Square) =>
+        steps[ply + 1]?.move.to !== by;
     for (const s of steps.filter((s) => s.ours)) {
         const me = s.before.turn;
         const enemy = opposite(me);
         // a piece that just stepped in to block a check is won by the check, not the pin
         const blocker = steps[s.ply - 1]?.move.to;
+        // the pin held through the opponent's move: they could not get out of it
+        const held = new Set(
+            s.ply >= 1
+                ? pins(steps[s.ply - 1].before, me).map(
+                      (p) => `${p.pinned}-${p.to}`,
+                  )
+                : [],
+        );
         for (const pin of pins(s.before, me)) {
             if (pin.pinned === blocker) continue;
+            if (s.before.board.get(pin.pinned)!.role === "pawn") continue;
+            if (!held.has(`${pin.pinned}-${pin.to}`)) continue;
             const gains =
                 valueAt(s.before, pin.pinned) >
                     valueAt(s.before, s.move.from) ||
@@ -211,7 +231,7 @@ function pinned(steps: Step[]): Reason[] {
                 result.push({
                     motif: "pin",
                     ply: s.ply,
-                    squares: [pin.pinned, pin.to].map(makeSquare),
+                    squares: [pin.by, pin.pinned, pin.to].map(makeSquare),
                 });
             }
         }
@@ -222,6 +242,12 @@ function pinned(steps: Step[]): Reason[] {
         );
         for (const pin of pins(s.after, me)) {
             if (before.has(`${pin.pinned}-${pin.to}`)) continue;
+            if (s.after.board.get(pin.pinned)!.role === "pawn") continue;
+            // the move makes the pin: the moved piece pins, or it moved off the line
+            const made =
+                pin.by === s.move.to ||
+                between(pin.by, pin.pinned).has(s.move.from);
+            if (!made || !survives(s.ply, pin.by)) continue;
             const wins =
                 s.ply === last &&
                 s.after.board.get(pin.to)?.role === "king" &&
@@ -239,6 +265,8 @@ function pinned(steps: Step[]): Reason[] {
         const hits = attacks(mover, s.move.to, s.after.board.occupied);
         for (const pin of pins(s.after, me)) {
             if (!hits.has(pin.pinned) || pin.pinned === s.move.to) continue;
+            if (s.after.board.get(pin.pinned)!.role === "pawn") continue;
+            if (!survives(s.ply, pin.by)) continue;
             const worth =
                 valueAt(s.after, pin.pinned) > VALUE[mover.role] ||
                 attackersOf(s.after, pin.pinned, enemy).isEmpty();
@@ -485,9 +513,20 @@ export function mainReasons(reasons: Reason[]): Reason[] {
         "hangingPiece",
     ];
     const onTheWay = new Set<Motif>(["fork", "pin", "hangingPiece"]);
-    const kept = has("mate")
+    let kept = has("mate")
         ? reasons.filter((r) => !onTheWay.has(r.motif))
         : reasons;
+    // a pin with or after another tactic is part of it: that tactic is the point
+    const tactics = new Set<Motif>([
+        "doubleCheck",
+        "discoveredAttack",
+        "skewer",
+        "fork",
+    ]);
+    const firstTactic = Math.min(
+        ...kept.filter((r) => tactics.has(r.motif)).map((r) => r.ply),
+    );
+    kept = kept.filter((r) => r.motif !== "pin" || r.ply < firstTactic);
     return [...kept].sort(
         (a, b) =>
             ORDER.indexOf(a.motif) - ORDER.indexOf(b.motif) || a.ply - b.ply,
