@@ -136,6 +136,18 @@ a wrong move with the refutation arrow, Try again), Play with the tutor as Black
       move through the notes only after a click inside them.
 - [ ] **A clocked game** (tutor off, a time control): both clocks run and a flag ends the game.
 
+## useChessEngine as a state machine (branch feature/engine-state-machine)
+
+Checked in the dev app: analysis lines and hint arrow, threat mode, a game review, a game
+against Maia (its moves, the "Suggest Move" hint on your turn).
+
+- [ ] **Resign while the engine thinks** (a slow engine, long movetime): no engine move
+      appears after the game ends.
+- [ ] **An opening book** for the engine (Settings → Engines): it plays book moves, then
+      searches once out of the book.
+- [ ] **Analysis settings**: changing the number of lines while analysing restarts the
+      analysis with the new number.
+
 ## App auto-update, X.1 (branch feature/auto-update)
 
 Needs the one-time setup in the README (Releases and updates): the key, the secrets, a public

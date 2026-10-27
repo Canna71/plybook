@@ -89,7 +89,8 @@ src/
                            settings.ts (JSON settings in AppConfig, Solid store), puzzles.ts (score formula)
   engine/                  uciengine.ts (UCI protocol parser) over executableuci.ts (talks to Rust engine_* commands),
                            engineprofiles.ts (profiles, startEngine, humanProfile), lc0.ts (Maia move stats),
-                           explainer.ts (a background second engine for the searches behind explanations)
+                           explainer.ts (a background second engine for the searches behind explanations),
+                           enginetask.ts (what useChessEngine's engine does now and the search it runs)
   reasons/                 move reasons in chess terms (docs/REASONS.md): motifs.ts (tactics in a line),
                            threats.ts (what a move stops and threatens, in words); *.eval.ts = measurements
   online/                  onlinegames.ts (chess.com/Lichess sync into Library/Online), autosync.ts (sync on
@@ -193,7 +194,7 @@ User data locations (resolved by Tauri from the bundle identifier):
   `components/common/chessboard.tsx` clears it at every press, because a board moved by the
   layout around it (a panel above it changing) would otherwise put moves on the wrong squares.
 - Paths in routes must be URL-encoded (`encodeURIComponent`) because file names can contain `&#?+`.
-- Known refactor targets: make `useChessEngine` an explicit state machine,
+- Known refactor targets:
   a typed settings schema, split `components/common/utils.tsx`, add Vitest + Rust CI.
 
 ## Roadmap
