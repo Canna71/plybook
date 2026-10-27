@@ -127,6 +127,20 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Explanations with their evidence, P2.4c (branch feature/explanation-contract)
+
+Checked in the dev app: 1.e4 d5 2.Qg4?? explains the hanging queen, Bxg4 and the material,
+and Evidence shows the scores for White (+0.75 / −7.96, depth 24), the board fact and the lines.
+
+- [ ] **Evidence**: on a few of your own moves, open "Evidence" under the explanation: do the
+      board facts, line claims and "Interpretation:" items match the sentences above?
+- [ ] **Shallow**: right after a move, while the engine is still at low depth, the explanation
+      says it has not searched deep enough yet, then judges once it has.
+- [ ] **Repetition**: in a game where a position repeats a third time, the move that repeats
+      it says a draw can be claimed.
+- [ ] **No false forks**: a move that attacks two pieces where the engine does not win one is
+      described as attacking both, not as a fork.
+
 ## Explanations worded by a model, P2.4b (branch feature/model-explanations)
 
 Checked in the dev app with Ollama's qwen2.5:7b (local, no key): Settings → Explanations, Try

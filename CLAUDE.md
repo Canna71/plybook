@@ -217,6 +217,8 @@ Read it before touching recognition, and keep it current.
 `docs/REASONS.md` is the plan for explaining moves in chess terms (P2.8): the kinds of reasons,
 how each is computed, and `pnpm eval:reasons`, which measures detectors against the Lichess
 puzzle themes. Read it before touching `models/explain.ts` or `src/reasons`.
+`docs/EXPLANATIONS.md` is the explanation's structured result (`explainMoveFull`: evidence,
+limits, validation), the rules that keep it honest, and why not ChessCoach or Queen.
 `docs/TESTING.md` lists what the owner still has to try by hand (things automated checks can't
 confirm). Add steps there for every feature or fix that needs the running app, in its branch.
 
