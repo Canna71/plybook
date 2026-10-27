@@ -2,6 +2,14 @@
 
 A tool for practicing and studying chess.
 
+## License
+
+GPL-3.0-or-later (see `LICENSE`). ReChess builds on [chessground](https://github.com/lichess-org/chessground)
+and [chessops](https://github.com/niklasf/chessops) in the app, and [shakmaty](https://github.com/niklasf/shakmaty)
+and [pgn-reader](https://github.com/niklasf/rust-pgn-reader) in its Rust side, all GPL-3.0 (or
+later), so the app as distributed is under the same license. Chess engines such as Stockfish are not bundled: you
+install them yourself, and they keep their own licenses.
+
 
 
 ## Features in the roadmap:

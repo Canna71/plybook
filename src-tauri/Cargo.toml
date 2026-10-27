@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
+license = "GPL-3.0-or-later"
 # pgn-reader 0.29 / shakmaty 0.30 need it
 rust-version = "1.97"
 

@@ -18,9 +18,9 @@ everything else is a design choice of ours.
 | [python-chess](https://github.com/niklasf/python-chess) | GPL-3.0, package `chess`: legal moves, PGN, UCI/XBoard engines, attacks and pins. | Not needed: ReChess is TypeScript and Rust, and [chessops](https://github.com/niklasf/chessops) (same author, GPL-3.0) covers the same ground in the app already. |
 | [Stockfish](https://github.com/official-stockfish/Stockfish) ([docs](https://github.com/official-stockfish/Stockfish/wiki)) | GPL-3.0; whoever distributes it must include the license and the source. Its `eval` command prints NNUE piece values (not UCI, Stockfish only). | None: the user installs the engine; ReChess talks UCI to it and bundles no engine. |
 
-**Licensing note.** `package.json` says MIT, but ReChess bundles chessground and chessops, both
-GPL-3.0-or-later, so a distributed build is GPL-3.0 in practice. A decision for the owner
-(add a GPL-3.0 LICENSE file, most simply); not legal advice.
+**Licensing note.** ReChess bundles chessground and chessops (and shakmaty, pgn-reader in Rust),
+all GPL-3.0, so ReChess is GPL-3.0-or-later since 2026-10-27 (`LICENSE`; it said MIT before).
+GPL code such as ChessCoach would therefore not be a license blocker, only a practical one.
 
 ## Decision
 
