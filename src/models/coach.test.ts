@@ -1,5 +1,43 @@
 import { describe, expect, it } from "vitest";
-import { inventedChess } from "./coach";
+import { inventedChess, inventedClaims, rewordingProblems } from "./coach";
+
+describe("inventedClaims", () => {
+    const ORIGINAL =
+        "Nc7+ is the engine's choice. It gives check and attacks the king and the rook at once with the knight on c7.";
+
+    it("lets a rewording say the same things", () => {
+        expect(
+            inventedClaims(
+                ORIGINAL,
+                "Nc7+ checks the king and hits the rook at the same time.",
+            ),
+        ).toEqual([]);
+    });
+
+    it("flags a fork, a win or a mate the explanation does not claim", () => {
+        expect(
+            inventedClaims(
+                ORIGINAL,
+                "Nc7+ is a fork that wins the rook, and mate follows.",
+            ),
+        ).toEqual(["fork", "mate", "wins"]);
+    });
+
+    it("lets a claim through when the explanation makes it", () => {
+        expect(
+            inventedClaims(
+                "Qg4 is a blunder. Black answers Bxg4: Black wins material (+9).",
+                "Qg4 is a blunder: Bxg4 wins the queen.",
+            ),
+        ).toEqual([]);
+    });
+
+    it("adds up moves and claims", () => {
+        expect(
+            rewordingProblems(ORIGINAL, "Nc7+ and then Nxa8 wins the rook."),
+        ).toEqual(["Nxa8", "wins"]);
+    });
+});
 
 const ORIGINAL =
     "Nd5 is the engine's choice. It attacks the queen on e7 with a cheaper piece. It threatens Nxe7+, winning a rook.";

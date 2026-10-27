@@ -299,7 +299,11 @@ export function useChessEngine(options: ChessEngineOptions) {
         const depth = info.depth ?? 0;
         if ((remembered[key]?.depth ?? -1) > depth) return;
         setRemembered(key, {
-            evaluation: scoreToEvaluation(info.score, info.pv![0]),
+            // with its depth, so an explanation can tell a deep verdict from a quick one
+            evaluation: {
+                ...scoreToEvaluation(info.score, info.pv![0]),
+                depth,
+            },
             depth,
             pv: [...info.pv!],
         });

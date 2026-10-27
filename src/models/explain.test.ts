@@ -49,7 +49,8 @@ describe("explainMove", () => {
             }),
         ).toEqual([
             "Nc7+ is the engine's choice.",
-            "It gives check and forks the king and the rook with the knight on c7.",
+            // no line here shows the rook won: a double attack, not yet a fork
+            "It gives check and attacks the king and the rook at once with the knight on c7.",
         ]);
     });
 

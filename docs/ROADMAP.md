@@ -125,6 +125,15 @@ How this file is used:
     API version 2026-10-21, effort low, and server-side refusal fallbacks for models that have
     them; a refusal shows as an error. Checked in the app with a local qwen2.5:7b in Ollama.
     Not tried with a real Anthropic key.
+  - [x] **P2.4c Explanations with their evidence** (owner's brief, 2026-10-27;
+    `feature/explanation-contract`): research of ChessCoach, Lee et al. 2022, Queen 2026 and
+    python-chess, the decision, and the contract in `docs/EXPLANATIONS.md`.
+    `explainMoveFull` returns the structured result (scores for the mover, cp or mate, depth,
+    replayed lines, evidence marked board / line / interpretation, limits, validation); a
+    search below depth 10 judges nothing; a third repetition is said from the game's history;
+    a board-only double attack is no longer called a fork; a model's wording is also refused
+    when it adds a claim (fork, wins, mate…). The Engine section shows the evidence folded
+    under the explanation. Review key moments and the tutor still use the text only.
 - [x] **P2.5 Human vs best** (`feature/human-moves`; owner review pending): Maia's most likely
   move next to the engine's best, to show traps and "natural but wrong" moves.
   - Status: a Maia profile runs next to the analysis engine (`useHumanMoves`, Lc0

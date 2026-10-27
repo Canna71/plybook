@@ -2,12 +2,13 @@ import {
     Component,
     createResource,
     createSignal,
+    For,
     Show,
     untrack,
     useContext,
 } from "solid-js";
 import { modelStatus, rephrase } from "../../storage/model";
-import { inventedChess } from "../../models/coach";
+import { rewordingProblems } from "../../models/coach";
 import { makeErrorToast } from "../common/Toast";
 import { explainPieceValues, explainThreats } from "../../engine/explainer";
 import BoardText from "./BoardText";
@@ -22,8 +23,76 @@ import {
 } from "../../models/whatif";
 import { GameContext } from "./GameContext";
 import { NagIcon } from "./Ply";
-import { explainMove } from "../../models/explain";
+import {
+    explainMoveFull,
+    MoveExplanation,
+    MoverScore,
+} from "../../models/explain";
 import "./WhatIf.scss";
+
+/** A score from the mover's side: "+0.30", "mate in 2", "mated in 1" */
+const scoreText = (s: MoverScore | undefined) =>
+    !s
+        ? "?"
+        : s.type === "mate"
+          ? s.value > 0
+              ? `mate in ${s.value}`
+              : `mated in ${-s.value}`
+          : `${s.value >= 0 ? "+" : ""}${(s.value / 100).toFixed(2)}`;
+
+const LINE_LABELS = { reply: "Answer", best: "Better" };
+
+/**
+ * What the explanation rests on, folded away: verified facts and lines, interpretations
+ * marked as such, the scores with their side and depth, and what the analysis could not see.
+ */
+const Evidence: Component<{ explanation: MoveExplanation }> = (props) => {
+    const x = () => props.explanation;
+    return (
+        <details class="what-if-evidence">
+            <summary>Evidence</summary>
+            <div class="what-if-evidence-body">
+                <div>
+                    Scores for {x().side === "white" ? "White" : "Black"}:{" "}
+                    {scoreText(x().evaluation.before)} before,{" "}
+                    {scoreText(x().evaluation.after)} after
+                    <Show when={x().evaluation.depth !== undefined}>
+                        {" "}
+                        (depth {x().evaluation.depth})
+                    </Show>
+                </div>
+                <ul>
+                    <For each={x().evidence}>
+                        {(e) => (
+                            <li classList={{ inferred: !e.verified }}>
+                                {e.verified
+                                    ? e.basis === "board"
+                                        ? "On the board: "
+                                        : "In the line: "
+                                    : "Interpretation: "}
+                                {e.text}
+                            </li>
+                        )}
+                    </For>
+                </ul>
+                <For each={x().lines}>
+                    {(line) => (
+                        <div>
+                            {LINE_LABELS[line.label]}:{" "}
+                            <BoardText
+                                text={line.san.join(" ")}
+                                fens={() => [line.fen]}
+                            />
+                        </div>
+                    )}
+                </For>
+                <For each={[...x().limits, ...x().validation.problems]}>
+                    {(limit) => <div class="what-if-limit">{limit}</div>}
+                </For>
+            </div>
+        </details>
+    );
+};
 
 const sameFen = (a?: string, b?: string) =>
     !!a &&
@@ -56,18 +125,43 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
     const best = () =>
         sameFen(analyzedFen(), move()?.fen) ? props.engineInfo[0] : undefined;
 
-    const verdict = (): ReviewedMove | undefined => {
+    /** The evaluations before and after the move, from White's side, with their depths */
+    const evaluations = () => {
         const m = move();
         const b = before();
         if (!m || !b) return undefined;
-        const evBefore = evaluationAt(b.fen) ?? b.evaluation;
         const info = best();
-        const evAfter =
-            (info?.score && scoreToEvaluation(info.score)) ??
-            evaluationAt(m.fen) ??
-            m.evaluation;
-        if (!evBefore || !evAfter) return undefined;
-        return judgeMove(b.fen, evBefore, m.fen, evAfter, m.san);
+        return {
+            before: evaluationAt(b.fen) ?? b.evaluation,
+            after:
+                (info?.score && {
+                    ...scoreToEvaluation(info.score),
+                    depth: info.depth,
+                }) ??
+                evaluationAt(m.fen) ??
+                m.evaluation,
+        };
+    };
+
+    const verdict = (): ReviewedMove | undefined => {
+        const m = move();
+        const b = before();
+        const ev = evaluations();
+        if (!m || !b || !ev?.before || !ev.after) return undefined;
+        return judgeMove(b.fen, ev.before, m.fen, ev.after, m.san);
+    };
+
+    /** The game's positions before the move's, oldest first: repetitions need them */
+    const history = () => {
+        const g = game();
+        let p = currentPath()?.previous();
+        const fens: string[] = [];
+        while (g && p && !p.empty()) {
+            p = p.previous();
+            const fen = g.dataAt(p)?.fen;
+            if (fen) fens.unshift(fen);
+        }
+        return fens;
     };
 
     const outcome = () => {
@@ -106,14 +200,14 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
         }),
     );
 
-    // why, in words: facts, ideas, the opponent's answer and the better move
-    const explanation = () => {
+    // why, in words, with the evidence behind it (models/explain.ts, docs/EXPLANATIONS.md)
+    const full = (): MoveExplanation | undefined => {
         const m = move();
         const b = before();
         const v = verdict();
-        if (!m || !b || !v) return [];
+        if (!m || !b || !v) return undefined;
         const bestUci = (evaluationAt(b.fen) ?? b.evaluation)?.ext;
-        return explainMove({
+        return explainMoveFull({
             fenBefore: b.fen,
             uci: m.uci,
             verdict: v,
@@ -122,8 +216,11 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
             replyPv: best()?.pv,
             threats: threats.latest,
             values: values.latest,
+            evaluations: evaluations(),
+            history: history(),
         });
     };
+    const explanation = () => full()?.text ?? [];
     const isBad = () =>
         ["inaccuracy", "mistake", "blunder"].includes(verdict()?.class ?? "");
 
@@ -140,10 +237,11 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
         setCoaching(true);
         try {
             const text = await rephrase(from);
-            const invented = inventedChess(from, text);
-            if (invented.length) {
+            // moves, squares or claims the explanation does not make: the computed text stays
+            const added = rewordingProblems(from, text);
+            if (added.length) {
                 makeErrorToast(
-                    `The model added moves of its own (${invented.join(", ")}), so its wording is not shown.`,
+                    `The model added things of its own (${added.join(", ")}), so its wording is not shown.`,
                 );
             } else {
                 setCoached({ from, text });
@@ -210,6 +308,9 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
                                 </div>
                             )}
                         </Show>
+                    </Show>
+                    <Show when={full()}>
+                        {(x) => <Evidence explanation={x()} />}
                     </Show>
                 </Show>
                 {/* a bad move's explanation already follows the reply line */}
