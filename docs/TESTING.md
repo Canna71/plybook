@@ -127,6 +127,12 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Weak squares, P2.4f (branch feature/weak-squares)
+
+- [ ] **A hole as a cost**: play a pawn move the engine dislikes that leaves a square behind
+      (e.g. an early ...g5 with the e-pawn on e5): the explanation mentions the hole only when
+      no tactic explains the move. Is it helpful there, or noise?
+
 ## The bad bishop, P2.4f (branch feature/bad-bishop)
 
 - [ ] **The Advance French**: 1.e4 e6 2.d4 d5 3.e5 in analysis: the explanation of 3.e5 says

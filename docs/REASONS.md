@@ -269,6 +269,30 @@ more than 4.3 this early. Reasons: a move that leaves the opponent a bad bishop,
 makes its own bishop bad, frees it (pawns give way, or the bishop comes out from behind them),
 or trades it off for a knight or bishop.
 
+**Holes (2026-10-27, `holes` in `positional.ts`).** A hole is a square on a side's third or
+fourth rank, c to f files, that none of its pawns can ever cover again (no pawn on a neighbouring
+file still behind it), not held by its own pawn. Its existence is a board fact; whether it
+matters is the question. Measured against the engine in ordinary positions from real games:
+the Lichess database, January 2013 ([database.lichess.org](https://database.lichess.org/),
+CC0), moves 9 and 17 of each game, balanced positions only (within ±2 pawns), every quiet pawn
+move searched at depth 10 with `searchmoves`, comparing the moves the rule says leave a hole with
+the other pawn moves of the same position. `STOCKFISH=… HOLES=2000 GAMES_PGN=… pnpm eval:reasons
+-t holes`. (Puzzle positions were tried first and are no good for this: they are the moment
+before a blunder, where most pawn moves lose to a tactic, about 30% on average.)
+
+| Rule | Flags | Worse within the position | Mean loss vs other pawn moves |
+|---|---|---|---|
+| Any hole (kept) | ~45% of pawn moves | 69-72% (two batches of 2000) | 20.0% vs 17.3% |
+| 4th rank only | ~20% | 68% | +3 |
+| 4th rank, d and e files (the textbook d5 hole) | ~7% | 51%: no signal | +0-1 |
+| An enemy knight within two moves | ~31% | 70% | +2 |
+
+Pawn moves that leave holes are worse on average, consistently but modestly; the textbook case
+shows nothing in these games, perhaps because such a hole usually comes with compensation (the
+Najdorf's ...e5). So a hole is said only as a cost: when the engine judged the move bad and no
+tactic explains it, "It leaves a hole on d5: no pawn can cover it any more". Pawn captures are
+left out (a trade made on purpose), as in the measurement.
+
 ## Plan
 
 - **R1, motif detectors** (`src/reasons/motifs.ts`, tested): fork, pin (relative too), skewer,

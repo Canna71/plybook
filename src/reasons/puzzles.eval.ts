@@ -5,7 +5,15 @@
 
 import { existsSync, readFileSync } from "fs";
 import { it } from "vitest";
-import { Chess, makeSquare, NormalMove, parseUci } from "chessops";
+import {
+    Chess,
+    makeSquare,
+    NormalMove,
+    opposite,
+    parseSquare,
+    parseUci,
+} from "chessops";
+import { attacks } from "chessops/attacks";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import { parsePgn, startingPosition } from "chessops/pgn";
@@ -204,6 +212,160 @@ it.skipIf(!PGN_FILE || !existsSync(PGN_FILE ?? ""))(
 const STOCKFISH = process.env.STOCKFISH;
 const THREATS = Number(process.env.THREATS ?? 0);
 const BAD_BISHOP = Number(process.env.BAD_BISHOP ?? 0);
+const HOLES = Number(process.env.HOLES ?? 0);
+
+/** Winning chances (%) of a centipawn score, as Lichess computes them */
+const winChance = (cp: number) =>
+    50 + 50 * (2 / (1 + Math.exp(-0.00368208 * cp)) - 1);
+
+/**
+ * P2.4f check of the hole rule against the engine (HOLES balanced positions): in each position,
+ * every quiet pawn move is searched (`searchmoves`); do the moves the rule says leave a hole give
+ * away more winning chances than the other pawn moves of the same position? Positions come from
+ * real games (GAMES_PGN, e.g. a Lichess database month, CC0), moves 10 and 18: puzzle positions
+ * are the moment before a blunder, where most pawn moves lose to a tactic.
+ */
+const GAMES_PGN = process.env.GAMES_PGN;
+
+/** Positions at moves 10 and 18 of the games in a PGN file (white to move at both) */
+function gamePositions(path: string): string[] {
+    const fens: string[] = [];
+    for (const text of readFileSync(path, "utf8").split(/\n(?=\[Event )/)) {
+        const game = parsePgn(text)[0];
+        if (!game) continue;
+        const pos = startingPosition(game.headers).unwrap();
+        let ply = 0;
+        for (const node of game.moves.mainline()) {
+            const move = parseSan(pos, node.san);
+            if (!move) break;
+            pos.play(move);
+            ply++;
+            if (ply === 18 || ply === 34) fens.push(makeFen(pos.toSetup()));
+            if (ply > 34) break;
+        }
+    }
+    return fens;
+}
+
+it.skipIf(!GAMES_PGN || !STOCKFISH || !HOLES)(
+    "holes vs the engine",
+    async () => {
+        const engine = new Uci(STOCKFISH!);
+        await engine.init();
+        const DEPTH = 10;
+        const loss = { hole: [] as number[], other: [] as number[] };
+        const variants: Record<string, { hole: number[]; other: number[] }> =
+            {};
+        const mean = (xs: number[]) =>
+            xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
+        type Split = { hole: number[]; other: number[] };
+        const pairedVariants: Record<string, { n: number; worse: number }> = {};
+        let paired = 0;
+        let holeWorse = 0;
+        let seen = 0;
+        for (const start of gamePositions(GAMES_PGN!)) {
+            if (seen >= HOLES) break;
+            const pos = Chess.fromSetup(parseFen(start).unwrap()).unwrap();
+            const fen = makeFen(pos.toSetup());
+            const pawnMoves = [...pos.allDests()]
+                .filter(([from]) => pos.board.get(from)?.role === "pawn")
+                .flatMap(([from, tos]) => [...tos].map((to) => ({ from, to })))
+                .filter(
+                    (m) =>
+                        !pos.board.has(m.to) &&
+                        (m.to >> 3) % 7 !== 0 && // no promotions
+                        (m.from & 7) === (m.to & 7), // no en passant
+                );
+            if (pawnMoves.length < 2) continue;
+            const best = await engine.score(fen, DEPTH);
+            // balanced positions only: in a sharp one every pawn move loses for tactical reasons
+            if (best === undefined || Math.abs(best) > 200) continue;
+            seen++;
+            const here = { hole: [] as number[], other: [] as number[] };
+            const hereVariants: Record<string, Split> = {};
+            for (const m of pawnMoves) {
+                const uci = makeUci(m);
+                const s = await engine.score(fen, DEPTH, [uci]);
+                if (s === undefined) continue;
+                const given = Math.max(0, winChance(best) - winChance(s));
+                const reason = positionalReasons(fen, uci).find(
+                    (r) => r.kind === "weakSquare",
+                );
+                (reason ? here.hole : here.other).push(given);
+                // narrower versions of the rule, by the squares it names
+                const named = reason?.text.match(/\b[a-h][1-8]\b/g) ?? [];
+                const after = pos.clone();
+                after.play(m);
+                const jumps = (sq: number) =>
+                    attacks(
+                        { role: "knight", color: "white" },
+                        sq,
+                        after.board.occupied,
+                    );
+                const knightNear = (name: string) => {
+                    const target = parseSquare(name)!;
+                    const enemy = after.board[opposite(pos.turn)];
+                    for (const k of after.board.knight.intersect(enemy)) {
+                        const one = jumps(k);
+                        if (one.has(target)) return true;
+                        for (const mid of one)
+                            if (jumps(mid).has(target)) return true;
+                    }
+                    return false;
+                };
+                const fourth = (name: string) =>
+                    name[1] === (pos.turn === "white" ? "4" : "5");
+                for (const [variant, holds] of [
+                    ["4th rank", named.some(fourth)],
+                    [
+                        "4th rank, d/e files",
+                        named.some((s) => fourth(s) && "de".includes(s[0])),
+                    ],
+                    ["an enemy knight within 2 moves", named.some(knightNear)],
+                    [
+                        "4th rank & knight within 2",
+                        named.some((s) => fourth(s) && knightNear(s)),
+                    ],
+                ] as [string, boolean][]) {
+                    const v = (variants[variant] ??= { hole: [], other: [] });
+                    (holds ? v.hole : v.other).push(given);
+                    const h = (hereVariants[variant] ??= {
+                        hole: [],
+                        other: [],
+                    });
+                    (holds ? h.hole : h.other).push(given);
+                }
+            }
+            loss.hole.push(...here.hole);
+            loss.other.push(...here.other);
+            if (here.hole.length && here.other.length) {
+                paired++;
+                if (mean(here.hole) > mean(here.other)) holeWorse++;
+            }
+            for (const [variant, h] of Object.entries(hereVariants)) {
+                if (!h.hole.length || !h.other.length) continue;
+                const s = (pairedVariants[variant] ??= { n: 0, worse: 0 });
+                s.n++;
+                if (mean(h.hole) > mean(h.other)) s.worse++;
+            }
+        }
+        engine.quit();
+        console.log(
+            `balanced positions ${seen}; pawn moves leaving a hole ${loss.hole.length}, others ${loss.other.length}; ` +
+                `positions with both: ${paired}, hole moves worse in ${((100 * holeWorse) / Math.max(1, paired)).toFixed(0)}%`,
+        );
+        console.log(
+            `  all holes: ${loss.hole.length} moves, mean loss ${mean(loss.hole).toFixed(1)}% vs ${mean(loss.other).toFixed(1)}% for the rest`,
+        );
+        for (const [variant, v] of Object.entries(variants)) {
+            const s = pairedVariants[variant];
+            console.log(
+                `  ${variant}: ${v.hole.length} moves, mean loss ${mean(v.hole).toFixed(1)}% vs ${mean(v.other).toFixed(1)}% for the rest; ` +
+                    `worse in ${s ? ((100 * s.worse) / s.n).toFixed(0) : "?"}% of ${s?.n ?? 0} positions with both`,
+            );
+        }
+    },
+);
 
 /**
  * P2.4f check of the bad-bishop rule against Stockfish's piece values (BAD_BISHOP positions

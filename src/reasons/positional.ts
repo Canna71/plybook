@@ -47,6 +47,7 @@ export type PositionalKind =
     | "activates"
     | "pieceValue"
     | "badBishop"
+    | "weakSquare"
     | "weakensKing"
     | "isolatedPawn";
 
@@ -199,6 +200,21 @@ export function positionalReasons(
                 "passedPawn",
                 true,
                 `gives a passed pawn on ${makeSquare(madePassed)}`,
+            );
+        }
+    }
+
+    // holes: a pawn move that leaves a square of its own camp that no pawn can cover any more
+    // (docs/REASONS.md); the opponent's pieces can settle there. Quiet pawn moves only, as
+    // measured: a pawn capture is a trade made on purpose
+    if (piece.role === "pawn" && !capture) {
+        const had = new Set(holes(before, me));
+        const made = holes(after, me).filter((sq) => !had.has(sq));
+        if (made.length) {
+            add(
+                "weakSquare",
+                false,
+                `leaves ${made.length > 1 ? "holes" : "a hole"} on ${joinSquares(made)}: no pawn can cover ${made.length > 1 ? "them" : "it"} any more`,
             );
         }
     }
@@ -374,6 +390,27 @@ const joinSquares = (squares: Square[]) => {
         ? (names[0] ?? "")
         : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
 };
+
+/**
+ * The holes in `color`'s camp: squares on its third and fourth ranks, c to f files, that none
+ * of its pawns can ever cover again (no pawn on a neighbouring file still behind the square).
+ */
+export function holes(pos: Position, color: Color): Square[] {
+    const pawns = [...pawnsOf(pos, color)];
+    const result: Square[] = [];
+    for (let f = 2; f <= 5; f++) {
+        for (const r of [2, 3]) {
+            const sq = (color === "white" ? r : 7 - r) * 8 + f;
+            // a square held by its own pawn is a pawn weakness (backward pawn), not a hole
+            if (pawns.includes(sq)) continue;
+            const coverable = pawns.some(
+                (p) => Math.abs(file(p) - f) === 1 && relRank(p, color) < r,
+            );
+            if (!coverable) result.push(sq);
+        }
+    }
+    return result;
+}
 
 /** Fixed pawns on a bishop's colour that make it bad: at least this many */
 const BAD_BISHOP_PAWNS = 2;

@@ -54,6 +54,27 @@ export class Uci {
         return last ? last.split(" pv ")[1].trim().split(/\s+/) : [];
     }
 
+    /**
+     * The score of `fen` for the side to move at `depth`, in centipawns (mate as ±100000 less
+     * the distance), searching only `moves` when given.
+     */
+    async score(
+        fen: string,
+        depth: number,
+        moves?: string[],
+    ): Promise<number | undefined> {
+        await this.send(`position fen ${fen}`);
+        const only = moves?.length ? ` searchmoves ${moves.join(" ")}` : "";
+        const lines = await this.send(`go depth ${depth}${only}`, /^bestmove/);
+        const last = lines
+            .filter((l) => l.startsWith("info") && / score /.test(l))
+            .at(-1);
+        const m = last?.match(/ score (cp|mate) (-?\d+)/);
+        if (!m) return undefined;
+        const n = Number(m[2]);
+        return m[1] === "cp" ? n : Math.sign(n) * (100000 - Math.abs(n));
+    }
+
     /** Stockfish's `eval` output for `fen` (its NNUE piece values table among it). */
     async evalLines(fen: string): Promise<string[]> {
         await this.send(`position fen ${fen}`);
