@@ -5,12 +5,12 @@
 
 import { existsSync, readFileSync } from "fs";
 import { it } from "vitest";
-import { Chess, NormalMove, parseUci } from "chessops";
+import { Chess, makeSquare, NormalMove, parseUci } from "chessops";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import { parsePgn, startingPosition } from "chessops/pgn";
 import { makeUci } from "chessops";
-import { positionalReasons } from "./positional";
+import { badBishops, colourOf, positionalReasons } from "./positional";
 import { factsFromFen } from "../models/facts";
 import { lineMotifs, mainReasons, Motif } from "./motifs";
 import {
@@ -203,6 +203,62 @@ it.skipIf(!PGN_FILE || !existsSync(PGN_FILE ?? ""))(
 
 const STOCKFISH = process.env.STOCKFISH;
 const THREATS = Number(process.env.THREATS ?? 0);
+const BAD_BISHOP = Number(process.env.BAD_BISHOP ?? 0);
+
+/**
+ * P2.4f check of the bad-bishop rule against Stockfish's piece values (BAD_BISHOP positions
+ * from the puzzle set): where a side has one bishop the rule calls bad and one it does not, is
+ * the bad one worth less? The comparison within one position controls for the rest of it.
+ */
+it.skipIf(!CSV || !STOCKFISH || !BAD_BISHOP)(
+    "bad bishop vs piece values",
+    async () => {
+        const engine = new Uci(STOCKFISH!);
+        await engine.init();
+        let pairs = 0;
+        let badLower = 0;
+        let ruleFired = 0;
+        let seen = 0;
+        const gaps: number[] = [];
+        for (const p of readPuzzles(CSV!)) {
+            if (seen >= BAD_BISHOP) break;
+            const pos = Chess.fromSetup(parseFen(p.fen).unwrap()).unwrap();
+            seen++;
+            const bad = badBishops(pos);
+            if (!bad.size) continue;
+            ruleFired++;
+            const values = parsePieceValues(
+                await engine.evalLines(makeFen(pos.toSetup())),
+            );
+            if (!values) continue;
+            for (const color of ["white", "black"] as const) {
+                const bishops = [
+                    ...pos.board.bishop.intersect(pos.board[color]),
+                ];
+                if (bishops.length !== 2) continue;
+                const [a, b] = bishops;
+                const aBad = bad.has(`${color} ${colourOf(a)}`);
+                const bBad = bad.has(`${color} ${colourOf(b)}`);
+                if (aBad === bBad) continue;
+                const value = (sq: number) =>
+                    Math.abs(values.get(makeSquare(sq)) ?? NaN);
+                const [badSq, goodSq] = aBad ? [a, b] : [b, a];
+                const gap = value(goodSq) - value(badSq);
+                if (Number.isNaN(gap)) continue;
+                pairs++;
+                gaps.push(gap);
+                if (gap > 0) badLower++;
+            }
+        }
+        engine.quit();
+        gaps.sort((x, y) => x - y);
+        console.log(
+            `positions ${seen}, with a bad bishop ${ruleFired}, pairs (one bad, one good) ${pairs}: ` +
+                `bad worth less in ${badLower} (${((100 * badLower) / Math.max(1, pairs)).toFixed(0)}%), ` +
+                `median gap ${gaps[Math.floor(gaps.length / 2)]?.toFixed(2)} pawns`,
+        );
+    },
+);
 
 /**
  * R2 spot check with a real engine: for the first THREATS puzzles, what the blunder failed to

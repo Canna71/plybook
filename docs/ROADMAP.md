@@ -151,12 +151,17 @@ How this file is used:
     (the draw); in the app 5.Nb1 is called a mistake that repeats the position a third time.
     The "engine judged it without the game" note stays only for review scores, which may come
     from a review run before this.
-  - [ ] **P2.4f Strategic explanations, measured** (third, one idea at a time): each a rule with
-    tests and a check by hand against annotated games (`PGN_FILE` in `pnpm eval:reasons`), kept
-    only if it holds up, its evidence marked as interpretation. In order: the bad bishop, weak
-    squares (holes the opponent can use), space, pawn breaks and the plans they open, prophylaxis
-    beyond stopping a direct threat, endgame technique (king activity, the opposition). Ideas
-    that cannot be supported are listed here as dropped, with why.
+  - [~] **P2.4f Strategic explanations, measured** (third, one idea at a time): each a rule with
+    tests and a check by hand against annotated games (`PGN_FILE` in `pnpm eval:reasons`), or
+    against Stockfish's piece values where no annotated games cover it, kept only if it holds
+    up, its evidence marked as interpretation. In order: the bad bishop, weak squares (holes the
+    opponent can use), space, pawn breaks and the plans they open, prophylaxis beyond stopping a
+    direct threat, endgame technique (king activity, the opposition). Ideas that cannot be
+    supported are listed here as dropped, with why.
+    - [x] The bad bishop (`feature/bad-bishop`, 2026-10-27): own pawns fixed on its colour,
+      the bishop behind them with at most 3 squares; Stockfish values it below its partner in
+      67-72% of puzzle positions (52-58% for fixed pawns alone), and its veto applies when piece
+      values are known. Details in `docs/REASONS.md`. Next: weak squares.
   - [ ] **P2.4g Study Chesserly** (owner's request 2026-10-27): read the source code and the
     ideas behind Chesserly, a free, open-source analysis platform (game review, move
     classification from Brilliant to Blunder, accuracy, openings; Vue, FastAPI, Stockfish,
