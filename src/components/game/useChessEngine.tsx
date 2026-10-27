@@ -29,7 +29,7 @@ import { getSettingValue } from "../../models/settings";
 import { EvaluationExt, Path } from "../../models/pgn";
 import { makeFen, parseFen } from "chessops/fen";
 import { ReviewProgress } from "./GameContext";
-import { CLASS_NAGS, mainline, reviewLine } from "../../models/review";
+import { annotateMistakes } from "../../models/review";
 import { nullMoveFen } from "../../models/threat";
 import { scoreToEvaluation } from "../../models/whatif";
 import { pickBookMove } from "../../models/books";
@@ -262,18 +262,6 @@ export function useChessEngine(options: ChessEngineOptions) {
             log.debug("Reviewing done", ng);
             setReviewPositionPath(undefined);
         });
-    };
-
-    /** Adds ?!, ? and ?? to the moves the review flags, unless the user annotated them. */
-    const annotateMistakes = (g: GameModel) => {
-        for (const move of reviewLine(mainline(g))) {
-            const nag = CLASS_NAGS[move.class];
-            const data = g.dataAt(move.path);
-            if (nag && data && "nags" in data && data.nags.length === 0) {
-                g = g.annotate(move.path, nag);
-            }
-        }
-        return g;
     };
 
     const onEngineBestMove = (bestMove: string, _ponder: string) => {

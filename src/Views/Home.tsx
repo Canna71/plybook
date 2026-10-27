@@ -21,6 +21,7 @@ import { pickNextLichessPuzzle, puzzleStats } from "../storage/lichesspuzzles";
 import { getHistoryGames, listPuzzles, pickPuzzle } from "../storage/db";
 import { mistakesFolder } from "../storage/mistakes";
 import { recentFiles } from "../storage/recent";
+import { newGames } from "../online/autosync";
 import { baseName, NameWithoutExtension } from "../storage/fs";
 import { formatDate } from "../components/common/utils";
 import "./Home.scss";
@@ -310,6 +311,42 @@ const Home: Component = () => {
                         </ul>
                     </Show>
                 </section>
+
+                <Show when={newGames().length}>
+                    <section class="today-card">
+                        <h2>New online games</h2>
+                        <ul class="today-list">
+                            <For each={newGames().slice(0, 5)}>
+                                {(g) => (
+                                    <li
+                                        onClick={() =>
+                                            navigate(
+                                                `/game?path=${encodeURIComponent(g.path)}&game=${g.index}&source=library`,
+                                            )
+                                        }
+                                    >
+                                        <IconChessKnight />
+                                        <span class="today-list-name">
+                                            {g.white} – {g.black}
+                                        </span>
+                                        <span class="today-muted">
+                                            {g.result} ·{" "}
+                                            {g.date.replaceAll(".", "-")}
+                                            <Show
+                                                when={g.mistakes !== undefined}
+                                            >
+                                                {" · "}
+                                                {g.mistakes
+                                                    ? `${g.mistakes} ${g.mistakes === 1 ? "mistake" : "mistakes"}`
+                                                    : "no mistakes"}
+                                            </Show>
+                                        </span>
+                                    </li>
+                                )}
+                            </For>
+                        </ul>
+                    </section>
+                </Show>
             </div>
         </div>
     );

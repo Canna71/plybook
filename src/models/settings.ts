@@ -7,6 +7,7 @@ import { get, toMerged } from "es-toolkit/compat";
 import { createStore } from "solid-js/store";
 import { createSignal } from "solid-js";
 import type { OnlineAccount } from "../online/onlinegames";
+import type { NewGame } from "../online/autosync";
 import type { RecentFile } from "./today";
 
 /** A place in a PDF: a page, how far down it the view starts (0–1), and the zoom */
@@ -46,6 +47,10 @@ export interface AppSettings {
     };
     online?: {
         accounts: OnlineAccount[];
+        /** Sync the accounts a little after start and review the new games */
+        autoSync?: boolean;
+        /** Games synced and reviewed lately, newest first (Today) */
+        newGames?: NewGame[];
     };
     puzzles?: {
         lichess?: {
@@ -131,6 +136,8 @@ const DEFAULT: AppSettings = {
     },
     online: {
         accounts: [],
+        autoSync: true,
+        newGames: [],
     },
     puzzles: {
         lichess: {

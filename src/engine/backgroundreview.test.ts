@@ -1,0 +1,59 @@
+import { describe, expect, it } from "vitest";
+import { reviewGame } from "./backgroundreview";
+
+// 1.e4 e5 2.Qh5 Nc6 3.Bc4 Nf6?? 4.Qxf7#
+const SCHOLAR = `[Event "Test"]
+[White "Me"]
+[Black "Them"]
+[Result "1-0"]
+
+1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7# 1-0
+`;
+
+/** Scores from White's point of view, by the position's move number and side to move. */
+const SCRIPT: Record<string, { cp?: number; mate?: number; best: string }> = {
+    "1 w": { cp: 30, best: "e2e4" },
+    "1 b": { cp: 30, best: "e7e5" },
+    "2 w": { cp: 30, best: "g1f3" },
+    "2 b": { cp: 0, best: "b8c6" },
+    "3 w": { cp: 0, best: "f1c4" },
+    "3 b": { cp: 10, best: "g7g6" },
+    // after Nf6??: White mates in one
+    "4 w": { mate: 1, best: "h5f7" },
+};
+
+const search = async (fen: string) => {
+    const [, turn, , , , full] = fen.split(" ");
+    const line = SCRIPT[`${full} ${turn}`];
+    if (!line) return undefined;
+    return {
+        depth: 12,
+        best: line.best,
+        score:
+            line.mate !== undefined
+                ? { type: "mate" as const, value: line.mate }
+                : { type: "cp" as const, value: line.cp! },
+    };
+};
+
+describe("reviewGame", () => {
+    it("evaluates every position and marks the blunder", async () => {
+        const { game, mistakes } = await reviewGame(SCHOLAR, search);
+        expect(mistakes).toEqual({ white: 0, black: 1 });
+        const pgn = game.pgn();
+        // Nf6 gets ?? and the evaluations are in the PGN, as a board review writes them
+        expect(pgn).toMatch(/Nf6 \$4/);
+        expect(pgn).toContain("[%eval #1");
+        expect(pgn).toContain("[%eval 0.30");
+    });
+
+    it("leaves positions without a search result unevaluated", async () => {
+        const { game, mistakes } = await reviewGame(
+            SCHOLAR,
+            async () => undefined,
+        );
+        expect(mistakes).toEqual({ white: 0, black: 0 });
+        // only the final checkmate is known without an engine
+        expect(game.pgn()).not.toContain("[%eval 0.30");
+    });
+});
