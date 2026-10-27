@@ -50,6 +50,11 @@ export interface IChessEngine extends IEngineEventEmitter {
     quit(): void;
     newGame(): void;
     setOption(name: string, value: any): void;
+    /**
+     * Stockfish's `eval` of a position: its output arrives as "line" events (not UCI; other
+     * engines ignore or reject it)
+     */
+    evaluate?(fen: string): void;
     getElos?(): [{ level: number; elo: number }];
     getId(): EngineId | undefined;
     getOptions(): EngineOptions | undefined;

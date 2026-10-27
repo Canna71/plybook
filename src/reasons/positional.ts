@@ -17,6 +17,25 @@ import {
 } from "chessops";
 import { attacks } from "chessops/attacks";
 import { parseFen } from "chessops/fen";
+import type { PieceValues } from "../engine/piecevalues";
+
+/** Stockfish's piece values before and after the move (engine/piecevalues.ts), when known */
+export type MoveValues = { before?: PieceValues; after?: PieceValues };
+
+/** A change in a piece's value worth saying: this share of its usual value (a knight 0.6) */
+const VALUE_CHANGE = 0.15;
+/**
+ * The pieces whose value is worth a word, and their usual NNUE value (about what Stockfish
+ * gives them in the opening), to find a side's worst piece for what it is. The queen is
+ * measured but never called the worst piece: that is a coach's word for minor pieces and rooks.
+ */
+const NOMINAL: Partial<Record<Role, number>> = {
+    knight: 4,
+    bishop: 4.3,
+    rook: 5.3,
+    queen: 9,
+};
+const fmt = (v: number) => v.toFixed(1);
 
 export type PositionalKind =
     | "develops"
@@ -26,6 +45,7 @@ export type PositionalKind =
     | "passedPawn"
     | "outpost"
     | "activates"
+    | "pieceValue"
     | "weakensKing"
     | "isolatedPawn";
 
@@ -96,6 +116,7 @@ const CENTRE = ["d4", "e4", "d5", "e5"].map((s) => parseSquare(s)!);
 export function positionalReasons(
     fen: string,
     uci: string,
+    values?: MoveValues,
 ): PositionalReason[] {
     const before = positionOf(fen);
     const move = parseUci(uci);
@@ -271,8 +292,85 @@ export function positionalReasons(
         }
     }
 
+    // Stockfish's measure of the moved piece, where it was and where it is: a piece (not a
+    // pawn or the king) that is worth clearly more or less there. It says better than the
+    // count of squares whether the piece is active, so it replaces "activates".
+    // not for a capture: a piece about to be taken back is worth little where it stands
+    const valued = capture
+        ? undefined
+        : pieceValueReason(before, move.from, to, me, values);
+    if (valued) {
+        const kept = reasons.filter((r) => r.kind !== "activates");
+        reasons.length = 0;
+        reasons.push(...kept, valued);
+    }
+
     return [
         ...reasons.filter((r) => r.good),
         ...reasons.filter((r) => !r.good),
     ];
+}
+
+function pieceValueReason(
+    before: Position,
+    from: Square,
+    to: Square,
+    me: Color,
+    values: MoveValues | undefined,
+): PositionalReason | undefined {
+    const piece = before.board.get(from);
+    if (!piece || !NOMINAL[piece.role] || !values?.before || !values.after)
+        return undefined;
+    const sign = me === "white" ? 1 : -1;
+    const was = values.before.get(makeSquare(from));
+    const now = values.after.get(makeSquare(to));
+    if (was === undefined || now === undefined) return undefined;
+    // the values also move with whose turn it is and with the whole position: the side's other
+    // pieces, where they stand, set the scale (after 1.e4 e5 2.Na3 all of White's pieces rise
+    // about 7%, the knight with them: it is not better on a3)
+    let sum0 = 0;
+    let sum1 = 0;
+    for (const sq of before.board[me]) {
+        const role = before.board.get(sq)!.role;
+        if (sq === from || !NOMINAL[role]) continue;
+        const b = values.before.get(makeSquare(sq));
+        const a = values.after.get(makeSquare(sq));
+        if (b === undefined || a === undefined) continue;
+        sum0 += sign * b;
+        sum1 += sign * a;
+    }
+    const scale = sum0 > 0 && sum1 > 0 ? sum1 / sum0 : 1;
+    const v0 = sign * was;
+    const v1 = (sign * now) / scale;
+    const name = piece.role;
+    const change = Math.abs(v1 - v0);
+    const measure = `Stockfish's piece values put it ${fmt(change)} ${v1 > v0 ? "higher" : "lower"} on ${makeSquare(to)} than on ${makeSquare(from)}`;
+    const enough = VALUE_CHANGE * NOMINAL[piece.role]!;
+    if (v1 - v0 >= enough) {
+        // the side's worst piece for what it is, before the move
+        const mine = [...before.board[me]].filter((sq) => {
+            const role = before.board.get(sq)!.role;
+            return NOMINAL[role] && role !== "queen";
+        });
+        const ratio = (sq: Square) =>
+            (sign * (values.before!.get(makeSquare(sq)) ?? Infinity)) /
+            NOMINAL[before.board.get(sq)!.role]!;
+        const worst =
+            piece.role !== "queen" &&
+            mine.length > 1 &&
+            mine.every((sq) => sq === from || ratio(sq) >= ratio(from));
+        return {
+            kind: "pieceValue",
+            good: true,
+            text: `${worst ? "improves its worst piece, the" : "improves the"} ${name}: ${measure}`,
+        };
+    }
+    if (v0 - v1 >= enough) {
+        return {
+            kind: "pieceValue",
+            good: false,
+            text: `puts the ${name} on a worse square: ${measure}`,
+        };
+    }
+    return undefined;
 }

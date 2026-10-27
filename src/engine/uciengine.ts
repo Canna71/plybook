@@ -80,6 +80,10 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     stop(): void {
         this.uciInterface.sendCommand("stop");
     }
+    evaluate(fen: string): void {
+        this.uciInterface.sendCommand(`position fen ${fen}`);
+        this.uciInterface.sendCommand("eval");
+    }
     quit(): void {
         this.uciInterface.sendCommand("quit");
     }
@@ -130,6 +134,8 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
 
     private processEngineOutput(line: string): void {
         log.debug(line);
+        // every line, for output that is not UCI (Stockfish's `eval` table)
+        this.emit("line", line);
         const tokens = line.trim().split(" ");
 
         switch (tokens[0]) {

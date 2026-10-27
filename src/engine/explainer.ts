@@ -8,6 +8,7 @@ import { analysisProfile, startEngine } from "./engineprofiles";
 import { AnalysisOptions, IChessEngine } from "./engineinterfaces";
 import { searchOnce, SearchResult } from "./search";
 import { moveThreats, MoveThreats } from "./threatsearch";
+import { isEvalEnd, parsePieceValues, PieceValues } from "./piecevalues";
 const log = anylogger("explainer");
 
 let engine: { profileId: string; started: Promise<IChessEngine> } | undefined;
@@ -95,6 +96,38 @@ export function explainLines(
         const pvAt = async (fen: string) =>
             (await searchOnce(engine, fen, LINE_SEARCH)).lines[0]?.pv;
         return { bestPv: await pvAt(fenBefore), replyPv: await pvAt(fenAfter) };
+    });
+}
+
+const valuesCache = new Map<string, Promise<PieceValues | undefined>>();
+/** `eval` answers in milliseconds; past this, the engine is taken not to have it */
+const EVAL_TIMEOUT = 2000;
+
+/**
+ * Stockfish's NNUE piece values in `fen` (piecevalues.ts); undefined for other engines.
+ */
+export function explainPieceValues(
+    fen: string,
+): Promise<PieceValues | undefined> {
+    return enqueue(valuesCache, fen, (engine) => {
+        const name = engine.getId()?.name ?? "";
+        if (!engine.evaluate || !/stockfish/i.test(name))
+            return Promise.resolve(undefined);
+        return new Promise<PieceValues | undefined>((resolve) => {
+            const lines: string[] = [];
+            const done = () => {
+                clearTimeout(timer);
+                engine.off("line", onLine);
+                resolve(parsePieceValues(lines));
+            };
+            const onLine = (line: string) => {
+                lines.push(line);
+                if (isEvalEnd(line)) done();
+            };
+            const timer = setTimeout(done, EVAL_TIMEOUT);
+            engine.on("line", onLine);
+            engine.evaluate!(fen);
+        });
     });
 }
 

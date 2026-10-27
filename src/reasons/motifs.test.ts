@@ -35,6 +35,34 @@ describe("lineMotifs", () => {
         expect(motifs(fen, ["c3b4", "e7a7", "b4c5"])).toContain("pin");
     });
 
+    it("finds a pin to the king the opponent cannot break (00NBR: Bc4 Kd7 Bxd5)", () => {
+        const fen = "8/1p3p2/1Pp1k3/p1Pn2p1/P2K3p/7P/4BPP1/8 w - - 2 34";
+        expect(motifs(fen, ["e2c4", "e6d7", "c4d5"])).toContain("pin");
+    });
+
+    it("does not call taking a pinned pawn a pin (00CXr: Qd5 … Bxd6)", () => {
+        const fen =
+            "r2k2nr/p3qBb1/1p1p3p/Q5p1/3n1B2/2N2R2/PPP3P1/R5K1 w - - 0 19";
+        expect(
+            motifs(fen, ["a5d5", "d4f3", "g2f3", "a8c8", "f4d6"]),
+        ).not.toContain("pin");
+    });
+
+    it("does not count a pin whose pinning piece is taken at once (008lc: Qxg7+ Kxg7)", () => {
+        const fen = "7k/pb1qn1rn/1p2R2Q/2p2p2/2Pp4/3B4/PP3P1P/4RK1 w - - 2 28";
+        expect(
+            motifs(fen, ["h6g7", "h8g7", "e6e7", "d7e7", "e1e7"]),
+        ).not.toContain("pin");
+    });
+
+    it("leaves a pin that comes with a fork to the fork (00k6k: Qxd4+ Bf2 Qxc3)", () => {
+        const fen =
+            "r2q1rk1/p1p1bpp1/2p1bn1p/8/2PP3B/1PNB1P2/P5PP/R2Q1RK1 b - - 0 14";
+        const line = ["d8d4", "h4f2", "d4c3"];
+        expect(motifs(fen, line)).toContain("pin");
+        expect(main(fen, line)).not.toContain("pin");
+    });
+
     it("finds a skewer that wins the queen (001xl: Rf7+ Ke5 Rxf4)", () => {
         const fen = "8/4R3/p4kpp/3B4/5q2/8/5P1P/6K1 w - - 6 41";
         expect(lineMotifs(fen, ["e7f7", "f6e5", "f7f4"])).toContainEqual({

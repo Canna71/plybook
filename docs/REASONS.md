@@ -114,7 +114,7 @@ not looked at while tuning:
 | discoveredAttack | 1,002 | 0.79 | 0.96 | 0.82 / 0.95 | use |
 | hangingPiece | 770 | 0.98 | 0.35 | 0.98 / 0.37 | use: rarely said, right when said |
 | promotion | 492 | 0.98 | 1.00 | 0.99 / 1.00 | use |
-| pin | 1,178 | 0.53 | 0.38 | 0.53 / 0.35 | not yet: about half the extras checked by hand are real pins, but too many are not |
+| pin | 1,178 | 0.70 | 0.30 | 0.70 / 0.29 | use (since 2026-10-27; was 0.53 / 0.35): 13 or 14 of 15 extras checked by hand are real pins Lichess did not tag |
 
 What made the difference, rule by rule:
 - **The line must cash in.** A fork, skewer, pin or discovered attack counts only if a later
@@ -133,6 +133,17 @@ What made the difference, rule by rule:
   three uses: taking a pinned piece for a gain, attacking a pinned piece that cannot escape,
   and taking on a square whose only defenders are pinned. A piece that just stepped in to block
   a check and is taken is won by the check, not the pin.
+- **Pins, tightened (2026-10-27)**, measured rule by rule on the sample (precision of each
+  against the tag: pinned defender 0.92, new pin 0.57, attacking a pinned piece 0.51, taking a
+  pinned piece 0.24): a pinned pawn never counts (taking it is taking a pawn); taking a pinned
+  piece counts only if the pin held through the opponent's move (they could not get out of
+  it); a new pin must be made by the move (the moved piece pins, or it moved off the line);
+  the pinning piece must survive the reply (Qxg7+ Kxg7: the pin never mattered); and a pin
+  with or after a fork, skewer, discovered attack or double check is part of that tactic, not
+  the point (Qxd4+ forks and pins: Lichess calls it a fork). Precision 0.53 → 0.70 on both
+  sample and holdout, recall 0.35 → 0.29; by hand, 13 or 14 of 15 remaining extras are real
+  pins (Bc4 pinning Nd5 to the king, Rc8 pinning the queen to the king), so pins are named in
+  explanations now: "a pin of the knight on d5 to the king".
 
 The tags are not ground truth: some extras are motifs Lichess did not tag (skewer Rxa6+ … Rxf6
 looked like one but is a trade, and the detector was right to refuse it; Bb4 Ra7 Bxc5 is a pin
@@ -142,7 +153,7 @@ line in SAN, tags and every reason found, to check such cases.
 ### R2 results (`src/reasons/threats.ts`, `src/engine/threatsearch.ts`, 2026-10-26)
 
 - `lineIdea(fen, pv)`: what a line does for the side playing it: its first move, the most
-  important *trusted* motif (pins excluded until they improve) with the pieces it is about,
+  important *trusted* motif (pins included since 2026-10-27) with the pieces it is about,
   the material won once captures settle, mate.
 - `stoppedThreat(fenBefore, uci, threatPv, replyPv?)`: the opponent's threat in the null-move
   position before the move, replayed after it. It counts as stopped when it no longer wins as
@@ -206,8 +217,31 @@ develops the knight" next to "This move develops his Knight". Taken out after th
 doubled pawns (a move doubles only its own pawns, by a capture that is usually a fair trade),
 "the centre" and "activates" for captures (trades, not claims), an early queen "activated"
 (the book's point is that it gets chased), the pawn shield in queenless endgames, and a
-rook's "activates" when its open file is already said. Not done yet: SF17 piece values (the
-`eval` command), mobility of the whole army, space, weak squares.
+rook's "activates" when its open file is already said. Not done yet: mobility of the whole
+army, space, weak squares.
+
+**SF17 piece values (2026-10-27).** With Stockfish as the analysis engine, the explainer sends
+`eval` for the positions before and after the move (`engine/piecevalues.ts` parses the "NNUE
+derived piece values" table; other engines are not asked, and anything unexpected gives no
+values). The moved piece (not a pawn or the king, not a capture: a piece about to be taken
+back is worth little where it stands) gets "improves the knight: Stockfish's piece values put
+it 2.1 higher on d5 than on e3", or "puts the knight on a worse square", and that replaces
+"activates". Findings that shaped it:
+- The values move with whose turn it is and with the whole position: after 1.e4 e5 2.Na3
+  every White piece rises about 7%, the queen 8.6 → 10.4, the knight 3.9 → 4.2 with them. So
+  the moved piece is measured against its side's other pieces (scaled by how much they
+  changed), and Na3 is rightly no change.
+- Captures were the nonsense (Bxd5 "worse" before the recapture, Qxh6 "8.5 higher" in a queen
+  trade): left out.
+- "Its worst piece" by value over a nominal 3/3/5/9 always picked the queen (NNUE gives it
+  about 9, the minor pieces about 4): the scale is Stockfish's own (knight 4, bishop 4.3, rook
+  5.3) and the queen is never called the worst piece.
+- A fixed threshold made every rook move in a rook ending an improvement: a change counts at
+  15% of the piece's usual value (knight 0.6, rook 0.8). On the Capablanca game it speaks on
+  11 of 92 moves (15.Nd5 2.1 higher, 28.Rfd1 on the open file and 1.8 higher), on a long rook
+  ending on 28 of about 160.
+`STOCKFISH=… PGN_FILE=… pnpm eval:reasons -t positional` prints them next to the annotator's
+comments.
 
 ## Plan
 

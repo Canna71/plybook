@@ -127,6 +127,20 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Pins and Stockfish's piece values in explanations (branch feature/reasons-pins-values)
+
+Checked in the dev app: 15.Nd5 in the Capablanca game (TestData/01.pgn) says "It also
+improves the knight: Stockfish's piece values put it 2.1 higher on d5 than on e3".
+
+- [ ] **Pins named**: in a game with a pin that wins material (a bishop pinning a knight to
+      the king, then taking it), the Engine section or a review's key moment names "a pin of
+      the knight on … to the king". Does it read right, and is it a real pin?
+- [ ] **Piece values while you analyse**: step through a game of yours with the engine on;
+      the "improves the …" sentences appear now and then (not on every move), never on
+      captures, and agree with your sense of the piece.
+- [ ] **Another analysis engine** (if you have one, e.g. Lc0 for analysis in Settings):
+      no piece-value sentences, and no delay or error.
+
 ## Tutor level from the puzzle rating (branch feature/tutor-start-level)
 
 - [ ] **Start level**: with the Lichess puzzles imported, solve or fail 20 of them, then open

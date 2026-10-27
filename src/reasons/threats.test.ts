@@ -46,6 +46,15 @@ describe("lineIdea", () => {
         );
     });
 
+    it("names a pin, the pinned piece and what it shields (00NBR: Bc4 Kd7 Bxd5)", () => {
+        // the knight is traded off (cxd5 retakes): a pin, but no material won
+        const fen = "8/1p3p2/1Pp1k3/p1Pn2p1/P2K3p/7P/4BPP1/8 w - - 2 34";
+        const idea = lineIdea(fen, ["e2c4", "e6d7", "c4d5"])!;
+        expect(describeIdea(idea)).toBe(
+            "Bc4, a pin of the knight on d5 to the king",
+        );
+    });
+
     it("is undefined for an illegal first move", () => {
         expect(lineIdea(AFTER_NG5, ["e2e4"])).toBeUndefined();
     });

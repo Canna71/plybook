@@ -81,3 +81,65 @@ describe("positionalReasons", () => {
         expect(positionalReasons(START, "e2e5")).toEqual([]);
     });
 });
+
+describe("positionalReasons with Stockfish's piece values", () => {
+    // White's knight on b1 is its worst piece (2.5); Nc3 makes it 3.6
+    const fen = "4k3/8/8/8/8/8/8/RN2K2R w - - 0 30";
+    const values = (knight: [string, number]) =>
+        new Map<string, number>([knight, ["a1", 5.1], ["h1", 5.3]]);
+    const valued = (uci: string, after: [string, number]) =>
+        positionalReasons(fen, uci, {
+            before: values(["b1", 2.5]),
+            after: values(after),
+        }).filter((r) => r.kind === "pieceValue");
+
+    it("says a piece is improved, and when it was the worst one", () => {
+        expect(valued("b1c3", ["c3", 3.6])).toEqual([
+            {
+                kind: "pieceValue",
+                good: true,
+                text: "improves its worst piece, the knight: Stockfish's piece values put it 1.1 higher on c3 than on b1",
+            },
+        ]);
+    });
+
+    it("says a piece goes to a worse square", () => {
+        expect(valued("b1a3", ["a3", 1.6])).toEqual([
+            {
+                kind: "pieceValue",
+                good: false,
+                text: "puts the knight on a worse square: Stockfish's piece values put it 0.9 lower on a3 than on b1",
+            },
+        ]);
+    });
+
+    it("measures against the other pieces: all rising together is no change", () => {
+        // every piece 40% up after the move (whose turn it is), the knight with them
+        const reasons = positionalReasons(fen, "b1c3", {
+            before: values(["b1", 2.5]),
+            after: new Map([
+                ["c3", 3.5],
+                ["a1", 7.14],
+                ["h1", 7.42],
+            ]),
+        }).filter((r) => r.kind === "pieceValue");
+        expect(reasons).toEqual([]);
+    });
+
+    it("leaves small changes, and Black's negative values, unsaid", () => {
+        expect(valued("b1c3", ["c3", 2.9])).toEqual([]);
+        // Black: values are negative; -3.6 after -2.5 is an improvement
+        const black = "rn2k2r/8/8/8/8/8/8/4K3 b - - 0 30";
+        const reasons = positionalReasons(black, "b8c6", {
+            before: new Map([["b8", -2.5]]),
+            after: new Map([["c6", -3.6]]),
+        }).filter((r) => r.kind === "pieceValue");
+        expect(reasons[0]?.good).toBe(true);
+    });
+
+    it("says nothing without values (other engines)", () => {
+        expect(
+            positionalReasons(fen, "b1c3").some((r) => r.kind === "pieceValue"),
+        ).toBe(false);
+    });
+});

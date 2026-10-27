@@ -91,7 +91,8 @@ src/
   engine/                  uciengine.ts (UCI protocol parser) over executableuci.ts (talks to Rust engine_* commands),
                            engineprofiles.ts (profiles, startEngine, humanProfile), lc0.ts (Maia move stats),
                            explainer.ts (a background second engine for the searches behind explanations),
-                           enginetask.ts (what useChessEngine's engine does now and the search it runs)
+                           enginetask.ts (what useChessEngine's engine does now and the search it runs),
+                           piecevalues.ts (parses Stockfish's `eval` piece values; not UCI, Stockfish only)
   reasons/                 move reasons in chess terms (docs/REASONS.md): motifs.ts (tactics in a line),
                            threats.ts (what a move stops and threatens, in words); *.eval.ts = measurements
   online/                  onlinegames.ts (chess.com/Lichess sync into Library/Online), autosync.ts (sync on
