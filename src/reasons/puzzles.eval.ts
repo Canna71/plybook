@@ -12,6 +12,7 @@ import {
     opposite,
     parseSquare,
     parseUci,
+    SquareSet,
 } from "chessops";
 import { attacks, pawnAttacks } from "chessops/attacks";
 import { makeFen, parseFen } from "chessops/fen";
@@ -248,89 +249,138 @@ function gamePositions(path: string): string[] {
 }
 
 const SPACE = Number(process.env.SPACE ?? 0);
+const BREAKS = Number(process.env.BREAKS ?? 0);
+
+/** A quiet pawn move in a position from a game: what a rule is asked about */
+type PawnMove = { pos: Chess; move: NormalMove; after: Chess };
 
 /**
- * P2.4f check of the space rule against the engine, as for holes but the other way round: do the
- * quiet pawn moves that gain space (space() rises by at least N) give away less than the other
- * pawn moves of the same balanced position? N from 1 to 4, to choose the threshold.
+ * P2.4f comparison of quiet pawn moves against the engine, for a positional idea: in `count`
+ * balanced positions from games (GAMES_PGN), every quiet pawn move is searched (`searchmoves`);
+ * for each version of a rule, do the moves it picks out give away less winning chances than the
+ * other pawn moves of the same position? Prints, per version, how many moves it picks, their
+ * mean loss against the rest's, and in how many positions with both they did better.
  */
-it.skipIf(!GAMES_PGN || !STOCKFISH || !SPACE)(
-    "space vs the engine",
-    async () => {
-        const engine = new Uci(STOCKFISH!);
-        await engine.init();
-        const DEPTH = 10;
-        const mean = (xs: number[]) =>
-            xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
-        type Split = { gain: number[]; other: number[] };
-        const all: Record<string, Split> = {};
-        const paired: Record<string, { n: number; better: number }> = {};
-        let seen = 0;
-        for (const start of gamePositions(GAMES_PGN!)) {
-            if (seen >= SPACE) break;
-            const pos = Chess.fromSetup(parseFen(start).unwrap()).unwrap();
-            const fen = makeFen(pos.toSetup());
-            const moves = [...pos.allDests()]
-                .filter(([from]) => pos.board.get(from)?.role === "pawn")
-                .flatMap(([from, tos]) => [...tos].map((to) => ({ from, to })))
-                .filter(
-                    (m) =>
-                        !pos.board.has(m.to) &&
-                        (m.to >> 3) % 7 !== 0 &&
-                        (m.from & 7) === (m.to & 7),
-                );
-            if (moves.length < 2) continue;
-            const best = await engine.score(fen, DEPTH);
-            if (best === undefined || Math.abs(best) > 200) continue;
-            seen++;
-            const before = space(pos, pos.turn);
-            const here: Record<string, Split> = {};
-            for (const m of moves) {
-                const s = await engine.score(fen, DEPTH, [makeUci(m)]);
-                if (s === undefined) continue;
-                const given = Math.max(0, winChance(best) - winChance(s));
-                const after = pos.clone();
-                after.play(m);
-                const gained = space(after, pos.turn) - before;
-                // the human notion: a central pawn on the fifth rank, safe from enemy pawns
-                const rel = pos.turn === "white" ? m.to >> 3 : 7 - (m.to >> 3);
-                const enemyPawns = after.board.pawn.intersect(
-                    after.board[opposite(pos.turn)],
-                );
-                const safe = [...enemyPawns].every(
-                    (p) => !pawnAttacks(opposite(pos.turn), p).has(m.to),
-                );
-                const fifth =
-                    rel === 4 && (m.to & 7) >= 2 && (m.to & 7) <= 5 && safe;
-                for (const [name, holds] of [
-                    ["gains >= 1", gained >= 1],
-                    ["gains >= 2", gained >= 2],
-                    ["gains >= 3", gained >= 3],
-                    ["central pawn to the 5th rank, safe from pawns", fifth],
-                ] as [string, boolean][]) {
-                    for (const bucket of [all, here]) {
-                        const b = (bucket[name] ??= { gain: [], other: [] });
-                        (holds ? b.gain : b.other).push(given);
-                    }
+async function comparePawnMoves(
+    count: number,
+    versions: (m: PawnMove) => [string, boolean][],
+) {
+    const engine = new Uci(STOCKFISH!);
+    await engine.init();
+    const DEPTH = 10;
+    const mean = (xs: number[]) =>
+        xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
+    type Split = { picked: number[]; other: number[] };
+    const all: Record<string, Split> = {};
+    const paired: Record<string, { n: number; better: number }> = {};
+    let seen = 0;
+    for (const start of gamePositions(GAMES_PGN!)) {
+        if (seen >= count) break;
+        const pos = Chess.fromSetup(parseFen(start).unwrap()).unwrap();
+        const fen = makeFen(pos.toSetup());
+        const moves = [...pos.allDests()]
+            .filter(([from]) => pos.board.get(from)?.role === "pawn")
+            .flatMap(([from, tos]) => [...tos].map((to) => ({ from, to })))
+            .filter(
+                (m) =>
+                    !pos.board.has(m.to) &&
+                    (m.to >> 3) % 7 !== 0 && // no promotions
+                    (m.from & 7) === (m.to & 7), // no en passant
+            );
+        if (moves.length < 2) continue;
+        const best = await engine.score(fen, DEPTH);
+        // balanced positions only: in a sharp one every pawn move loses for tactical reasons
+        if (best === undefined || Math.abs(best) > 200) continue;
+        seen++;
+        const here: Record<string, Split> = {};
+        for (const move of moves) {
+            const s = await engine.score(fen, DEPTH, [makeUci(move)]);
+            if (s === undefined) continue;
+            const given = Math.max(0, winChance(best) - winChance(s));
+            const after = pos.clone();
+            after.play(move);
+            for (const [name, holds] of versions({ pos, move, after })) {
+                for (const bucket of [all, here]) {
+                    const b = (bucket[name] ??= { picked: [], other: [] });
+                    (holds ? b.picked : b.other).push(given);
                 }
             }
-            for (const [name, h] of Object.entries(here)) {
-                if (!h.gain.length || !h.other.length) continue;
-                const p = (paired[name] ??= { n: 0, better: 0 });
-                p.n++;
-                if (mean(h.gain) < mean(h.other)) p.better++;
-            }
         }
-        engine.quit();
-        console.log(`balanced positions ${seen}`);
-        for (const [name, a] of Object.entries(all)) {
-            const p = paired[name];
-            console.log(
-                `  ${name}: ${a.gain.length} moves, mean loss ${mean(a.gain).toFixed(1)}% vs ${mean(a.other).toFixed(1)}%; ` +
-                    `better in ${p ? ((100 * p.better) / p.n).toFixed(0) : "?"}% of ${p?.n ?? 0} positions with both`,
-            );
+        for (const [name, h] of Object.entries(here)) {
+            if (!h.picked.length || !h.other.length) continue;
+            const p = (paired[name] ??= { n: 0, better: 0 });
+            p.n++;
+            if (mean(h.picked) < mean(h.other)) p.better++;
         }
-    },
+    }
+    engine.quit();
+    console.log(`balanced positions ${seen}`);
+    for (const [name, a] of Object.entries(all)) {
+        const p = paired[name];
+        console.log(
+            `  ${name}: ${a.picked.length} moves, mean loss ${mean(a.picked).toFixed(1)}% vs ${mean(a.other).toFixed(1)}%; ` +
+                `better in ${p ? ((100 * p.better) / p.n).toFixed(0) : "?"}% of ${p?.n ?? 0} positions with both`,
+        );
+    }
+}
+
+/** Squares the enemy pawns attack in `pos`, for the side to move's opponent */
+const enemyPawnAttacks = (pos: Chess, side: "white" | "black") => {
+    let attacked = SquareSet.empty();
+    for (const p of pos.board.pawn.intersect(pos.board[opposite(side)]))
+        attacked = attacked.union(pawnAttacks(opposite(side), p));
+    return attacked;
+};
+
+/**
+ * Space: do the quiet pawn moves that gain space give away less than the position's other pawn
+ * moves? Stockfish's former count (space() up by N) against a central pawn on the fifth rank.
+ */
+it.skipIf(!GAMES_PGN || !STOCKFISH || !SPACE)("space vs the engine", () =>
+    comparePawnMoves(SPACE, ({ pos, move, after }) => {
+        const gained = space(after, pos.turn) - space(pos, pos.turn);
+        const rel = pos.turn === "white" ? move.to >> 3 : 7 - (move.to >> 3);
+        const fifth =
+            rel === 4 &&
+            (move.to & 7) >= 2 &&
+            (move.to & 7) <= 5 &&
+            !enemyPawnAttacks(after, pos.turn).has(move.to);
+        return [
+            ["gains >= 1", gained >= 1],
+            ["gains >= 2", gained >= 2],
+            ["gains >= 3", gained >= 3],
+            ["central pawn to the 5th rank, safe from pawns", fifth],
+        ];
+    }),
+);
+
+/**
+ * Pawn breaks: a quiet pawn move whose pawn attacks an enemy pawn (a lever, offering to open
+ * lines). Any break, against a central pawn, defended (not just given away), and both.
+ */
+it.skipIf(!GAMES_PGN || !STOCKFISH || !BREAKS)(
+    "pawn breaks vs the engine",
+    () =>
+        comparePawnMoves(BREAKS, ({ pos, move, after }) => {
+            const me = pos.turn;
+            const targets = [
+                ...pawnAttacks(me, move.to).intersect(
+                    after.board.pawn.intersect(after.board[opposite(me)]),
+                ),
+            ];
+            const lever = targets.length > 0;
+            const central = targets.some((t) => (t & 7) >= 2 && (t & 7) <= 5);
+            // defended by its own side: taking it costs something
+            const defended = after
+                .kingAttackers(move.to, me, after.board.occupied)
+                .nonEmpty();
+            return [
+                ["break", lever],
+                ["break on a central pawn", central],
+                ["break, defended", lever && defended],
+                ["break on a central pawn, defended", central && defended],
+            ];
+        }),
 );
 
 it.skipIf(!GAMES_PGN || !STOCKFISH || !HOLES)(

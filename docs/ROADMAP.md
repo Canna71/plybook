@@ -171,7 +171,13 @@ How this file is used:
       pawn attacks gains space; better than the position's other pawn moves in 60-61% of
       balanced positions (two batches), steadier than Stockfish's former space count (58-64%
       at +3 squares, nothing below). Said as an interpretation among a good move's reasons.
-      Next: pawn breaks and the plans they open.
+    - [-] Pawn breaks (`feature/pawn-breaks`, 2026-10-28): dropped as a reason. A quiet pawn
+      move that attacks an enemy pawn is no better than the position's other pawn moves when
+      defended (46-50% on two batches) and worse when not (39-44%, the pawn is lost): a break's
+      worth is its timing and plan, which one move does not show. Saying "a pawn break" would
+      imply praise the data does not support; breaks the engine likes are explained by their
+      threats and lines. The measurement stays (`-t "pawn breaks"`) for a later, plan-aware try.
+      Next: prophylaxis beyond stopping a direct threat.
   - [ ] **P2.4g Study Chesserly** (owner's request 2026-10-27): read the source code and the
     ideas behind Chesserly, a free, open-source analysis platform (game review, move
     classification from Brilliant to Blunder, accuracy, openings; Vue, FastAPI, Stockfish,
