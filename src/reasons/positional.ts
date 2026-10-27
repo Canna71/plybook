@@ -15,7 +15,7 @@ import {
     Square,
     SquareSet,
 } from "chessops";
-import { attacks } from "chessops/attacks";
+import { attacks, pawnAttacks } from "chessops/attacks";
 import { parseFen } from "chessops/fen";
 import type { PieceValues } from "../engine/piecevalues";
 
@@ -48,6 +48,7 @@ export type PositionalKind =
     | "pieceValue"
     | "badBishop"
     | "weakSquare"
+    | "space"
     | "weakensKing"
     | "isolatedPawn";
 
@@ -217,6 +218,26 @@ export function positionalReasons(
                 `leaves ${made.length > 1 ? "holes" : "a hole"} on ${joinSquares(made)}: no pawn can cover ${made.length > 1 ? "them" : "it"} any more`,
             );
         }
+    }
+
+    // space: a central pawn advanced to the fifth rank where no enemy pawn attacks it, which
+    // cramps the opponent (docs/REASONS.md: better than the position's other pawn moves in
+    // 60-61% of balanced positions; counting squares behind the pawns did less well)
+    if (
+        piece.role === "pawn" &&
+        !capture &&
+        relRank(move.to, me) === 4 &&
+        file(move.to) >= 2 &&
+        file(move.to) <= 5 &&
+        [...pawnsOf(after, them)].every(
+            (p) => !pawnAttacks(them, p).has(move.to),
+        )
+    ) {
+        add(
+            "space",
+            true,
+            `gains space: the pawn on ${makeSquare(move.to)} cramps the opponent's position, and no pawn of theirs attacks it`,
+        );
     }
 
     // an outpost: a knight (or bishop) in the other half, defended by a pawn, safe from pawns
@@ -410,6 +431,37 @@ export function holes(pos: Position, color: Color): Square[] {
         }
     }
     return result;
+}
+
+/**
+ * `color`'s space, as Stockfish's former hand-written evaluation counted it: safe squares in
+ * the centre behind its pawns. Not used for explanations: measured in REASONS.md, where a pawn
+ * on the fifth rank did better (this stays for the measurement, `pnpm eval:reasons`). Squares on the c to f files, its second to fourth ranks, not
+ * attacked by an enemy pawn and not holding its own pawn; a square counts twice when one of its
+ * pawns stands up to three squares in front of it on the same file.
+ */
+export function space(pos: Position, color: Color): number {
+    const enemyPawns = pawnsOf(pos, opposite(color));
+    let attacked = SquareSet.empty();
+    for (const p of enemyPawns)
+        attacked = attacked.union(pawnAttacks(opposite(color), p));
+    const pawns = pawnsOf(pos, color);
+    let count = 0;
+    for (let f = 2; f <= 5; f++) {
+        for (const r of [1, 2, 3]) {
+            const sq = (color === "white" ? r : 7 - r) * 8 + f;
+            if (attacked.has(sq) || pawns.has(sq)) continue;
+            count++;
+            const behind = [...pawns].some(
+                (p) =>
+                    file(p) === f &&
+                    relRank(p, color) > r &&
+                    relRank(p, color) - r <= 3,
+            );
+            if (behind) count++;
+        }
+    }
+    return count;
 }
 
 /** Fixed pawns on a bishop's colour that make it bad: at least this many */

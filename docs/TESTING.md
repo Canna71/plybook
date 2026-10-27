@@ -127,6 +127,11 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Space, P2.4f (branch feature/space)
+
+- [ ] **The Advance French**: 3.e5 says it gains space (the pawn on e5 cramps Black's position)
+      as well as leaving Black a bad bishop. Two reasons for one move: too many, or right?
+
 ## Weak squares, P2.4f (branch feature/weak-squares)
 
 - [ ] **A hole as a cost**: play a pawn move the engine dislikes that leaves a square behind

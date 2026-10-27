@@ -222,6 +222,41 @@ describe("the bad bishop", () => {
     });
 });
 
+describe("space", () => {
+    const spaceOf = (fen: string, uci: string) =>
+        positionalReasons(fen, uci)
+            .filter((r) => r.kind === "space")
+            .map((r) => r.text);
+
+    it("the Advance French's e5 gains space: no black pawn can attack it", () => {
+        const fen =
+            "rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq d6 0 3";
+        expect(spaceOf(fen, "e4e5")).toEqual([
+            "gains space: the pawn on e5 cramps the opponent's position, and no pawn of theirs attacks it",
+        ]);
+    });
+
+    it("a fifth-rank pawn an enemy pawn attacks gains nothing", () => {
+        // c5 can be taken by the b6 pawn
+        const fen =
+            "rnbqkbnr/p1pp1ppp/1p2p3/8/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 3";
+        expect(spaceOf(fen, "c4c5")).toEqual([]);
+    });
+
+    it("nothing for pawn moves that stay at home, or on the wing", () => {
+        const start =
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        expect(spaceOf(start, "e2e4")).toEqual([]);
+        // a5 is a wing pawn
+        expect(
+            spaceOf(
+                "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR w KQkq - 0 1",
+                "a4a5",
+            ),
+        ).toEqual([]);
+    });
+});
+
 describe("holes", () => {
     const hole = (fen: string, uci: string) =>
         positionalReasons(fen, uci)

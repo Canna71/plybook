@@ -13,12 +13,12 @@ import {
     parseSquare,
     parseUci,
 } from "chessops";
-import { attacks } from "chessops/attacks";
+import { attacks, pawnAttacks } from "chessops/attacks";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import { parsePgn, startingPosition } from "chessops/pgn";
 import { makeUci } from "chessops";
-import { badBishops, colourOf, positionalReasons } from "./positional";
+import { badBishops, colourOf, positionalReasons, space } from "./positional";
 import { factsFromFen } from "../models/facts";
 import { lineMotifs, mainReasons, Motif } from "./motifs";
 import {
@@ -246,6 +246,92 @@ function gamePositions(path: string): string[] {
     }
     return fens;
 }
+
+const SPACE = Number(process.env.SPACE ?? 0);
+
+/**
+ * P2.4f check of the space rule against the engine, as for holes but the other way round: do the
+ * quiet pawn moves that gain space (space() rises by at least N) give away less than the other
+ * pawn moves of the same balanced position? N from 1 to 4, to choose the threshold.
+ */
+it.skipIf(!GAMES_PGN || !STOCKFISH || !SPACE)(
+    "space vs the engine",
+    async () => {
+        const engine = new Uci(STOCKFISH!);
+        await engine.init();
+        const DEPTH = 10;
+        const mean = (xs: number[]) =>
+            xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
+        type Split = { gain: number[]; other: number[] };
+        const all: Record<string, Split> = {};
+        const paired: Record<string, { n: number; better: number }> = {};
+        let seen = 0;
+        for (const start of gamePositions(GAMES_PGN!)) {
+            if (seen >= SPACE) break;
+            const pos = Chess.fromSetup(parseFen(start).unwrap()).unwrap();
+            const fen = makeFen(pos.toSetup());
+            const moves = [...pos.allDests()]
+                .filter(([from]) => pos.board.get(from)?.role === "pawn")
+                .flatMap(([from, tos]) => [...tos].map((to) => ({ from, to })))
+                .filter(
+                    (m) =>
+                        !pos.board.has(m.to) &&
+                        (m.to >> 3) % 7 !== 0 &&
+                        (m.from & 7) === (m.to & 7),
+                );
+            if (moves.length < 2) continue;
+            const best = await engine.score(fen, DEPTH);
+            if (best === undefined || Math.abs(best) > 200) continue;
+            seen++;
+            const before = space(pos, pos.turn);
+            const here: Record<string, Split> = {};
+            for (const m of moves) {
+                const s = await engine.score(fen, DEPTH, [makeUci(m)]);
+                if (s === undefined) continue;
+                const given = Math.max(0, winChance(best) - winChance(s));
+                const after = pos.clone();
+                after.play(m);
+                const gained = space(after, pos.turn) - before;
+                // the human notion: a central pawn on the fifth rank, safe from enemy pawns
+                const rel = pos.turn === "white" ? m.to >> 3 : 7 - (m.to >> 3);
+                const enemyPawns = after.board.pawn.intersect(
+                    after.board[opposite(pos.turn)],
+                );
+                const safe = [...enemyPawns].every(
+                    (p) => !pawnAttacks(opposite(pos.turn), p).has(m.to),
+                );
+                const fifth =
+                    rel === 4 && (m.to & 7) >= 2 && (m.to & 7) <= 5 && safe;
+                for (const [name, holds] of [
+                    ["gains >= 1", gained >= 1],
+                    ["gains >= 2", gained >= 2],
+                    ["gains >= 3", gained >= 3],
+                    ["central pawn to the 5th rank, safe from pawns", fifth],
+                ] as [string, boolean][]) {
+                    for (const bucket of [all, here]) {
+                        const b = (bucket[name] ??= { gain: [], other: [] });
+                        (holds ? b.gain : b.other).push(given);
+                    }
+                }
+            }
+            for (const [name, h] of Object.entries(here)) {
+                if (!h.gain.length || !h.other.length) continue;
+                const p = (paired[name] ??= { n: 0, better: 0 });
+                p.n++;
+                if (mean(h.gain) < mean(h.other)) p.better++;
+            }
+        }
+        engine.quit();
+        console.log(`balanced positions ${seen}`);
+        for (const [name, a] of Object.entries(all)) {
+            const p = paired[name];
+            console.log(
+                `  ${name}: ${a.gain.length} moves, mean loss ${mean(a.gain).toFixed(1)}% vs ${mean(a.other).toFixed(1)}%; ` +
+                    `better in ${p ? ((100 * p.better) / p.n).toFixed(0) : "?"}% of ${p?.n ?? 0} positions with both`,
+            );
+        }
+    },
+);
 
 it.skipIf(!GAMES_PGN || !STOCKFISH || !HOLES)(
     "holes vs the engine",
