@@ -243,6 +243,32 @@ it 2.1 higher on d5 than on e3", or "puts the knight on a worse square", and tha
 `STOCKFISH=… PGN_FILE=… pnpm eval:reasons -t positional` prints them next to the annotator's
 comments.
 
+### P2.4f strategic ideas, one at a time
+
+**The bad bishop (2026-10-27, `badBishops` in `positional.ts`).** No annotated games in the
+Library mention it, so the rule was measured against Stockfish's piece values instead: in the
+puzzle positions where a side has one bishop the rule calls bad and one it does not, is the bad
+one worth less? Comparing the two bishops of one side in one position leaves the rest of the
+position out. `STOCKFISH=… BAD_BISHOP=20000 PUZZLES_CSV=… pnpm eval:reasons -t "bad bishop"`.
+
+| Rule | Sample (pairs) | Holdout (pairs) |
+|---|---|---|
+| ≥2 own pawns on its colour, b–g files, fixed by enemy pawns | 52% (429) | 58% (403) |
+| … and the bishop behind them | 59% | 67% |
+| … behind, at most 4 squares to go to | 65% | 69% |
+| … behind, at most 3 squares to go to (the rule kept) | 67% (164), median gap 0.39 | 72% (166), median gap 0.33 |
+
+Fixed pawns alone are near a coin flip: a bishop outside its pawns is "bad but active" (a French
+bishop on b5), and the Advance French's c1 bishop has the open diagonal to h6 although d4 and e5
+are dark. With "behind" and "few squares" it holds about 70% of the time, so it is said as an
+interpretation, and when Stockfish's piece values are known, a bishop it values at least as
+high as its partner (the measured criterion; without a partner, a full bishop, 4.3) is not
+called bad. A fixed 4.3 alone was too strict: after the Advance French's 3.e5, Stockfish gives
+c8 4.44 and f8 4.46, so the textbook bad bishop is worth a little less than its partner but
+more than 4.3 this early. Reasons: a move that leaves the opponent a bad bishop,
+makes its own bishop bad, frees it (pawns give way, or the bishop comes out from behind them),
+or trades it off for a knight or bishop.
+
 ## Plan
 
 - **R1, motif detectors** (`src/reasons/motifs.ts`, tested): fork, pin (relative too), skewer,

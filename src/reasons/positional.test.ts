@@ -143,3 +143,81 @@ describe("positionalReasons with Stockfish's piece values", () => {
         ).toBe(false);
     });
 });
+
+describe("the bad bishop", () => {
+    const bishop = (fen: string, uci: string) =>
+        positionalReasons(fen, uci)
+            .filter((r) => r.kind === "badBishop")
+            .map((r) => `${r.good ? "+" : "-"} ${r.text}`);
+
+    it("the Advance French: 3.e5 shuts in Black's light-squared bishop", () => {
+        // 1.e4 e6 2.d4 d5, White plays e5. White's dark pawns are fixed too, but its bishop
+        // on c1 has the open diagonal to h6: not bad. Black's on c8 can go to d7 only.
+        const fen =
+            "rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq d6 0 3";
+        expect(bishop(fen, "e4e5")).toEqual([
+            "+ leaves the opponent a bad light-squared bishop: its pawns on d5 and e6 are fixed on the bishop's colour",
+        ]);
+    });
+
+    it("trades off a bad bishop for the opponent's piece", () => {
+        // Black's bishop on c8 is shut in behind d5 and e6; Bxd7 trades it for the knight
+        const fen = "2b3k1/1p1N4/4p3/3pP3/3P4/8/8/4K3 b - - 0 1";
+        expect(bishop(fen, "c8d7")).toEqual([
+            "+ trades off its bad bishop (its pawns on d5 and e6 are fixed on the bishop's colour)",
+        ]);
+    });
+
+    it("frees a bad bishop when a fixed pawn gets loose", () => {
+        // fxe5: the e6 pawn is no longer blocked by a white pawn
+        const fen = "2b3k1/8/4pp2/3pP3/3P4/8/8/4K3 b - - 0 1";
+        expect(bishop(fen, "f6e5")).toEqual([
+            "+ frees its light-squared bishop: its pawns on d5 and e6 no longer all hem it in",
+        ]);
+    });
+
+    it("does not call a bishop outside its pawns bad", () => {
+        // the same pawns, but the bishop already stands on b5, in front of them: active
+        const fen = "6k1/8/4p3/1b1pP3/3P4/8/8/4KB2 b - - 0 1";
+        expect(bishop(fen, "b5f1")).toEqual([]);
+    });
+
+    it("takes Stockfish's word: a bishop worth as much as its partner is not called bad", () => {
+        const fen =
+            "rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq d6 0 3";
+        // Black's values are negative; f8 is the partner of the c8 bishop
+        const values = (c8: number) => ({
+            before: new Map([
+                ["c8", -4.4],
+                ["f8", -4.4],
+            ]),
+            after: new Map([
+                ["c8", c8],
+                ["f8", -4.46],
+            ]),
+        });
+        const said = (c8: number) =>
+            positionalReasons(fen, "e4e5", values(c8)).filter(
+                (r) => r.kind === "badBishop",
+            ).length;
+        // Stockfish's own values after 3.e5: c8 4.44, f8 4.46: worth less, as the rule says
+        expect(said(-4.44)).toBe(1);
+        expect(said(-4.6)).toBe(0); // worth more than its partner: nothing said
+    });
+
+    it("says nothing where no pawns are fixed", () => {
+        expect(
+            bishop(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                "e2e4",
+            ),
+        ).toEqual([]);
+        // one fixed pawn on its colour is not enough
+        expect(
+            bishop(
+                "rnbqkbnr/pppp1ppp/4p3/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 2",
+                "d7d5",
+            ),
+        ).toEqual([]);
+    });
+});

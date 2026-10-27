@@ -46,6 +46,7 @@ export type PositionalKind =
     | "outpost"
     | "activates"
     | "pieceValue"
+    | "badBishop"
     | "weakensKing"
     | "isolatedPawn";
 
@@ -292,6 +293,58 @@ export function positionalReasons(
         }
     }
 
+    // the bad bishop: own pawns fixed on its colour (docs/REASONS.md). Bishops are told apart
+    // by the colour of their squares, so a bishop that moves is still the same bishop
+    const badBefore = badBishops(before);
+    const badAfter = badBishops(after);
+    const myBishopTaken =
+        piece.role === "bishop" &&
+        badBefore.get(`${me} ${colourOf(move.from)}`);
+    const takenRole = before.board.get(move.to)?.role;
+    if (
+        myBishopTaken &&
+        capture &&
+        (takenRole === "knight" || takenRole === "bishop") &&
+        !engineSaysGood(before, me, colourOf(move.from), values?.before)
+    ) {
+        add(
+            "badBishop",
+            true,
+            `trades off its bad bishop (its pawns on ${joinSquares(myBishopTaken)} are fixed on the bishop's colour)`,
+        );
+    }
+    for (const [key, pawns] of badAfter) {
+        if (badBefore.has(key)) continue;
+        const [color, colour] = key.split(" ");
+        if (engineSaysGood(after, color, colour, values?.after)) continue;
+        add(
+            "badBishop",
+            color !== me,
+            color === me
+                ? `makes its ${colour}-squared bishop bad: its pawns on ${joinSquares(pawns)} are fixed on the bishop's colour`
+                : `leaves the opponent a bad ${colour}-squared bishop: its pawns on ${joinSquares(pawns)} are fixed on the bishop's colour`,
+        );
+    }
+    for (const [key, pawns] of badBefore) {
+        const [color, colour] = key.split(" ");
+        // freed by the pawns, not by trading the bishop off
+        const stillThere = [
+            ...after.board.bishop.intersect(after.board[me]),
+        ].some((b) => colourOf(b) === colour);
+        if (color !== me || badAfter.has(key) || !stillThere) continue;
+        if (engineSaysGood(before, color, colour, values?.before)) continue;
+        // a capture by the bad bishop is a trade (said above), not a way out
+        const moved = piece.role === "bishop" && colourOf(move.from) === colour;
+        if (moved && capture) continue;
+        add(
+            "badBishop",
+            true,
+            piece.role === "bishop" && colourOf(move.from) === colour
+                ? `brings its bad ${colour}-squared bishop out from behind its pawns on ${joinSquares(pawns)}`
+                : `frees its ${colour}-squared bishop: its pawns on ${joinSquares(pawns)} no longer all hem it in`,
+        );
+    }
+
     // Stockfish's measure of the moved piece, where it was and where it is: a piece (not a
     // pawn or the king) that is worth clearly more or less there. It says better than the
     // count of squares whether the piece is active, so it replaces "activates".
@@ -309,6 +362,86 @@ export function positionalReasons(
         ...reasons.filter((r) => r.good),
         ...reasons.filter((r) => !r.good),
     ];
+}
+
+/** "light" or "dark": the colour of a square (a1 is dark) */
+export const colourOf = (sq: Square) =>
+    (file(sq) + rank(sq)) % 2 === 1 ? "light" : "dark";
+
+const joinSquares = (squares: Square[]) => {
+    const names = squares.map(makeSquare);
+    return names.length <= 1
+        ? (names[0] ?? "")
+        : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+};
+
+/** Fixed pawns on a bishop's colour that make it bad: at least this many */
+const BAD_BISHOP_PAWNS = 2;
+/** A bad bishop has at most this many squares to go to */
+const BAD_BISHOP_MOVES = 3;
+
+/**
+ * The bad bishops in `pos`, by "<side> <colour>", with the pawns that make them bad: pawns of
+ * the bishop's side on its colour, on the b to g files, fixed (an enemy pawn right in front),
+ * which block it and cannot move out of its way; the bishop behind them, with few squares to
+ * go to. Measured against Stockfish's piece values (docs/REASONS.md): with "behind" and
+ * "few squares" the bad bishop is worth less than its partner in about 70% of positions, from
+ * 52-58% for fixed pawns alone. A bishop outside its pawns is "bad but active": not called bad.
+ */
+export function badBishops(pos: Position): Map<string, Square[]> {
+    const bad = new Map<string, Square[]>();
+    for (const color of ["white", "black"] as Color[]) {
+        const enemyPawns = pawnsOf(pos, opposite(color));
+        const ahead = color === "white" ? 8 : -8;
+        for (const bishop of pos.board.bishop.intersect(pos.board[color])) {
+            const colour = colourOf(bishop);
+            const fixed = [...pawnsOf(pos, color)].filter(
+                (p) =>
+                    colourOf(p) === colour &&
+                    file(p) >= 1 &&
+                    file(p) <= 6 &&
+                    enemyPawns.has(p + ahead),
+            );
+            if (fixed.length < BAD_BISHOP_PAWNS) continue;
+            const behind = fixed.every(
+                (p) => relRank(bishop, color) < relRank(p, color),
+            );
+            const moves = attacks(
+                { role: "bishop", color },
+                bishop,
+                pos.board.occupied,
+            )
+                .diff(pos.board[color])
+                .size();
+            if (behind && moves <= BAD_BISHOP_MOVES)
+                bad.set(`${color} ${colour}`, fixed);
+        }
+    }
+    return bad;
+}
+
+/**
+ * Stockfish disagrees that the bishop of `colour` is bad (when values are known): it values it
+ * at least as high as the side's other bishop, which is what the rule was measured against,
+ * or, without one, at the usual worth of a bishop or more
+ */
+function engineSaysGood(
+    pos: Position,
+    color: string,
+    colour: string,
+    values: PieceValues | undefined,
+): boolean {
+    if (!values) return false;
+    const sign = color === "white" ? 1 : -1;
+    const bishops = [...pos.board.bishop.intersect(pos.board[color as Color])];
+    const worth = (sq: Square | undefined) => {
+        const v = sq !== undefined ? values.get(makeSquare(sq)) : undefined;
+        return v !== undefined ? sign * v : undefined;
+    };
+    const value = worth(bishops.find((b) => colourOf(b) === colour));
+    if (value === undefined) return false;
+    const partner = worth(bishops.find((b) => colourOf(b) !== colour));
+    return value >= (partner ?? NOMINAL.bishop!);
 }
 
 function pieceValueReason(

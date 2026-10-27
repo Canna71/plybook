@@ -127,6 +127,13 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## The bad bishop, P2.4f (branch feature/bad-bishop)
+
+- [ ] **The Advance French**: 1.e4 e6 2.d4 d5 3.e5 in analysis: the explanation of 3.e5 says
+      it leaves Black a bad light-squared bishop (d5 and e6 fixed). Does that read right?
+- [ ] **Your games**: on a closed position of yours (a French, a King's Indian), the bad-bishop
+      sentences appear rarely, and when they do, would you call that bishop bad?
+
 ## The engine sees the game, P2.4e (branch feature/engine-sees-game)
 
 Checked in the dev app: 1.e4 Nf6 2.Nc3 Ng8 3.Nb1 Nf6 4.Nc3 Ng8 5.Nb1 shows 0 and 5…Nf6 (the
