@@ -222,8 +222,12 @@ How this file is used:
       puzzle rating). "Your level: Automatic" (setting `tutor.auto`, on by default) moves the
       level up 100 after a win (or a clean draw) and down 100 after a lost game with two or
       more mistakes (600–2200). Take-backs leave no trace in the summary.
-    - Left for later: starting the automatic level from your puzzle rating or online games,
-      and a tutor for the opening (repertoire) phase.
+    - Done 2026-10-27 (`feature/tutor-start-level`): until a tutor game has set it, the
+      automatic level starts from the Lichess puzzle rating, 300 below it in steps of 100
+      (puzzle ratings run above playing strength), once 20 puzzles have been tried (setting
+      `tutor.levelFrom`: default, puzzles, games).
+    - Left for later: starting the level from online games, and a tutor for the opening
+      (repertoire) phase.
 
 ## Phase 3: databases and imports
 

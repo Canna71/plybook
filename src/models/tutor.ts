@@ -193,6 +193,27 @@ export function nextLevel(elo: number, summary: GameSummary): number {
     }
     return Math.max(ELO_RANGE[0], Math.min(ELO_RANGE[1], next));
 }
+
+/** Puzzle attempts before the puzzle rating says something about you */
+export const MIN_PUZZLE_ATTEMPTS = 20;
+/**
+ * Puzzle ratings run above playing strength (a puzzle shows there is something to find); a
+ * rough gap, which the automatic level then corrects game by game.
+ */
+const PUZZLE_GAP = 300;
+
+/**
+ * The automatic level to start from, given the puzzle rating and how many puzzles it rests
+ * on; undefined when there are too few to go by.
+ */
+export function startLevel(
+    puzzleRating: number,
+    attempts: number,
+): number | undefined {
+    if (attempts < MIN_PUZZLE_ATTEMPTS) return undefined;
+    const elo = Math.round((puzzleRating - PUZZLE_GAP) / ELO_STEP) * ELO_STEP;
+    return Math.max(ELO_RANGE[0], Math.min(ELO_RANGE[1], elo));
+}
 // #endregion
 
 const NAMES = {

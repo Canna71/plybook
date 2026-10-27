@@ -97,6 +97,11 @@ export interface AppSettings {
         elo?: number;
         /** The level follows your results: up after a win, down after a lost game of mistakes */
         auto?: boolean;
+        /**
+         * Where the automatic level came from: the default, the puzzle rating (followed until
+         * a game), or games (from then on only games move it)
+         */
+        levelFrom?: "default" | "puzzles" | "games";
         /** "quiet", "normal" or "chatty": how readily it asks about your moves */
         chattiness?: string;
         /** "Take it back?" after a mistake */
@@ -182,6 +187,7 @@ const DEFAULT: AppSettings = {
         on: false,
         elo: 1200,
         auto: true,
+        levelFrom: "default",
         chattiness: "normal",
         takebacks: true,
     },

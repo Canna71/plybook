@@ -127,6 +127,15 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Tutor level from the puzzle rating (branch feature/tutor-start-level)
+
+- [ ] **Start level**: with the Lichess puzzles imported, solve or fail 20 of them, then open
+      Play with the tutor on and "Your level: Automatic": the level shows your puzzle rating
+      less about 300 (e.g. 1500 → "Automatic (1200)", 1760 → 1500).
+- [ ] **Games take over**: finish a tutor game; more puzzles afterwards no longer change the
+      level, only games do.
+- [ ] **A chosen level stays**: pick a fixed level (not Automatic); puzzles don't change it.
+
 ## GameManager split (branch feature/split-gamemanager)
 
 Checked in the dev app: analysis moves and engine arrows, a puzzle (right move, the reply,

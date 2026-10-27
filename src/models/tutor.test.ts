@@ -7,8 +7,23 @@ import {
     summarizeGame,
     shouldAsk,
     standsOut,
+    startLevel,
     tutorLevel,
 } from "./tutor";
+
+describe("startLevel", () => {
+    it("starts below the puzzle rating, in the level's steps and limits", () => {
+        expect(startLevel(1500, 40)).toBe(1200);
+        expect(startLevel(1760, 40)).toBe(1500);
+        expect(startLevel(700, 40)).toBe(600);
+        expect(startLevel(2900, 40)).toBe(2200);
+    });
+
+    it("waits for enough puzzles", () => {
+        expect(startLevel(1800, 19)).toBeUndefined();
+        expect(startLevel(1800, 20)).toBe(1500);
+    });
+});
 
 /** A random source that returns the given numbers in turn. */
 const sequence = (...values: number[]) => {
