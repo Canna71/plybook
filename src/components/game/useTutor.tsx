@@ -13,7 +13,10 @@ import { EngineInfo } from "../../engine/engineinterfaces";
 import { GameModel } from "../../models/GameModel";
 import { Path } from "../../models/pgn";
 import { classify, scoreWin } from "../../models/review";
-import { explainMove } from "../../models/explain";
+import { explainMoveFull } from "../../models/explain";
+import { scoreToEvaluation } from "../../models/whatif";
+import { Evaluation } from "chessops/pgn";
+import { positionsBefore } from "./gamePosition";
 import { nullMoveFen } from "../../models/threat";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import {
@@ -36,6 +39,12 @@ import { puzzleStats } from "../../storage/lichesspuzzles";
 const log = anylogger("tutor");
 
 export const TUTOR_SETTING = "tutor.on";
+
+/** A search's top line as an evaluation (White's side), with the depth it reached */
+const searchEvaluation = (
+    line: EngineInfo | undefined,
+): Evaluation | undefined =>
+    line?.score && { ...scoreToEvaluation(line.score), depth: line.depth };
 
 /**
  * Until a tutor game has set it, the automatic level follows the Lichess puzzle rating (once
@@ -107,6 +116,8 @@ export function useTutor(o: {
 
     // your win chance when it was your turn: what your move is measured against
     let yourWinBefore: number | undefined;
+    // the same search's score (White's side) and depth, for the explanation's evidence
+    let evalBefore: Evaluation | undefined;
     // the game so far, for the summary: your moves, and a strong move waiting to be found
     let records: MoveRecord[] = [];
     let chance: { fen: string; uci: string; motif?: string } | undefined;
@@ -196,15 +207,21 @@ export function useTutor(o: {
             shouldAsk(yourWinBefore, yourWinAfter, chattiness());
         if (ask) {
             const loss = yourWinBefore! - yourWinAfter;
-            const why = explainMove({
+            const g = o.game();
+            const x = explainMoveFull({
                 fenBefore: before.fen,
                 uci: data.uci,
                 verdict: { class: classify(loss, false), loss },
                 replyPv: result.lines[0].pv,
-            })
-                // the verdict line says "is a mistake": the question says it more kindly
-                .slice(1)
-                .join(" ");
+                evaluations: {
+                    before: evalBefore,
+                    after: searchEvaluation(result.lines[0]),
+                },
+                history: g ? positionsBefore(g, path.previous()) : undefined,
+            });
+            // the verdict line says "is a mistake": the question says it more kindly. A
+            // search too shallow to judge gives no reason: only the question
+            const why = x && !x.inconclusive ? x.text.slice(1).join(" ") : "";
             setQuestion({
                 text: `Are you sure about ${data.san}? ${why}`.trim(),
                 fens: [before.fen, fen],
@@ -235,6 +252,7 @@ export function useTutor(o: {
         if (mine !== step || !result?.lines.length) return;
         const candidates = candidatesFor(result.lines, fen, you);
         yourWinBefore = candidates[0]?.win;
+        evalBefore = searchEvaluation(result.lines[0]);
         const strong = standsOut(candidates);
         // remembered for the summary, said or not
         chance = strong && {
@@ -312,6 +330,7 @@ export function useTutor(o: {
                     setMessages([]);
                     setSummary(undefined);
                     yourWinBefore = undefined;
+                    evalBefore = undefined;
                     records = [];
                     chance = undefined;
                 }

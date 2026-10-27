@@ -98,5 +98,9 @@ Settings → Explanations (P2.4b, ROADMAP.md).
 
 - The main analysis and the explainer search from a FEN, not the game's moves: the engine itself
   does not see repetitions (the explanation says so when it matters).
-- Review key moments and the tutor still use the text only (`explainMove`), not the evidence.
-- Strategic explanations beyond the positional rules: only where evidence supports them.
+- Strategic explanations beyond the positional rules: only where evidence supports them, one
+  idea at a time (ROADMAP P2.4f).
+
+The Engine section, the review's key moments and the tutor's questions all use
+`explainMoveFull` (P2.4d); the first two show the Evidence panel. The engine seeing the game is
+ROADMAP P2.4e.

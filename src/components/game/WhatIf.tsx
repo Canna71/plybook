@@ -2,7 +2,6 @@ import {
     Component,
     createResource,
     createSignal,
-    For,
     Show,
     untrack,
     useContext,
@@ -23,76 +22,10 @@ import {
 } from "../../models/whatif";
 import { GameContext } from "./GameContext";
 import { NagIcon } from "./Ply";
-import {
-    explainMoveFull,
-    MoveExplanation,
-    MoverScore,
-} from "../../models/explain";
+import { explainMoveFull, MoveExplanation } from "../../models/explain";
+import { positionsBefore } from "./gamePosition";
+import ExplanationEvidence from "./ExplanationEvidence";
 import "./WhatIf.scss";
-
-/** A score from the mover's side: "+0.30", "mate in 2", "mated in 1" */
-const scoreText = (s: MoverScore | undefined) =>
-    !s
-        ? "?"
-        : s.type === "mate"
-          ? s.value > 0
-              ? `mate in ${s.value}`
-              : `mated in ${-s.value}`
-          : `${s.value >= 0 ? "+" : ""}${(s.value / 100).toFixed(2)}`;
-
-const LINE_LABELS = { reply: "Answer", best: "Better" };
-
-/**
- * What the explanation rests on, folded away: verified facts and lines, interpretations
- * marked as such, the scores with their side and depth, and what the analysis could not see.
- */
-const Evidence: Component<{ explanation: MoveExplanation }> = (props) => {
-    const x = () => props.explanation;
-    return (
-        <details class="what-if-evidence">
-            <summary>Evidence</summary>
-            <div class="what-if-evidence-body">
-                <div>
-                    Scores for {x().side === "white" ? "White" : "Black"}:{" "}
-                    {scoreText(x().evaluation.before)} before,{" "}
-                    {scoreText(x().evaluation.after)} after
-                    <Show when={x().evaluation.depth !== undefined}>
-                        {" "}
-                        (depth {x().evaluation.depth})
-                    </Show>
-                </div>
-                <ul>
-                    <For each={x().evidence}>
-                        {(e) => (
-                            <li classList={{ inferred: !e.verified }}>
-                                {e.verified
-                                    ? e.basis === "board"
-                                        ? "On the board: "
-                                        : "In the line: "
-                                    : "Interpretation: "}
-                                {e.text}
-                            </li>
-                        )}
-                    </For>
-                </ul>
-                <For each={x().lines}>
-                    {(line) => (
-                        <div>
-                            {LINE_LABELS[line.label]}:{" "}
-                            <BoardText
-                                text={line.san.join(" ")}
-                                fens={() => [line.fen]}
-                            />
-                        </div>
-                    )}
-                </For>
-                <For each={[...x().limits, ...x().validation.problems]}>
-                    {(limit) => <div class="what-if-limit">{limit}</div>}
-                </For>
-            </div>
-        </details>
-    );
-};
 
 const sameFen = (a?: string, b?: string) =>
     !!a &&
@@ -154,14 +87,8 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
     /** The game's positions before the move's, oldest first: repetitions need them */
     const history = () => {
         const g = game();
-        let p = currentPath()?.previous();
-        const fens: string[] = [];
-        while (g && p && !p.empty()) {
-            p = p.previous();
-            const fen = g.dataAt(p)?.fen;
-            if (fen) fens.unshift(fen);
-        }
-        return fens;
+        const p = currentPath();
+        return g && p && !p.empty() ? positionsBefore(g, p.previous()) : [];
     };
 
     const outcome = () => {
@@ -310,7 +237,7 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
                         </Show>
                     </Show>
                     <Show when={full()}>
-                        {(x) => <Evidence explanation={x()} />}
+                        {(x) => <ExplanationEvidence explanation={x()} />}
                     </Show>
                 </Show>
                 {/* a bad move's explanation already follows the reply line */}
