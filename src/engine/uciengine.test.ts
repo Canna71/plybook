@@ -97,6 +97,16 @@ describe("UCIEngine", () => {
         expect(sent.at(-1)).toBe(
             "go wtime 300000 btime 295000 winc 3000 binc 3000",
         );
+
+        // with the game behind the position, the engine gets the moves: repetitions count
+        const start =
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        engine.analyzeFromFenOrMoves(fen, {
+            depth: 10,
+            history: { start, moves: ["g1f3", "g8f6"] },
+        });
+        vi.runAllTimers();
+        expect(sent).toContain(`position fen ${start} moves g1f3 g8f6`);
         vi.useRealTimers();
     });
 

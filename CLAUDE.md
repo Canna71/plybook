@@ -87,7 +87,9 @@ src/
   components/shell/        app shell: CommandPalette (⌘K), PageHeader; the sidebar is Views/Sidebar.tsx,
                            its screens and groups in models/navigation.ts (a new screen goes there)
   models/                  pgn.ts (chessops tree -> view model, Path type), GameModel.ts (immutable game ops),
-                           settings.ts (JSON settings in AppConfig, Solid store), puzzles.ts (score formula)
+                           settings.ts (JSON settings in AppConfig, Solid store), puzzles.ts (score formula),
+                           gamehistory.ts (the game behind a position: searches pass it as `history`
+                           so the engine counts repetitions; history.ts is the played-games records)
   engine/                  uciengine.ts (UCI protocol parser) over executableuci.ts (talks to Rust engine_* commands),
                            engineprofiles.ts (profiles, startEngine, humanProfile), lc0.ts (Maia move stats),
                            explainer.ts (a background second engine for the searches behind explanations),

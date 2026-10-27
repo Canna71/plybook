@@ -127,6 +127,16 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## The engine sees the game, P2.4e (branch feature/engine-sees-game)
+
+Checked in the dev app: 1.e4 Nf6 2.Nc3 Ng8 3.Nb1 Nf6 4.Nc3 Ng8 5.Nb1 shows 0 and 5…Nf6 (the
+draw), and 5.Nb1 is called a mistake that repeats the position a third time.
+
+- [ ] **A perpetual check** in one of your games (or set one up): the engine shows 0.00 where
+      a side can force the repetition, not a winning score.
+- [ ] **Nothing else changed**: analysis, play against the engine, puzzles and the review run
+      as before (the engine now gets the game's moves; a long game is a longer command).
+
 ## Evidence in review and the tutor, P2.4d (branch feature/evidence-everywhere)
 
 Checked in the dev app: a reviewed game's key moment (1…e5) shows Evidence with the scores for

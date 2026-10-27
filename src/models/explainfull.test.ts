@@ -252,4 +252,23 @@ describe("explainMoveFull: limits", () => {
             explainMoveFull({ fenBefore: BASE.fenBefore, uci: "d1d5" }),
         ).toBe(undefined);
     });
+
+    it("notes a position seen before only when the engine had just the FEN", () => {
+        // Ng8 brings back the start position, seen once before in this game
+        const start =
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        const input = {
+            fenBefore:
+                "rnbqkb1r/pppppppp/5n2/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 4 3",
+            uci: "f6g8",
+            history: [start, "a", "b"],
+        };
+        const note = /without the game/;
+        expect(explainMoveFull(input)!.limits.join(" ")).toMatch(note);
+        expect(
+            explainMoveFull({ ...input, engineSawGame: true })!.limits.join(
+                " ",
+            ),
+        ).not.toMatch(note);
+    });
 });

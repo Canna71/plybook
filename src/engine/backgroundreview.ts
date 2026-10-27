@@ -4,14 +4,19 @@
 // tests.
 
 import { Color } from "chessops";
-import { Score } from "./engineinterfaces";
+import { PositionHistory, Score } from "./engineinterfaces";
+import { gameHistory, historyFor } from "../models/gamehistory";
 import { GameModel } from "../models/GameModel";
 import { EvaluationExt, makeGame } from "../models/pgn";
 import { annotateMistakes, mainline, reviewLine } from "../models/review";
 
-/** One position's search: the score from White's point of view, and the best move. */
+/**
+ * One position's search: the score from White's point of view, and the best move. `history`:
+ * the game up to the position, so the engine counts repetitions.
+ */
 export type PositionSearch = (
     fen: string,
+    history?: PositionHistory,
 ) => Promise<{ score?: Score; best?: string; depth?: number } | undefined>;
 
 export type ReviewedGame = {
@@ -35,7 +40,10 @@ export async function reviewGame(
         } else if (node.pos.isEnd()) {
             evaluation = { depth: 0, pawns: 0 };
         } else {
-            const found = await search(fen);
+            const found = await search(
+                fen,
+                historyFor(gameHistory(game, node.path), fen),
+            );
             const score = found?.score;
             if (score) {
                 evaluation =

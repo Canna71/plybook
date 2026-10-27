@@ -34,8 +34,9 @@ import { nullMoveFen } from "../../models/threat";
 import { scoreToEvaluation } from "../../models/whatif";
 import { pickBookMove } from "../../models/books";
 import { bookMoves, ENGINE_BOOK_SETTING } from "../../storage/books";
-import { parseUci } from "chessops";
+import { makeUci, parseUci } from "chessops";
 import { Chess } from "chessops/chess";
+import { gameHistory, historyFor, withMove } from "../../models/gamehistory";
 import {
     EngineTask,
     engineTask,
@@ -405,10 +406,26 @@ export function useChessEngine(options: ChessEngineOptions) {
             );
             eng.setOption("UCI_Elo", plan.strength.elo);
         }
+        // the game behind the position, so the engine counts repetitions (P2.4e); not for a
+        // threat search, whose position has the other side to move (no move leads there)
+        const history = untrack(() => {
+            const g = game();
+            if (!g || t.kind === "threat") return undefined;
+            if (t.kind === "review")
+                return gameHistory(g, reviewPositionPath() ?? Path.root);
+            const here = gameHistory(g, options.path() ?? Path.root);
+            const wrong = options.wrongPuzzleMove();
+            return t.kind === "refutation" && wrong
+                ? withMove(here, makeUci(wrong))
+                : here;
+        });
         const search = (opts: typeof plan.options) => {
             log.debug("Analyzing", t.fen, opts);
             pendingSearches++;
-            eng.analyzeFromFenOrMoves(t.fen, opts);
+            eng.analyzeFromFenOrMoves(t.fen, {
+                ...opts,
+                history: historyFor(history, t.fen),
+            });
         };
         if (t.kind !== "play" || !t.enginesTurn) {
             search(plan.options);

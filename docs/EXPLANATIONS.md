@@ -72,9 +72,9 @@ Rules that keep it honest:
   Lichess puzzle tags in REASONS.md).
 - **Shallow is said, not judged.** Below depth 10 (`MIN_DEPTH`): "the engine has not searched
   deep enough to judge it yet (depth 8)", and no better move.
-- **History matters.** A move that repeats the position a third time says so; a repeated
-  position notes that the engine judged it without the game (the explainer engine is given a
-  FEN, not the moves).
+- **History matters.** The engine searches with the game's moves, so it counts repetitions
+  (P2.4e); a move that repeats the position a third time says so. Where the scores may come
+  from a search without the game (an older review), a repeated position is noted.
 - **A model only rewords**, and its wording is dropped if it names a move or square, or makes a
   claim (fork, pin, mate, wins, …), that the computed text does not. Grounding does not make a
   model correct; the check only catches additions.
@@ -96,11 +96,10 @@ Settings → Explanations (P2.4b, ROADMAP.md).
 
 ## Not done (yet)
 
-- The main analysis and the explainer search from a FEN, not the game's moves: the engine itself
-  does not see repetitions (the explanation says so when it matters).
 - Strategic explanations beyond the positional rules: only where evidence supports them, one
   idea at a time (ROADMAP P2.4f).
 
 The Engine section, the review's key moments and the tutor's questions all use
-`explainMoveFull` (P2.4d); the first two show the Evidence panel. The engine seeing the game is
-ROADMAP P2.4e.
+`explainMoveFull` (P2.4d); the first two show the Evidence panel. Since P2.4e the engine
+searches with the game's moves (`models/gamehistory.ts`), so it counts repetitions; only
+review scores, which may predate that, keep the note that the engine judged without the game.

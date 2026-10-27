@@ -17,6 +17,7 @@ import { explainMoveFull } from "../../models/explain";
 import { scoreToEvaluation } from "../../models/whatif";
 import { Evaluation } from "chessops/pgn";
 import { positionsBefore } from "./gamePosition";
+import { gameHistory, historyFor } from "../../models/gamehistory";
 import { nullMoveFen } from "../../models/threat";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import {
@@ -114,6 +115,14 @@ export function useTutor(o: {
         getSettingValue("tutor.chattiness", "normal") as Chattiness;
     const level = () => tutorLevel(getSettingValue("tutor.elo", 1200));
 
+    /** The game behind `fen` (the position shown), so the tutor's searches count repetitions */
+    const gameAt = (fen: string) => {
+        const g = o.game();
+        return g
+            ? historyFor(gameHistory(g, o.path() ?? Path.root), fen)
+            : undefined;
+    };
+
     // your win chance when it was your turn: what your move is measured against
     let yourWinBefore: number | undefined;
     // the same search's score (White's side) and depth, for the explanation's evidence
@@ -160,7 +169,10 @@ export function useTutor(o: {
 
     const enginesTurn = async (fen: string, mine: number) => {
         const engineColor = o.engineColor()!;
-        const result = await explainerSearch(fen, ENGINE_SEARCH);
+        const result = await explainerSearch(fen, {
+            ...ENGINE_SEARCH,
+            history: gameAt(fen),
+        });
         if (mine !== step || !result?.lines.length) return;
         const candidates = candidatesFor(result.lines, fen, engineColor);
         if (!candidates.length) return;
@@ -218,6 +230,8 @@ export function useTutor(o: {
                     after: searchEvaluation(result.lines[0]),
                 },
                 history: g ? positionsBefore(g, path.previous()) : undefined,
+                // the tutor's searches carry the game (gameAt)
+                engineSawGame: true,
             });
             // the verdict line says "is a mistake": the question says it more kindly. A
             // search too shallow to judge gives no reason: only the question
@@ -248,7 +262,10 @@ export function useTutor(o: {
     const yourTurn = async (fen: string, mine: number) => {
         const you = opposite(o.engineColor()!);
         // what you can play: your win chance now, and whether one move stands out
-        const result = await explainerSearch(fen, PLAYER_SEARCH);
+        const result = await explainerSearch(fen, {
+            ...PLAYER_SEARCH,
+            history: gameAt(fen),
+        });
         if (mine !== step || !result?.lines.length) return;
         const candidates = candidatesFor(result.lines, fen, you);
         yourWinBefore = candidates[0]?.win;
