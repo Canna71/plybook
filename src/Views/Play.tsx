@@ -5,7 +5,7 @@ import { saveHistoryGame } from "../storage/db";
 import { getSettingValue, setSettingValue } from "../models/settings";
 import { TIME_CONTROLS } from "../models/clock";
 import { TIME_CONTROL_SETTING } from "../components/game/useGameClock";
-import { TUTOR_SETTING } from "../components/game/useTutor";
+import { levelFromPuzzles, TUTOR_SETTING } from "../components/game/useTutor";
 
 /** Ratings to play the tutor at: yours, roughly */
 const TUTOR_LEVELS = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200];
@@ -24,6 +24,11 @@ const PlayView = () => {
     const tutorOn = () => getSettingValue(TUTOR_SETTING, false);
     const tutorAuto = () => getSettingValue("tutor.auto", true);
     const tutorElo = () => getSettingValue("tutor.elo", 1200);
+
+    // with the tutor on an automatic level, start from the puzzle rating until a game sets it
+    createEffect(() => {
+        if (tutorOn() && tutorAuto()) void levelFromPuzzles();
+    });
 
     // Saved after every move, so History has the game even if it is left unfinished
     createEffect(

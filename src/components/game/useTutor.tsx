@@ -27,13 +27,34 @@ import {
     pickTutorMove,
     shouldAsk,
     standsOut,
+    startLevel,
     summarizeGame,
     tutorLevel,
 } from "../../models/tutor";
 import { describeIdea, isThreat, lineIdea } from "../../reasons/threats";
+import { puzzleStats } from "../../storage/lichesspuzzles";
 const log = anylogger("tutor");
 
 export const TUTOR_SETTING = "tutor.on";
+
+/**
+ * Until a tutor game has set it, the automatic level follows the Lichess puzzle rating (once
+ * there are enough puzzles to go by).
+ */
+export async function levelFromPuzzles() {
+    if (!getSettingValue("tutor.auto", true)) return;
+    if (getSettingValue("tutor.levelFrom", "default") === "games") return;
+    const stats = await puzzleStats().catch((e) => {
+        log.warn("puzzle stats", e);
+        return undefined;
+    });
+    const elo = stats && startLevel(stats.rating, stats.attempts);
+    if (elo === undefined) return;
+    // a game may have ended meanwhile
+    if (getSettingValue("tutor.levelFrom", "default") === "games") return;
+    await setSettingValue("tutor.elo", elo);
+    await setSettingValue("tutor.levelFrom", "puzzles");
+}
 
 export type TutorMessage = {
     id: number;
@@ -272,6 +293,8 @@ export function useTutor(o: {
             const elo = getSettingValue("tutor.elo", 1200);
             const next = nextLevel(elo, s);
             if (next !== elo) void setSettingValue("tutor.elo", next);
+            // from now on games set the level, not the puzzle rating
+            void setSettingValue("tutor.levelFrom", "games");
         }
     };
 
