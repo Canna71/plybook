@@ -1,7 +1,7 @@
 import { Component, createResource, For } from "solid-js";
 import { getHistoryGames } from "../storage/db";
 import Button from "../components/common/Button";
-import { formatDate } from "../components/common/utils";
+import { formatDate } from "../models/format";
 import { useNavigate } from "@solidjs/router";
 import PageHeader from "../components/shell/PageHeader";
 import "./History.scss";

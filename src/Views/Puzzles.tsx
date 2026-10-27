@@ -1,7 +1,7 @@
 import { Component, createResource, For } from "solid-js";
 import { listPuzzles, pickPuzzle, Study } from "../storage/db";
 import Button from "../components/common/Button";
-import { formatDate, round } from "../components/common/utils";
+import { formatDate, round } from "../models/format";
 import PageHeader from "../components/shell/PageHeader";
 import "./Puzzles.scss";
 import LichessPuzzles from "../components/puzzles/LichessPuzzles";

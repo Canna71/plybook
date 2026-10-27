@@ -13,13 +13,10 @@ import {
 import { makeGameInternal, Path } from "../../models/pgn";
 import { ShortcutsHelp, useShortcuts } from "./useShortcuts";
 import { GameModel } from "../../models/GameModel";
-import {
-    initFromGameModel,
-    otherColor,
-    useFen,
-    usePosition,
-    useSplitter,
-} from "../common/utils";
+import { otherColor } from "../../models/chessutil";
+import { useSplitter } from "../common/useSplitter";
+import { initFromGameModel } from "./gameInit";
+import { useFen, usePosition } from "./gamePosition";
 import { Color } from "chessground/types";
 import { INITIAL_FEN } from "chessops/fen";
 import {

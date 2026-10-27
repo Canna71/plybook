@@ -13,7 +13,7 @@ import { EngineInfo } from "../../engine/engineinterfaces";
 import { getSettingValue } from "../../models/settings";
 import { GameModel } from "../../models/GameModel";
 import { Path } from "../../models/pgn";
-import { makeArrowShape, makeConfig } from "../common/utils";
+import { makeArrowShape, makeConfig } from "../common/boardShapes";
 import { HintType } from "./GameContext";
 
 export type BoardConfigOptions = {

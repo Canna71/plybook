@@ -23,7 +23,7 @@ import { mistakesFolder } from "../storage/mistakes";
 import { recentFiles } from "../storage/recent";
 import { newGames } from "../online/autosync";
 import { baseName, NameWithoutExtension } from "../storage/fs";
-import { formatDate } from "../components/common/utils";
+import { formatDate } from "../models/format";
 import "./Home.scss";
 
 /** A data source that may fail: the page shows it as empty instead. */

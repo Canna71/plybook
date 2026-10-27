@@ -81,7 +81,8 @@ src/
                            toolbar + PanelSection sections), EvalBar, GameContext.tsx (shared signals),
                            useChessEngine.tsx (engine state), Moves/Ply (move tree), Review,
                            EngineControl, EngineInfoViewer, Comments, PgnEditBar, SidebarTabs
-  components/common/       chessboard wrapper, Menu, Modal, Alert, Select, MarkdownEditor, utils.tsx
+  components/common/       chessboard wrapper, Menu, Modal, Alert, Select, MarkdownEditor, boardShapes.ts
+                           (base board config, arrows, brushes), useSplitter, editing.ts, figurines.tsx
   components/boardeditor/  position editor
   components/shell/        app shell: CommandPalette (⌘K), PageHeader; the sidebar is Views/Sidebar.tsx,
                            its screens and groups in models/navigation.ts (a new screen goes there)
@@ -197,7 +198,10 @@ User data locations (resolved by Tauri from the bundle identifier):
   `components/common/chessboard.tsx` clears it at every press, because a board moved by the
   layout around it (a panel above it changing) would otherwise put moves on the wrong squares.
 - Paths in routes must be URL-encoded (`encodeURIComponent`) because file names can contain `&#?+`.
-- Known refactor target: split `components/common/utils.tsx`.
+- Small chess helpers (`makeMove`, `isPromotion`, `otherColor`, ...) are in `models/chessutil.ts`,
+  `formatDate` and `round` in `models/format.ts`, the position shown in a game
+  (`usePosition`, `useFen`) in `components/game/gamePosition.ts`. There is no `utils` grab-bag;
+  put a new helper next to what it is about.
 
 ## Roadmap
 

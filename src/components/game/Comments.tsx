@@ -1,6 +1,6 @@
 import { Accessor, Component, createEffect, useContext } from "solid-js";
 
-import { safePaste } from "../common/utils";
+import { safePaste } from "../common/editing";
 import { useContextMenu } from "../common/contextmenu";
 import { Path } from "../../models/pgn";
 import { GameContext } from "./GameContext";

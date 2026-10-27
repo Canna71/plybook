@@ -8,7 +8,8 @@ import {
 } from "solid-js";
 import Button from "../common/Button";
 import { GameContext } from "./GameContext";
-import { updateGameFromPgnString, useFen } from "../common/utils";
+import { updateGameFromPgnString } from "./gameInit";
+import { useFen } from "./gamePosition";
 import { StartingPositionIcon } from "../common/Icons";
 import {
     IconBrackets,
