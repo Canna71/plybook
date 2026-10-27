@@ -166,7 +166,12 @@ How this file is used:
       (no pawn can cover the square any more), said only as a cost of a bad move. Measured
       on real games (Lichess, 2013, CC0): hole-making pawn moves are worse than the other pawn
       moves of the same position in 69-72% of balanced positions, +3 points of loss; the
-      textbook d/e-file hole alone shows no signal (documented). Next: space.
+      textbook d/e-file hole alone shows no signal (documented).
+    - [x] Space (`feature/space`, 2026-10-28): a central pawn to the fifth rank that no enemy
+      pawn attacks gains space; better than the position's other pawn moves in 60-61% of
+      balanced positions (two batches), steadier than Stockfish's former space count (58-64%
+      at +3 squares, nothing below). Said as an interpretation among a good move's reasons.
+      Next: pawn breaks and the plans they open.
   - [ ] **P2.4g Study Chesserly** (owner's request 2026-10-27): read the source code and the
     ideas behind Chesserly, a free, open-source analysis platform (game review, move
     classification from Brilliant to Blunder, accuracy, openings; Vue, FastAPI, Stockfish,

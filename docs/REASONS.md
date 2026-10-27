@@ -274,7 +274,7 @@ fourth rank, c to f files, that none of its pawns can ever cover again (no pawn 
 file still behind it), not held by its own pawn. Its existence is a board fact; whether it
 matters is the question. Measured against the engine in ordinary positions from real games:
 the Lichess database, January 2013 ([database.lichess.org](https://database.lichess.org/),
-CC0), moves 9 and 17 of each game, balanced positions only (within ±2 pawns), every quiet pawn
+CC0), moves 10 and 18 of each game, balanced positions only (within ±2 pawns), every quiet pawn
 move searched at depth 10 with `searchmoves`, comparing the moves the rule says leave a hole with
 the other pawn moves of the same position. `STOCKFISH=… HOLES=2000 GAMES_PGN=… pnpm eval:reasons
 -t holes`. (Puzzle positions were tried first and are no good for this: they are the moment
@@ -292,6 +292,27 @@ shows nothing in these games, perhaps because such a hole usually comes with com
 Najdorf's ...e5). So a hole is said only as a cost: when the engine judged the move bad and no
 tactic explains it, "It leaves a hole on d5: no pawn can cover it any more". Pawn captures are
 left out (a trade made on purpose), as in the measurement.
+
+**Space (2026-10-28).** Measured as holes, the other way round: do the quiet pawn moves that
+gain space give away less than the other pawn moves of the same balanced position?
+`STOCKFISH=… SPACE=2000 GAMES_PGN=… pnpm eval:reasons -t space`. Two notions were tried: the
+count Stockfish's former hand-written evaluation used (`space()`: safe squares on the c to f
+files, second to fourth ranks, double behind the side's pawns), and the human one, a central
+pawn on the fifth rank that no enemy pawn attacks.
+
+| Rule | Batch 1 | Batch 2 | Moves |
+|---|---|---|---|
+| space() rises by 1 or more | 53% | 51% | ~47% of pawn moves |
+| … by 2 or more | 49% | 48% | ~30% |
+| … by 3 or more | 64% | 58% | ~4% |
+| Central pawn to the 5th rank, not attacked by a pawn (kept) | 61% | 60% | ~4% |
+
+(Percentages: how often those moves give away less than the position's other pawn moves.)
+Gaining a square or two means nothing; a real advance shows a modest, steady edge, about one to
+two points of winning chances, weaker than the bad bishop's. The fifth-rank pawn is kept, as
+the steadier of the two and the one a player recognises: "gains space: the pawn on e5 cramps
+the opponent's position, and no pawn of theirs attacks it", an interpretation among the good
+reasons of a move judged good.
 
 ## Plan
 
