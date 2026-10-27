@@ -221,3 +221,41 @@ describe("the bad bishop", () => {
         ).toEqual([]);
     });
 });
+
+describe("holes", () => {
+    const hole = (fen: string, uci: string) =>
+        positionalReasons(fen, uci)
+            .filter((r) => r.kind === "weakSquare")
+            .map((r) => `${r.good ? "+" : "-"} ${r.text}`);
+
+    it("the Najdorf's ...e5 leaves d5: no black pawn can cover it any more", () => {
+        // 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Be2, Black plays e5. d6 holds
+        // Black's own pawn: a backward pawn, not a hole
+        const fen =
+            "rnbqkb1r/1p2pppp/p2p1n2/8/3NP3/2N5/PPP1BPPP/R1BQK2R b KQkq - 1 6";
+        expect(hole(fen, "e7e5")).toEqual([
+            "- leaves a hole on d5: no pawn can cover it any more",
+        ]);
+    });
+
+    it("leaves nothing after quiet developing pawn moves", () => {
+        const start =
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        expect(hole(start, "e2e4")).toEqual([]);
+        expect(hole(start, "d2d4")).toEqual([]);
+    });
+
+    it("names the holes a flank push leaves behind", () => {
+        // ...g5 with the e-pawn already on e5: neither f6 nor f5 can be covered any more
+        const fen =
+            "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
+        expect(hole(fen, "g7g5")).toEqual([
+            "- leaves holes on f6 and f5: no pawn can cover them any more",
+        ]);
+    });
+
+    it("says nothing for a pawn capture, a trade made on purpose", () => {
+        // cxb5 in a pawn ending leaves c4 uncoverable, but the point is the capture
+        expect(hole("4k3/8/p7/1p6/2P5/8/8/4K3 w - - 0 30", "c4b5")).toEqual([]);
+    });
+});

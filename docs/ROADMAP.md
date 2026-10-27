@@ -161,7 +161,12 @@ How this file is used:
     - [x] The bad bishop (`feature/bad-bishop`, 2026-10-27): own pawns fixed on its colour,
       the bishop behind them with at most 3 squares; Stockfish values it below its partner in
       67-72% of puzzle positions (52-58% for fixed pawns alone), and its veto applies when piece
-      values are known. Details in `docs/REASONS.md`. Next: weak squares.
+      values are known. Details in `docs/REASONS.md`.
+    - [x] Weak squares (`feature/weak-squares`, 2026-10-27): a pawn move that leaves a hole
+      (no pawn can cover the square any more), said only as a cost of a bad move. Measured
+      on real games (Lichess, 2013, CC0): hole-making pawn moves are worse than the other pawn
+      moves of the same position in 69-72% of balanced positions, +3 points of loss; the
+      textbook d/e-file hole alone shows no signal (documented). Next: space.
   - [ ] **P2.4g Study Chesserly** (owner's request 2026-10-27): read the source code and the
     ideas behind Chesserly, a free, open-source analysis platform (game review, move
     classification from Brilliant to Blunder, accuracy, openings; Vue, FastAPI, Stockfish,
