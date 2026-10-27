@@ -43,7 +43,7 @@ const RESULT_TEXT: Record<GameResult, string> = {
 const TutorPanel: Component<{ tutor: Tutor }> = (props) => {
     const navigate = useNavigate();
     const recent = () => props.tutor.messages().slice(-RECENT).reverse();
-    const elo = () => getSettingValue<number>("tutor.elo", 1200);
+    const elo = () => getSettingValue("tutor.elo", 1200);
 
     /** A Lichess puzzle of the theme near your puzzle rating, as on the Puzzles page. */
     const train = async (theme: string) => {
@@ -130,9 +130,7 @@ const TutorPanel: Component<{ tutor: Tutor }> = (props) => {
                                 </For>
                             </div>
                         </Show>
-                        <Show
-                            when={getSettingValue<boolean>("tutor.auto", true)}
-                        >
+                        <Show when={getSettingValue("tutor.auto", true)}>
                             <p class="tutor-next">
                                 Your level for the next game: {elo()}.
                             </p>

@@ -10,7 +10,7 @@ import { IconBook, IconFileImport, IconScan } from "@tabler/icons-solidjs";
 import PageHeader from "../components/shell/PageHeader";
 import { makeToast } from "../components/common/Toast";
 import { bookshelf } from "../models/bookshelf";
-import { getSettingValue, ReaderPlace } from "../models/settings";
+import { getSettingValue } from "../models/settings";
 import { ago } from "../models/today";
 import { createNewDataFile } from "../storage/fs";
 import { LIBRARY_ROOT, listAllFiles, listScanned } from "../storage/library";
@@ -30,9 +30,8 @@ const Books = () => {
         bookshelf(
             pdfs() ?? [],
             sep(),
-            getSettingValue<Record<string, ReaderPlace>>("reader.places", {}) ??
-                {},
-            getSettingValue<Record<string, number>>("reader.pages", {}) ?? {},
+            getSettingValue("reader.places", {}),
+            getSettingValue("reader.pages", {}),
             recentFiles(),
             scanned() ?? new Map(),
         ),

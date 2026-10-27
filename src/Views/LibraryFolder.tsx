@@ -97,10 +97,7 @@ const LibraryFolder = () => {
     const title = () => folder().split(sep()).pop() ?? LIBRARY_ROOT;
 
     const [entries, { refetch }] = createResource(folder, listFolder);
-    const sort = () =>
-        getSettingValue<SortKey>(SORT_SETTING, "name") === "modified"
-            ? "modified"
-            : "name";
+    const sort = (): SortKey => getSettingValue(SORT_SETTING, "name");
     const sorted = createMemo(() => sortEntries(entries() ?? [], sort()));
 
     // search covers the whole Library, listed once a search starts

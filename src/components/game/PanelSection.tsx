@@ -8,8 +8,7 @@ import "./PanelSection.scss";
 
 const PANEL_SETTING = "layout.panel";
 
-const openStates = () =>
-    getSettingValue<Record<string, boolean>>(PANEL_SETTING, {}) ?? {};
+const openStates = () => getSettingValue(PANEL_SETTING, {});
 
 /** Whether a section is open (its own choice, else its default). */
 export const isSectionOpen = (id: string, byDefault = true) =>

@@ -3,8 +3,8 @@ import { getSettingValue, setSettingValue } from "../models/settings";
 
 export const RECENT_SETTING = "recent.files";
 
-export const recentFiles = () =>
-    getSettingValue<RecentFile[]>(RECENT_SETTING, []) ?? [];
+export const recentFiles = (): RecentFile[] =>
+    getSettingValue(RECENT_SETTING, []);
 
 /** Remembers that a Library file was opened, for Today's "Continue". */
 export function recordRecent(path: string, kind: RecentFile["kind"]) {

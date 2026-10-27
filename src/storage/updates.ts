@@ -52,7 +52,7 @@ export async function installUpdate(
 /** Checks a little after start, in built apps only (a dev build has no release to compare). */
 export function scheduleUpdateCheck(delay = 20_000) {
     if (import.meta.env.DEV) return;
-    if (!getSettingValue<boolean>(CHECK_UPDATES_SETTING, true)) return;
+    if (!getSettingValue(CHECK_UPDATES_SETTING, true)) return;
     setTimeout(() => {
         checkForUpdate()
             .then((update) => {

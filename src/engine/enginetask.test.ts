@@ -127,8 +127,10 @@ describe("searchPlan", () => {
     });
 
     it("reads the settings", () => {
-        const setting: Setting = <T>(key: string, fallback: T) =>
-            (key === "engine.analysis.multipv" ? 5 : fallback) as T;
+        const setting: Setting = (path, fallback) =>
+            path === "engine.analysis.multipv"
+                ? (5 as typeof fallback)
+                : fallback;
         expect(
             searchPlan({ kind: "analysis", fen: FEN }, {}, setting)?.options
                 .multipv,

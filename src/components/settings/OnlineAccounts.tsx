@@ -73,7 +73,7 @@ const OnlineAccounts: Component = () => {
             <label class="checkbox settings-help">
                 <input
                     type="checkbox"
-                    checked={getSettingValue<boolean>(AUTO_SYNC_SETTING, true)}
+                    checked={getSettingValue(AUTO_SYNC_SETTING, true)}
                     onChange={(e) =>
                         void setSettingValue(
                             AUTO_SYNC_SETTING,

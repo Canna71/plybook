@@ -136,7 +136,7 @@ const GameManager: Component<GameManagerOptions> = ({
     );
     /** Playing the tutor instead of the plain engine (setting tutor.on, Play screen) */
     const tutorOn = () =>
-        !!playingEngine && !!getSettingValue<boolean>(TUTOR_SETTING, false);
+        !!playingEngine && !!getSettingValue(TUTOR_SETTING, false);
 
     const [hintType, setHintType] = createSignal(HintType.None);
     const [hintMove, setHintMove] = createSignal<string | undefined>(undefined);

@@ -47,12 +47,9 @@ export function useGameClock(o: {
             setNow(t);
             if (playing) {
                 // a game with the tutor has no clock: take-backs and questions pause it
-                const tutor = getSettingValue<boolean>("tutor.on", false);
+                const tutor = getSettingValue("tutor.on", false);
                 const tc = parseTimeControl(
-                    tutor
-                        ? ""
-                        : (getSettingValue<string>(TIME_CONTROL_SETTING, "") ??
-                              ""),
+                    tutor ? "" : getSettingValue(TIME_CONTROL_SETTING, ""),
                 );
                 setClock(tc && startClock(tc, untrack(o.turn), t));
                 if (tc) o.onStart(tc);

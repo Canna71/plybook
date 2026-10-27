@@ -391,12 +391,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         setEngineInfo([]);
         searching = t;
         if (!eng || t.kind === "idle") return;
-        const plan = searchPlan(
-            t,
-            profile(),
-            <T,>(key: string, fallback: T) =>
-                getSettingValue<T>(key, fallback) ?? fallback,
-        );
+        const plan = searchPlan(t, profile(), getSettingValue);
         if (!plan) return;
         setHintMove(undefined);
         if (plan.strength) {
@@ -422,7 +417,7 @@ export function useChessEngine(options: ChessEngineOptions) {
             clock: untrack(() => options.clockTimes?.()),
         };
         // while the position is in the chosen book, the engine plays a book move
-        const book = getSettingValue<string>(ENGINE_BOOK_SETTING, "");
+        const book = getSettingValue(ENGINE_BOOK_SETTING, "");
         if (!book) {
             search(opts);
             return;

@@ -19,7 +19,7 @@ const Backups: Component = () => {
     const { refresh } = useContentContext();
     const [busy, setBusy] = createSignal(false);
     const [auto, setAuto] = createSignal(
-        getSettingValue<boolean>(AUTO_BACKUP_SETTING, true) ?? true,
+        getSettingValue(AUTO_BACKUP_SETTING, true),
     );
 
     const run = async (task: () => Promise<void>) => {

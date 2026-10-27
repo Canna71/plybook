@@ -21,7 +21,7 @@ const PREVIEW: Config = {
 const Appearance: Component = () => {
     const choice = (
         label: string,
-        key: string,
+        key: "themes.ui" | "themes.board" | "themes.pieces",
         fallback: string,
         options: { value: string; label: string }[],
     ) => (
@@ -29,7 +29,7 @@ const Appearance: Component = () => {
             <label class="label is-small">{label}</label>
             <div class="select is-small">
                 <select
-                    value={getSettingValue<string>(key, fallback)}
+                    value={getSettingValue(key, fallback)}
                     onChange={(e) =>
                         void setSettingValue(key, e.currentTarget.value)
                     }

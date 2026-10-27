@@ -17,7 +17,7 @@ const Updates: Component = () => {
     // undefined while not installing; a fraction (or NaN, size unknown) while downloading
     const [installing, setInstalling] = createSignal<number>();
     const [auto, setAuto] = createSignal(
-        getSettingValue<boolean>(CHECK_UPDATES_SETTING, true) ?? true,
+        getSettingValue(CHECK_UPDATES_SETTING, true),
     );
 
     const checkNow = async () => {

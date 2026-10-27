@@ -47,8 +47,7 @@ export type NewGame = {
     mistakes?: number;
 };
 
-export const newGames = () =>
-    getSettingValue<NewGame[]>(NEW_GAMES_SETTING, []) ?? [];
+export const newGames = (): NewGame[] => getSettingValue(NEW_GAMES_SETTING, []);
 
 const tag = (game: string, name: string) =>
     game.match(new RegExp(`^\\[${name} "([^"]*)"\\]`, "m"))?.[1] ?? "";
@@ -103,7 +102,7 @@ async function reviewInFile(
 
 /** Syncs the accounts that are due and reviews their newest new games. */
 export async function autoSync(): Promise<void> {
-    if (!getSettingValue<boolean>(AUTO_SYNC_SETTING, true)) return;
+    if (!getSettingValue(AUTO_SYNC_SETTING, true)) return;
     const now = Date.now();
     const accounts = getAccounts().filter((a) => due(a, now));
     const fresh: { file: string; key: string; account: OnlineAccount }[] = [];

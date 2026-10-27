@@ -24,8 +24,8 @@ export const SITE_LABELS: Record<OnlineSite, string> = {
 const ACCOUNTS_KEY = "online.accounts";
 const MONTH_FILE = /^(\d{4}-\d{2})\.pgn$/;
 
-export const getAccounts = () =>
-    getSettingValue<OnlineAccount[]>(ACCOUNTS_KEY) ?? [];
+export const getAccounts = (): OnlineAccount[] =>
+    getSettingValue(ACCOUNTS_KEY, []);
 
 const sameAccount = (a: OnlineAccount, b: OnlineAccount) =>
     a.site === b.site && a.username === b.username;

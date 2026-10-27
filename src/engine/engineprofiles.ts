@@ -36,7 +36,7 @@ export { profiles, refetchProfiles };
 /** The profile selected in the settings, or the first one that can run. */
 export function activeProfile(): EngineProfile | undefined {
     const all = profiles();
-    const wanted = getSettingValue<string>("engine.lastUsed", "");
+    const wanted = getSettingValue("engine.lastUsed", "");
     return (
         all.find((p) => p.id === wanted && !p.missing) ??
         all.find((p) => !p.missing)
@@ -117,7 +117,7 @@ export const HUMAN_SETTING = "engine.human";
 
 /** The Maia-style (one node) profile that shows what humans would play, if any. */
 export function humanProfile(): EngineProfile | undefined {
-    const wanted = getSettingValue<string>(HUMAN_SETTING, "");
+    const wanted = getSettingValue(HUMAN_SETTING, "");
     if (wanted === "off") return undefined;
     const candidates = profiles().filter((p) => p.singleNode && !p.missing);
     return candidates.find((p) => p.id === wanted) ?? candidates[0];
@@ -133,6 +133,6 @@ export const ANALYSIS_ENGINE_SETTING = "engine.analysisProfile";
  */
 export function analysisProfile(): EngineProfile | undefined {
     const strong = profiles().filter((p) => !p.singleNode && !p.missing);
-    const wanted = getSettingValue<string>(ANALYSIS_ENGINE_SETTING, "");
+    const wanted = getSettingValue(ANALYSIS_ENGINE_SETTING, "");
     return strong.find((p) => p.id === wanted) ?? strong[0];
 }

@@ -48,8 +48,7 @@ const ICONS: Record<string, () => JSX.Element> = {
 
 const COLLAPSED = "layout.sidebarCollapsed";
 
-export const sidebarCollapsed = () =>
-    !!getSettingValue<boolean>(COLLAPSED, false);
+export const sidebarCollapsed = () => getSettingValue(COLLAPSED, false);
 
 const isMac = navigator.platform.toUpperCase().includes("MAC");
 

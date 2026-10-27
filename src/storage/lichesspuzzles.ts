@@ -35,7 +35,7 @@ export const recordPuzzleAttempt = (id: string, solved: boolean) =>
 /** A puzzle not tried yet, of the chosen theme, near the player's rating. */
 export async function pickNextLichessPuzzle(theme?: string) {
     const { rating } = await puzzleStats();
-    const chosen = theme ?? getSettingValue<string>(THEME_SETTING, "");
+    const chosen = theme ?? getSettingValue(THEME_SETTING, "");
     return (
         (await invoke<LichessPuzzle | null>("lichess_puzzle_pick", {
             theme: chosen || null,

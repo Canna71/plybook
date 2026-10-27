@@ -470,7 +470,12 @@ How this file is used:
   threat, analysis, play) and its search, with tests; a bestmove is handled by the task its
   search was started for, so an engine move that arrives after the game stopped or the
   position changed is dropped.
-- Typed settings schema (when adding new settings).
+- [x] Typed settings schema (`feature/typed-settings`, 2026-10-27): `getSettingValue` and
+  `setSettingValue` take only paths of `AppSettings` and return or take that path's type
+  (`SettingPath`, `SettingValue` in settings.ts); the casts at call sites are gone. Four keys
+  in use were missing from the interface (`engine.threads`, the two movetimes,
+  `layout.panel`); their defaults are now in DEFAULT, which fixes the move-time sliders
+  showing 1 s on a fresh install while the engine used 10 s.
 - Split `components/common/utils.tsx`.
 - Delete dead code listed in CLAUDE.md.
 
