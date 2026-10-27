@@ -22,6 +22,7 @@ import {
 } from "./threats";
 import { nullMoveFen } from "../models/threat";
 import { Uci } from "./uci.eval-helper";
+import { parsePieceValues } from "../engine/piecevalues";
 
 const CSV = process.env.PUZZLES_CSV;
 const LIMIT = Number(process.env.PUZZLES_LIMIT ?? 20_000);
@@ -161,17 +162,29 @@ const PGN_FILE = process.env.PGN_FILE;
 /**
  * R3 check by hand: an annotated game (PGN_FILE), each main-line move with the annotator's
  * comment next to the positional reasons found for it. No tags exist for positional ideas.
+ * With STOCKFISH, its piece values are used too.
  */
 it.skipIf(!PGN_FILE || !existsSync(PGN_FILE ?? ""))(
     "positional, by hand",
-    () => {
+    async () => {
+        const engine = process.env.STOCKFISH
+            ? new Uci(process.env.STOCKFISH)
+            : undefined;
+        await engine?.init();
+        const valuesAt = async (fen: string) =>
+            engine && parsePieceValues(await engine.evalLines(fen));
         for (const game of parsePgn(readFileSync(PGN_FILE!, "utf8"))) {
             const pos = startingPosition(game.headers).unwrap();
             for (const node of game.moves.mainline()) {
                 const move = parseSan(pos, node.san);
                 if (!move) break;
                 const fen = makeFen(pos.toSetup());
-                const reasons = positionalReasons(fen, makeUci(move));
+                const after = pos.clone();
+                after.play(move);
+                const reasons = positionalReasons(fen, makeUci(move), {
+                    before: await valuesAt(fen),
+                    after: await valuesAt(makeFen(after.toSetup())),
+                });
                 const comment = (node.comments ?? [])
                     .join(" ")
                     .replace(/\[%[^\]]*\]|%EMPTY%/g, "")
@@ -184,6 +197,7 @@ it.skipIf(!PGN_FILE || !existsSync(PGN_FILE ?? ""))(
                 pos.play(move);
             }
         }
+        engine?.quit();
     },
 );
 

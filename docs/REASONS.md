@@ -217,8 +217,31 @@ develops the knight" next to "This move develops his Knight". Taken out after th
 doubled pawns (a move doubles only its own pawns, by a capture that is usually a fair trade),
 "the centre" and "activates" for captures (trades, not claims), an early queen "activated"
 (the book's point is that it gets chased), the pawn shield in queenless endgames, and a
-rook's "activates" when its open file is already said. Not done yet: SF17 piece values (the
-`eval` command), mobility of the whole army, space, weak squares.
+rook's "activates" when its open file is already said. Not done yet: mobility of the whole
+army, space, weak squares.
+
+**SF17 piece values (2026-10-27).** With Stockfish as the analysis engine, the explainer sends
+`eval` for the positions before and after the move (`engine/piecevalues.ts` parses the "NNUE
+derived piece values" table; other engines are not asked, and anything unexpected gives no
+values). The moved piece (not a pawn or the king, not a capture: a piece about to be taken
+back is worth little where it stands) gets "improves the knight: Stockfish's piece values put
+it 2.1 higher on d5 than on e3", or "puts the knight on a worse square", and that replaces
+"activates". Findings that shaped it:
+- The values move with whose turn it is and with the whole position: after 1.e4 e5 2.Na3
+  every White piece rises about 7%, the queen 8.6 → 10.4, the knight 3.9 → 4.2 with them. So
+  the moved piece is measured against its side's other pieces (scaled by how much they
+  changed), and Na3 is rightly no change.
+- Captures were the nonsense (Bxd5 "worse" before the recapture, Qxh6 "8.5 higher" in a queen
+  trade): left out.
+- "Its worst piece" by value over a nominal 3/3/5/9 always picked the queen (NNUE gives it
+  about 9, the minor pieces about 4): the scale is Stockfish's own (knight 4, bishop 4.3, rook
+  5.3) and the queen is never called the worst piece.
+- A fixed threshold made every rook move in a rook ending an improvement: a change counts at
+  15% of the piece's usual value (knight 0.6, rook 0.8). On the Capablanca game it speaks on
+  11 of 92 moves (15.Nd5 2.1 higher, 28.Rfd1 on the open file and 1.8 higher), on a long rook
+  ending on 28 of about 160.
+`STOCKFISH=… PGN_FILE=… pnpm eval:reasons -t positional` prints them next to the annotator's
+comments.
 
 ## Plan
 

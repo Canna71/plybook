@@ -9,7 +9,7 @@ import { Fact, factsFromFen } from "./facts";
 import { MoveClass } from "./review";
 import { describeOutcome, lineOutcome } from "./whatif";
 import { describeIdea, LineIdea, lineIdea } from "../reasons/threats";
-import { positionalReasons } from "../reasons/positional";
+import { MoveValues, positionalReasons } from "../reasons/positional";
 
 export type ExplainInput = {
     /** The position before the move */
@@ -25,6 +25,8 @@ export type ExplainInput = {
     replyPv?: string[];
     /** What the move stops and threatens (engine/threatsearch.ts), when searched */
     threats?: { stopped?: LineIdea; created?: LineIdea };
+    /** Stockfish's piece values before and after the move, when the engine is Stockfish */
+    values?: MoveValues;
 };
 
 const SIDE = { white: "White", black: "Black" };
@@ -233,7 +235,11 @@ export function explainMove(input: ExplainInput): string[] {
     }
 
     // the positional side (no engine): development, files, pawns, the king's shelter
-    const positional = positionalReasons(input.fenBefore, input.uci);
+    const positional = positionalReasons(
+        input.fenBefore,
+        input.uci,
+        input.values,
+    );
     if (!bad) {
         const good = positional.filter((r) => r.good).slice(0, 2);
         if (good.length) {

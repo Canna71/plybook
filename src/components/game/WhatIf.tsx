@@ -1,5 +1,5 @@
 import { Component, createResource, Show, untrack, useContext } from "solid-js";
-import { explainThreats } from "../../engine/explainer";
+import { explainPieceValues, explainThreats } from "../../engine/explainer";
 import BoardText from "./BoardText";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import { PlyData } from "../../models/pgn";
@@ -83,6 +83,19 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
             ),
     );
 
+    // Stockfish's piece values before and after the move (nothing for other engines)
+    const [values] = createResource(
+        () => {
+            const m = move();
+            const b = before();
+            return m && b ? { fenBefore: b.fen, fenAfter: m.fen } : undefined;
+        },
+        async ({ fenBefore, fenAfter }) => ({
+            before: await explainPieceValues(fenBefore),
+            after: await explainPieceValues(fenAfter),
+        }),
+    );
+
     // why, in words: facts, ideas, the opponent's answer and the better move
     const explanation = () => {
         const m = move();
@@ -98,6 +111,7 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
             bestPv: lineAt(b.fen),
             replyPv: best()?.pv,
             threats: threats.latest,
+            values: values.latest,
         });
     };
     const isBad = () =>

@@ -54,6 +54,12 @@ export class Uci {
         return last ? last.split(" pv ")[1].trim().split(/\s+/) : [];
     }
 
+    /** Stockfish's `eval` output for `fen` (its NNUE piece values table among it). */
+    async evalLines(fen: string): Promise<string[]> {
+        await this.send(`position fen ${fen}`);
+        return this.send("eval", /^Final evaluation/);
+    }
+
     quit() {
         this.proc.stdin.write("quit\n");
     }
