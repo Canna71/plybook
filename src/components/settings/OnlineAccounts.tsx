@@ -3,6 +3,8 @@ import { useNavigate } from "@solidjs/router";
 import anylogger from "anylogger";
 import Button from "../common/Button";
 import { makeErrorToast, makeToast } from "../common/Toast";
+import { getSettingValue, setSettingValue } from "../../models/settings";
+import { AUTO_SYNC_SETTING } from "../../online/autosync";
 import {
     accountFolder,
     addAccount,
@@ -68,6 +70,20 @@ const OnlineAccounts: Component = () => {
                 adds new games and keeps your notes. A first sync of a large
                 Lichess account can take a few minutes.
             </p>
+            <label class="checkbox settings-help">
+                <input
+                    type="checkbox"
+                    checked={getSettingValue<boolean>(AUTO_SYNC_SETTING, true)}
+                    onChange={(e) =>
+                        void setSettingValue(
+                            AUTO_SYNC_SETTING,
+                            e.currentTarget.checked,
+                        )
+                    }
+                />{" "}
+                Sync on start (at most every 6 hours) and review the newest new
+                games in the background; they show on Today with your mistakes.
+            </label>
 
             <Show when={getAccounts().length > 0}>
                 <table class="table is-fullwidth is-narrow accounts-table">

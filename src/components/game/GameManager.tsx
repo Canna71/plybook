@@ -81,6 +81,8 @@ export type GameManagerOptions = {
     playingEngine?: boolean;
     defaultEngineAnalysisOn?: boolean;
     initialFen?: string;
+    /** In a file of several games, the one to show first (from 0) */
+    initialGameIndex?: number;
     onPuzzleFinished?: (
         solved: boolean,
         hintUsed: number,
@@ -151,6 +153,7 @@ const GameManager: Component<GameManagerOptions> = ({
     setPgn,
     playingEngine,
     initialFen,
+    initialGameIndex,
     onPuzzleFinished,
     editable,
     defaultEngineAnalysisOn = false,
@@ -188,7 +191,7 @@ const GameManager: Component<GameManagerOptions> = ({
     const [isEditingDescription, setIsEditingDescription] = createSignal(false);
 
     const [viewMode, setViewMode] = createSignal<ViewMode>(ViewMode.MOVES);
-    const [gameIndex, setGameIndex] = createSignal(0);
+    const [gameIndex, setGameIndex] = createSignal(initialGameIndex ?? 0);
 
     const [engineColor, setEngineColor] = createSignal<Color | undefined>(
         undefined,

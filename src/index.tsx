@@ -4,11 +4,15 @@ import App from "./App";
 import { initStorage } from "./storage/fs";
 import { initDB } from "./storage/db";
 import { scheduleAutoBackup } from "./storage/backup";
+import { scheduleAutoSync } from "./online/autosync";
 import "ulog";
 
 await initStorage();
 // not awaited: the UI can render while the database opens
-initDB().then(() => scheduleAutoBackup());
+initDB().then(() => {
+    scheduleAutoBackup();
+    scheduleAutoSync();
+});
 
 document.getElementById("root")!.innerHTML = "";
 render(

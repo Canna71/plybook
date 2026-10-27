@@ -220,6 +220,19 @@ export const mainline = (game: GameModel): ReviewNode[] => [
     ...game.mainline,
 ];
 
+/** Adds ?!, ? and ?? to the moves the review flags, unless the user annotated them. */
+export function annotateMistakes(game: GameModel): GameModel {
+    let g = game;
+    for (const move of reviewLine(mainline(g))) {
+        const nag = CLASS_NAGS[move.class];
+        const data = g.dataAt(move.path);
+        if (nag && data && "nags" in data && data.nags.length === 0) {
+            g = g.annotate(move.path, nag);
+        }
+    }
+    return g;
+}
+
 /** White's win % for every evaluated position of the line, for the graph. */
 export const winCurve = (nodes: ReviewNode[]) =>
     nodes.map((node) => ({ path: node.path, win: whiteWin(node) }));

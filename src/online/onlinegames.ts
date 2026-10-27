@@ -86,7 +86,12 @@ async function monthFiles(folder: string) {
         .sort();
 }
 
-export type SyncResult = { added: number; months: number };
+export type SyncResult = {
+    added: number;
+    months: number;
+    /** The new games: the month file they went to and their key there (gameKey) */
+    games: { file: string; key: string }[];
+};
 
 /**
  * Downloads the games since the latest month already on disk. Games already in a month file
@@ -114,6 +119,7 @@ export async function syncAccount(account: OnlineAccount): Promise<SyncResult> {
     }
 
     let added = 0;
+    const newGames: SyncResult["games"] = [];
     for (const [month, games] of byMonth) {
         const file = await join(folder, `${month}.pgn`);
         const existing = (await exists(file, {
@@ -128,6 +134,7 @@ export async function syncAccount(account: OnlineAccount): Promise<SyncResult> {
         if (fresh.length === 0) continue;
         await writeDataFile(file, [...existing, ...fresh].join("\n\n") + "\n");
         added += fresh.length;
+        newGames.push(...fresh.map((game) => ({ file, key: gameKey(game) })));
     }
 
     log.info(
@@ -141,5 +148,5 @@ export async function syncAccount(account: OnlineAccount): Promise<SyncResult> {
                 : a,
         ),
     );
-    return { added, months: byMonth.size };
+    return { added, months: byMonth.size, games: newGames };
 }

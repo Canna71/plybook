@@ -491,6 +491,11 @@ const GameView = () => {
             </nav>
             <GameManager
                 initalPgn={originalPgn}
+                initialGameIndex={
+                    typeof searchParams.game === "string"
+                        ? Math.max(0, +searchParams.game || 0)
+                        : undefined
+                }
                 setPgn={setNewPgn}
                 onPuzzleFinished={isPuzzleMode() ? onPuzzleFinished : undefined}
                 editable={isEditable}

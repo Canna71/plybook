@@ -127,6 +127,17 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Auto sync and review, P1.4 (branch feature/auto-sync)
+
+- [ ] **Add an account** (Settings → Accounts) and play a game online; restart ReChess after
+      6 hours (or remove `lastSync` from the account in settings.json): about 15 s after
+      start, "N new games from Lichess: reviewing them in the background", then "Reviewed N
+      new games: M mistakes to look at on Today".
+- [ ] **Today → New online games**: the games with your mistakes; a click opens that game in
+      its month file (not the month's first game), with the ?/?? marks and the review graph.
+- [ ] **Your notes survive**: a note added to an online game before a sync is still there.
+- [ ] **Switch off** the "Sync on start" box: nothing happens on the next start.
+
 ## Tutor mode, P2.9 T1–T3 (branch feature/tutor)
 
 - [ ] **Turn it on**: Play → tick Tutor, choose your level and what it asks about; the time

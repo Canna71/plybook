@@ -61,8 +61,17 @@ How this file is used:
     account name or "Player"). Puzzles view: "Train my mistakes"; Next Puzzle stays in the set.
   - Known limits: only the engine's exact move is accepted (another equally good move counts as
     wrong); evals imported without a best move need Analyze Game first.
-- [ ] **P1.4 Auto sync and review** (optional): sync accounts on startup and review new games
+- [x] **P1.4 Auto sync and review** (optional): sync accounts on startup and review new games
   in the background.
+  - Status 2026-10-27 (`feature/auto-sync`): 15 s after start, accounts not synced for 6 hours
+    sync (`online/autosync.ts`, setting `online.autoSync`, on by default, switch in Settings →
+    Accounts); the newest 5 new games are reviewed one by one on the explainer engine (depth
+    12 or 0.3 s a position, `engine/backgroundreview.ts`, tested): evaluations and ?!/?/??
+    go into the month file, as a review on the board writes them, replacing only that game
+    (the file is read again just before). Today lists them under "New online games" with
+    your mistakes; a click opens that game (`/game?path=…&game=N`, a new URL parameter).
+    Toasts say how many games came and how many mistakes the review found.
+  - Not tried with a real account here (the owner's settings have none).
 
 - [x] **Fix: played games in History** (`feature/play-history`): saved after every move under
   the game's Timestamp, openable from History, result written at checkmate/stalemate.
