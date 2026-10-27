@@ -1,4 +1,14 @@
-import { Component, createResource, Show, untrack, useContext } from "solid-js";
+import {
+    Component,
+    createResource,
+    createSignal,
+    Show,
+    untrack,
+    useContext,
+} from "solid-js";
+import { modelStatus, rephrase } from "../../storage/model";
+import { inventedChess } from "../../models/coach";
+import { makeErrorToast } from "../common/Toast";
 import { explainPieceValues, explainThreats } from "../../engine/explainer";
 import BoardText from "./BoardText";
 import { EngineInfo } from "../../engine/engineinterfaces";
@@ -117,6 +127,38 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
     const isBad = () =>
         ["inaccuracy", "mistake", "blunder"].includes(verdict()?.class ?? "");
 
+    // the explanation worded by the model, on request (P2.4b); it belongs to the text it came
+    // from, so a new move or a deeper analysis shows the button again
+    const explanationText = () => explanation().join(" ");
+    const [coached, setCoached] = createSignal<{
+        from: string;
+        text: string;
+    }>();
+    const [coaching, setCoaching] = createSignal(false);
+    const coach = async () => {
+        const from = explanationText();
+        setCoaching(true);
+        try {
+            const text = await rephrase(from);
+            const invented = inventedChess(from, text);
+            if (invented.length) {
+                makeErrorToast(
+                    `The model added moves of its own (${invented.join(", ")}), so its wording is not shown.`,
+                );
+            } else {
+                setCoached({ from, text });
+            }
+        } catch (err) {
+            makeErrorToast(String(err));
+        } finally {
+            setCoaching(false);
+        }
+    };
+    const coachText = () => {
+        const c = coached();
+        return c && c.from === explanationText() ? c.text : undefined;
+    };
+
     return (
         <Show when={move()}>
             <div class="what-if">
@@ -142,6 +184,33 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
                             }
                         />
                     </div>
+                    <Show when={modelStatus()?.provider}>
+                        <Show
+                            when={coachText()}
+                            fallback={
+                                <button
+                                    class={`button is-small is-text what-if-coach-button ${coaching() ? "is-loading" : ""}`}
+                                    disabled={coaching()}
+                                    onClick={coach}
+                                >
+                                    Say it as a coach
+                                </button>
+                            }
+                        >
+                            {(text) => (
+                                <div class="what-if-coach">
+                                    <BoardText
+                                        text={text()}
+                                        fens={() =>
+                                            [before()?.fen, move()?.fen].filter(
+                                                (f): f is string => !!f,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            )}
+                        </Show>
+                    </Show>
                 </Show>
                 {/* a bad move's explanation already follows the reply line */}
                 <Show when={!isBad() && outcome()?.sans.length}>

@@ -28,7 +28,8 @@ impl Site {
     }
 }
 
-fn client() -> Result<reqwest::Client, String> {
+/// The HTTP client every request uses (also model.rs, for the explanation model).
+pub(crate) fn client() -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
         .user_agent(USER_AGENT)
         .connect_timeout(Duration::from_secs(15))

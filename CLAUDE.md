@@ -114,6 +114,9 @@ src-tauri/src/
   secrets.rs               API tokens in the OS keychain, never returned to the webview
   books.rs                 Polyglot opening books (binary search on disk) in <AppLocalData>/Books
   net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts
+  model.rs                 the optional explanation model (P2.4b): Anthropic or an OpenAI-compatible
+                           endpoint, fixed system prompt; provider, endpoint and key are one keychain
+                           entry, so a key is only sent where it was entered (uses net.rs's client)
   engine.rs                engine process management (engine_list/spawn/write/kill) + open_library_path
   export.rs                export_save: save dialog + write for exported images/GIFs (raw bytes body)
   backup.rs                backups (zip of Library, settings, the user's own tables), restore, daily auto

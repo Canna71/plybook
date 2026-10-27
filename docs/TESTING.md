@@ -127,6 +127,21 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Explanations worded by a model, P2.4b (branch feature/model-explanations)
+
+Checked in the dev app with Ollama's qwen2.5:7b (local, no key): Settings → Explanations, Try
+it, and "Say it as a coach" under 15.Nd5's explanation. The test setup was removed afterwards.
+
+- [ ] **Anthropic**: Settings → Explanations → Anthropic, paste your API key, Save, Try it.
+      Then under an explanation, "Say it as a coach": a short italic paragraph that keeps the
+      moves (bold, highlighting on hover). Try claude-haiku-5-5 too (far cheaper): good enough?
+- [ ] **The key stays put**: after saving, the key field says it is saved and is empty; Forget
+      removes it (the button disappears from explanations).
+- [ ] **Errors**: a wrong key says "The API key was not accepted"; Ollama stopped says it could
+      not reach the provider.
+- [ ] **A built app** (CSP): the requests go through Rust, so nothing should change, but check
+      once in `pnpm build:mac`.
+
 ## Pins and Stockfish's piece values in explanations (branch feature/reasons-pins-values)
 
 Checked in the dev app: 15.Nd5 in the Capablanca game (TestData/01.pgn) says "It also
