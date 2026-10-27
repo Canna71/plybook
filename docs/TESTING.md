@@ -127,6 +127,15 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## GameManager split (branch feature/split-gamemanager)
+
+Checked in the dev app: analysis moves and engine arrows, a puzzle (right move, the reply,
+a wrong move with the refutation arrow, Try again), Play with the tutor as Black, promotion.
+
+- [ ] **PDF reader notes** (the compact board): moves and arrows work, and the arrow keys
+      move through the notes only after a click inside them.
+- [ ] **A clocked game** (tutor off, a time control): both clocks run and a flag ends the game.
+
 ## App auto-update, X.1 (branch feature/auto-update)
 
 Needs the one-time setup in the README (Releases and updates): the key, the secrets, a public

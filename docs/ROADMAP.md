@@ -461,7 +461,10 @@ How this file is used:
 
 ## Known refactor targets (do them when touching the code)
 
-- Split `GameManager.tsx` (when adding review/explanation panels).
+- [x] Split `GameManager.tsx` (`feature/split-gamemanager`, 2026-10-27): puzzle mode in
+  `usePuzzle`, the board config in `boardConfig.ts`, moves and promotion in `useMoveInput`,
+  the parent API in `gameApi.ts`, the board column in `BoardArea.tsx`; GameManager keeps
+  the state, the PGN sync, the engine, clock and tutor wiring (1117 → 675 lines).
 - `useChessEngine` as an explicit state machine (when adding background review).
 - Typed settings schema (when adding new settings).
 - Split `components/common/utils.tsx`.

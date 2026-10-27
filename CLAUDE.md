@@ -75,7 +75,9 @@ src/
                            Play, Puzzles, History, LibraryFolder, Books, Sidebar, Layout.
   components/game/         useTutor.tsx + TutorPanel.tsx (the tutor in Play: plays through the explainer
                            engine, decisions in models/tutor.ts),
-                           GameManager.tsx (the hub: state, board area), AnalysisPanel.tsx (the panel:
+                           GameManager.tsx (the hub: state, PGN sync, engine/clock/tutor wiring) with
+                           BoardArea.tsx (board column), boardConfig.ts (chessground config),
+                           usePuzzle.ts, useMoveInput.ts, gameApi.ts; AnalysisPanel.tsx (the panel:
                            toolbar + PanelSection sections), EvalBar, GameContext.tsx (shared signals),
                            useChessEngine.tsx (engine state), Moves/Ply (move tree), Review,
                            EngineControl, EngineInfoViewer, Comments, PgnEditBar, SidebarTabs
@@ -191,7 +193,7 @@ User data locations (resolved by Tauri from the bundle identifier):
   `components/common/chessboard.tsx` clears it at every press, because a board moved by the
   layout around it (a panel above it changing) would otherwise put moves on the wrong squares.
 - Paths in routes must be URL-encoded (`encodeURIComponent`) because file names can contain `&#?+`.
-- Known refactor targets: split `GameManager.tsx`, make `useChessEngine` an explicit state machine,
+- Known refactor targets: make `useChessEngine` an explicit state machine,
   a typed settings schema, split `components/common/utils.tsx`, add Vitest + Rust CI.
 
 ## Roadmap
