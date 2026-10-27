@@ -10,7 +10,7 @@ import {
 import showdown from "showdown";
 import DOMPurify from "dompurify";
 import { GameContext } from "../game/GameContext";
-import { initFromGameModel } from "./utils";
+import { initFromGameModel } from "../game/gameInit";
 
 const SEPARATOR = "§§§";
 

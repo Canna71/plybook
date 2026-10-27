@@ -8,7 +8,7 @@ import { NormalMove, Position } from "chessops";
 import anylogger from "anylogger";
 import { GameModel } from "../../models/GameModel";
 import { Path } from "../../models/pgn";
-import { moveEquals } from "../common/utils";
+import { moveEquals } from "../../models/chessutil";
 import { HintType } from "./GameContext";
 import { TrainerStatus } from "./TrainerPanel";
 const log = anylogger("puzzle");

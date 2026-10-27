@@ -10,7 +10,8 @@ import { EngineInfo } from "../../engine/engineinterfaces";
 import "./EngineInfoViewer.scss"; // Create and import your custom styles
 import { GameContext } from "./GameContext";
 import { Path, PlyData, sanToFan } from "../../models/pgn";
-import { toColor, useFenTooltip } from "../common/utils";
+import { toColor } from "../../models/chessutil";
+import { useFenTooltip } from "./useTooltip";
 import { makeUci, parseUci, Position } from "chessops";
 import { makeFen, parseFen } from "chessops/fen";
 import { Chess } from "chessops";

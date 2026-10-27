@@ -15,7 +15,7 @@ import { Key } from "chessground/types";
 import { Chessboard } from "../components/common/chessboard";
 import Button from "../components/common/Button";
 import TrainerPanel, { TrainerStatus } from "../components/game/TrainerPanel";
-import { drawBrushes } from "../components/common/utils";
+import { drawBrushes } from "../components/common/boardShapes";
 import {
     Card,
     counts,

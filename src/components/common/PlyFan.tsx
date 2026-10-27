@@ -3,7 +3,7 @@ import { Component, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { isPiece } from "../../models/pgn";
 
-import { getFigurine } from "./utils";
+import { getFigurine } from "./figurines";
 
 export const PlyFan: Component<{ san: string; color: Color }> = ({
     san,

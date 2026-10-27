@@ -1,6 +1,6 @@
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
 import "./Editable.scss";
-import { selectAll } from "./utils";
+import { selectAll } from "./editing";
 
 export type EditableProps = {
     initialValue: string;

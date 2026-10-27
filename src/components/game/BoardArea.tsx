@@ -7,7 +7,7 @@ import { Config } from "chessground/config";
 import { Color, Key, Role } from "chessground/types";
 import { Evaluation } from "chessops/pgn";
 import { Chessboard } from "../common/chessboard";
-import { otherColor } from "../common/utils";
+import { otherColor } from "../../models/chessutil";
 import BoardEditor from "../boardeditor/BoardEditor";
 import PlayerName from "../boardeditor/PlayerName";
 import { GameContext } from "./GameContext";

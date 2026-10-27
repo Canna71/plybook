@@ -476,8 +476,14 @@ How this file is used:
   in use were missing from the interface (`engine.threads`, the two movetimes,
   `layout.panel`); their defaults are now in DEFAULT, which fixes the move-time sliders
   showing 1 s on a fresh install while the engine used 10 s.
-- Split `components/common/utils.tsx`.
-- Delete dead code listed in CLAUDE.md.
+- [x] Split `components/common/utils.tsx` (`feature/split-utils`, 2026-10-27): chess helpers
+  in `models/chessutil.ts` and formatting in `models/format.ts` (both tested), the board's
+  base config and shapes in `common/boardShapes.ts`, the position shown in
+  `game/gamePosition.ts`, loading a game in `game/gameInit.ts`, `useSplitter`, `editing.ts`
+  (paste, select all), `figurines.tsx`, and `useFenTooltip` beside `useTooltip`. Unused
+  helpers dropped (`toDests`, `toOrientation`).
+- [x] Delete dead code listed in CLAUDE.md (already gone: `Views/obsoleted`, `GameEditView`,
+  `components/Analysis.tsx`, `FENcoder.ts`, the Rust `greet`; checked 2026-10-27).
 
 ## UX overhaul (requested 2026-10-24, after the feature work above)
 

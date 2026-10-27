@@ -21,7 +21,7 @@ import {
     analysisProfile,
     startEngine,
 } from "../../engine/engineprofiles";
-import { makeMove } from "../common/utils";
+import { makeMove } from "../../models/chessutil";
 import { makeErrorToast } from "../common/Toast";
 import { Color } from "chessground/types";
 import { GameModel } from "../../models/GameModel";

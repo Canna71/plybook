@@ -6,7 +6,7 @@ import { Color, Key, Role } from "chessground/types";
 import { NormalMove, Position } from "chessops";
 import anylogger from "anylogger";
 import { GameModel } from "../../models/GameModel";
-import { isPromotion, makeMove } from "../common/utils";
+import { isPromotion, makeMove } from "../../models/chessutil";
 const log = anylogger("moveinput");
 
 type Promotion = {

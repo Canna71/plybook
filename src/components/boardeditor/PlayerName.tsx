@@ -3,7 +3,7 @@ import { Accessor, Component, createMemo, Show, useContext } from "solid-js";
 import { GameContext } from "../game/GameContext";
 import { Color } from "chessops";
 import Editable from "../common/Editable";
-import { getPosition } from "../common/utils";
+import { getPosition } from "../game/gamePosition";
 import MaterialWon from "../game/Material";
 import "./PlayerName.scss";
 import { getTheme } from "../../theming/thememanager";
