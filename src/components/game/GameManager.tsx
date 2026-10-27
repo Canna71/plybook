@@ -1,4 +1,3 @@
-import { Chessboard } from "../common/chessboard";
 import {
     Accessor,
     batch,
@@ -6,37 +5,23 @@ import {
     createEffect,
     createMemo,
     createSignal,
-    Match,
-    on,
     onCleanup,
     onMount,
-    Setter,
     Show,
-    Signal,
-    Switch,
     untrack,
 } from "solid-js";
 import { makeGameInternal, Path } from "../../models/pgn";
-import { movesFromText } from "../../models/booktext";
 import { ShortcutsHelp, useShortcuts } from "./useShortcuts";
-import { makeSanVariation } from "chessops/san";
 import { GameModel } from "../../models/GameModel";
 import {
     initFromGameModel,
-    isPromotion,
-    makeArrowShape,
-    makeConfig,
-    makeMove,
-    moveEquals,
     otherColor,
     useFen,
     usePosition,
     useSplitter,
 } from "../common/utils";
-import { Color, Key, Piece, Role, SquareClasses } from "chessground/types";
-import { chessgroundDests } from "chessops/compat";
-import BoardEditor from "../boardeditor/BoardEditor";
-import { INITIAL_FEN, makeFen } from "chessops/fen";
+import { Color } from "chessground/types";
+import { INITIAL_FEN } from "chessops/fen";
 import {
     GameContext,
     GameContextType,
@@ -44,9 +29,7 @@ import {
     TooltipContext,
 } from "./GameContext";
 import { VDivider } from "../common/VDivider";
-import PlayerName from "../boardeditor/PlayerName";
-import { PiecesPopup } from "./PiecesPopup";
-import { makeSquare, NormalMove, parseUci } from "chessops";
+import { NormalMove, parseUci } from "chessops";
 import "./GameManager.scss";
 import { useHumanMoves } from "./useHumanMoves";
 import { Tooltip } from "../common/Tooltip";
@@ -58,18 +41,23 @@ import MarkdownEditor from "../common/MarkdownEditor";
 import { makePgn, parsePgn } from "chessops/pgn";
 import PageNavigator from "./MultiPage";
 import { getSettingValue, setSettingValue } from "../../models/settings";
-import { Config } from "chessground/config";
 import { setSectionOpen } from "./PanelSection";
 import AnalysisPanel from "./AnalysisPanel";
-import TrainerPanel, { TrainerStatus } from "./TrainerPanel";
+import TrainerPanel from "./TrainerPanel";
 import anylogger from "anylogger";
 import { showAlert } from "../common/Alert";
 import { gameEnd, timeoutEnd } from "../../models/play";
 import { pgnTimeControl } from "../../models/clock";
-import { ClockFace, GameClock, useGameClock } from "./useGameClock";
-import { EvalBar } from "./EvalBar";
+import { GameClock, useGameClock } from "./useGameClock";
 import { TUTOR_SETTING, useTutor } from "./useTutor";
 import TutorPanel from "./TutorPanel";
+import { usePuzzle } from "./usePuzzle";
+import { boardConfig } from "./boardConfig";
+import { useMoveInput } from "./useMoveInput";
+import { gameApi, GameManagerApi } from "./gameApi";
+import BoardArea from "./BoardArea";
+
+export type { GameManagerApi } from "./gameApi";
 
 /** The board / divider / panel columns, as the divider leaves them */
 const WORKSPACE_COLUMNS = "layout.workspace.columns";
@@ -99,53 +87,6 @@ export type GameManagerOptions = {
     compact?: boolean;
     /** Hands the parent what it may do to the game being edited */
     onReady?: (api: GameManagerApi) => void;
-};
-
-export type GameManagerApi = {
-    /** Adds a comment after the move shown (or before the first move) */
-    addComment: (text: string) => void;
-    /**
-     * Plays the moves found in `text` from the move shown, or else from the start, as a new
-     * line where they differ from the game; how many moves were added.
-     */
-    addMovesFromText: (text: string) => number;
-    /** The moves `addMovesFromText` would add, numbered ("4.c3 Nf6"); reactive */
-    previewMovesFromText: (text: string) => string | undefined;
-};
-
-type PromotionData = {
-    promotionCell: Key;
-    move: NormalMove;
-};
-
-// render the right <PlayerName />  component depending if the board is flipped or not
-
-type PlayerNameSelectorProps = {
-    color: Color;
-    orientation: Accessor<Color>;
-    whitePlayerSignal: Signal<string>;
-    blackPlayerSignal: Signal<string>;
-};
-
-const PlayerNameSelector: Component<PlayerNameSelectorProps> = (props) => {
-    return (
-        <Switch>
-            <Match when={props.color === props.orientation()}>
-                <PlayerName
-                    name={props.whitePlayerSignal[0]}
-                    setName={props.whitePlayerSignal[1]}
-                    color={"white"}
-                />
-            </Match>
-            <Match when={true}>
-                <PlayerName
-                    name={props.blackPlayerSignal[0]}
-                    setName={props.blackPlayerSignal[1]}
-                    color={"black"}
-                />
-            </Match>
-        </Switch>
-    );
 };
 
 const GameManager: Component<GameManagerOptions> = ({
@@ -178,9 +119,6 @@ const GameManager: Component<GameManagerOptions> = ({
     const [startingPosition, setStartingPosition] = createSignal<
         string | undefined
     >(initialFen || INITIAL_FEN);
-    const [promotionData, setPromotionData] = createSignal<
-        PromotionData | undefined
-    >(undefined);
 
     const [editPgn, setEditPgn] = createSignal<string | undefined>(undefined);
     const [fullPgn, setFullPgn] = createSignal<string | undefined>(
@@ -202,121 +140,16 @@ const GameManager: Component<GameManagerOptions> = ({
 
     const [hintType, setHintType] = createSignal(HintType.None);
     const [hintMove, setHintMove] = createSignal<string | undefined>(undefined);
-    const [hintUsed, setHintUsed] = createSignal(0);
-    const [retries, setRetries] = createSignal(0);
-    // the training frame: right moves so far, and whether it's solved
-    const [goodMoves, setGoodMoves] = createSignal(0);
-    const [puzzleSolved, setPuzzleSolved] = createSignal(false);
-    const puzzleStatus = (): TrainerStatus =>
-        puzzleSolved()
-            ? "solved"
-            : wrongPuzzleMove()
-              ? "wrong"
-              : goodMoves() > 0
-                ? "good"
-                : "solving";
 
     // #endregion
     const isEditable = () => {
         return !!editable?.();
     };
 
-    const [wrongPuzzleMove, setWrongPuzzleMove] = createSignal<
-        NormalMove | undefined
-    >(undefined);
-
-    // #region Layout
-    // eslint-disable-next-line prefer-const -- assigned by Solid via ref={...}
-    let chessBoardDiv: HTMLDivElement | null = null;
-
     // dragging the divider sizes the panel; the board takes the rest
     const divider = useSplitter((layout) => {
         setSettingValue(WORKSPACE_COLUMNS, layout);
     });
-    // #endregion
-
-    // #region Event Handlers
-
-    const checkPuzzleMove = (move: NormalMove) => {
-        if (isPuzzleMode()) {
-            const g = game()!;
-            const pos = position();
-            const node = g.nodeAt(currentPath()!)!;
-            const cn = node.children.find((n) =>
-                moveEquals(pos, n.data.move as NormalMove, move),
-            );
-            const exists = !!cn;
-            if (!exists) {
-                onPuzzleFinished?.(false, hintUsed(), retries());
-                setWrongPuzzleMove(move);
-                setHintMove(undefined);
-                return false;
-            }
-            setGoodMoves((n) => n + 1);
-        }
-        return true;
-    };
-
-    const onManualMove = (orig: Key, dest: Key, _capturedPiece?: Piece) => {
-        const g = game();
-        if (!g) {
-            return;
-        }
-
-        const move = makeMove(orig, dest);
-
-        const pos = position();
-
-        const isLegal = pos.isLegal(move);
-        if (isLegal) {
-            if (!checkPuzzleMove(move)) return;
-            applyMove(move);
-        } else {
-            // check for promotion
-            const promo = isPromotion(move, pos);
-            if (promo) {
-                const promoData = {
-                    promotionCell: dest,
-                    move: move,
-                };
-                setPromotionData(promoData);
-                setGame(g.clone());
-            } else {
-                log.debug("Illegal move");
-                setGame(g.clone());
-            }
-        }
-    };
-
-    const onSelect = (_key: Key) => {};
-
-    const onDrawChange = (shapes: any) => {
-        const ng = game()?.updateShapes(currentPath()!, shapes);
-        setGame(ng);
-    };
-
-    const onPromotionSelected = (role: Role, _color: Color) => {
-        const promoData = promotionData();
-        setPromotionData(undefined);
-        if (promoData) {
-            const move = promoData.move;
-            move.promotion = role;
-            if (!checkPuzzleMove(move)) return;
-            applyMove(move);
-        }
-    };
-
-    const setWhitePlayer = (name: string) => {
-        const newGame = game()!.updateHeaders(new Map([["White", name]]));
-        setGame(newGame);
-    };
-
-    const setBlackPlayer = (name: string) => {
-        const newGame = game()!.updateHeaders(new Map([["Black", name]]));
-        setGame(newGame);
-    };
-
-    // #endregion
 
     // #region Computed Properties
 
@@ -352,125 +185,7 @@ const GameManager: Component<GameManagerOptions> = ({
         return typeof onPuzzleFinished === "function";
     });
 
-    const config = () => {
-        const baseConfig: Config = makeConfig(
-            game,
-            currentPath,
-            highlightedSquares,
-            highlightedMoves,
-            orientation,
-        )();
-        let pos = position();
-
-        if (wrongPuzzleMove()) {
-            pos = pos.clone();
-            pos.play(wrongPuzzleMove()!);
-            baseConfig.fen = makeFen(pos.toSetup(), { epd: false });
-        }
-
-        const isCheck = pos.isCheck();
-        const allDests = chessgroundDests(pos);
-
-        // movable color is current color if not playing against engine
-        let movableColor = undefined;
-
-        if (playingEngine) {
-            if (engineColor?.() && pos.turn !== engineColor?.()) {
-                movableColor = pos.turn;
-            }
-        } else {
-            movableColor = pos.turn;
-        }
-
-        const showArrows =
-            !playingEngine &&
-            !isPuzzleMode() &&
-            getSettingValue("engine.analysis.showArrows", false);
-        // ||
-        // isPuzzleMode() && !!wrongPuzzleMove()
-        const shapes = baseConfig.drawable?.shapes || [];
-
-        const hints: SquareClasses = new Map();
-        const moveHint = hintMove();
-        const move = moveHint && (parseUci(moveHint) as NormalMove);
-        if (move) {
-            const from = makeSquare(move.from);
-            const to = makeSquare(move.to);
-            if (hintType() === HintType.Piece) {
-                hints.set(from, "selected");
-            } else if (hintType() === HintType.Move) {
-                hints.set(from, "selected");
-                hints.set(to, "selected");
-            }
-            if (showArrows || (isPuzzleMode() && !!wrongPuzzleMove())) {
-                const arrow = makeArrowShape(from, to, "black");
-                shapes.push(arrow);
-            }
-        } else if (threatFen()) {
-            // the opponent's threats, always shown: they are the point of the mode
-            for (const info of engineInfo) {
-                const move = info.pv && parseUci(info.pv[0]);
-                if (move && "from" in move) {
-                    shapes.push(
-                        makeArrowShape(
-                            makeSquare(move.from),
-                            makeSquare(move.to),
-                            info.multipv === 1 ? "red" : "pink",
-                        ),
-                    );
-                }
-            }
-        } else {
-            if (engineInfo.length > 0 && showArrows) {
-                for (const info of engineInfo) {
-                    if (info.pv) {
-                        const move = parseUci(info.pv[0]) as NormalMove;
-                        const from = makeSquare(move.from);
-                        const to = makeSquare(move.to);
-                        const arrow = makeArrowShape(from, to, "gray");
-                        shapes.push(arrow);
-                    }
-                }
-            }
-        }
-
-        const config = {
-            ...baseConfig,
-            highlight: {
-                ...baseConfig.highlight,
-                custom: hints,
-            },
-            draggable: {
-                enabled: true,
-            },
-            viewOnly: false,
-            turnColor: pos.turn,
-            movable: {
-                free: false,
-                color: movableColor,
-                dests: allDests,
-            },
-            check: isCheck,
-            events: {
-                move: onManualMove,
-
-                select: onSelect,
-            },
-            drawable: {
-                ...baseConfig.drawable,
-                shapes: shapes,
-                eraseOnClick: false,
-                onChange: onDrawChange,
-            },
-        };
-        return config;
-    };
-
     const hasMoves = createMemo(() => (game()?.mainline?.length ?? 0) > 0);
-
-    const whitePlayer = () => game()?.players.white.name || "White";
-
-    const blackPlayer = () => game()?.players.black.name || "Black";
 
     const memoPath = createMemo(() => currentPath(), undefined, {
         equals: (a, b) => {
@@ -537,19 +252,7 @@ const GameManager: Component<GameManagerOptions> = ({
     // #region Effects
 
     createEffect(() => {
-        const pgnString = initialPgn?.();
-        // if (!pgnString) {
-        //     pgnString = getDefaultStudyContent();
-        // }
-        // const games = parsePgn(pgnString);
-        // const gameModel = makeGameInternal(games[0]);
-
-        batch(() => {
-            // setGameIndex(0);
-            setFullPgn(pgnString);
-            // initFromGameModel(gameContext, gameModel);
-            // updateGameFromPgnString(pgnString, gameContext);
-        });
+        setFullPgn(initialPgn?.());
     });
 
     // this is a  effect triggered when the game changes
@@ -561,8 +264,6 @@ const GameManager: Component<GameManagerOptions> = ({
         if (!g) return;
         let path = currentPath();
         let data = path && g.dataAt(path);
-
-        // const _updPgn = g.pgn();
 
         const games = parsePgn(fPgn || "");
         games[gIdx] = g.game!;
@@ -580,64 +281,20 @@ const GameManager: Component<GameManagerOptions> = ({
         });
     });
 
-    // This is called to reset a puzzle after a wrong move
-    const onResetPuzzle = () => {
-        log.debug("Resetting puzzle");
-        const g = game();
-        if (!g) return;
-        setCurrentPath(Path.root);
-        setWrongPuzzleMove(undefined);
-        // setHintMove(undefined);
-        setHintType(HintType.None);
-        setRetries((r) => r + 1);
-    };
-
-    // this effects is triggered by path changes and handles the automatic play of the next move in puzzle mode
-    createEffect(() => {
-        const path = memoPath();
-        if (isPuzzleMode()) {
-            const node = game()?.nodeAt(path!);
-            if (!node) return;
-            const next = node?.children[0];
-            if (turn() !== orientation()) {
-                if (next) {
-                    const move = next.data.move as NormalMove;
-                    applyMove(move);
-                } else {
-                    // solved: the training frame says so (and tracks the performance)
-                    onPuzzleFinished?.(true, hintUsed(), retries());
-                    setPuzzleSolved(true);
-                }
-            } else {
-                setHintMove(next?.data.uci);
-                if (!next) {
-                    onPuzzleFinished?.(true, hintUsed(), retries());
-                    setPuzzleSolved(true);
-                }
-            }
-        }
-    });
-
-    // the next puzzle starts the frame afresh
-    createEffect(
-        on(
-            () => initialPgn?.(),
-            () => {
-                setGoodMoves(0);
-                setPuzzleSolved(false);
-                setRetries(0);
-                setHintUsed(0);
-            },
-        ),
-    );
-
-    createEffect(() => {
-        const hint = hintType();
-        if (hint === HintType.Piece) {
-            setHintUsed((h) => h + 0.5);
-        } else if (hint === HintType.Move) {
-            setHintUsed((h) => h + 1);
-        }
+    const puzzle = usePuzzle({
+        isPuzzleMode,
+        game,
+        path: memoPath,
+        setPath: setCurrentPath,
+        position,
+        turn,
+        orientation,
+        applyMove,
+        hintType,
+        setHintType,
+        setHintMove,
+        puzzle: () => initialPgn?.(),
+        onFinished: onPuzzleFinished,
     });
 
     // play sound when path changes
@@ -704,7 +361,7 @@ const GameManager: Component<GameManagerOptions> = ({
         fen,
         playingEngine: () => !!playingEngine,
         hintMoveSignal: [hintMove, setHintMove],
-        wrongPuzzleMove,
+        wrongPuzzleMove: puzzle.wrongMove,
         clockTimes: () => gameClock?.times(),
         tutor: tutorOn,
     });
@@ -770,7 +427,6 @@ const GameManager: Component<GameManagerOptions> = ({
     );
 
     const gameContext = {
-        // pgn: pgn,
         fullPgnSignal: [fullPgn, setFullPgn],
         gameSignal: [game, setGame],
         currentPathSignal: [currentPath, setCurrentPath],
@@ -812,42 +468,39 @@ const GameManager: Component<GameManagerOptions> = ({
     } as GameContextType;
     // #endregion
 
-    /** Moves in `text` that fit the move shown, or else the start of the game. */
-    const textMoves = (text: string) => {
-        const g = game();
-        if (!g) return undefined;
-        for (const from of [currentPath() ?? Path.root, Path.root]) {
-            const position = g.getPosition(from);
-            const { moves } = movesFromText(text, position);
-            if (moves.length) return { from, position, moves };
-        }
-        return undefined;
-    };
+    onReady?.(gameApi(game, setGame, currentPath, setCurrentPath));
 
-    onReady?.({
-        addComment: (text) => {
-            const path = currentPath();
-            const g = game();
-            if (g && path) setGame(g.insertComment(path, text, false, true));
-        },
-        addMovesFromText: (text) => {
-            const g = game();
-            const found = textMoves(text);
-            if (!g || !found) return 0;
-            const [next, path] = g.applyMoves(found.from, found.moves);
-            batch(() => {
-                setCurrentPath(path);
-                setGame(next);
-            });
-            return found.moves.length;
-        },
-        previewMovesFromText: (text) => {
-            const found = textMoves(text);
-            return found && makeSanVariation(found.position, found.moves);
-        },
+    // #region Board
+
+    const moveInput = useMoveInput({
+        game,
+        setGame,
+        position,
+        checkMove: puzzle.checkMove,
+        applyMove,
     });
 
-    // #region eval bar: the engine's evaluation of the position shown, else one saved in the
+    const config = boardConfig({
+        game,
+        path: currentPath,
+        position,
+        orientation,
+        highlightedSquares,
+        highlightedMoves,
+        playingEngine: !!playingEngine,
+        engineColor,
+        isPuzzleMode,
+        wrongPuzzleMove: puzzle.wrongMove,
+        hintMove,
+        hintType,
+        threatFen,
+        engineInfo,
+        onMove: moveInput.onMove,
+        onDrawChange: (shapes) =>
+            setGame(game()?.updateShapes(currentPath()!, shapes)),
+    });
+
+    // the eval bar: the engine's evaluation of the position shown, else one saved in the
     // PGN ([%eval] from a review); not while playing the engine or solving a puzzle
     const shownEvaluation = () => {
         const f = fen();
@@ -916,10 +569,7 @@ const GameManager: Component<GameManagerOptions> = ({
     });
     // #endregion
 
-    // #region tooltip
     const { reference, ply, showTooltip } = useTooltip();
-
-    // #endregion
 
     return (
         <>
@@ -941,100 +591,16 @@ const GameManager: Component<GameManagerOptions> = ({
                                   }
                         }
                     >
-                        <div
-                            class="pgnviewer-content"
-                            classList={{
-                                // the board fits the column's width and height
-                                "board-fit": !compact,
-                                "with-eval-bar": showEvalBar(),
-                            }}
-                        >
-                            <Show
-                                when={
-                                    viewMode() === ViewMode.MOVES ||
-                                    viewMode() === ViewMode.PGN
-                                }
-                            >
-                                <div class="board-player">
-                                    <Show when={!isPuzzleMode()}>
-                                        <PlayerNameSelector
-                                            color={"black"}
-                                            orientation={orientation}
-                                            whitePlayerSignal={[
-                                                whitePlayer,
-                                                setWhitePlayer as Setter<string>,
-                                            ]}
-                                            blackPlayerSignal={[
-                                                blackPlayer,
-                                                setBlackPlayer as Setter<string>,
-                                            ]}
-                                        />
-                                    </Show>
-                                    <Show when={gameClock}>
-                                        <ClockFace
-                                            clock={gameClock!}
-                                            color={otherColor(orientation())}
-                                        />
-                                    </Show>
-                                </div>
-                                <div class="board-row">
-                                    <Show when={showEvalBar()}>
-                                        <EvalBar
-                                            evaluation={shownEvaluation}
-                                            turn={turn}
-                                            orientation={orientation}
-                                        />
-                                    </Show>
-                                    <div
-                                        ref={chessBoardDiv!}
-                                        class="pgnviewer-chessboard"
-                                    >
-                                        <Chessboard config={config} />
-                                        <Show when={!!promotionData()}>
-                                            <PiecesPopup
-                                                chessBoardDiv={chessBoardDiv}
-                                                promotingCell={() =>
-                                                    promotionData()
-                                                        ?.promotionCell
-                                                }
-                                                onSelected={onPromotionSelected}
-                                                color={turn}
-                                            />
-                                        </Show>
-                                    </div>
-                                </div>
-                                <div class="board-player">
-                                    <Show when={!isPuzzleMode()}>
-                                        <PlayerNameSelector
-                                            color={"white"}
-                                            orientation={orientation}
-                                            whitePlayerSignal={[
-                                                whitePlayer,
-                                                setWhitePlayer as Setter<string>,
-                                            ]}
-                                            blackPlayerSignal={[
-                                                blackPlayer,
-                                                setBlackPlayer as Setter<string>,
-                                            ]}
-                                        />
-                                    </Show>
-                                    <Show when={gameClock}>
-                                        <ClockFace
-                                            clock={gameClock!}
-                                            color={orientation()}
-                                        />
-                                    </Show>
-                                </div>
-                            </Show>
-                            <Show
-                                when={viewMode() === ViewMode.STARTING_POSITION}
-                            >
-                                <BoardEditor
-                                    fen={startingPosition}
-                                    setFen={setStartingPosition}
-                                />
-                            </Show>
-                        </div>
+                        <BoardArea
+                            config={config}
+                            turn={turn}
+                            fit={!compact}
+                            clock={gameClock}
+                            showEvalBar={showEvalBar}
+                            evaluation={shownEvaluation}
+                            promotionCell={() => moveInput.promotion()?.cell}
+                            onPromotionSelected={moveInput.onPromotionSelected}
+                        />
                         <Show when={!compact}>
                             <VDivider ref={divider!} />
                         </Show>
@@ -1045,7 +611,7 @@ const GameManager: Component<GameManagerOptions> = ({
                                         <TrainerPanel
                                             title={puzzleTitle?.() ?? "Puzzle"}
                                             side={orientation}
-                                            status={puzzleStatus}
+                                            status={puzzle.status}
                                             note={puzzleNote}
                                             onHintPiece={() =>
                                                 setHintType(HintType.Piece)
@@ -1053,10 +619,10 @@ const GameManager: Component<GameManagerOptions> = ({
                                             onHintMove={() =>
                                                 setHintType(HintType.Move)
                                             }
-                                            onRetry={onResetPuzzle}
+                                            onRetry={puzzle.reset}
                                             onNext={onNextPuzzle}
                                             nextLabel={
-                                                puzzleSolved()
+                                                puzzle.solved()
                                                     ? "Next puzzle"
                                                     : "Skip"
                                             }
@@ -1102,14 +668,6 @@ const GameManager: Component<GameManagerOptions> = ({
                     orientation={orientation}
                 />
             </Show>
-            {/* <Modal
-                icon={() => "success"}
-                isOpen={successModalSignal}
-                onClose={() => setSuccessModalOpen(false)}
-                title={() => "Puzzle Solved"}
-            >
-                <div>Great, you solved it!</div>
-            </Modal> */}
         </>
     );
 };
