@@ -14,12 +14,16 @@ const SERVICE: &str = "com.canna71.rechess";
 pub enum Secret {
     /// A Lichess personal API token (no permissions needed), for the opening explorer
     LichessToken,
+    /// The explanation model's provider, endpoint and key together (model.rs); set only
+    /// through model_configure, which keeps the key bound to its endpoint
+    ModelProvider,
 }
 
 impl Secret {
-    fn key(self) -> &'static str {
+    pub(crate) fn key(self) -> &'static str {
         match self {
             Secret::LichessToken => "lichess-token",
+            Secret::ModelProvider => "model-provider",
         }
     }
 }
@@ -74,6 +78,9 @@ impl Secrets {
     }
 
     fn set(&self, secret: Secret, value: &str) -> Result<(), String> {
+        if secret == Secret::ModelProvider {
+            return Err("Set the model in Settings → Explanations".to_string());
+        }
         let value = value.trim();
         if value.is_empty() || value.len() > 512 || value.chars().any(char::is_whitespace) {
             return Err("That does not look like a token".to_string());
@@ -174,6 +181,14 @@ pub(crate) mod tests {
             assert!(secrets.set(Secret::LichessToken, bad).is_err(), "{bad:?}");
         }
         assert!(secrets.set(Secret::LichessToken, &"x".repeat(600)).is_err());
+    }
+
+    #[test]
+    fn the_model_entry_is_not_set_through_secret_set() {
+        // model.rs keeps the key bound to its endpoint; a bare value would break that
+        let secrets = Secrets(Box::new(MemoryStore::default()));
+        assert!(secrets.set(Secret::ModelProvider, "sk-anything").is_err());
+        assert_eq!(secrets.get(Secret::ModelProvider).unwrap(), None);
     }
 
     /// The real OS keychain, with a throwaway entry:

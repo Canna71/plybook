@@ -9,6 +9,7 @@ mod games;
 mod library;
 mod lichess_puzzles;
 mod migrate;
+mod model;
 mod net;
 mod repertoire;
 mod secrets;
@@ -22,6 +23,7 @@ use export::*;
 use games::*;
 use library::*;
 use lichess_puzzles::*;
+use model::*;
 use net::*;
 use repertoire::*;
 use secrets::*;
@@ -97,6 +99,10 @@ pub fn run() {
             secret_delete,
             secret_status,
             open_lichess_token_page,
+            model_status,
+            model_configure,
+            model_forget,
+            model_rephrase,
             online_lichess_explorer,
             online_tablebase,
             book_list,

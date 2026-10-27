@@ -12,6 +12,7 @@ import OpeningBooks from "../components/settings/OpeningBooks";
 import Backups from "../components/settings/Backups";
 import Appearance from "../components/settings/Appearance";
 import Updates from "../components/settings/Updates";
+import ExplanationModel from "../components/settings/ExplanationModel";
 import PageHeader from "../components/shell/PageHeader";
 import { findSections, sectionById } from "../models/settingsSections";
 import "./Settings.scss";
@@ -93,6 +94,9 @@ const Settings: Component = () => {
                     <Show when={current().id === "accounts"}>
                         <OnlineAccounts />
                         <LichessToken />
+                    </Show>
+                    <Show when={current().id === "explanations"}>
+                        <ExplanationModel />
                     </Show>
                     <Show when={current().id === "backups"}>
                         <Backups />

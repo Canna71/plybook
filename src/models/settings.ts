@@ -80,6 +80,12 @@ export interface AppSettings {
         /** Look for a new version a little after start (built apps only) */
         check?: boolean;
     };
+    /** The model that rewords explanations (P2.4b); the provider and key are in the keychain */
+    explain?: {
+        anthropicModel?: string;
+        /** Ollama, LM Studio or a hosted OpenAI-compatible service: its model name */
+        openaiModel?: string;
+    };
     reader?: {
         /** Where each PDF was left, by Library path (written as a whole: paths have dots) */
         places?: Record<string, ReaderPlace>;
@@ -175,6 +181,10 @@ const DEFAULT: AppSettings = {
     },
     updates: {
         check: true,
+    },
+    explain: {
+        anthropicModel: "claude-opus-5-5",
+        openaiModel: "",
     },
     reader: {
         places: {},

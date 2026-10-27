@@ -103,7 +103,7 @@ How this file is used:
     mate threats in P2.2.
   - Known limits: attacks only (no exchange evaluation, no x-rays, no relative pins); no king
     safety yet; shown only while engine analysis is on.
-- [ ] **P2.4 Explanations in words** (its own topic; decided 2026-10-24: not tied to one paid
+- [x] **P2.4 Explanations in words** (its own topic; decided 2026-10-24: not tied to one paid
   provider). Facts (P2.3), threats (P2.2), what-if (P2.1) and human moves (P2.5) phrased as a
   short paragraph per move; a model never calculates.
   - [x] **P2.4a Programmatic explanation** (`feature/explanations`; owner review pending):
@@ -113,9 +113,18 @@ How this file is used:
     Black answers Bxg4. After Bxg4 f3: Black wins material (+9). Better was exd5."
     Known limits: from review data alone (no engine lines) only ~1 in 6 mistakes gets a
     reason beyond the verdict; static facts only (no tactics deeper than the lines played).
-  - [ ] **P2.4b Optional model provider** (deferred by the owner on 2026-10-24; keep for
-    later): OpenAI-compatible endpoint (free local models via Ollama / LM Studio, or cheap
-    hosted ones) and Anthropic. The key goes in the keychain with S.1 (a new `Secret` variant).
+  - [x] **P2.4b Optional model provider** (`feature/model-explanations`, 2026-10-27):
+    Settings → Explanations sets up Anthropic (default model claude-opus-5-5, any Claude
+    model name; claude-haiku-5-5 suggested as far cheaper) or an OpenAI-compatible endpoint
+    (Ollama, LM Studio, hosted). "Say it as a coach" under an explanation sends the computed
+    text, nothing else, to `model_rephrase` (`src-tauri/src/model.rs`), which words it under a
+    fixed system prompt; a rewording that names a move or square the explanation does not
+    (`models/coach.ts`) is thrown away. The provider, endpoint and key are one keychain entry:
+    changing the endpoint needs the key again, so a key is only ever sent where it was
+    entered; endpoints are https, or http on localhost (no key needed). Anthropic requests use
+    API version 2026-10-21, effort low, and server-side refusal fallbacks for models that have
+    them; a refusal shows as an error. Checked in the app with a local qwen2.5:7b in Ollama.
+    Not tried with a real Anthropic key.
 - [x] **P2.5 Human vs best** (`feature/human-moves`; owner review pending): Maia's most likely
   move next to the engine's best, to show traps and "natural but wrong" moves.
   - Status: a Maia profile runs next to the analysis engine (`useHumanMoves`, Lc0

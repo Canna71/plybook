@@ -32,6 +32,12 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
             "lichess chess.com online sync import games username token api",
     },
     {
+        id: "explanations",
+        label: "Explanations",
+        keywords:
+            "ai model language llm claude anthropic openai ollama lm studio coach reword api key",
+    },
+    {
         id: "backups",
         label: "Backups",
         keywords: "backup restore save copy daily automatic zip data",
