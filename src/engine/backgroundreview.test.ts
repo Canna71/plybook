@@ -56,4 +56,16 @@ describe("reviewGame", () => {
         // only the final checkmate is known without an engine
         expect(game.pgn()).not.toContain("[%eval 0.30");
     });
+
+    it("gives each search the game behind its position, so repetitions count", async () => {
+        const seen: (string[] | undefined)[] = [];
+        await reviewGame(SCHOLAR, async (_fen, history) => {
+            seen.push(history?.moves);
+            return undefined;
+        });
+        // the start position has no moves behind it; then one more move each time
+        expect(seen[0]).toBeUndefined();
+        expect(seen[1]).toEqual(["e2e4"]);
+        expect(seen[5]).toEqual(["e2e4", "e7e5", "d1h5", "b8c6", "f1c4"]);
+    });
 });

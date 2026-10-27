@@ -145,6 +145,8 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
             values: values.latest,
             evaluations: evaluations(),
             history: history(),
+            // the analysis searches with the game's moves (useChessEngine)
+            engineSawGame: true,
         });
     };
     const explanation = () => full()?.text ?? [];

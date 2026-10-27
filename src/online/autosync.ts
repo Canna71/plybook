@@ -75,8 +75,9 @@ async function reviewInFile(
             : black.toLowerCase() === name
               ? "black"
               : undefined;
-    const reviewed = await reviewGame(text, async (fen) => {
-        const line = (await explainerSearch(fen, REVIEW_SEARCH))?.lines[0];
+    const reviewed = await reviewGame(text, async (fen, history) => {
+        const line = (await explainerSearch(fen, { ...REVIEW_SEARCH, history }))
+            ?.lines[0];
         return (
             line && { score: line.score, best: line.pv?.[0], depth: line.depth }
         );

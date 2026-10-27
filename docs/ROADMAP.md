@@ -141,10 +141,16 @@ How this file is used:
     (`ExplanationEvidence.tsx`, shared with the Engine section); the tutor's question gives no
     reason when its search was too shallow to judge (a material loss is only ever said from a
     played-out line). Checked in the app on a reviewed game; the tutor's question by hand.
-  - [ ] **P2.4e The engine sees the game** (second): the main analysis and the explainer get
-    `position fen <start> moves …` instead of the bare position, so repetitions (perpetual
-    check, a draw a side can force) count in evaluations; the explainer's caches are keyed by
-    the game, not only the position. Then the "engine judged it without the game" limit goes.
+  - [x] **P2.4e The engine sees the game** (second; `feature/engine-sees-game`): searches
+    take a `history` option (`models/gamehistory.ts`: the game's start and moves, checked to
+    lead to the position) and the UCI wrapper sends `position fen <start> moves …`. Used by
+    the main analysis (also review and puzzle refutation; not threat mode, whose null move is
+    no move), the review's moment lines (cache keyed by the game), the tutor's searches and the
+    background review of synced games. Checked with Stockfish: after 1.e4 Nf6 2.Nc3 Ng8 3.Nb1
+    Nf6 4.Nc3 Ng8 5.Nb1, the position alone gives −0.33 and c5, the game gives 0.00 and Nf6
+    (the draw); in the app 5.Nb1 is called a mistake that repeats the position a third time.
+    The "engine judged it without the game" note stays only for review scores, which may come
+    from a review run before this.
   - [ ] **P2.4f Strategic explanations, measured** (third, one idea at a time): each a rule with
     tests and a check by hand against annotated games (`PGN_FILE` in `pnpm eval:reasons`), kept
     only if it holds up, its evidence marked as interpretation. In order: the bad bishop, weak

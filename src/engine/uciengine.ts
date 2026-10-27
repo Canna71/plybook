@@ -47,7 +47,13 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
         options: AnalysisOptions,
     ): void {
         this.uciInterface.sendCommand("stop");
-        if (typeof fenOrMoves === "string") {
+        const history = options.history;
+        if (typeof fenOrMoves === "string" && history?.moves.length) {
+            // the game, so repetitions count
+            this.uciInterface.sendCommand(
+                `position fen ${history.start} moves ${history.moves.join(" ")}`,
+            );
+        } else if (typeof fenOrMoves === "string") {
             this.uciInterface.sendCommand(`position fen ${fenOrMoves}`);
         } else {
             this.uciInterface.sendCommand(

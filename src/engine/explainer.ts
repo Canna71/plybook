@@ -5,7 +5,11 @@
 
 import anylogger from "anylogger";
 import { analysisProfile, startEngine } from "./engineprofiles";
-import { AnalysisOptions, IChessEngine } from "./engineinterfaces";
+import {
+    AnalysisOptions,
+    IChessEngine,
+    PositionHistory,
+} from "./engineinterfaces";
 import { searchOnce, SearchResult } from "./search";
 import { moveThreats, MoveThreats } from "./threatsearch";
 import { isEvalEnd, parsePieceValues, PieceValues } from "./piecevalues";
@@ -91,11 +95,19 @@ const lineCache = new Map<string, Promise<MoveLines | undefined>>();
 export function explainLines(
     fenBefore: string,
     fenAfter: string,
+    /** The game behind each position, so repetitions count (gamehistory.ts) */
+    games?: { before?: PositionHistory; after?: PositionHistory },
 ): Promise<MoveLines | undefined> {
-    return enqueue(lineCache, `${fenBefore} ${fenAfter}`, async (engine) => {
-        const pvAt = async (fen: string) =>
-            (await searchOnce(engine, fen, LINE_SEARCH)).lines[0]?.pv;
-        return { bestPv: await pvAt(fenBefore), replyPv: await pvAt(fenAfter) };
+    // the same positions reached by another game may count repetitions differently
+    const key = `${fenBefore} ${fenAfter} ${games?.before?.moves.join(",") ?? ""}`;
+    return enqueue(lineCache, key, async (engine) => {
+        const pvAt = async (fen: string, history?: PositionHistory) =>
+            (await searchOnce(engine, fen, { ...LINE_SEARCH, history }))
+                .lines[0]?.pv;
+        return {
+            bestPv: await pvAt(fenBefore, games?.before),
+            replyPv: await pvAt(fenAfter, games?.after),
+        };
     });
 }
 

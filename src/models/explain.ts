@@ -35,6 +35,8 @@ export type ExplainInput = {
      * FEN alone does not show repetitions
      */
     history?: string[];
+    /** The engine searched with the game's moves, not only the FEN: it counts repetitions */
+    engineSawGame?: boolean;
 };
 
 // #region the structured result (docs/EXPLANATIONS.md)
@@ -381,7 +383,7 @@ export function explainMoveFull(
                 "repeats the position for the third time: a draw can be claimed";
             sentences.push(`It ${text}.`);
             fact(text);
-        } else if (seen === 1) {
+        } else if (seen === 1 && !input.engineSawGame) {
             limits.push(
                 "The position after the move occurred before in this game; the engine judged it without the game, so it may not count a repetition",
             );

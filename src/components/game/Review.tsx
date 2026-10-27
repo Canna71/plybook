@@ -36,6 +36,7 @@ import {
 import { saveMistakePuzzles } from "../../storage/mistakes";
 import { explainMoveFull } from "../../models/explain";
 import { positionsBefore } from "./gamePosition";
+import { gameHistory, historyFor } from "../../models/gamehistory";
 import ExplanationEvidence from "./ExplanationEvidence";
 import { explainLines } from "../../engine/explainer";
 import BoardText from "./BoardText";
@@ -100,14 +101,26 @@ const Review: Component = () => {
     const [momentLines] = createResource(
         () => {
             const m = openMoment();
-            const data = m && game()?.dataAt(m.path);
-            return m?.fenBefore && data && "fen" in data
-                ? { before: m.fenBefore, after: data.fen }
+            const g = game();
+            const data = m && g?.dataAt(m.path);
+            return g && m?.fenBefore && data && "fen" in data
+                ? {
+                      before: m.fenBefore,
+                      after: data.fen,
+                      // the game behind each position, so repetitions count
+                      games: {
+                          before: historyFor(
+                              gameHistory(g, m.path.previous()),
+                              m.fenBefore,
+                          ),
+                          after: historyFor(gameHistory(g, m.path), data.fen),
+                      },
+                  }
                 : undefined;
         },
-        async ({ before, after }) => ({
+        async ({ before, after, games }) => ({
             before,
-            ...(await explainLines(before, after)),
+            ...(await explainLines(before, after, games)),
         }),
     );
 
