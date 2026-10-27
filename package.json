@@ -15,7 +15,7 @@
     "test": "vitest run",
     "eval:reasons": "vitest run --config vitest.eval.config.ts"
   },
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "dependencies": {
     "@floating-ui/dom": "^1.6.12",
     "@neodrag/solid": "^2.2.0",
