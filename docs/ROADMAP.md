@@ -482,7 +482,8 @@ How this file is used:
   `game/gamePosition.ts`, loading a game in `game/gameInit.ts`, `useSplitter`, `editing.ts`
   (paste, select all), `figurines.tsx`, and `useFenTooltip` beside `useTooltip`. Unused
   helpers dropped (`toDests`, `toOrientation`).
-- Delete dead code listed in CLAUDE.md.
+- [x] Delete dead code listed in CLAUDE.md (already gone: `Views/obsoleted`, `GameEditView`,
+  `components/Analysis.tsx`, `FENcoder.ts`, the Rust `greet`; checked 2026-10-27).
 
 ## UX overhaul (requested 2026-10-24, after the feature work above)
 
