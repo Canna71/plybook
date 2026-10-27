@@ -34,7 +34,9 @@ import {
     trainableMistakes,
 } from "../../models/mistakes";
 import { saveMistakePuzzles } from "../../storage/mistakes";
-import { explainMove } from "../../models/explain";
+import { explainMoveFull } from "../../models/explain";
+import { positionsBefore } from "./gamePosition";
+import ExplanationEvidence from "./ExplanationEvidence";
 import { explainLines } from "../../engine/explainer";
 import BoardText from "./BoardText";
 import { getAccounts } from "../../online/onlinegames";
@@ -118,25 +120,33 @@ const Review: Component = () => {
         ].filter((f): f is string => !!f);
     };
 
-    /** Why the move was bad: the review data, and the engine lines once they arrive. */
+    /**
+     * Why the move was bad, with its evidence: the review's scores (with their depths), the
+     * game so far, and the engine lines once they arrive.
+     */
     const momentExplanation = (m: ReviewedMove) => {
-        const data = game()?.dataAt(m.path);
-        if (!m.fenBefore || !data || !("uci" in data)) return undefined;
+        const g = game();
+        const data = g?.dataAt(m.path);
+        if (!g || !m.fenBefore || !data || !("uci" in data)) return undefined;
         // lines of another moment, still loading, are not this one's
         const lines =
             momentLines.latest?.before === m.fenBefore
                 ? momentLines.latest
                 : undefined;
-        return (
-            explainMove({
-                fenBefore: m.fenBefore,
-                uci: data.uci,
-                verdict: m,
-                bestUci: m.bestUci,
-                bestPv: lines?.bestPv,
-                replyPv: lines?.replyPv,
-            }).join(" ") || undefined
-        );
+        const x = explainMoveFull({
+            fenBefore: m.fenBefore,
+            uci: data.uci,
+            verdict: m,
+            bestUci: m.bestUci,
+            bestPv: lines?.bestPv,
+            replyPv: lines?.replyPv,
+            evaluations: {
+                before: g.dataAt(m.path.previous())?.evaluation,
+                after: data.evaluation,
+            },
+            history: positionsBefore(g, m.path.previous()),
+        });
+        return x?.text.length ? x : undefined;
     };
 
     // #region puzzles from mistakes
@@ -323,13 +333,16 @@ const Review: Component = () => {
                                             momentExplanation(m)
                                         }
                                     >
-                                        {(text) => (
-                                            <p class="moment-explanation">
+                                        {(x) => (
+                                            <div class="moment-explanation">
                                                 <BoardText
-                                                    text={text()}
+                                                    text={x().text.join(" ")}
                                                     fens={() => momentFens(m)}
                                                 />
-                                            </p>
+                                                <ExplanationEvidence
+                                                    explanation={x()}
+                                                />
+                                            </div>
                                         )}
                                     </Show>
                                 </li>

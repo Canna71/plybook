@@ -32,6 +32,21 @@ export function usePosition(
     return createMemo(() => getPosition(game, path));
 }
 
+/**
+ * The positions on the way to `path`, oldest first, without the one at `path`: the game's
+ * history, which a FEN alone does not carry (repetitions).
+ */
+export function positionsBefore(game: GameModel, path: Path): string[] {
+    const fens: string[] = [];
+    let p = path;
+    while (!p.empty()) {
+        p = p.previous();
+        const fen = game.dataAt(p)?.fen;
+        if (fen) fens.unshift(fen);
+    }
+    return fens;
+}
+
 export function useFen(
     game: Accessor<GameModel | undefined>,
     path: Accessor<Path | undefined>,

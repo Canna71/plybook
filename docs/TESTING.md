@@ -127,6 +127,17 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Evidence in review and the tutor, P2.4d (branch feature/evidence-everywhere)
+
+Checked in the dev app: a reviewed game's key moment (1…e5) shows Evidence with the scores for
+Black, depth 21, and the answer and better lines.
+
+- [ ] **Review**: on a game of yours after "Review the game", open a few key moments: the
+      Evidence under each matches its sentences.
+- [ ] **Tutor**: play the tutor and make a clear mistake (leave a piece hanging): "Are you sure
+      about …?" names what the opponent wins, as before. Right at the start of a game, on a
+      slow machine, a question may come with no reason: that is a search too short to judge.
+
 ## Explanations with their evidence, P2.4c (branch feature/explanation-contract)
 
 Checked in the dev app: 1.e4 d5 2.Qg4?? explains the hanging queen, Bxg4 and the material,

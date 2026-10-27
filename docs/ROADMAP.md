@@ -134,6 +134,23 @@ How this file is used:
     a board-only double attack is no longer called a fork; a model's wording is also refused
     when it adds a claim (fork, wins, mate…). The Engine section shows the evidence folded
     under the explanation. Review key moments and the tutor still use the text only.
+  - [x] **P2.4d Evidence in review and the tutor** (owner's order 2026-10-27, first;
+    `feature/evidence-everywhere`): the review's key moments and the tutor's questions use
+    `explainMoveFull` with their scores (and depths) and the game's history
+    (`gamePosition.positionsBefore`); the review shows the same Evidence panel
+    (`ExplanationEvidence.tsx`, shared with the Engine section); the tutor's question gives no
+    reason when its search was too shallow to judge (a material loss is only ever said from a
+    played-out line). Checked in the app on a reviewed game; the tutor's question by hand.
+  - [ ] **P2.4e The engine sees the game** (second): the main analysis and the explainer get
+    `position fen <start> moves …` instead of the bare position, so repetitions (perpetual
+    check, a draw a side can force) count in evaluations; the explainer's caches are keyed by
+    the game, not only the position. Then the "engine judged it without the game" limit goes.
+  - [ ] **P2.4f Strategic explanations, measured** (third, one idea at a time): each a rule with
+    tests and a check by hand against annotated games (`PGN_FILE` in `pnpm eval:reasons`), kept
+    only if it holds up, its evidence marked as interpretation. In order: the bad bishop, weak
+    squares (holes the opponent can use), space, pawn breaks and the plans they open, prophylaxis
+    beyond stopping a direct threat, endgame technique (king activity, the opposition). Ideas
+    that cannot be supported are listed here as dropped, with why.
 - [x] **P2.5 Human vs best** (`feature/human-moves`; owner review pending): Maia's most likely
   move next to the engine's best, to show traps and "natural but wrong" moves.
   - Status: a Maia profile runs next to the analysis engine (`useHumanMoves`, Lc0
