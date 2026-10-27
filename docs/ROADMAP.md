@@ -465,7 +465,11 @@ How this file is used:
   `usePuzzle`, the board config in `boardConfig.ts`, moves and promotion in `useMoveInput`,
   the parent API in `gameApi.ts`, the board column in `BoardArea.tsx`; GameManager keeps
   the state, the PGN sync, the engine, clock and tutor wiring (1117 → 675 lines).
-- `useChessEngine` as an explicit state machine (when adding background review).
+- [x] `useChessEngine` as an explicit state machine (`feature/engine-state-machine`,
+  2026-10-27): `engine/enginetask.ts` decides the one task (idle, review, refutation,
+  threat, analysis, play) and its search, with tests; a bestmove is handled by the task its
+  search was started for, so an engine move that arrives after the game stopped or the
+  position changed is dropped.
 - Typed settings schema (when adding new settings).
 - Split `components/common/utils.tsx`.
 - Delete dead code listed in CLAUDE.md.
