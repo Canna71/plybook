@@ -222,7 +222,12 @@ How this file is used:
     gives away 14%"). Not for a recapture or taking a free piece. Uses the analysis's
     MultiPV lines when there are two, else one extra search. Done when: tested on positions
     with one good move and with several, and shown in the Engine section and review.
-  - [ ] **P2.4i Sacrifices** (from Chesserly's "Brilliant"): the engine's best move gives up
+  - [x] **P2.4i Sacrifices** (`feature/sacrifices`, 2026-10-28): `reasons/sacrifice.ts`, said
+    when the opponent takes two pawns' worth or more at once, the piece taken is the one that
+    moved or one not attacked before, and the line wins it back or mates. Puzzles: precision
+    0.99 against the `sacrifice` tag; games, by hand: every one found (9 in 4,000 positions)
+    a real sacrifice. For the move played and the better move after a mistake. Details in
+    `docs/REASONS.md`. The engine's best move gives up
     material that its line wins back, or pays for with mate or a lasting edge; read from the
     line (`lineOutcome`), not a static exchange count. Measured like P2.4f (on puzzles tagged
     `sacrifice`?) before it is said; dropped with why if it does not hold up.

@@ -96,11 +96,16 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
         return g && p && !p.empty() ? positionsBefore(g, p.previous()) : [];
     };
 
+    // where the line leads, counted from before the move: what a capture took is part of it
+    // (after Bxc6 dxc6 the material is level, not a piece down), and so is what a sacrifice
+    // gave. Shown from the answer on
     const outcome = () => {
         const m = move();
+        const b = before();
         const pv = best()?.pv;
-        const mover = before()?.turn;
-        return m && pv && mover ? lineOutcome(m.fen, pv, mover) : undefined;
+        if (!m || !b || !pv) return undefined;
+        const o = lineOutcome(b.fen, [m.uci, ...pv], b.turn, 7);
+        return o && { ...o, sans: o.sans.slice(1) };
     };
 
     // what the move stops and threatens: two short searches by the explainer engine, in the

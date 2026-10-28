@@ -158,6 +158,38 @@ describe("explainMove", () => {
         expect(say("e2e4", 8, "best")).not.toContain("only move");
     });
 
+    it("names a sacrifice, played or missed", () => {
+        // the Greek gift (Lichess game, 2013): Bxh7+ Kxh7 Ng5+
+        const fenBefore =
+            "rn1qnrk1/pb2bppp/1p1pp3/2p1P3/3P1P1P/3B1N2/PPP1Q1P1/RNB1K2R w KQ - 0 10";
+        const line = "d3h7 g8h7 f3g5 h7g8 e2h5 b7e4 g5e4 d6e5".split(" ");
+        const evaluations = {
+            before: { pawns: 1.5, depth: 16 },
+            after: { pawns: 1.5, depth: 16 },
+        };
+        const played = explainMove({
+            fenBefore,
+            uci: "d3h7",
+            verdict: { class: "best", loss: 0 },
+            replyPv: line.slice(1),
+            evaluations,
+        }).join(" ");
+        expect(played).toContain(
+            "It sacrifices the bishop on h7, and the engine's line wins the material back.",
+        );
+        const missed = explainMove({
+            fenBefore,
+            uci: "a2a3",
+            verdict: { class: "mistake", loss: 12 },
+            bestUci: "d3h7",
+            bestPv: line,
+            evaluations,
+        }).join(" ");
+        expect(missed).toContain(
+            "Better was Bxh7+: it sacrifices the bishop on h7, and the engine's line wins the material back.",
+        );
+    });
+
     it("names what the opponent's answer does", () => {
         // the same position, but Black plays a6 and allows the fork: Nxf7 was the point
         const text = explainMove({
