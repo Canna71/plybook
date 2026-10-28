@@ -127,6 +127,34 @@ How this file is used:
     month files on Today, book lookups cached by position). Today shows an "Accuracy by phase"
     card with each phase's accuracy and games, the weakest in red.
   - Not tried with real games: the owner's settings have no online account (TESTING.md).
+- [ ] **P1.8 More from Lichess and chess.com** (owner's question, 2026-10-28; candidates, to
+  be chosen). Today ReChess imports both sites' games (with Lichess's own evaluations and
+  clocks), the Lichess explorer (personal token), tablebase and puzzle database. What else
+  their public APIs and data allow:
+  - [ ] **Lichess cloud evaluations** (`/api/cloud-eval`, no token): deep Stockfish lines
+    for positions Lichess has already analysed, at once. Faster reviews and a second
+    opinion in the Engine section; mostly openings and common positions. (The same data as
+    a download, `lichess_db_eval.jsonl.zst`, 416 million positions, is too big to use.)
+  - [ ] **Lichess studies** (`/api/study/by/{user}/export.pgn`; public ones with no token,
+    private ones with `study:read`): bring your studies into the Library, kept in sync.
+    Writing back to a study (`study:write`) could follow.
+  - [ ] **Lichess puzzle history** (`/api/puzzle/activity`, `puzzle:read`): the puzzles you
+    solved there count in ReChess's puzzle rating and weak themes, and are not shown again.
+  - [ ] **Lichess broadcasts** (database.lichess.org, 1.26 million games of official
+    over-the-board events since 2020, 744 MB in all, CC BY-SA 4.0): the best source for
+    "Make a book from games" (strong games, small monthly files) and for the game database
+    (P3.1). A link or a download in Settings. A book made from them stays the user's; if
+    ReChess ever shipped one, it would need the attribution and share-alike terms.
+  - [ ] **chess.com ratings** (Published-Data API `/pub/player/{user}/stats`, no login):
+    your ratings by time control and puzzle rating on Today. chess.com has no API for
+    third-party apps beyond public data: no login, no studies, no puzzles history, no
+    writing. A password would add nothing, and ReChess must never ask for it.
+  - [ ] **Playing on Lichess from ReChess** (Board API, `board:play`): possible, but only
+    with every engine aid, explanation and tutor switched off while a game runs (Lichess's
+    fair-play rules). Low priority.
+  - How access works: tokens are entered in Settings and kept in the OS keychain
+    (`secrets.rs`); a token is never pasted into a chat or a file. Each feature asks only for
+    the scope it needs (Lichess personal tokens choose scopes when created).
 
 - [x] **Fix: played games in History** (`feature/play-history`): saved after every move under
   the game's Timestamp, openable from History, result written at checkmate/stalemate.
