@@ -84,7 +84,7 @@ How this file is used:
     the board review and the background review (P1.4) leave book moves unmarked too. Tried in
     the dev app with a GM book: a side whose moves were all book shows "–" for accuracy.
   - Known limit: no book installed, nothing changes; with several books, one is enough.
-- [ ] **P1.7 A starter opening book and opening names** (owner's question, 2026-10-28): today
+- [~] **P1.7 A starter opening book and opening names** (owner's question, 2026-10-28): today
   book moves (P1.5), the engine's book (Play) and the Explorer's book need a Polyglot book the
   user finds and imports, and most books passed around (gm2001.bin, Performance.bin…) come
   without a license. Instead, build one from free data: a script in `tools/` that turns
@@ -97,6 +97,24 @@ How this file is used:
   and the move list say "Ruy Lopez: Morphy Defense (C78)" and the book line names the
   opening it left. Done when: a new user gets book moves and opening names without hunting
   for files, and the sources and licences are in the README.
+  - Status 2026-10-28 (`feature/openings`):
+    - [x] Opening names: the five TSVs bundled (`src/assets/openings`, commit recorded in its
+      README), `models/openings.ts` (each line played to its position; a position is matched
+      on pieces, side and castling, so transpositions are named; the most specific name on
+      the way wins). All 3,865 lines parse; one position has two names (Van Geet: Nowokunski
+      Gambit = King's Gambit Accepted: Mason-Keres Gambit; the first in the files wins).
+      Shown in "About this position" ("E20 Nimzo-Indian Defense", also after 1.c4 Nf6 2.Nc3
+      e6 3.d4 Bb4) and the review ("Opening: …", the book line names where it left the book).
+    - [x] A book from games, made in the app instead of a release asset (no hosting, no
+      release step, the user picks the games): Settings → Opening books → "Make a book from
+      games…" reads a .pgn or .pgn.zst (`book_build`, `books.rs`): both players at a chosen
+      rating or more, the first 12 moves, moves played in 5 games or more, weight 2 × wins +
+      draws for the side that moved. Tested in Rust (read back with the book reader); the
+      January 2013 Lichess month: 121,332 games, 9,525 rated 1800+, 3,111 moves, 48 KB.
+    - [ ] A ready-made starter book (one click for a new user): needs either a hosted file (a
+      GitHub release asset, made with the same code) or a download of a Lichess month from
+      Settings (large: recent months are tens of GB). Waiting for the owner's choice.
+    - [ ] Opening names in the move list itself (now in "About this position").
 - [x] **P1.6 Accuracy by phase** (from Chesserly, P2.4g): across the reviewed games of an
   account, accuracy in the opening, middlegame and endgame (the endgame as P2.4f defines it),
   with ReChess's accuracy formula, to show where a player loses most. Done when: the Today or

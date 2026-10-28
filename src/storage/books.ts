@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { Channel, invoke } from "@tauri-apps/api/core";
 import { BookMove, bookPlies } from "../models/books";
 
 /** Polyglot books in the Books folder, by file name. */
@@ -10,6 +10,42 @@ export const importBook = async () =>
 
 export const removeBook = (name: string) =>
     invoke<void>("book_remove", { name });
+
+// Mirrors BuildOptions, BuildResult and BuildEvent in books.rs (P1.7)
+export type BuildOptions = { minElo: number; plies: number; minGames: number };
+export type BuildResult = {
+    name: string;
+    games: number;
+    used: number;
+    entries: number;
+};
+export type BuildProgress = {
+    games: number;
+    used: number;
+    bytes: number;
+    totalBytes: number;
+};
+type BuildEvent = { event: "progress"; data: BuildProgress };
+
+/**
+ * Asks for a PGN file (.pgn or .pgn.zst) and makes an opening book of its games in the Books
+ * folder; undefined if the dialog was cancelled.
+ */
+export async function buildBook(
+    options: BuildOptions,
+    onProgress: (progress: BuildProgress) => void,
+): Promise<BuildResult | undefined> {
+    const onEvent = new Channel<BuildEvent>();
+    onEvent.onmessage = (message) => {
+        if (message.event === "progress") onProgress(message.data);
+    };
+    return (
+        (await invoke<BuildResult | null>("book_build", {
+            options,
+            onEvent,
+        })) ?? undefined
+    );
+}
 
 /** The book's moves in `fen`, heaviest first. */
 export const bookMoves = (name: string, fen: string) =>

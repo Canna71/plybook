@@ -25,6 +25,8 @@ import {
     winCurve,
 } from "../../models/review";
 import { gameBookPlies } from "../../storage/books";
+import { openingOfLine } from "../../models/openingdata";
+import { describeOpening } from "../../models/openings";
 import { GameContext } from "./GameContext";
 import { NagIcon } from "./Ply";
 import { PlyFan } from "../common/PlyFan";
@@ -98,9 +100,19 @@ const Review: Component = () => {
             ? {
                   last: nodes()[n],
                   out: nodes()[n + 1] as ReviewNode | undefined,
+                  // the opening the game was in when it left the book (P1.7)
+                  opening: openingOfLine(
+                      nodes()
+                          .slice(0, n + 1)
+                          .map((node) => node.fen),
+                  ),
               }
             : undefined;
     };
+    /** The game's opening, as far as it has a name (P1.7) */
+    const opening = createMemo(() =>
+        openingOfLine(nodes().map((node) => node.fen)),
+    );
     const nodeLabel = (node: ReviewNode) => {
         const ply = node.ply ?? 0;
         const white = node.turn === "black";
@@ -344,6 +356,14 @@ const Review: Component = () => {
                     </tbody>
                 </table>
 
+                <Show when={opening()}>
+                    {(o) => (
+                        <p class="review-opening">
+                            Opening: {describeOpening(o())}
+                        </p>
+                    )}
+                </Show>
+
                 <Show when={bookEdge()}>
                     {(edge) => (
                         <p class="review-book">
@@ -351,6 +371,9 @@ const Review: Component = () => {
                             <a onClick={() => goTo(edge().last.path)}>
                                 {nodeLabel(edge().last)}
                             </a>
+                            <Show when={edge().opening}>
+                                {(o) => ` (${o().name})`}
+                            </Show>
                             <Show
                                 when={edge().out}
                                 fallback=": every move is a book move."

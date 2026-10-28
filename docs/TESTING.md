@@ -127,6 +127,21 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Opening names and books from games, P1.7 (branch feature/openings)
+
+- [ ] **Opening name**: in Analysis play 1.e4 e5 2.Nf3 Nc6 3.Bb5: "About this position" shows
+      "C60 Ruy Lopez" (or its variation); after 1.c4 Nf6 2.Nc3 e6 3.d4 Bb4 it shows "E20
+      Nimzo-Indian Defense" (seen in the dev app).
+- [ ] **In the review**: a reviewed game shows "Opening: … (ECO)" above the book line, and the
+      book line names where it left the book.
+- [ ] **Make a book**: Settings → Opening books → "Make a book from games…", pick a PGN or a
+      .pgn.zst (e.g. a Lichess database month): progress shows, then a toast with how many
+      moves from how many games; the new book is listed and its moves show in the Explorer.
+- [ ] **Too strict**: with "both players 2400+" on a small or old file, an error says no move
+      was played often enough, and no book is left behind.
+- [ ] **A big file**: a recent Lichess month (tens of GB compressed) takes long; check that
+      memory stays reasonable and the app stays responsive while it runs.
+
 ## Accuracy by phase, P1.6 (branch feature/phase-accuracy)
 
 - [ ] **The card**: with an online account synced and a few games reviewed (automatically or

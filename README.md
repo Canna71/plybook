@@ -10,6 +10,12 @@ and [pgn-reader](https://github.com/niklasf/rust-pgn-reader) in its Rust side, a
 later), so the app as distributed is under the same license. Chess engines such as Stockfish are not bundled: you
 install them yourself, and they keep their own licenses.
 
+Data bundled with the app: opening names (ECO codes and names) from
+[lichess-org/chess-openings](https://github.com/lichess-org/chess-openings), CC0 1.0, in
+`src/assets/openings` (see its README for the version). No opening book is bundled: Settings →
+Opening books imports one or makes one from a PGN of games you choose, such as a month of the
+[Lichess database](https://database.lichess.org) (CC0).
+
 
 
 ## Features in the roadmap:
