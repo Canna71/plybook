@@ -38,7 +38,7 @@ import { explainMoveFull } from "../../models/explain";
 import { positionsBefore } from "./gamePosition";
 import { gameHistory, historyFor } from "../../models/gamehistory";
 import ExplanationEvidence from "./ExplanationEvidence";
-import { explainLines } from "../../engine/explainer";
+import { explainAlternatives, explainLines } from "../../engine/explainer";
 import BoardText from "./BoardText";
 import { getAccounts } from "../../online/onlinegames";
 import "./Review.scss";
@@ -121,6 +121,8 @@ const Review: Component = () => {
         async ({ before, after, games }) => ({
             before,
             ...(await explainLines(before, after, games)),
+            // was the engine's move the only good one? Says how hard the position was
+            alternatives: await explainAlternatives(before, games.before),
         }),
     );
 
@@ -158,6 +160,7 @@ const Review: Component = () => {
                 after: data.evaluation,
             },
             history: positionsBefore(g, m.path.previous()),
+            alternatives: lines?.alternatives,
         });
         return x?.text.length ? x : undefined;
     };

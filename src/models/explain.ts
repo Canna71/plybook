@@ -18,6 +18,8 @@ import {
     Prevented,
 } from "../reasons/threats";
 import { MoveValues, positionalReasons } from "../reasons/positional";
+import { keepsWords, keptWords, onlyMove } from "../reasons/onlymove";
+import type { EngineInfo } from "../engine/engineinterfaces";
 
 export type ExplainInput = {
     /** The position before the move */
@@ -44,6 +46,11 @@ export type ExplainInput = {
     history?: string[];
     /** The engine searched with the game's moves, not only the FEN: it counts repetitions */
     engineSawGame?: boolean;
+    /**
+     * The engine's two best lines in fenBefore (MultiPV 2), scored from White's side: is the
+     * best move the only good one? (reasons/onlymove.ts)
+     */
+    alternatives?: EngineInfo[];
 };
 
 // #region the structured result (docs/EXPLANATIONS.md)
@@ -378,6 +385,28 @@ export function explainMoveFull(
         (verdict.class === "inaccuracy" ||
             verdict.class === "mistake" ||
             verdict.class === "blunder");
+
+    // the only good move: the engine's best beats every other by a wide margin (its two lines)
+    const only =
+        verdict && input.alternatives
+            ? onlyMove(
+                  input.fenBefore,
+                  input.alternatives,
+                  input.history?.at(-1),
+              )
+            : undefined;
+    if (only && only.depth !== undefined && only.depth >= MIN_DEPTH) {
+        const atLeast = `every other move gives away at least ${only.gap.toFixed(0)}% of ${SIDE[side]}'s winning chances`;
+        if (only.best.uci === input.uci) {
+            const text = `is the only move that ${keepsWords[only.keeps]}: ${atLeast} (the next best is ${only.second.san})`;
+            sentences.push(`It ${text}.`);
+            fromLine(text);
+        } else if (bad) {
+            const text = `Only ${only.best.san} ${keptWords[only.keeps]}: ${atLeast}`;
+            sentences.push(`${text}.`);
+            fromLine(text);
+        }
+    }
 
     // the game: a third repetition, which a FEN alone does not show
     if (input.history) {

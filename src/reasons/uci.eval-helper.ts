@@ -75,6 +75,36 @@ export class Uci {
         return m[1] === "cp" ? n : Math.sign(n) * (100000 - Math.abs(n));
     }
 
+    /**
+     * The engine's `count` best lines in `fen` at `depth`, scored from White's side as the
+     * app's searchOnce gives them.
+     */
+    async lines(fen: string, depth: number, count: number) {
+        await this.send(`setoption name MultiPV value ${count}`);
+        await this.send(`position fen ${fen}`);
+        const out = await this.send(`go depth ${depth}`, /^bestmove/);
+        await this.send("setoption name MultiPV value 1");
+        const black = fen.split(" ")[1] === "b";
+        const lines: {
+            pv: string[];
+            score: { type: "cp" | "mate"; value: number };
+            depth: number;
+        }[] = [];
+        for (const l of out) {
+            const m = l.match(
+                / depth (\d+) .*multipv (\d+) score (cp|mate) (-?\d+).* pv (.+)$/,
+            );
+            if (!m) continue;
+            const value = Number(m[4]) * (black ? -1 : 1);
+            lines[Number(m[2]) - 1] = {
+                pv: m[5].trim().split(/\s+/),
+                score: { type: m[3] as "cp" | "mate", value },
+                depth: Number(m[1]),
+            };
+        }
+        return lines.filter(Boolean);
+    }
+
     /** Stockfish's `eval` output for `fen` (its NNUE piece values table among it). */
     async evalLines(fen: string): Promise<string[]> {
         await this.send(`position fen ${fen}`);

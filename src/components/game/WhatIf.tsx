@@ -9,7 +9,12 @@ import {
 import { modelStatus, rephrase } from "../../storage/model";
 import { rewordingProblems } from "../../models/coach";
 import { makeErrorToast } from "../common/Toast";
-import { explainPieceValues, explainThreats } from "../../engine/explainer";
+import {
+    explainAlternatives,
+    explainPieceValues,
+    explainThreats,
+} from "../../engine/explainer";
+import { gameHistory, historyFor } from "../../models/gamehistory";
 import BoardText from "./BoardText";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import { PlyData } from "../../models/pgn";
@@ -114,6 +119,22 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
             ),
     );
 
+    // the engine's two best lines before the move: was its best the only good move?
+    const [alternatives] = createResource(
+        () => {
+            const g = game();
+            const p = currentPath();
+            const b = before();
+            return g && p && !p.empty() && b
+                ? {
+                      fen: b.fen,
+                      history: historyFor(gameHistory(g, p.previous()), b.fen),
+                  }
+                : undefined;
+        },
+        ({ fen, history }) => explainAlternatives(fen, history),
+    );
+
     // Stockfish's piece values before and after the move (nothing for other engines)
     const [values] = createResource(
         () => {
@@ -147,6 +168,7 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
             history: history(),
             // the analysis searches with the game's moves (useChessEngine)
             engineSawGame: true,
+            alternatives: alternatives.latest,
         });
     };
     const explanation = () => full()?.text ?? [];

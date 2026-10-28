@@ -151,7 +151,8 @@ of moves, P1.2).
 
 ## Not done (yet)
 
-- The only good move and sacrifices, as evidence (P2.4h, P2.4i, from the Chesserly study).
+- Sacrifices, as evidence (P2.4i, from the Chesserly study). The only good move (P2.4h) is
+  done: `reasons/onlymove.ts`, said from the engine's two best lines.
 
 The Engine section, the review's key moments and the tutor's questions all use
 `explainMoveFull` (P2.4d); the first two show the Evidence panel. Since P2.4e the engine
