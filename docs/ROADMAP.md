@@ -72,6 +72,14 @@ How this file is used:
     your mistakes; a click opens that game (`/game?path=…&game=N`, a new URL parameter).
     Toasts say how many games came and how many mistakes the review found.
   - Not tried with a real account here (the owner's settings have none).
+- [ ] **P1.5 Book moves in the review** (from Chesserly, P2.4g): moves found in the user's
+  Polyglot books (Settings → Books) are marked as book moves and not graded against the
+  engine, and the review says where the game left the book. Done when: a reviewed game
+  shows its book moves, and their accuracy is not counted.
+- [ ] **P1.6 Accuracy by phase** (from Chesserly, P2.4g): across the reviewed games of an
+  account, accuracy in the opening, middlegame and endgame (the endgame as P2.4f defines it),
+  with ReChess's accuracy formula, to show where a player loses most. Done when: the Today or
+  History page shows the three numbers with the number of games behind them.
 
 - [x] **Fix: played games in History** (`feature/play-history`): saved after every move under
   the game's Timestamp, openable from History, result written at checkmate/stalemate.
@@ -189,7 +197,10 @@ How this file is used:
       10 and 16; in king and pawn endgames the centre alone shows nothing at depth 16 and is
       not said. The direct opposition in pawn endgames: 57-72%, said; the distant opposition
       and "the king up the board" did less well and are not.
-  - [ ] **P2.4g Study Chesserly** (owner's request 2026-10-27): read the source code and the
+  - [x] **P2.4g Study Chesserly** (owner's request 2026-10-27; done 2026-10-28,
+    `feature/chesserly`): found at github.com/sekhniashviligiorgi21/Chesserly, MIT. Its classes
+    and accuracy, compared, are in `docs/EXPLANATIONS.md`; it explains no move in words. Four
+    ideas taken as items: P2.4h, P2.4i, P1.5, P1.6; no code. Read the source code and the
     ideas behind Chesserly, a free, open-source analysis platform (game review, move
     classification from Brilliant to Blunder, accuracy, openings; Vue, FastAPI, Stockfish,
     python-chess, per its [listing](https://hunted.space/product/chesserly)). First find its
@@ -198,6 +209,16 @@ How this file is used:
     accuracy is computed, and whether it explains moves in words and how; report what is worth
     taking over (ideas, or code if the license allows; ReChess is GPL-3.0) in
     `docs/EXPLANATIONS.md`, with links.
+  - [ ] **P2.4h The only good move** (from Chesserly's "Great"): when the move played is the
+    engine's and the second-best line gives away 10 points of winning chances or more, say
+    so as evidence from the lines ("the only move that keeps the balance: the next best, Bd3,
+    gives away 14%"). Not for a recapture or taking a free piece. Uses the analysis's
+    MultiPV lines when there are two, else one extra search. Done when: tested on positions
+    with one good move and with several, and shown in the Engine section and review.
+  - [ ] **P2.4i Sacrifices** (from Chesserly's "Brilliant"): the engine's best move gives up
+    material that its line wins back, or pays for with mate or a lasting edge; read from the
+    line (`lineOutcome`), not a static exchange count. Measured like P2.4f (on puzzles tagged
+    `sacrifice`?) before it is said; dropped with why if it does not hold up.
 - [x] **P2.5 Human vs best** (`feature/human-moves`; owner review pending): Maia's most likely
   move next to the engine's best, to show traps and "natural but wrong" moves.
   - Status: a Maia profile runs next to the analysis engine (`useHumanMoves`, Lc0
