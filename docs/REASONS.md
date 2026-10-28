@@ -314,6 +314,22 @@ the steadier of the two and the one a player recognises: "gains space: the pawn 
 the opponent's position, and no pawn of theirs attacks it", an interpretation among the good
 reasons of a move judged good.
 
+**Pawn breaks (2026-10-28): dropped.** A break (lever): a quiet pawn move whose pawn attacks an
+enemy pawn. Measured as space, with the same helper (`comparePawnMoves`, `-t "pawn breaks"`):
+
+| Rule | Batch 1 | Batch 2 |
+|---|---|---|
+| Any break | 44% | 42% |
+| Break on a central pawn (c to f files) | 42% | 39% |
+| Break, defended by its own side | 50% | 49% |
+| Break on a central pawn, defended | 48% | 46% |
+
+An undefended break is worse than the position's other pawn moves (the pawn is often just
+lost); a defended one is neither better nor worse. Whether a break is good is its timing and the
+plan behind it, which a rule over one move cannot see, so "a pawn break" is not said as a reason:
+it would read as praise. (A first run counted the break's attackers instead of its defenders, so
+"defended" equalled "any break"; caught because the two rows were identical.)
+
 ## Plan
 
 - **R1, motif detectors** (`src/reasons/motifs.ts`, tested): fork, pin (relative too), skewer,
