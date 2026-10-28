@@ -9,7 +9,14 @@ import { Evaluation } from "chessops/pgn";
 import { Fact, factsFromFen } from "./facts";
 import { MoveClass } from "./review";
 import { describeOutcome, lineOutcome } from "./whatif";
-import { describeIdea, LineIdea, lineIdea } from "../reasons/threats";
+import {
+    describeIdea,
+    describePrevented,
+    isProphylaxis,
+    LineIdea,
+    lineIdea,
+    Prevented,
+} from "../reasons/threats";
 import { MoveValues, positionalReasons } from "../reasons/positional";
 
 export type ExplainInput = {
@@ -25,7 +32,7 @@ export type ExplainInput = {
     /** The engine's line after the move: the opponent's best answer first */
     replyPv?: string[];
     /** What the move stops and threatens (engine/threatsearch.ts), when searched */
-    threats?: { stopped?: LineIdea; created?: LineIdea };
+    threats?: { stopped?: LineIdea; created?: LineIdea; prevented?: Prevented };
     /** Stockfish's piece values before and after the move, when the engine is Stockfish */
     values?: MoveValues;
     /** The engine's evaluations of the positions before and after the move, from White's side */
@@ -442,10 +449,18 @@ export function explainMoveFull(
         );
     if (!bad) {
         const good = positional.filter((r) => r.good).slice(0, 2);
-        if (good.length) {
+        // prophylaxis: the opponent's wanted move (the engine's) taken away by a pawn (board)
+        const prevented = input.threats?.prevented;
+        const texts = [
+            ...(isProphylaxis(prevented)
+                ? [`prevents ${describePrevented(prevented)}`]
+                : []),
+            ...good.map((r) => r.text),
+        ].slice(0, 2);
+        if (texts.length) {
             const also = sentences.length > 1 ? "It also " : "It ";
-            sentences.push(`${also}${joinAnd(good.map((r) => r.text))}.`);
-            interpret(good.map((r) => r.text));
+            sentences.push(`${also}${joinAnd(texts)}.`);
+            interpret(texts);
         }
     }
 
