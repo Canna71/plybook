@@ -84,6 +84,19 @@ How this file is used:
     the board review and the background review (P1.4) leave book moves unmarked too. Tried in
     the dev app with a GM book: a side whose moves were all book shows "–" for accuracy.
   - Known limit: no book installed, nothing changes; with several books, one is enough.
+- [ ] **P1.7 A starter opening book and opening names** (owner's question, 2026-10-28): today
+  book moves (P1.5), the engine's book (Play) and the Explorer's book need a Polyglot book the
+  user finds and imports, and most books passed around (gm2001.bin, Performance.bin…) come
+  without a license. Instead, build one from free data: a script in `tools/` that turns
+  strong games of the Lichess database (CC0; e.g. both players 2200+, moves played at
+  least N times, up to move 15-20) into a Polyglot book with the same keys `books.rs` reads,
+  published as a release asset and offered in Settings → Books as "Download the starter book"
+  (not bundled: it would grow the installer). Plus opening names from
+  [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings) (CC0, ECO code,
+  name and position per line, a few hundred KB of TSV, small enough to bundle): the review
+  and the move list say "Ruy Lopez: Morphy Defense (C78)" and the book line names the
+  opening it left. Done when: a new user gets book moves and opening names without hunting
+  for files, and the sources and licences are in the README.
 - [ ] **P1.6 Accuracy by phase** (from Chesserly, P2.4g): across the reviewed games of an
   account, accuracy in the opening, middlegame and endgame (the endgame as P2.4f defines it),
   with ReChess's accuracy formula, to show where a player loses most. Done when: the Today or
