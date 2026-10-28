@@ -97,10 +97,18 @@ How this file is used:
   and the move list say "Ruy Lopez: Morphy Defense (C78)" and the book line names the
   opening it left. Done when: a new user gets book moves and opening names without hunting
   for files, and the sources and licences are in the README.
-- [ ] **P1.6 Accuracy by phase** (from Chesserly, P2.4g): across the reviewed games of an
+- [x] **P1.6 Accuracy by phase** (from Chesserly, P2.4g): across the reviewed games of an
   account, accuracy in the opening, middlegame and endgame (the endgame as P2.4f defines it),
   with ReChess's accuracy formula, to show where a player loses most. Done when: the Today or
   History page shows the three numbers with the number of games behind them.
+  - Status 2026-10-28 (`feature/phase-accuracy`): `models/phases.ts` (the opening is moves
+    1-10, the endgame `isEndgame` from P2.4f, the rest the middlegame; per game with
+    `gameAccuracy(moves, keep)`, whose volatility weights still come from the whole game;
+    book moves left out; a phase counts in a game from 3 of the player's moves) and
+    `online/phasestats.ts` (the newest 50 reviewed games of all accounts, read from their
+    month files on Today, book lookups cached by position). Today shows an "Accuracy by phase"
+    card with each phase's accuracy and games, the weakest in red.
+  - Not tried with real games: the owner's settings have no online account (TESTING.md).
 
 - [x] **Fix: played games in History** (`feature/play-history`): saved after every move under
   the game's Timestamp, openable from History, result written at checkmate/stalemate.
