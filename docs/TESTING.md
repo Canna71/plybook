@@ -127,6 +127,20 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## The only good move, P2.4h (branch feature/only-move)
+
+- [ ] **Played the only move**: in Analysis, paste
+      `r1b4k/pp1p2pp/2p5/3NN3/4P3/8/PPn3PP/5BK1 w - - 0 18`, play Ne7 and open the Engine
+      section: after a second or two it adds "It is the only move that keeps the advantage:
+      every other move gives away at least …% of White's winning chances (the next best is
+      Nc7)", listed in the evidence as from the engine lines.
+- [ ] **Missed it**: in the same position play another move (e.g. h3): the explanation says
+      "Only Ne7 kept the advantage: …".
+- [ ] **Review**: open a key moment of a reviewed game whose best move was forcing: the same
+      sentence appears there; for an ordinary mistake, nothing extra.
+- [ ] **Tutor still fine**: a tutor game in Play still shows its candidate moves (the
+      explainer now sets MultiPV on every search).
+
 ## The king in the endgame, P2.4f (branch feature/endgame)
 
 - [ ] **The opposition**: in the board editor set up White Ke3, Pd2, Black Kd5, White to move;

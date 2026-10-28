@@ -7,6 +7,7 @@ import anylogger from "anylogger";
 import { analysisProfile, startEngine } from "./engineprofiles";
 import {
     AnalysisOptions,
+    EngineInfo,
     IChessEngine,
     PositionHistory,
 } from "./engineinterfaces";
@@ -18,8 +19,11 @@ const log = anylogger("explainer");
 let engine: { profileId: string; started: Promise<IChessEngine> } | undefined;
 let queue: Promise<unknown> = Promise.resolve();
 const threatCache = new Map<string, Promise<MoveThreats | undefined>>();
-/** Deep enough to see a tactic through, short enough to answer within a second or two */
-const LINE_SEARCH: AnalysisOptions = { depth: 16, movetime: 1500 };
+/**
+ * Deep enough to see a tactic through, short enough to answer within a second or two. MultiPV
+ * is given every time: the engine keeps the last value it was sent (the tutor sends more)
+ */
+const LINE_SEARCH: AnalysisOptions = { depth: 16, movetime: 1500, multipv: 1 };
 
 /** The explainer engine for the current analysis profile, started once. */
 function explainerEngine(): Promise<IChessEngine> | undefined {
@@ -109,6 +113,32 @@ export function explainLines(
             replyPv: await pvAt(fenAfter, games?.after),
         };
     });
+}
+
+const alternativesCache = new Map<string, Promise<EngineInfo[] | undefined>>();
+
+/**
+ * The engine's two best lines in `fen` (MultiPV 2), scored from White's side: whether its best
+ * move is the only good one (reasons/onlymove.ts).
+ */
+export function explainAlternatives(
+    fen: string,
+    /** The game behind the position, so repetitions count (gamehistory.ts) */
+    history?: PositionHistory,
+): Promise<EngineInfo[] | undefined> {
+    const key = `${fen} ${history?.moves.join(",") ?? ""}`;
+    return enqueue(
+        alternativesCache,
+        key,
+        async (engine) =>
+            (
+                await searchOnce(engine, fen, {
+                    ...LINE_SEARCH,
+                    multipv: 2,
+                    history,
+                })
+            ).lines,
+    );
 }
 
 const valuesCache = new Map<string, Promise<PieceValues | undefined>>();

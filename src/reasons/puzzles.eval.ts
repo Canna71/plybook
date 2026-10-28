@@ -43,6 +43,7 @@ import {
 } from "./threats";
 import { nullMoveFen } from "../models/threat";
 import { Uci } from "./uci.eval-helper";
+import { onlyMove } from "./onlymove";
 import { parsePieceValues } from "../engine/piecevalues";
 
 const CSV = process.env.PUZZLES_CSV;
@@ -566,6 +567,43 @@ it.skipIf(!GAMES_PGN || !STOCKFISH || !PAWN_ENDGAME)(
             () => Promise.resolve(true as const),
             endgamePositions(GAMES_PGN!, isPawnEndgame),
         ),
+);
+
+const ONLY_MOVE = Number(process.env.ONLY_MOVE ?? 0);
+
+/**
+ * P2.4h: how often is the engine's best move the only good one (onlyMove: the second-best
+ * line gives away 10% or more), in game positions at depth 16? A rate, not a precision: the
+ * claim is the engine's own. Too often and it would be noise. EXAMPLES prints some.
+ */
+it.skipIf(!GAMES_PGN || !STOCKFISH || !ONLY_MOVE)(
+    "only move rate",
+    async () => {
+        const engine = new Uci(STOCKFISH!);
+        await engine.init();
+        let seen = 0;
+        const kept: Record<string, number> = {};
+        let shown = 0;
+        for (const fen of gamePositions(GAMES_PGN!)) {
+            if (seen >= ONLY_MOVE) break;
+            const lines = await engine.lines(fen, 16, 2);
+            if (lines.length < 2) continue;
+            seen++;
+            const only = onlyMove(fen, lines);
+            if (!only) continue;
+            kept[only.keeps] = (kept[only.keeps] ?? 0) + 1;
+            if (shown++ < EXAMPLES)
+                console.log(
+                    `  ${fen}: ${only.best.san} (next ${only.second.san}, -${only.gap.toFixed(0)}%)`,
+                );
+        }
+        engine.quit();
+        const n = Object.values(kept).reduce((a, b) => a + b, 0);
+        console.log(
+            `positions ${seen}, only move in ${n} (${((100 * n) / seen).toFixed(0)}%):`,
+            kept,
+        );
+    },
 );
 
 it.skipIf(!GAMES_PGN || !STOCKFISH || !HOLES)(

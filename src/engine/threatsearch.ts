@@ -15,7 +15,12 @@ import {
 import { AnalysisOptions, IChessEngine } from "./engineinterfaces";
 import { searchOnce } from "./search";
 
-export const THREAT_SEARCH: AnalysisOptions = { depth: 12, movetime: 500 };
+/** One line: the engine keeps the MultiPV it was last sent */
+export const THREAT_SEARCH: AnalysisOptions = {
+    depth: 12,
+    movetime: 500,
+    multipv: 1,
+};
 
 export type MoveThreats = {
     /** The opponent's threat the move stopped */

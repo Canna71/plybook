@@ -124,6 +124,40 @@ describe("explainMove", () => {
         );
     });
 
+    it("says when the move played was the only good one, from two engine lines", () => {
+        const fenBefore =
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        const alternatives = (depth: number) => [
+            { pv: ["e2e4"], score: { type: "cp" as const, value: 30 }, depth },
+            {
+                pv: ["d2d4"],
+                score: { type: "cp" as const, value: -200 },
+                depth,
+            },
+        ];
+        const evaluations = {
+            before: { pawns: 0.3, depth: 16 },
+            after: { pawns: 0.3, depth: 16 },
+        };
+        const say = (uci: string, depth: number, cls: "best" | "mistake") =>
+            explainMove({
+                fenBefore,
+                uci,
+                verdict: { class: cls, loss: cls === "best" ? 0 : 12 },
+                alternatives: alternatives(depth),
+                evaluations,
+            }).join(" ");
+        expect(say("e2e4", 16, "best")).toMatch(
+            /It is the only move that keeps the balance: every other move gives away at least \d+% of White's winning chances \(the next best is d4\)\./,
+        );
+        // a mistake: only the engine's move kept the balance
+        expect(say("g2g4", 16, "mistake")).toMatch(
+            /Only e4 kept the balance: every other move gives away at least \d+%/,
+        );
+        // too shallow to say
+        expect(say("e2e4", 8, "best")).not.toContain("only move");
+    });
+
     it("names what the opponent's answer does", () => {
         // the same position, but Black plays a6 and allows the fork: Nxf7 was the point
         const text = explainMove({

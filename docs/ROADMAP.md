@@ -209,7 +209,14 @@ How this file is used:
     accuracy is computed, and whether it explains moves in words and how; report what is worth
     taking over (ideas, or code if the license allows; ReChess is GPL-3.0) in
     `docs/EXPLANATIONS.md`, with links.
-  - [ ] **P2.4h The only good move** (from Chesserly's "Great"): when the move played is the
+  - [x] **P2.4h The only good move** (`feature/only-move`, 2026-10-28): `reasons/onlymove.ts`
+    from a MultiPV 2 search on the explainer engine (`explainAlternatives`, cached), in the
+    Engine section and the review's key moments: "It is the only move that keeps the balance:
+    every other move gives away at least 21% of White's winning chances (the next best is
+    d4)", or for a mistake "Only Ne7 kept the advantage: …". Evidence from the lines, said
+    from depth 10. Fires in 7% of game positions at depth 16 (`ONLY_MOVE=1000`, 1,000
+    positions: 35 advantage, 33 balance, 4 damage, 2 mate). The explainer's searches now send
+    MultiPV every time (the tutor's multi-line search left it set). When the move played is the
     engine's and the second-best line gives away 10 points of winning chances or more, say
     so as evidence from the lines ("the only move that keeps the balance: the next best, Bd3,
     gives away 14%"). Not for a recapture or taking a free piece. Uses the analysis's
