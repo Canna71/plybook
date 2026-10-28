@@ -6,6 +6,7 @@
 import { existsSync, readFileSync } from "fs";
 import { it } from "vitest";
 import {
+    Board,
     Chess,
     makeSquare,
     NormalMove,
@@ -19,7 +20,17 @@ import { makeFen, parseFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import { parsePgn, startingPosition } from "chessops/pgn";
 import { makeUci } from "chessops";
-import { badBishops, colourOf, positionalReasons, space } from "./positional";
+import {
+    badBishops,
+    colourOf,
+    directOpposition,
+    distance,
+    isEndgame,
+    isPawnEndgame,
+    positionalReasons,
+    space,
+    toCentre,
+} from "./positional";
 import { factsFromFen } from "../models/facts";
 import { lineMotifs, mainReasons, Motif } from "./motifs";
 import {
@@ -292,17 +303,19 @@ async function compareMoves<C>(
     which: (pos: Chess) => NormalMove[],
     versions: (m: QuietMove<C>) => [string, boolean | undefined][],
     prepare: (fen: string, engine: Uci) => Promise<C | undefined>,
+    positions: Iterable<string> = gamePositions(GAMES_PGN!),
 ) {
     const engine = new Uci(STOCKFISH!);
     await engine.init();
-    const DEPTH = 10;
+    // deeper for pawn endgames, where the opposition decides many moves ahead
+    const DEPTH = Number(process.env.DEPTH ?? 10);
     const mean = (xs: number[]) =>
         xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
     type Split = { picked: number[]; other: number[] };
     const all: Record<string, Split> = {};
     const paired: Record<string, { n: number; better: number }> = {};
     let seen = 0;
-    for (const start of gamePositions(GAMES_PGN!)) {
+    for (const start of positions) {
         if (seen >= count) break;
         const pos = Chess.fromSetup(parseFen(start).unwrap()).unwrap();
         const fen = makeFen(pos.toSetup());
@@ -463,6 +476,95 @@ it.skipIf(!GAMES_PGN || !STOCKFISH || !PROPHYLAXIS)(
                     return undefined;
                 return pv[0];
             },
+        ),
+);
+
+const ENDGAME = Number(process.env.ENDGAME ?? 0);
+const PAWN_ENDGAME = Number(process.env.PAWN_ENDGAME ?? 0);
+
+/**
+ * Endgame positions from the games in a PGN file: from the first ply where `is` holds, every
+ * sixth ply where it still does, at most four a game (either side to move). Lazy: the file is
+ * read only as far as the measurement needs.
+ */
+function* endgamePositions(path: string, is: (board: Board) => boolean) {
+    for (const text of readFileSync(path, "utf8").split(/\n(?=\[Event )/)) {
+        const game = parsePgn(text)[0];
+        if (!game) continue;
+        const pos = startingPosition(game.headers).unwrap();
+        let since = 0;
+        let taken = 0;
+        for (const node of game.moves.mainline()) {
+            const move = parseSan(pos, node.san);
+            if (!move) break;
+            pos.play(move);
+            if (!is(pos.board)) continue;
+            if (since++ % 6 !== 0) continue;
+            yield makeFen(pos.toSetup());
+            if (++taken >= 4) break;
+        }
+    }
+}
+
+/**
+ * Endgame technique, the king: in an endgame, do king moves towards the centre, up the board or
+ * towards the enemy pawns give away less than the position's other quiet moves, and than its
+ * other king moves? And the opposition: after the move the kings face each other on a file or
+ * rank with an odd number of squares between them (direct: one), the opponent to move.
+ */
+const kingVersions = ({
+    pos,
+    move,
+}: QuietMove<true>): [string, boolean | undefined][] => {
+    const me = pos.turn;
+    const king = pos.board.get(move.from)?.role === "king";
+    const theirKing = pos.board.kingOf(opposite(me))!;
+    const rel = (sq: number) => (me === "white" ? sq >> 3 : 7 - (sq >> 3));
+    const theirPawns = [...pos.board.pawn.intersect(pos.board[opposite(me)])];
+    const nearest = (sq: number) =>
+        Math.min(...theirPawns.map((p) => distance(sq, p)));
+    const centre = king && toCentre(move.to) < toCentre(move.from);
+    const forward = king && rel(move.to) > rel(move.from);
+    const toPawns =
+        king && theirPawns.length > 0 && nearest(move.to) < nearest(move.from);
+    const df = Math.abs((move.to & 7) - (theirKing & 7));
+    const dr = Math.abs((move.to >> 3) - (theirKing >> 3));
+    const facing = (df === 0 && dr % 2 === 0) || (dr === 0 && df % 2 === 0);
+    const direct = directOpposition(move.to, theirKing);
+    const onlyKings = (holds: boolean) => (king ? holds : undefined);
+    return [
+        ["king towards the centre", centre],
+        ["king up the board", forward],
+        ["king towards the enemy pawns", toPawns],
+        ["king moves: towards the centre", onlyKings(centre)],
+        ["king moves: up the board", onlyKings(forward)],
+        ["king moves: towards the enemy pawns", onlyKings(toPawns)],
+        ["king moves: takes the opposition", onlyKings(facing)],
+        ["king moves: takes the direct opposition", onlyKings(direct)],
+    ];
+};
+
+it.skipIf(!GAMES_PGN || !STOCKFISH || !ENDGAME)(
+    "endgame kings vs the engine",
+    () =>
+        compareMoves(
+            ENDGAME,
+            quietMoves,
+            kingVersions,
+            () => Promise.resolve(true as const),
+            endgamePositions(GAMES_PGN!, isEndgame),
+        ),
+);
+
+it.skipIf(!GAMES_PGN || !STOCKFISH || !PAWN_ENDGAME)(
+    "pawn endgame kings vs the engine",
+    () =>
+        compareMoves(
+            PAWN_ENDGAME,
+            quietMoves,
+            kingVersions,
+            () => Promise.resolve(true as const),
+            endgamePositions(GAMES_PGN!, isPawnEndgame),
         ),
 );
 

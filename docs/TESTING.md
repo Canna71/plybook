@@ -127,6 +127,15 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## The king in the endgame, P2.4f (branch feature/endgame)
+
+- [ ] **The opposition**: in the board editor set up White Ke3, Pd2, Black Kd5, White to move;
+      analyse and play Kd3: if the engine judges it good, the explanation says it "takes the
+      opposition: the kings stand face to face…", as an interpretation.
+- [ ] **King activity**: in a rook endgame (e.g. White Kf2, Ra1; Black Ke6, pawn a5) a king
+      move towards the a-pawn says "brings the king towards the opponent's pawns".
+- [ ] **Not in the middlegame**: a king move with queens on the board never says either.
+
 ## Prophylaxis, P2.4f (branch feature/prophylaxis)
 
 - [ ] **h3 against …Bg4**: in Analysis, 1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.c3 Nf6 5.d3 d6, play
