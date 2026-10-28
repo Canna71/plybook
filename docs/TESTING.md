@@ -127,6 +127,20 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Book moves in the review, P1.5 (branch feature/book-moves)
+
+- [ ] **Book line**: with a Polyglot book in Settings → Books, play 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6
+      4.Ba4 Nf6 5.h4 in Analysis and click "Review the game": the Evaluation tab says "In your
+      books until 4… Nf6, out of book with 5. h4. Book moves are not graded"; both moves are
+      links to their position. Seen working in the dev app.
+- [ ] **Not graded**: a book move that the engine dislikes gets no ?! and is not a key moment;
+      Black, all of whose moves were book, shows "–" for accuracy.
+- [ ] **Without books**: remove all books: the review is as before (no book line).
+- [ ] **Background review** (Today, after a sync): opening moves in your books get no ?!.
+- [ ] **A review that hangs at "Analyzing position 0 of …"**: seen once, on the first review
+      right after restarting the dev app; not reproduced (with or without this branch). If it
+      happens again, note what ran before.
+
 ## Sacrifices, P2.4i (branch feature/sacrifices)
 
 - [ ] **An exchange sacrifice**: in Analysis, paste

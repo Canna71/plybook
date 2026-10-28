@@ -29,11 +29,15 @@ import { getSettingValue } from "../../models/settings";
 import { EvaluationExt, Path } from "../../models/pgn";
 import { makeFen, parseFen } from "chessops/fen";
 import { ReviewProgress } from "./GameContext";
-import { annotateMistakes } from "../../models/review";
+import { annotateMistakes, lineMoves, mainline } from "../../models/review";
 import { nullMoveFen } from "../../models/threat";
 import { scoreToEvaluation } from "../../models/whatif";
 import { pickBookMove } from "../../models/books";
-import { bookMoves, ENGINE_BOOK_SETTING } from "../../storage/books";
+import {
+    bookMoves,
+    ENGINE_BOOK_SETTING,
+    gameBookPlies,
+} from "../../storage/books";
 import { makeUci, parseUci } from "chessops";
 import { Chess } from "chessops/chess";
 import { gameHistory, historyFor, withMove } from "../../models/gamehistory";
@@ -231,13 +235,18 @@ export function useChessEngine(options: ChessEngineOptions) {
             });
             return;
         }
-        ng = annotateMistakes(ng);
-        batch(() => {
-            setGame(ng);
-            log.debug("Reviewing done", ng);
-            setReviewPositionPath(undefined);
+        // book moves get no ?! (P1.5): looked up when the review started, long done by now
+        void reviewBook.then((plies) => {
+            const done = annotateMistakes(ng, plies);
+            batch(() => {
+                setGame(done);
+                log.debug("Reviewing done", done);
+                setReviewPositionPath(undefined);
+            });
         });
     };
+    /** How many of the reviewed game's first moves are in the user's books */
+    let reviewBook: Promise<number> = Promise.resolve(0);
 
     const onEngineBestMove = (bestMove: string, _ponder: string) => {
         pendingSearches = Math.max(0, pendingSearches - 1);
@@ -327,6 +336,7 @@ export function useChessEngine(options: ChessEngineOptions) {
         engine()?.stop();
 
         const total = game()!.mainline.length + 1;
+        reviewBook = gameBookPlies(lineMoves(mainline(game()!))).catch(() => 0);
 
         batch(() => {
             // setIsReviewing(true);

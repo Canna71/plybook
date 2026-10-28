@@ -10,7 +10,14 @@ import { EvaluationExt, Path } from "./pgn";
 import type { GameModel } from "./GameModel";
 import type { Score } from "../engine/engineinterfaces";
 
-export type MoveClass = "best" | "good" | "inaccuracy" | "mistake" | "blunder";
+/** "book": in the user's opening books, so not graded (P1.5) */
+export type MoveClass =
+    | "book"
+    | "best"
+    | "good"
+    | "inaccuracy"
+    | "mistake"
+    | "blunder";
 
 /** Win-percentage points lost: Lichess uses 0.1 / 0.2 / 0.3 winning chances (on -1..1). */
 const THRESHOLDS: [MoveClass, number][] = [
@@ -169,9 +176,10 @@ function mateClass(
 
 /**
  * Reviews a line given as its positions, starting with the one before the first move.
- * Moves whose before or after position has no evaluation are skipped.
+ * Moves whose before or after position has no evaluation are skipped. The first `bookPlies`
+ * moves are book moves (models/books.ts): classed "book", not graded.
  */
-export function reviewLine(nodes: ReviewNode[]): ReviewedMove[] {
+export function reviewLine(nodes: ReviewNode[], bookPlies = 0): ReviewedMove[] {
     const moves: ReviewedMove[] = [];
     for (let i = 1; i < nodes.length; i++) {
         const before = nodes[i - 1];
@@ -197,15 +205,18 @@ export function reviewLine(nodes: ReviewNode[]): ReviewedMove[] {
             winAfter,
             loss,
             accuracy: moveAccuracy(winBefore, winAfter),
-            class: isBest
-                ? "best"
-                : (mateClass(
-                      evBefore,
-                      before.turn,
-                      evAfter,
-                      after.turn,
-                      color,
-                  ) ?? classify(loss, false)),
+            class:
+                i <= bookPlies
+                    ? "book"
+                    : isBest
+                      ? "best"
+                      : (mateClass(
+                            evBefore,
+                            before.turn,
+                            evAfter,
+                            after.turn,
+                            color,
+                        ) ?? classify(loss, false)),
             bestSan,
             bestUci: bestSan ? (before.evaluation?.ext as string) : undefined,
             fenBefore: before.fen,
@@ -220,10 +231,17 @@ export const mainline = (game: GameModel): ReviewNode[] => [
     ...game.mainline,
 ];
 
-/** Adds ?!, ? and ?? to the moves the review flags, unless the user annotated them. */
-export function annotateMistakes(game: GameModel): GameModel {
+/** Each move of a line in SAN with the position before it, for the book lookup. */
+export const lineMoves = (nodes: ReviewNode[]) =>
+    nodes.slice(1).map((node, i) => ({ fen: nodes[i].fen, san: node.san }));
+
+/**
+ * Adds ?!, ? and ?? to the moves the review flags, unless the user annotated them. The first
+ * `bookPlies` moves are book moves and get none.
+ */
+export function annotateMistakes(game: GameModel, bookPlies = 0): GameModel {
     let g = game;
-    for (const move of reviewLine(mainline(g))) {
+    for (const move of reviewLine(mainline(g), bookPlies)) {
         const nag = CLASS_NAGS[move.class];
         const data = g.dataAt(move.path);
         if (nag && data && "nags" in data && data.nags.length === 0) {
@@ -246,7 +264,8 @@ function stdDev(xs: number[]) {
 
 /**
  * Lichess game accuracy: the average of a volatility-weighted mean and the harmonic mean of
- * the move accuracies, so a few big blunders weigh more than in a plain average.
+ * the move accuracies, so a few big blunders weigh more than in a plain average. Book moves
+ * are left out.
  */
 export function gameAccuracy(
     moves: ReviewedMove[],
@@ -277,9 +296,10 @@ export function gameAccuracy(
     const weights = windows.map((w) => Math.max(0.5, Math.min(12, stdDev(w))));
 
     for (const color of ["white", "black"] as Color[]) {
+        // book moves are not graded (P1.5): the weights still come from the whole game
         const own = moves
             .map((m, i) => ({ m, w: weights[i] ?? 1 }))
-            .filter(({ m }) => m.color === color);
+            .filter(({ m }) => m.color === color && m.class !== "book");
         if (own.length === 0) continue;
         const weighted =
             own.reduce((s, { m, w }) => s + m.accuracy * w, 0) /
