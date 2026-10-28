@@ -177,7 +177,12 @@ How this file is used:
       worth is its timing and plan, which one move does not show. Saying "a pawn break" would
       imply praise the data does not support; breaks the engine likes are explained by their
       threats and lines. The measurement stays (`-t "pawn breaks"`) for a later, plan-aware try.
-      Next: prophylaxis beyond stopping a direct threat.
+    - [x] Prophylaxis (`feature/prophylaxis`, 2026-10-28): the opponent's wanted move (their
+      null-move line, already searched for stopped threats, when it is no threat) taken away
+      by a pawn now covering its square, as h3 against …Bg4. Better than the position's other
+      quiet moves in 78-79% of balanced positions (two batches of 2000). Taking it away
+      otherwise (no longer legal, the piece left undefended) is worse, 32-47%, and is not said.
+      Next: endgame technique (king activity, the opposition).
   - [ ] **P2.4g Study Chesserly** (owner's request 2026-10-27): read the source code and the
     ideas behind Chesserly, a free, open-source analysis platform (game review, move
     classification from Brilliant to Blunder, accuracy, openings; Vue, FastAPI, Stockfish,

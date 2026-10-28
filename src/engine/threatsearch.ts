@@ -5,8 +5,11 @@
 import { nullMoveFen } from "../models/threat";
 import {
     createdThreat,
+    isProphylaxis,
     LineIdea,
     playUci,
+    Prevented,
+    preventedMove,
     stoppedThreat,
 } from "../reasons/threats";
 import { AnalysisOptions, IChessEngine } from "./engineinterfaces";
@@ -19,6 +22,8 @@ export type MoveThreats = {
     stopped?: LineIdea;
     /** What the move threatens next */
     created?: LineIdea;
+    /** No threat stopped, but the opponent's wanted move taken away by a pawn (prophylaxis) */
+    prevented?: Prevented;
 };
 
 /**
@@ -40,10 +45,16 @@ export async function moveThreats(
     if (!after) return {};
     const theirs = await pvAt(nullMoveFen(fenBefore));
     const ours = await pvAt(nullMoveFen(after));
+    const stopped = theirs.length
+        ? stoppedThreat(fenBefore, uci, theirs, replyPv)
+        : undefined;
+    const prevented =
+        !stopped && theirs.length
+            ? preventedMove(fenBefore, uci, theirs[0])
+            : undefined;
     return {
-        stopped: theirs.length
-            ? stoppedThreat(fenBefore, uci, theirs, replyPv)
-            : undefined,
+        stopped,
         created: ours.length ? createdThreat(fenBefore, uci, ours) : undefined,
+        prevented: isProphylaxis(prevented) ? prevented : undefined,
     };
 }

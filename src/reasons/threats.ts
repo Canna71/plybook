@@ -4,7 +4,17 @@
 // material the line wins (whatif.ts). Pure functions over engine lines, for tests; the
 // searches themselves are threatSearch (engine/threatsearch.ts).
 
-import { Chess, Color, opposite, parseSquare, parseUci } from "chessops";
+import {
+    Chess,
+    Color,
+    makeSquare,
+    opposite,
+    parseSquare,
+    parseUci,
+    Role,
+    Square,
+} from "chessops";
+import { pawnAttacks } from "chessops/attacks";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { lineOutcome } from "../models/whatif";
@@ -141,6 +151,89 @@ export function stoppedThreat(
     if (replyPv && still(lineIdea(after, replyPv))) return undefined;
     return threat;
 }
+
+/** A move the opponent wanted that ours takes away (P2.4f prophylaxis). */
+export type Prevented = {
+    /** The opponent's move, in SAN from the null-move position before ours */
+    san: string;
+    /** It is no longer legal, or the piece would land where a pawn takes it, or undefended */
+    how: "illegal" | "pawn" | "hangs";
+    /** The square it would go to */
+    square: string;
+    /** The piece that would move */
+    role: Role;
+    /** For "pawn": our pawn that would take it */
+    pawn?: string;
+};
+
+/**
+ * Prophylaxis beyond a direct threat: `wish` is the opponent's move in the null-move position
+ * before `uci` (the first move of `threatPv`, whether or not it is a threat). Does `uci` take it
+ * away? Either it is no longer legal (a square taken, a line closed: not by a check, nor by
+ * capturing the piece), or a piece making it would land on a square one of our pawns now
+ * attacks, or where we attack it and nothing defends it, which was not so before `uci`.
+ */
+export function preventedMove(
+    fenBefore: string,
+    uci: string,
+    wish: string,
+): Prevented | undefined {
+    const passed = nullMoveFen(fenBefore);
+    const before = passed ? positionOf(passed) : undefined;
+    const fenAfter = playUci(fenBefore, uci);
+    const after = fenAfter ? positionOf(fenAfter) : undefined;
+    const move = parseUci(wish);
+    if (!before || !after || !move || !("from" in move)) return undefined;
+    if (!before.isLegal(move) || after.isCheck()) return undefined;
+    const piece = before.board.get(move.from)!;
+    const moved = after.board.get(move.from);
+    if (moved?.role !== piece.role || moved.color !== piece.color)
+        return undefined;
+    const prevented = (how: Prevented["how"], pawn?: Square): Prevented => ({
+        san: makeSan(before, move),
+        how,
+        square: makeSquare(move.to),
+        role: piece.role,
+        pawn: pawn === undefined ? undefined : makeSquare(pawn),
+    });
+    if (!after.isLegal(move)) return prevented("illegal");
+    // where the piece would stand, before our move and after it
+    if (piece.role === "pawn" || piece.role === "king") return undefined;
+    const them = piece.color;
+    const me = opposite(them);
+    const landing = (pos: Chess) => {
+        const p = pos.clone();
+        p.play(move);
+        const occupied = p.board.occupied;
+        const ourPawns = p.board.pawn.intersect(p.board[me]);
+        return {
+            pawn: pawnAttacks(them, move.to).intersect(ourPawns).first(),
+            hangs:
+                p.kingAttackers(move.to, me, occupied).nonEmpty() &&
+                p.kingAttackers(move.to, them, occupied).isEmpty(),
+        };
+    };
+    const was = landing(before);
+    const now = landing(after);
+    if (now.pawn !== undefined && was.pawn === undefined)
+        return prevented("pawn", now.pawn);
+    if (now.hangs && !was.hangs && was.pawn === undefined)
+        return prevented("hangs");
+    return undefined;
+}
+
+/**
+ * The prophylaxis said in explanations: only a pawn taking a square away holds up against the
+ * engine (better than the position's other quiet moves in 78-79% of balanced positions; the
+ * illegal and undefended kinds are worse, 37-47%: docs/REASONS.md).
+ */
+export const isProphylaxis = (
+    p: Prevented | undefined,
+): p is Prevented & { pawn: string } => p?.how === "pawn" && !!p.pawn;
+
+/** "Bg4: the pawn on h3 would take the bishop" */
+export const describePrevented = (p: Prevented & { pawn: string }) =>
+    `${p.san}: the pawn on ${p.pawn} would take the ${p.role}`;
 
 /** What `uci` threatens: our line in the null-move position after it (`ourPv`). */
 export function createdThreat(

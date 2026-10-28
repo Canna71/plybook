@@ -127,6 +127,16 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Prophylaxis, P2.4f (branch feature/prophylaxis)
+
+- [ ] **h3 against …Bg4**: in Analysis, 1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.c3 Nf6 5.d3 d6, play
+      6.h3 and open the Engine section's explanation: if the engine judges it good, it says
+      "prevents Bg4: the pawn on h3 would take the bishop" (only when Black's wanted move,
+      per the engine, is really …Bg4; otherwise nothing). It reads as an interpretation in
+      the evidence, not a fact.
+- [ ] **No false prophylaxis**: a knight or bishop move that happens to block a square
+      never says "prevents".
+
 ## Space, P2.4f (branch feature/space)
 
 - [ ] **The Advance French**: 3.e5 says it gains space (the pawn on e5 cramps Black's position)

@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
+import { Chess } from "chessops";
+import { makeFen } from "chessops/fen";
+import { parseSan } from "chessops/san";
 import {
     createdThreat,
     describeIdea,
+    describePrevented,
+    isProphylaxis,
     isThreat,
     lineIdea,
+    preventedMove,
     stoppedThreat,
 } from "./threats";
 
@@ -77,6 +83,51 @@ describe("createdThreat", () => {
     it("a quiet line threatens nothing", () => {
         // after 3.Bc4, if Black passed: a quiet knight move
         expect(createdThreat(BEFORE_BC4, "f1c4", ["g1f3"])).toBeUndefined();
+    });
+});
+
+/** The FEN after `sans` from the start */
+function after(sans: string): string {
+    const pos = Chess.default();
+    for (const san of sans.split(" ")) pos.play(parseSan(pos, san)!);
+    return makeFen(pos.toSetup());
+}
+
+describe("preventedMove", () => {
+    // Italian, White to move; Black would like ...Bg4 (pinning the knight) or ...Nd4
+    const ITALIAN = after("e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d3 d6");
+
+    it("h3 takes g4 from the bishop", () => {
+        const p = preventedMove(ITALIAN, "h2h3", "c8g4");
+        expect(p).toEqual({
+            san: "Bg4",
+            how: "pawn",
+            square: "g4",
+            role: "bishop",
+            pawn: "h3",
+        });
+        expect(isProphylaxis(p) && describePrevented(p)).toBe(
+            "Bg4: the pawn on h3 would take the bishop",
+        );
+    });
+
+    it("a move that changes nothing for the wish prevents nothing", () => {
+        expect(preventedMove(ITALIAN, "a2a3", "c8g4")).toBeUndefined();
+        expect(preventedMove(ITALIAN, "b1d2", "c8g4")).toBeUndefined();
+    });
+
+    it("Bb5 pins the knight, so ...Nd4 is no longer legal (measured, not said)", () => {
+        const p = preventedMove(ITALIAN, "c4b5", "c6d4");
+        expect(p?.how).toBe("illegal");
+        expect(isProphylaxis(p)).toBe(false);
+    });
+
+    it("a check is not prophylaxis", () => {
+        expect(preventedMove(ITALIAN, "c4f7", "c8g4")).toBeUndefined();
+    });
+
+    it("a square a pawn already covered is not taken away (...Nd4 against c3)", () => {
+        expect(preventedMove(ITALIAN, "h2h3", "c6d4")).toBeUndefined();
     });
 });
 

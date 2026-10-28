@@ -330,6 +330,34 @@ plan behind it, which a rule over one move cannot see, so "a pawn break" is not 
 it would read as praise. (A first run counted the break's attackers instead of its defenders, so
 "defended" equalled "any break"; caught because the two rows were identical.)
 
+**Prophylaxis (2026-10-28).** Stopping a direct threat is R2 already; prophylaxis is taking away
+a move the opponent *wants* but that wins nothing yet. The wanted move is the first move of the
+opponent's line in the null-move position before ours (the search R2 runs anyway, so the app
+pays nothing more), in positions where that line is no threat. `preventedMove`
+(`src/reasons/threats.ts`) says whether a move takes it away, in three ways: it is no longer
+legal (a square occupied, a line closed, a pin; not by a check or by capturing the piece), or the
+piece would land on a square one of our pawns now attacks, or where we attack it and nothing
+defends it, neither being so before. Measured against all quiet moves (no captures, no checks)
+of the same balanced position, with the same helper as space, generalised (`compareMoves`, `-t
+prophylaxis`, `PROPHYLAXIS=2000`); the opponent's wanted move from a depth-10 search:
+
+| Rule | Batch 1 | Batch 2 | Moves |
+|---|---|---|---|
+| Takes the wanted move away, any way | 46% | 45% | ~2,300 |
+| A pawn now covers its square (kept) | 78% | 79% | ~310 |
+| … compared with the other pawn moves only | 68% | 62% | |
+| It is no longer legal | 41% | 37% | ~1,300 |
+| The piece would land undefended | 41% | 47% | ~700 |
+| Piece moves that take it away | 33% | 32% | ~1,750 |
+
+(Percentages: how often those moves give away less than the position's other quiet moves; mean
+loss 12-13% against 19%.) The textbook kind holds up, the strongest signal of P2.4f: h3 against
+…Bg4, a3 against …Nb4. The others do not: the moves that make the wish illegal or leave the
+piece undefended are mostly piece moves that block a square or a line by the way, worse than
+the alternatives. Only the pawn kind is said, after a stopped threat and among a good move's
+positional reasons, as an interpretation: "prevents Bg4: the pawn on h3 would take the bishop".
+(The space measurement, rerun through `compareMoves`, gave its numbers exactly.)
+
 ## Plan
 
 - **R1, motif detectors** (`src/reasons/motifs.ts`, tested): fork, pin (relative too), skewer,

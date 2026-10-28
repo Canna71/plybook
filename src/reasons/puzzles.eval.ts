@@ -28,6 +28,7 @@ import {
     isThreat,
     lineIdea,
     playUci,
+    preventedMove,
 } from "./threats";
 import { nullMoveFen } from "../models/threat";
 import { Uci } from "./uci.eval-helper";
@@ -251,19 +252,46 @@ function gamePositions(path: string): string[] {
 const SPACE = Number(process.env.SPACE ?? 0);
 const BREAKS = Number(process.env.BREAKS ?? 0);
 
-/** A quiet pawn move in a position from a game: what a rule is asked about */
-type PawnMove = { pos: Chess; move: NormalMove; after: Chess };
+/** A quiet move in a position from a game: what a rule is asked about */
+type QuietMove<C> = { pos: Chess; move: NormalMove; after: Chess; context: C };
+
+/** Moves that capture nothing (castling as the king's two-square move) */
+const nonCaptures = (pos: Chess): NormalMove[] =>
+    [...pos.allDests()]
+        .flatMap(([from, tos]) => [...tos].map((to) => ({ from, to })))
+        .filter((m) => !pos.board.has(m.to));
+
+/** Non-capturing pawn moves that do not promote */
+const quietPawnMoves = (pos: Chess) =>
+    nonCaptures(pos).filter(
+        (m) =>
+            pos.board.get(m.from)?.role === "pawn" &&
+            (m.to >> 3) % 7 !== 0 && // no promotions
+            (m.from & 7) === (m.to & 7), // no en passant
+    );
+
+/** Non-captures that do not give check */
+const quietMoves = (pos: Chess) =>
+    nonCaptures(pos).filter((m) => {
+        const after = pos.clone();
+        after.play(m);
+        return !after.isCheck();
+    });
 
 /**
- * P2.4f comparison of quiet pawn moves against the engine, for a positional idea: in `count`
- * balanced positions from games (GAMES_PGN), every quiet pawn move is searched (`searchmoves`);
- * for each version of a rule, do the moves it picks out give away less winning chances than the
- * other pawn moves of the same position? Prints, per version, how many moves it picks, their
- * mean loss against the rest's, and in how many positions with both they did better.
+ * P2.4f comparison of quiet moves against the engine, for a positional idea: in `count`
+ * balanced positions from games (GAMES_PGN), every move `which` lists is searched
+ * (`searchmoves`); for each version of a rule, do the moves it picks out give away less winning
+ * chances than the other moves of the same position? A version answers undefined for a move it
+ * leaves out of its comparison. `prepare` computes what the versions need about the position
+ * (skipped when undefined). Prints, per version, how many moves it picks, their mean loss
+ * against the rest's, and in how many positions with both they did better.
  */
-async function comparePawnMoves(
+async function compareMoves<C>(
     count: number,
-    versions: (m: PawnMove) => [string, boolean][],
+    which: (pos: Chess) => NormalMove[],
+    versions: (m: QuietMove<C>) => [string, boolean | undefined][],
+    prepare: (fen: string, engine: Uci) => Promise<C | undefined>,
 ) {
     const engine = new Uci(STOCKFISH!);
     await engine.init();
@@ -278,19 +306,13 @@ async function comparePawnMoves(
         if (seen >= count) break;
         const pos = Chess.fromSetup(parseFen(start).unwrap()).unwrap();
         const fen = makeFen(pos.toSetup());
-        const moves = [...pos.allDests()]
-            .filter(([from]) => pos.board.get(from)?.role === "pawn")
-            .flatMap(([from, tos]) => [...tos].map((to) => ({ from, to })))
-            .filter(
-                (m) =>
-                    !pos.board.has(m.to) &&
-                    (m.to >> 3) % 7 !== 0 && // no promotions
-                    (m.from & 7) === (m.to & 7), // no en passant
-            );
+        const moves = which(pos);
         if (moves.length < 2) continue;
         const best = await engine.score(fen, DEPTH);
-        // balanced positions only: in a sharp one every pawn move loses for tactical reasons
+        // balanced positions only: in a sharp one every quiet move loses for tactical reasons
         if (best === undefined || Math.abs(best) > 200) continue;
+        const context = await prepare(fen, engine);
+        if (context === undefined) continue;
         seen++;
         const here: Record<string, Split> = {};
         for (const move of moves) {
@@ -299,7 +321,13 @@ async function comparePawnMoves(
             const given = Math.max(0, winChance(best) - winChance(s));
             const after = pos.clone();
             after.play(move);
-            for (const [name, holds] of versions({ pos, move, after })) {
+            for (const [name, holds] of versions({
+                pos,
+                move,
+                after,
+                context,
+            })) {
+                if (holds === undefined) continue;
                 for (const bucket of [all, here]) {
                     const b = (bucket[name] ??= { picked: [], other: [] });
                     (holds ? b.picked : b.other).push(given);
@@ -323,6 +351,15 @@ async function comparePawnMoves(
         );
     }
 }
+
+/** compareMoves over the quiet pawn moves, which need nothing more about the position */
+const comparePawnMoves = (
+    count: number,
+    versions: (m: QuietMove<true>) => [string, boolean][],
+) =>
+    compareMoves(count, quietPawnMoves, versions, () =>
+        Promise.resolve(true as const),
+    );
 
 /** Squares the enemy pawns attack in `pos`, for the side to move's opponent */
 const enemyPawnAttacks = (pos: Chess, side: "white" | "black") => {
@@ -381,6 +418,52 @@ it.skipIf(!GAMES_PGN || !STOCKFISH || !BREAKS)(
                 ["break on a central pawn, defended", central && defended],
             ];
         }),
+);
+
+const PROPHYLAXIS = Number(process.env.PROPHYLAXIS ?? 0);
+
+/**
+ * Prophylaxis: the opponent's wish is their first move in the null-move position (what they
+ * would play if it were their turn again), in positions where it is no threat (a threat stopped
+ * is reason R2 already). Do the quiet moves that take it away (preventedMove) give away less
+ * than the position's other quiet moves? Overall, by how, and pawn and piece moves apart (the
+ * pawn ones are mostly h3 or a3 against a piece's square).
+ */
+it.skipIf(!GAMES_PGN || !STOCKFISH || !PROPHYLAXIS)(
+    "prophylaxis vs the engine",
+    () =>
+        compareMoves<string>(
+            PROPHYLAXIS,
+            quietMoves,
+            ({ pos, move, context: wish }) => {
+                const prevented = preventedMove(
+                    makeFen(pos.toSetup()),
+                    makeUci(move),
+                    wish,
+                );
+                const pawn = pos.board.get(move.from)?.role === "pawn";
+                const how = (h: string) => prevented?.how === h;
+                return [
+                    ["prevents the wish", !!prevented],
+                    ["  by a pawn attack", how("pawn")],
+                    ["  by making it illegal", how("illegal")],
+                    ["  by leaving the piece undefended", how("hangs")],
+                    [
+                        "pawn moves: by a pawn attack",
+                        pawn ? how("pawn") : undefined,
+                    ],
+                    ["piece moves: prevents", pawn ? undefined : !!prevented],
+                ];
+            },
+            async (fen, engine) => {
+                const passed = nullMoveFen(fen);
+                if (!passed) return undefined;
+                const pv = await engine.pv(passed, 10);
+                if (!pv.length || isThreat(lineIdea(passed, pv)))
+                    return undefined;
+                return pv[0];
+            },
+        ),
 );
 
 it.skipIf(!GAMES_PGN || !STOCKFISH || !HOLES)(

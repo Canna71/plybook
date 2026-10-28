@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { explainMove } from "./explain";
-import { lineIdea } from "../reasons/threats";
+import { lineIdea, Prevented } from "../reasons/threats";
 
 describe("explainMove", () => {
     it("explains a blunder that allows mate and names the better move", () => {
@@ -95,6 +95,32 @@ describe("explainMove", () => {
             }),
         ).toContain(
             "It threatens Nxf7, a fork of the queen on d8 and the rook on h8.",
+        );
+    });
+
+    it("says what a pawn move prevents (prophylaxis), only the pawn kind", () => {
+        // Italian, 5...d6: h3 takes g4 from the bishop
+        const fenBefore =
+            "r1bqk2r/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQK2R w KQkq - 0 6";
+        const say = (prevented: Prevented) =>
+            explainMove({
+                fenBefore,
+                uci: "h2h3",
+                verdict: { class: "good", loss: 1 },
+                threats: { prevented },
+            }).join(" ");
+        const bg4: Prevented = {
+            san: "Bg4",
+            how: "pawn",
+            square: "g4",
+            role: "bishop",
+            pawn: "h3",
+        };
+        expect(say(bg4)).toContain(
+            "prevents Bg4: the pawn on h3 would take the bishop",
+        );
+        expect(say({ ...bg4, how: "illegal", pawn: undefined })).not.toContain(
+            "prevents",
         );
     });
 
