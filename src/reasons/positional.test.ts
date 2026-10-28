@@ -294,3 +294,45 @@ describe("holes", () => {
         expect(hole("4k3/8/p7/1p6/2P5/8/8/4K3 w - - 0 30", "c4b5")).toEqual([]);
     });
 });
+
+describe("the king in the endgame", () => {
+    const king = (fen: string, uci: string) =>
+        positionalReasons(fen, uci)
+            .filter((r) => r.kind === "kingActivity" || r.kind === "opposition")
+            .map((r) => r.text);
+
+    it("takes the opposition in a king and pawn endgame", () => {
+        // Kd3 against Kd5: face to face on the d-file, Black to move
+        expect(king("8/8/8/3k4/8/4K3/3P4/8 w - - 0 1", "e3d3")).toEqual([
+            "takes the opposition: the kings stand face to face with the opponent to move, so the opponent's king must give way",
+        ]);
+    });
+
+    it("brings the king towards the opponent's pawns", () => {
+        // a rook endgame: Ke2 walks towards the a-pawn
+        expect(king("8/8/4k3/p7/8/8/5K2/R7 w - - 0 40", "f2e2")).toEqual([
+            "brings the king towards the opponent's pawns: in an endgame the king is a fighting piece",
+        ]);
+    });
+
+    it("brings the king towards the centre when the opponent has no pawns", () => {
+        expect(king("k7/8/8/8/8/8/P7/N6K w - - 0 50", "h1g2")).toEqual([
+            "brings the king towards the centre: in an endgame the king is a fighting piece",
+        ]);
+    });
+
+    it("not the centre alone in a king and pawn endgame (no signal at depth 16)", () => {
+        expect(king("k7/8/8/8/8/8/P7/7K w - - 0 50", "h1g2")).toEqual([]);
+    });
+
+    it("says nothing for the king while the queens are on", () => {
+        const fen =
+            "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+        expect(king(fen, "e1e2")).toEqual([]);
+    });
+
+    it("the distant opposition is not said", () => {
+        // Kd2 against Kd6: three squares between, measured weaker (and no nearer the centre)
+        expect(king("8/8/3k4/8/8/8/P3K3/8 w - - 0 1", "e2d2")).toEqual([]);
+    });
+});

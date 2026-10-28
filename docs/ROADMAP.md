@@ -151,7 +151,8 @@ How this file is used:
     (the draw); in the app 5.Nb1 is called a mistake that repeats the position a third time.
     The "engine judged it without the game" note stays only for review scores, which may come
     from a review run before this.
-  - [~] **P2.4f Strategic explanations, measured** (third, one idea at a time): each a rule with
+  - [x] **P2.4f Strategic explanations, measured** (third, one idea at a time; done 2026-10-28,
+    five kept and pawn breaks dropped): each a rule with
     tests and a check by hand against annotated games (`PGN_FILE` in `pnpm eval:reasons`), or
     against Stockfish's piece values where no annotated games cover it, kept only if it holds
     up, its evidence marked as interpretation. In order: the bad bishop, weak squares (holes the
@@ -182,7 +183,12 @@ How this file is used:
       by a pawn now covering its square, as h3 against …Bg4. Better than the position's other
       quiet moves in 78-79% of balanced positions (two batches of 2000). Taking it away
       otherwise (no longer legal, the piece left undefended) is worse, 32-47%, and is not said.
-      Next: endgame technique (king activity, the opposition).
+    - [x] Endgame technique (`feature/endgame`, 2026-10-28): in an endgame (no queens, at most
+      four pieces) a king move towards the enemy pawns, or towards the centre while pieces
+      remain, beats the position's other king moves in 70-78% of balanced endgames, at depth
+      10 and 16; in king and pawn endgames the centre alone shows nothing at depth 16 and is
+      not said. The direct opposition in pawn endgames: 57-72%, said; the distant opposition
+      and "the king up the board" did less well and are not.
   - [ ] **P2.4g Study Chesserly** (owner's request 2026-10-27): read the source code and the
     ideas behind Chesserly, a free, open-source analysis platform (game review, move
     classification from Brilliant to Blunder, accuracy, openings; Vue, FastAPI, Stockfish,

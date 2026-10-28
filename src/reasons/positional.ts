@@ -1,9 +1,11 @@
 // Positional reasons (P2.8 R3, docs/REASONS.md): what a move does when there is no tactic or
 // threat to name. Compares the board before and after the move, from the mover's side:
 // development, castling, the centre, rooks on open files, passed pawns, outposts, piece
-// activity, the king's pawn shield, pawn weaknesses. No engine: pure rules, for tests.
+// activity, the king's pawn shield, pawn weaknesses, the king in the endgame. No engine: pure
+// rules, for tests.
 
 import {
+    Board,
     Chess,
     Color,
     makeSquare,
@@ -50,6 +52,8 @@ export type PositionalKind =
     | "weakSquare"
     | "space"
     | "weakensKing"
+    | "kingActivity"
+    | "opposition"
     | "isolatedPawn";
 
 export type PositionalReason = {
@@ -298,6 +302,49 @@ export function positionalReasons(
         add("weakensKing", false, "weakens the pawns in front of the king");
     }
 
+    // the king in the endgame, a fighting piece (docs/REASONS.md: towards the enemy pawns or the
+    // centre, better than the position's other king moves in 70-78% of balanced endgames, at
+    // depth 10 and 16). In king and pawn endgames the centre alone shows nothing at depth 16,
+    // and the opposition is said only face to face (57-72%); the distant one and "up the
+    // board" did less well
+    if (
+        piece.role === "king" &&
+        !castles &&
+        !capture &&
+        isEndgame(before.board)
+    ) {
+        const theirPawns = [...pawnsOf(before, them)];
+        const nearest = (sq: Square) =>
+            Math.min(...theirPawns.map((p) => distance(sq, p)));
+        const theirKing = after.board.kingOf(them);
+        if (
+            isPawnEndgame(before.board) &&
+            theirKing !== undefined &&
+            directOpposition(move.to, theirKing)
+        ) {
+            add(
+                "opposition",
+                true,
+                "takes the opposition: the kings stand face to face with the opponent to move, so the opponent's king must give way",
+            );
+        } else if (theirPawns.length && nearest(move.to) < nearest(move.from)) {
+            add(
+                "kingActivity",
+                true,
+                "brings the king towards the opponent's pawns: in an endgame the king is a fighting piece",
+            );
+        } else if (
+            !isPawnEndgame(before.board) &&
+            toCentre(move.to) < toCentre(move.from)
+        ) {
+            add(
+                "kingActivity",
+                true,
+                "brings the king towards the centre: in an endgame the king is a fighting piece",
+            );
+        }
+    }
+
     // isolated pawns made by the move: ours (bad) and theirs (good, by taking a neighbour).
     // Doubled pawns are left out: a move only doubles its own pawns, by a capture that is
     // usually a fair trade, and the opponent's only when they take back.
@@ -400,6 +447,27 @@ export function positionalReasons(
         ...reasons.filter((r) => !r.good),
     ];
 }
+
+/** Pieces other than kings and pawns */
+const pieces = (board: Board) =>
+    board.occupied.diff(board.pawn).diff(board.king);
+/** An endgame: no queens, at most four other pieces */
+export const isEndgame = (board: Board) =>
+    board.queen.isEmpty() && pieces(board).size() <= 4;
+/** Kings and pawns only */
+export const isPawnEndgame = (board: Board) =>
+    pieces(board).isEmpty() && board.pawn.nonEmpty();
+
+/** King moves between two squares */
+export const distance = (a: Square, b: Square) =>
+    Math.max(Math.abs(file(a) - file(b)), Math.abs(rank(a) - rank(b)));
+/** King moves to the nearest of d4, e4, d5, e5 */
+export const toCentre = (sq: Square) =>
+    Math.min(...CENTRE.map((c) => distance(sq, c)));
+/** Kings face to face on a file or rank, one square between them */
+export const directOpposition = (a: Square, b: Square) =>
+    (file(a) === file(b) && Math.abs(rank(a) - rank(b)) === 2) ||
+    (rank(a) === rank(b) && Math.abs(file(a) - file(b)) === 2);
 
 /** "light" or "dark": the colour of a square (a1 is dark) */
 export const colourOf = (sq: Square) =>

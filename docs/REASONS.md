@@ -358,6 +358,31 @@ the alternatives. Only the pawn kind is said, after a stopped threat and among a
 positional reasons, as an interpretation: "prevents Bg4: the pawn on h3 would take the bishop".
 (The space measurement, rerun through `compareMoves`, gave its numbers exactly.)
 
+**The king in the endgame (2026-10-28).** Endgame positions from the same games
+(`endgamePositions`: from the first ply that is an endgame, every sixth ply, at most four a
+game, either side to move). An endgame: no queens, at most four pieces besides kings and pawns
+(`isEndgame`); a king and pawn endgame: kings and pawns only. Quiet moves compared as before
+(`-t "endgame kings"`, `ENDGAME=2000`, `PAWN_ENDGAME=2000`; `DEPTH=16` for the deeper check,
+300 positions a batch, as 2000 at depth 20 ran past the half-hour limit). King moves against
+the position's other king moves, two batches:
+
+| Rule | Endgames, depth 10 | depth 16 | Pawn endgames, depth 10 | depth 16 |
+|---|---|---|---|---|
+| Towards the enemy pawns (kept) | 76% / 72% | 73% / 70% | 78% / 77% | 77% / 63% |
+| Towards the centre (kept, not in pawn endgames) | 76% / 76% | 78% / 75% | 64% / 65% | 47% / 49% |
+| Up the board | 72% / 68% | 68% / 67% | 60% / 60% | 51% / 46% |
+| Opposition, any distance | 58% / 60% | 65% / 58% | 59% / 62% | 51% / 52% |
+| Direct opposition (kept, pawn endgames) | 66% / 70%, few | few | 66% / 72% | 60% / 57% |
+
+The king walking towards the pawns it can attack, or to the centre while pieces remain, holds
+up at both depths. In king and pawn endgames the centre's edge was a shallow search's: at
+depth 16 it is gone, so there only the pawns count. The opposition is weaker than the textbook
+suggests, since it decides only some pawn endings, and only face to face is said, with an edge
+about that of space. Said as interpretations among a good move's reasons: "brings the king
+towards the opponent's pawns (the centre): in an endgame the king is a fighting piece", "takes
+the opposition: the kings stand face to face with the opponent to move, so the opponent's king
+must give way".
+
 ## Plan
 
 - **R1, motif detectors** (`src/reasons/motifs.ts`, tested): fork, pin (relative too), skewer,
