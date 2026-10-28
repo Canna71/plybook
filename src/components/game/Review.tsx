@@ -16,12 +16,15 @@ import {
     CLASS_NAGS,
     gameAccuracy,
     keyMoments,
+    lineMoves,
     mainline,
     MoveClass,
     ReviewedMove,
     reviewLine,
+    ReviewNode,
     winCurve,
 } from "../../models/review";
+import { gameBookPlies } from "../../storage/books";
 import { GameContext } from "./GameContext";
 import { NagIcon } from "./Ply";
 import { PlyFan } from "../common/PlyFan";
@@ -44,6 +47,7 @@ import { getAccounts } from "../../online/onlinegames";
 import "./Review.scss";
 
 const CLASS_LABELS: Record<MoveClass, string> = {
+    book: "Book",
     best: "Best",
     good: "Good",
     inaccuracy: "Inaccuracies",
@@ -73,7 +77,35 @@ const Review: Component = () => {
         const g = game();
         return g ? mainline(g) : [];
     });
-    const reviewed = createMemo(() => reviewLine(nodes()));
+    // the opening moves found in the user's books (Settings → Books): not graded (P1.5).
+    // Keyed by the moves, so evaluations arriving during a review do not look them up again
+    const [bookPlies] = createResource(
+        () => {
+            const line = lineMoves(nodes());
+            return line.length
+                ? { key: line.map((m) => m.san).join(" "), line }
+                : undefined;
+        },
+        ({ line }) => gameBookPlies(line),
+    );
+    const reviewed = createMemo(() =>
+        reviewLine(nodes(), bookPlies.latest ?? 0),
+    );
+    /** The last book move and the first move out of the book, as positions of the line */
+    const bookEdge = () => {
+        const n = bookPlies.latest ?? 0;
+        return n > 0
+            ? {
+                  last: nodes()[n],
+                  out: nodes()[n + 1] as ReviewNode | undefined,
+              }
+            : undefined;
+    };
+    const nodeLabel = (node: ReviewNode) => {
+        const ply = node.ply ?? 0;
+        const white = node.turn === "black";
+        return `${Math.ceil(ply / 2)}${white ? "." : "..."} ${node.san}`;
+    };
     const byPath = createMemo(
         () => new Map(reviewed().map((m) => [m.path.path, m])),
     );
@@ -311,6 +343,31 @@ const Review: Component = () => {
                         </For>
                     </tbody>
                 </table>
+
+                <Show when={bookEdge()}>
+                    {(edge) => (
+                        <p class="review-book">
+                            In your books until{" "}
+                            <a onClick={() => goTo(edge().last.path)}>
+                                {nodeLabel(edge().last)}
+                            </a>
+                            <Show
+                                when={edge().out}
+                                fallback=": every move is a book move."
+                            >
+                                {(out) => (
+                                    <>
+                                        , out of book with{" "}
+                                        <a onClick={() => goTo(out().path)}>
+                                            {nodeLabel(out())}
+                                        </a>
+                                        . Book moves are not graded.
+                                    </>
+                                )}
+                            </Show>
+                        </p>
+                    )}
+                </Show>
 
                 <EvalGraph
                     points={winCurve(nodes())}

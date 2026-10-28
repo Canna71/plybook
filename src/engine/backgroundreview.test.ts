@@ -68,4 +68,33 @@ describe("reviewGame", () => {
         expect(seen[1]).toEqual(["e2e4"]);
         expect(seen[5]).toEqual(["e2e4", "e7e5", "d1h5", "b8c6", "f1c4"]);
     });
+
+    it("grades no book move: a book with the whole line marks no mistake", async () => {
+        const everything = async (fen: string) => {
+            // every move of the game is in this book
+            const sans = ["e4", "e5", "Qh5", "Nc6", "Bc4", "Nf6", "Qxf7#"];
+            const ply = SCRIPT_PLY[fen.split(" ").slice(1, 6).join(" ")];
+            return ply === undefined
+                ? []
+                : [{ uci: "", san: sans[ply], weight: 1 }];
+        };
+        const { game, mistakes } = await reviewGame(
+            SCHOLAR,
+            search,
+            everything,
+        );
+        expect(mistakes).toEqual({ white: 0, black: 0 });
+        expect(game.pgn()).not.toMatch(/Nf6 \$4/);
+    });
 });
+
+/** The ply about to be played, by the FEN's fields after the board */
+const SCRIPT_PLY: Record<string, number> = {
+    "w KQkq - 0 1": 0,
+    "b KQkq - 0 1": 1,
+    "w KQkq - 0 2": 2,
+    "b KQkq - 1 2": 3,
+    "w KQkq - 2 3": 4,
+    "b KQkq - 3 3": 5,
+    "w KQkq - 4 4": 6,
+};

@@ -8,6 +8,7 @@ import { getSettingValue, setSettingValue } from "../models/settings";
 import { readDataFile, writeDataFile } from "../storage/fs";
 import { explainerSearch } from "../engine/explainer";
 import { reviewGame } from "../engine/backgroundreview";
+import { allBooksLookup } from "../storage/books";
 import { makeToast } from "../components/common/Toast";
 import {
     gameKey,
@@ -75,13 +76,23 @@ async function reviewInFile(
             : black.toLowerCase() === name
               ? "black"
               : undefined;
-    const reviewed = await reviewGame(text, async (fen, history) => {
-        const line = (await explainerSearch(fen, { ...REVIEW_SEARCH, history }))
-            ?.lines[0];
-        return (
-            line && { score: line.score, best: line.pv?.[0], depth: line.depth }
-        );
-    });
+    const reviewed = await reviewGame(
+        text,
+        async (fen, history) => {
+            const line = (
+                await explainerSearch(fen, { ...REVIEW_SEARCH, history })
+            )?.lines[0];
+            return (
+                line && {
+                    score: line.score,
+                    best: line.pv?.[0],
+                    depth: line.depth,
+                }
+            );
+        },
+        // book moves are not graded (P1.5)
+        await allBooksLookup(),
+    );
     // the file may have changed while reviewing (another sync, the user's notes): read it
     // again and replace just this game
     const now = splitGames(await readDataFile(file));

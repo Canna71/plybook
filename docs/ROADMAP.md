@@ -72,10 +72,18 @@ How this file is used:
     your mistakes; a click opens that game (`/game?path=…&game=N`, a new URL parameter).
     Toasts say how many games came and how many mistakes the review found.
   - Not tried with a real account here (the owner's settings have none).
-- [ ] **P1.5 Book moves in the review** (from Chesserly, P2.4g): moves found in the user's
+- [x] **P1.5 Book moves in the review** (from Chesserly, P2.4g): moves found in the user's
   Polyglot books (Settings → Books) are marked as book moves and not graded against the
   engine, and the review says where the game left the book. Done when: a reviewed game
   shows its book moves, and their accuracy is not counted.
+  - Status 2026-10-28 (`feature/book-moves`): a move is a book move while every move before
+    it was and any book in the Books folder has it with a weight above 0 (`bookPlies`,
+    `models/books.ts`; compared by SAN). Class `book` in `review.ts`: no ?!/?/??, not a key
+    moment or a puzzle, left out of the accuracy (the volatility weights still come from the
+    whole game). The Evaluation tab says "In your books until 4… Nf6, out of book with 5. h4";
+    the board review and the background review (P1.4) leave book moves unmarked too. Tried in
+    the dev app with a GM book: a side whose moves were all book shows "–" for accuracy.
+  - Known limit: no book installed, nothing changes; with several books, one is enough.
 - [ ] **P1.6 Accuracy by phase** (from Chesserly, P2.4g): across the reviewed games of an
   account, accuracy in the opening, middlegame and endgame (the endgame as P2.4f defines it),
   with ReChess's accuracy formula, to show where a player loses most. Done when: the Today or

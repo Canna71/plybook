@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bookShares, pickBookMove } from "./books";
+import { BookMove, bookPlies, bookShares, pickBookMove } from "./books";
 
 const MOVES = [
     { uci: "e2e4", san: "e4", weight: 6 },
@@ -25,6 +25,38 @@ describe("pickBookMove", () => {
         expect(
             pickBookMove([{ uci: "a", san: "a", weight: 0 }]),
         ).toBeUndefined();
+    });
+});
+
+describe("bookPlies", () => {
+    // a book that knows 1.e4 e5 2.Nf3 (and has 2.Qh5 only as a move to avoid)
+    const BOOK: Record<string, BookMove[]> = {
+        start: [{ uci: "e2e4", san: "e4", weight: 5 }],
+        e4: [{ uci: "e7e5", san: "e5", weight: 5 }],
+        e5: [
+            { uci: "g1f3", san: "Nf3", weight: 5 },
+            { uci: "d1h5", san: "Qh5", weight: 0 },
+        ],
+    };
+    const lookup = async (fen: string) => BOOK[fen] ?? [];
+    const line = (sans: string[]) => {
+        const fens = ["start", "e4", "e5", "Nf3", "Nc6"];
+        return sans.map((san, i) => ({ fen: fens[i], san }));
+    };
+
+    it("counts the moves up to the first the books do not have", async () => {
+        expect(await bookPlies(line(["e4", "e5", "Nf3", "Nc6"]), lookup)).toBe(
+            3,
+        );
+        expect(await bookPlies(line(["d4"]), lookup)).toBe(0);
+    });
+
+    it("a move weighted 0 is not a book move", async () => {
+        expect(await bookPlies(line(["e4", "e5", "Qh5"]), lookup)).toBe(2);
+    });
+
+    it("stops at a position it cannot look up", async () => {
+        expect(await bookPlies([{ san: "e4" }], lookup)).toBe(0);
     });
 });
 

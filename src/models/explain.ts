@@ -159,6 +159,7 @@ const placeKey = (fen: string) => fen.split(" ").slice(0, 4).join(" ");
 const SIDE = { white: "White", black: "Black" };
 
 const VERDICTS: Record<MoveClass, string> = {
+    book: "is a book move",
     best: "is the engine's choice",
     good: "is a good move",
     inaccuracy: "is an inaccuracy",

@@ -8,7 +8,13 @@ import { PositionHistory, Score } from "./engineinterfaces";
 import { gameHistory, historyFor } from "../models/gamehistory";
 import { GameModel } from "../models/GameModel";
 import { EvaluationExt, makeGame } from "../models/pgn";
-import { annotateMistakes, mainline, reviewLine } from "../models/review";
+import {
+    annotateMistakes,
+    lineMoves,
+    mainline,
+    reviewLine,
+} from "../models/review";
+import { BookMove, bookPlies } from "../models/books";
 
 /**
  * One position's search: the score from White's point of view, and the best move. `history`:
@@ -25,12 +31,17 @@ export type ReviewedGame = {
     mistakes: Record<Color, number>;
 };
 
-/** Reviews the first game of `pgn`. Positions the search cannot judge are left out. */
+/**
+ * Reviews the first game of `pgn`. Positions the search cannot judge are left out. `books`:
+ * the user's opening books' moves in a position; the game's book moves are not graded (P1.5).
+ */
 export async function reviewGame(
     pgn: string,
     search: PositionSearch,
+    books?: (fen: string) => Promise<BookMove[]>,
 ): Promise<ReviewedGame> {
     let game = makeGame(pgn);
+    const book = books ? await bookPlies(lineMoves(mainline(game)), books) : 0;
     for (const node of mainline(game)) {
         const fen = node.fen ?? game.initial.fen;
         if (!fen) continue;
@@ -62,9 +73,9 @@ export async function reviewGame(
         }
         if (evaluation) game = game.updateEvaluation(node.path, evaluation);
     }
-    game = annotateMistakes(game);
+    game = annotateMistakes(game, book);
     const mistakes: Record<Color, number> = { white: 0, black: 0 };
-    for (const move of reviewLine(mainline(game))) {
+    for (const move of reviewLine(mainline(game), book)) {
         if (move.class === "mistake" || move.class === "blunder")
             mistakes[move.color]++;
     }

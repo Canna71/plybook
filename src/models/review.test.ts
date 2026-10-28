@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { makeGame } from "./pgn";
 import {
+    annotateMistakes,
     classify,
     gameAccuracy,
     keyMoments,
+    lineMoves,
     mainline,
     moveAccuracy,
     reviewLine,
@@ -113,6 +115,43 @@ describe("reviewLine", () => {
                 '[FEN "4k3/8/8/8/8/8/4P3/4K3 w - - 0 1"]\n\n1. e4 {[%eval 3.0]} *',
             ),
         ).toEqual([]);
+    });
+});
+
+describe("book moves (P1.5)", () => {
+    // 2.Qh5 loses a little; in the book it is not graded
+    const pgn =
+        "1. e4 {[%eval 0.3]} e5 {[%eval 0.3]} 2. Qh5 {[%eval -0.6]} Nc6 {[%eval -0.6]} " +
+        "3. Bc4 {[%eval -0.6]} Nf6 {[%eval 6.0]} 4. Qxf7# 1-0";
+
+    it("classes the first moves as book, not graded", () => {
+        const moves = reviewLine(mainline(makeGame(pgn)), 3);
+        expect(moves.slice(0, 3).map((m) => m.class)).toEqual([
+            "book",
+            "book",
+            "book",
+        ]);
+        expect(moves[3].class).not.toBe("book");
+        expect(keyMoments(moves).map((m) => m.san)).toEqual(["Nf6"]);
+    });
+
+    it("leaves them out of the accuracy", () => {
+        const graded = gameAccuracy(reviewLine(mainline(makeGame(pgn))));
+        const withBook = gameAccuracy(reviewLine(mainline(makeGame(pgn)), 3));
+        // White's Qh5 no longer counts against White
+        expect(withBook.white!).toBeGreaterThan(graded.white!);
+    });
+
+    it("annotates no book move", () => {
+        const g = annotateMistakes(makeGame(pgn), 3);
+        expect(g.pgn()).not.toMatch(/Qh5 \$/);
+        expect(annotateMistakes(makeGame(pgn)).pgn()).toMatch(/Qh5 \$6/);
+    });
+
+    it("lists each move with the position before it, for the lookup", () => {
+        const line = lineMoves(mainline(makeGame("1. e4 e5 *")));
+        expect(line.map((m) => m.san)).toEqual(["e4", "e5"]);
+        expect(line[0].fen?.startsWith("rnbqkbnr/pppppppp/8/8/8/8")).toBe(true);
     });
 });
 
