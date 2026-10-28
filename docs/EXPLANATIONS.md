@@ -94,10 +94,64 @@ Nothing beyond the analysis engine: Stockfish in the Engines folder (Settings �
 for analysis. Piece values need Stockfish 17 or later. The optional wording model is set up in
 Settings → Explanations (P2.4b, ROADMAP.md).
 
+## Chesserly (P2.4g, studied 2026-10-28)
+
+[Chesserly](https://github.com/sekhniashviligiorgi21/Chesserly) ([live](https://chesserly.vercel.app),
+[listing](https://hunted.space/product/chesserly)): MIT license, so its code could be taken
+into ReChess (GPL-3.0) with its notice kept. Read at commit `06fca4c` (2026-10-18). A Vue app;
+Stockfish runs in the browser as WebAssembly (`src/engine/engine.js`), Firebase keeps users'
+games; the FastAPI `main.py` of the listing is an older server-side path with the same idea.
+
+**Move classes** (`engine.js`, `getEvaluation`). Win chance on the Lichess curve (the same
+constant as `review.ts`), on 0 to 1. A move that is not the engine's first choice is classed by
+win chance lost: excellent up to 2 points, good up to 5, inaccuracy up to 10, mistake up to 20,
+blunder beyond (ReChess, as Lichess: inaccuracy from 5, mistake from 10, blunder from 15).
+"Best" is only the engine's own move, and becomes:
+- **Great** when it beats the second-best move by at least 10 points of win chance (an extra
+  MultiPV 2 search at depth 10), unless it takes back on the square just taken, or takes a
+  piece nothing defends. Saving a lost position (3 pawns down) by stalemate is great too.
+- **Brilliant** when it is also a sacrifice, by a static exchange count on the moved piece's
+  square (attackers and defenders by value, no pins or x-rays), not a book move or a
+  recapture, the mover was not already winning (85% or less before), and stays at 40% or more
+  without losing over 10 points.
+- **Book** when the opening tree (`public/book/openings.json`) has the move.
+
+**Game accuracy** is not Lichess's: the mean of fixed weights per class over the player's moves
+(best, great, brilliant and book 100, excellent 90, good 80, inaccuracy 20, mistake 10,
+blunder 0; `Analysis.vue`, `saveGameInsights`). Coarse: a move losing 6 points and one losing
+9 both score 20, and good to inaccuracy drops from 80 to 20. ReChess's (Lichess's
+volatility-weighted and harmonic means of per-move accuracy, `gameAccuracy`) keeps more. The
+README's "estimated performance rating" is not in this commit's code.
+
+**Words.** None about why: each move gets its class in a sentence ("Nf3 is a great move!").
+The Insights page writes advice over many games from counts ("You average 2.3 mistakes+blunders
+per game…", endgame accuracy against overall, a "playstyle" radar), with the phases split at
+ply 12 and where material falls (both under 14, or either under 10).
+
+**Mistakes as puzzles** (`extractedPuzzles`): the position before each mistake or blunder, the
+engine's move as the answer, repetitions and due dates kept, as ReChess's P1.3 does.
+
+**What ReChess takes, as ideas** (no code: each fits ReChess's own modules better rewritten):
+- **The only good move** (their "Great"): a gap of 10 points or more to the second-best line
+  is an engine fact, not a reading, and the analysis already searches three lines. Said as
+  evidence ("the only move that keeps the balance: the next best, Bd3, gives away 14%"), not as
+  a badge (ROADMAP P2.4h).
+- **Sacrifices** (their "Brilliant"): worth naming when the engine's best move gives material
+  that the line wins back or pays for. Their static exchange count misses pins and x-rays;
+  ReChess would read it from the engine line (`lineOutcome`), and measure it like the P2.4f
+  ideas before saying it (P2.4i).
+- **Book moves in the review**, from the user's Polyglot books, so opening moves are not graded
+  against the engine (P1.5).
+- **Accuracy by phase across reviewed games** (opening, middlegame, endgame), with ReChess's
+  accuracy formula rather than class weights (P1.6).
+
+Not taken: their accuracy formula (coarser than the one ReChess has), and the classes
+"excellent" and "good" as separate labels (Lichess's thresholds, which ReChess matches on 99.8%
+of moves, P1.2).
+
 ## Not done (yet)
 
-- Strategic explanations beyond the positional rules: only where evidence supports them, one
-  idea at a time (ROADMAP P2.4f).
+- The only good move and sacrifices, as evidence (P2.4h, P2.4i, from the Chesserly study).
 
 The Engine section, the review's key moments and the tutor's questions all use
 `explainMoveFull` (P2.4d); the first two show the Evidence panel. Since P2.4e the engine
