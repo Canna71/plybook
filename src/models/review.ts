@@ -265,10 +265,12 @@ function stdDev(xs: number[]) {
 /**
  * Lichess game accuracy: the average of a volatility-weighted mean and the harmonic mean of
  * the move accuracies, so a few big blunders weigh more than in a plain average. Book moves
- * are left out.
+ * are left out. `keep`: only these moves are counted (a phase of the game, P1.6); the
+ * volatility weights still come from the whole game.
  */
 export function gameAccuracy(
     moves: ReviewedMove[],
+    keep: (m: ReviewedMove) => boolean = () => true,
 ): Record<Color, number | undefined> {
     const result: Record<Color, number | undefined> = {
         white: undefined,
@@ -299,7 +301,9 @@ export function gameAccuracy(
         // book moves are not graded (P1.5): the weights still come from the whole game
         const own = moves
             .map((m, i) => ({ m, w: weights[i] ?? 1 }))
-            .filter(({ m }) => m.color === color && m.class !== "book");
+            .filter(
+                ({ m }) => m.color === color && m.class !== "book" && keep(m),
+            );
         if (own.length === 0) continue;
         const weighted =
             own.reduce((s, { m, w }) => s + m.accuracy * w, 0) /

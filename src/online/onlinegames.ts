@@ -57,7 +57,8 @@ export function splitGames(pgn: string) {
         .filter(Boolean);
 }
 
-const tag = (game: string, name: string) =>
+/** A PGN tag's value in one game's text */
+export const tag = (game: string, name: string) =>
     game.match(new RegExp(`^\\[${name} "([^"]*)"\\]`, "m"))?.[1];
 
 /** "2024.03.29" -> "2024-03", from the UTC date both sites write. */

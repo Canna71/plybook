@@ -22,6 +22,8 @@ import { getHistoryGames, listPuzzles, pickPuzzle } from "../storage/db";
 import { mistakesFolder } from "../storage/mistakes";
 import { recentFiles } from "../storage/recent";
 import { newGames } from "../online/autosync";
+import { recentPhaseAccuracy } from "../online/phasestats";
+import { MIN_PHASE_MOVES, PHASE_NAMES, PHASES } from "../models/phases";
 import { baseName, NameWithoutExtension } from "../storage/fs";
 import { formatDate } from "../models/format";
 import "./Home.scss";
@@ -74,6 +76,20 @@ const Home: Component = () => {
     const [games] = createResource(
         safely(async () => (await getHistoryGames()).slice(0, 3), []),
     );
+
+    // where the reviewed online games lose most (P1.6): read in the background
+    const [phases] = createResource(
+        safely(() => recentPhaseAccuracy(), undefined),
+    );
+    /** The phase with the lowest accuracy, among those with a few games behind them */
+    const weakestPhase = () => {
+        const totals = phases()?.totals;
+        if (!totals) return undefined;
+        const ranked = PHASES.filter(
+            (ph) => totals[ph].accuracy !== undefined && totals[ph].games >= 3,
+        ).sort((a, b) => totals[a].accuracy! - totals[b].accuracy!);
+        return ranked.length > 1 ? ranked[0] : undefined;
+    };
 
     const recent = () => recentFiles().slice(0, 5);
     const bookPage = (path: string) =>
@@ -342,6 +358,53 @@ const Home: Component = () => {
                             </For>
                         </ul>
                     </section>
+                </Show>
+
+                <Show when={phases()}>
+                    {(p) => (
+                        <section class="today-card today-phases">
+                            <h2>Accuracy by phase</h2>
+                            <For each={PHASES}>
+                                {(phase) => (
+                                    <div
+                                        class="today-phase"
+                                        classList={{
+                                            weakest: weakestPhase() === phase,
+                                        }}
+                                    >
+                                        <span class="today-list-name">
+                                            {PHASE_NAMES[phase]}
+                                        </span>
+                                        <span class="today-phase-value">
+                                            {p().totals[
+                                                phase
+                                            ].accuracy?.toFixed(0) ?? "–"}
+                                            <Show
+                                                when={
+                                                    p().totals[phase]
+                                                        .accuracy !== undefined
+                                                }
+                                            >
+                                                %
+                                            </Show>
+                                        </span>
+                                        <span class="today-muted">
+                                            {p().totals[phase].games}{" "}
+                                            {p().totals[phase].games === 1
+                                                ? "game"
+                                                : "games"}
+                                        </span>
+                                    </div>
+                                )}
+                            </For>
+                            <p class="today-muted">
+                                Your last {p().games} reviewed online{" "}
+                                {p().games === 1 ? "game" : "games"}; book moves
+                                not counted, a phase only where you made{" "}
+                                {MIN_PHASE_MOVES} moves or more in it.
+                            </p>
+                        </section>
+                    )}
                 </Show>
             </div>
         </div>

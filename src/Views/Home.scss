@@ -124,6 +124,35 @@
         }
     }
 
+    // accuracy by phase (P1.6)
+    .today-phase {
+        display: flex;
+        align-items: baseline;
+        gap: var(--rc-space-2);
+        padding: 4px 0;
+
+        .today-phase-value {
+            font-weight: 600;
+            color: var(--rc-text-strong);
+            font-variant-numeric: tabular-nums;
+            min-width: 3.5em;
+            text-align: right;
+        }
+
+        .today-muted {
+            min-width: 5em;
+            text-align: right;
+        }
+
+        &.weakest .today-phase-value {
+            color: var(--rc-danger);
+        }
+    }
+
+    .today-phases > .today-muted:last-child {
+        margin-top: var(--rc-space-2);
+    }
+
     // first start
     .today-setup {
         ul {

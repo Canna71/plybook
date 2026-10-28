@@ -127,6 +127,16 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Accuracy by phase, P1.6 (branch feature/phase-accuracy)
+
+- [ ] **The card**: with an online account synced and a few games reviewed (automatically or
+      with "Review the game" and Save), Today shows "Accuracy by phase": Opening, Middlegame,
+      Endgame, each with a percentage and the number of games, the weakest in red.
+- [ ] **Plausible numbers**: compare with a game you know: a game lost in the endgame lowers
+      the endgame figure, not the opening's.
+- [ ] **Speed**: Today still opens at once with many months synced (the card fills in later).
+- [ ] **No account**: the card does not appear (checked in the dev app).
+
 ## Book moves in the review, P1.5 (branch feature/book-moves)
 
 - [ ] **Book line**: with a Polyglot book in Settings → Books, play 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6
