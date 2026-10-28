@@ -19,6 +19,8 @@ export interface AppSettings {
         pieces?: string;
         /** Light or dark UI; "system" follows the operating system */
         ui?: "system" | "light" | "dark";
+        /** The pen's colour when drawing on the board (U.2): green, red, blue or yellow */
+        pen?: string;
     };
     engine?: {
         /** The engine to play against */
@@ -135,6 +137,7 @@ const DEFAULT: AppSettings = {
         board: "bluish",
         pieces: "merida",
         ui: "system",
+        pen: "green",
     },
     engine: {
         lastUsed: "",

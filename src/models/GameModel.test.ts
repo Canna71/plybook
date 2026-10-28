@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { movesFromText } from "./booktext";
 import { makeGame, Path } from "./pgn";
+import { fromCommentShape } from "../components/common/boardShapes";
 
 const ITALIAN =
     "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
@@ -40,6 +41,28 @@ describe("GameModel.updateClock", () => {
         const back = makeGame(pgn);
         expect(back.mainline.map((p) => p.san)).toEqual(["c3", "Nf6"]);
         expect(back.mainline[0].comments).toEqual(["A quiet move"]);
+    });
+});
+
+describe("GameModel.updateShapes", () => {
+    it("saves a circle as a circle, not an arrow to a1 (U.2)", () => {
+        const game = makeGame("1. e4 e5 *");
+        const e4 = game.pathAtMainlinePly(1);
+        const pgn = game
+            .updateShapes(e4, [
+                { orig: "c5", brush: "red" },
+                { orig: "g1", dest: "f3", brush: "green" },
+            ])
+            .pgn();
+        expect(pgn).toContain("[%csl Rc5]");
+        expect(pgn).toContain("[%cal Gg1f3]");
+        expect(pgn).not.toContain("a1");
+        // and read back as a circle: a shape without a dest on the board
+        const back = makeGame(pgn).mainline[0].shapes.map(fromCommentShape);
+        expect(back).toEqual([
+            { orig: "c5", dest: undefined, brush: "red" },
+            { orig: "g1", dest: "f3", brush: "green" },
+        ]);
     });
 });
 

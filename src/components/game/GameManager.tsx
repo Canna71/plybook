@@ -536,6 +536,9 @@ const GameManager: Component<GameManagerOptions> = ({
         });
     }
     const showShortcuts = createSignal(false);
+    // pen mode (U.2): a plain click or drag draws on the board; not while a game is played
+    const [penOn, setPenOn] = createSignal(false);
+    const canDraw = () => !(playingEngine && isPlayingOn());
     useShortcuts({
         game,
         currentPath,
@@ -561,6 +564,7 @@ const GameManager: Component<GameManagerOptions> = ({
             if (move && "from" in move) applyMove(move);
         },
         canNavigate: () => !isPuzzleMode() && !(playingEngine && isPlayingOn()),
+        togglePen: () => canDraw() && setPenOn((on) => !on),
         isActive: active,
         help: showShortcuts,
     });
@@ -597,6 +601,11 @@ const GameManager: Component<GameManagerOptions> = ({
                             evaluation={shownEvaluation}
                             promotionCell={() => moveInput.promotion()?.cell}
                             onPromotionSelected={moveInput.onPromotionSelected}
+                            pen={
+                                canDraw()
+                                    ? { on: penOn, setOn: setPenOn }
+                                    : undefined
+                            }
                         />
                         <Show when={!compact}>
                             <VDivider ref={divider!} />

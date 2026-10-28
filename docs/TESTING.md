@@ -127,6 +127,21 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Drawing with a touchpad, U.2 (branch feature/draw-mode)
+
+- [ ] **Pen mode with a real touchpad**: in Analysis click the pen under the board (or press
+      D), then with one finger drag from a square to another: an arrow; tap a square: a circle.
+      Pieces do not move while the pen is on; click the pen again (or D) to move them.
+- [ ] **Colours**: pick red, blue, yellow; the next shapes take that colour, and it is kept
+      after a restart.
+- [ ] **Shift**: with the pen off, Shift + drag draws green, Shift + Option + drag blue,
+      Shift + Cmd + drag red, Shift + Option + Cmd + drag yellow; a plain drag still moves.
+- [ ] **Undo / clear**: the arrow-back button removes the last shape, the eraser all of the
+      position's shapes; saved in the PGN (Save, reopen).
+- [ ] **Circles saved right**: draw a circle, Save, reopen the file: still a circle (it used to
+      come back as an arrow to a1).
+- [ ] **Not in a game**: while playing the engine, the pen is not shown and D does nothing.
+
 ## Opening names and books from games, P1.7 (branch feature/openings)
 
 - [ ] **Opening name**: in Analysis play 1.e4 e5 2.Nf3 Nc6 3.Bb5: "About this position" shows

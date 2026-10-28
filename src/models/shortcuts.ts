@@ -12,6 +12,7 @@ export type ShortcutAction =
     | "engine"
     | "threat"
     | "bestMove"
+    | "pen"
     | "help";
 
 export type Shortcut = {
@@ -73,6 +74,12 @@ export const SHORTCUTS: Shortcut[] = [
         description: "Play the engine's best move",
         navigates: true,
     },
+    {
+        action: "pen",
+        keys: ["D"],
+        description:
+            "Pen: draw arrows and circles with a plain click or drag (Shift + drag always draws)",
+    },
     { action: "help", keys: ["?"], description: "Show these shortcuts" },
 ];
 
@@ -102,6 +109,7 @@ const BY_KEY: Record<string, ShortcutAction> = {
     l: "engine",
     x: "threat",
     " ": "bestMove",
+    d: "pen",
     "?": "help",
 };
 

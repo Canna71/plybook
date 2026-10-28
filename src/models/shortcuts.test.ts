@@ -26,6 +26,7 @@ describe("shortcutFor", () => {
         expect(shortcutFor({ key: "l" })).toBe("engine");
         expect(shortcutFor({ key: "x" })).toBe("threat");
         expect(shortcutFor({ key: " " })).toBe("bestMove");
+        expect(shortcutFor({ key: "d" })).toBe("pen");
         expect(shortcutFor({ key: "?", shiftKey: true })).toBe("help");
     });
 

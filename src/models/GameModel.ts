@@ -360,7 +360,9 @@ export class GameModel {
     private toCommentShapes(shapes: DrawShape[]): CommentShape[] {
         return shapes.map((s) => {
             const from = parseSquare(s.orig)!;
-            const to = s.dest && parseSquare(s.dest)!;
+            // a circle is a shape to its own square in PGN ([%csl]); without a dest chessops
+            // took it for an arrow to a1 (square 0)
+            const to = s.dest ? parseSquare(s.dest)! : from;
             const color = s.brush! as CommentShapeColor;
             return { from, to, color } as CommentShape;
         });

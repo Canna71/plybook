@@ -4,6 +4,7 @@
 import { Accessor } from "solid-js";
 import { Color, makeSquare, NormalMove } from "chessops";
 import { Config } from "chessground/config";
+import { CommentShape } from "chessops/pgn";
 import { DrawBrushes, DrawShape } from "chessground/draw";
 import { Key } from "chessground/types";
 import { GameModel } from "../../models/GameModel";
@@ -36,16 +37,25 @@ export function toShapes(
             }),
     );
     if (data?.shapes) {
-        autoShapes = autoShapes.concat(
-            data.shapes.map((s) => {
-                const orig = makeSquare(s.from);
-                // a1 is square 0: test for undefined, not truthiness
-                const dest = s.to !== undefined ? makeSquare(s.to) : undefined;
-                return { orig, dest, brush: s.color };
-            }),
-        );
+        autoShapes = autoShapes.concat(data.shapes.map(fromCommentShape));
     }
     return autoShapes;
+}
+
+/**
+ * A PGN shape ([%cal] arrow, [%csl] circle) as chessground draws it: a circle is a shape to
+ * its own square in PGN, and a shape without a dest on the board.
+ */
+export function fromCommentShape(s: CommentShape): DrawShape {
+    return {
+        orig: makeSquare(s.from),
+        // a1 is square 0: test for undefined, not truthiness
+        dest:
+            s.to !== undefined && s.to !== s.from
+                ? makeSquare(s.to)
+                : undefined,
+        brush: s.color,
+    };
 }
 
 export function makeArrowShape(orig: Key, dest: Key, brush: string): DrawShape {

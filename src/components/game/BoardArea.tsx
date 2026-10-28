@@ -15,6 +15,7 @@ import { ViewMode } from "./PgnEditBar";
 import { PiecesPopup } from "./PiecesPopup";
 import { ClockFace, GameClock } from "./useGameClock";
 import { EvalBar } from "./EvalBar";
+import DrawBar, { penColour } from "./DrawBar";
 
 type BoardAreaProps = {
     config: () => Config;
@@ -27,6 +28,8 @@ type BoardAreaProps = {
     /** The square a pawn is promoting on, while its piece is being chosen */
     promotionCell: Accessor<Key | undefined>;
     onPromotionSelected: (role: Role, color: Color) => void;
+    /** Pen mode (U.2): drawing with a plain click or drag; the bar shows only when given */
+    pen?: { on: Accessor<boolean>; setOn: (on: boolean) => void };
 };
 
 const BoardArea: Component<BoardAreaProps> = (props) => {
@@ -50,8 +53,9 @@ const BoardArea: Component<BoardAreaProps> = (props) => {
             );
     };
 
-    /** The player on the board's top or bottom edge, with the clock */
-    const Player = (p: { side: Accessor<Color> }) => (
+    /** The player on the board's top or bottom edge, with the clock; the bottom one also has the
+     * drawing bar, in the row the board already leaves room for */
+    const Player = (p: { side: Accessor<Color>; drawing?: boolean }) => (
         <div class="board-player">
             <Show when={!isPuzzleMode()}>
                 {/* keyed: a flipped board makes a new name, PlayerName reads its color once */}
@@ -67,6 +71,9 @@ const BoardArea: Component<BoardAreaProps> = (props) => {
                         />
                     )}
                 </Show>
+            </Show>
+            <Show when={p.drawing && props.pen}>
+                {(pen) => <DrawBar penOn={pen().on} setPenOn={pen().setOn} />}
             </Show>
             <Show when={props.clock}>
                 {(clock) => <ClockFace clock={clock()} color={p.side()} />}
@@ -98,7 +105,12 @@ const BoardArea: Component<BoardAreaProps> = (props) => {
                         />
                     </Show>
                     <div ref={chessBoardDiv} class="pgnviewer-chessboard">
-                        <Chessboard config={props.config} />
+                        <Chessboard
+                            config={props.config}
+                            pen={() =>
+                                props.pen?.on() ? penColour() : undefined
+                            }
+                        />
                         <Show when={!!props.promotionCell()}>
                             <PiecesPopup
                                 chessBoardDiv={chessBoardDiv!}
@@ -109,7 +121,7 @@ const BoardArea: Component<BoardAreaProps> = (props) => {
                         </Show>
                     </div>
                 </div>
-                <Player side={orientation} />
+                <Player side={orientation} drawing />
             </Show>
             <Show when={viewMode() === ViewMode.STARTING_POSITION}>
                 <BoardEditor
