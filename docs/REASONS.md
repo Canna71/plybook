@@ -383,6 +383,43 @@ towards the opponent's pawns (the centre): in an endgame the king is a fighting 
 the opposition: the kings stand face to face with the opponent to move, so the opponent's king
 must give way".
 
+### Sacrifices (P2.4i, `src/reasons/sacrifice.ts`, 2026-10-28)
+
+From Chesserly's "Brilliant" (docs/EXPLANATIONS.md), read from the engine's line instead of a
+static exchange count: after the opponent's reply, the mover is two pawns or more down on
+where it started, and still is after its own next move (a trade that ends in a capture back is
+not one). Against the Lichess puzzles' `sacrifice` tag (`SACRIFICE=1`, `-t "sacrifice vs"`,
+sample / holdout of 20,000):
+
+| Rule | Precision | Recall |
+|---|---|---|
+| Down a pawn or more, anywhere in 8 plies | 0.73 / 0.72 | 1.00 / 1.00 |
+| Down 2 or more | 0.98 / 0.98 | 1.00 / 1.00 |
+| … won back or mate within the line | 0.99 / 0.98 | 0.79 / 0.80 |
+| … taken on the first reply, offered by the move (kept) | 0.99 / 0.99 | 0.72 / 0.72 |
+| … and won back or mate (said) | 0.99 / 0.99 | 0.60 / 0.61 |
+
+The tag is itself computed from a material dip (lichess-puzzler), so agreement shows the line is
+read right, not that a player would call it a sacrifice. That was checked by hand on game
+positions (`SACRIFICE_GAMES=2000`, `-t "sacrifices in games"`, the engine's line at depth 16,
+two batches). Down two or more anywhere: 99 and 116 positions in 2,000, about half material
+already lost (the null-move search wins it anyway) and most of the rest exchanges with moves in
+between or desperate defence. Taken on the first reply and won back or mate: 7 and 9; still
+some in-between moves (Bxd4 while the queen hangs). Adding "offered by the move" (the piece
+taken is the one that moved, or one the opponent did not attack before): 3 and 6, all real by
+hand: Bg6+ hxg6 Qxg6#, Nf6+ gxf6 Bxf7#, the Greek gift Bxh7+ Kxh7 Ng5+, Rxf5 Qxf5 Nd6 and Rd6
+Bxd6 (the exchange), Rxh4 Qxh4 Nc7+, Nxg6 Kxg6, Nxe5 against the pin, the decoy Nc4. The
+null-move check then adds nothing (the one it removes, Nxh7 Kxh7 Bg5, is real), so the app
+does not run it. Rare, as sacrifices are: under one game position in 300.
+
+Said from the line, for a good move played ("It sacrifices the bishop on h7, and the engine's
+line wins the material back", "… ends in mate") and for the better move after a mistake
+("Better was Bxh7+: it sacrifices …"). A sacrifice the line does not pay back within 8 plies is
+not said: in games those were mostly desperate or material lost anyway. Known limit: an offer
+the engine's defence declines is not called a sacrifice (in the app, the Greek gift above is
+answered 10…Kh8, not Kxh7, so only "the only move" is said); naming it would need a search of
+the capture itself.
+
 ## Plan
 
 - **R1, motif detectors** (`src/reasons/motifs.ts`, tested): fork, pin (relative too), skewer,

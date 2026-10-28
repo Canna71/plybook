@@ -127,6 +127,20 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Sacrifices, P2.4i (branch feature/sacrifices)
+
+- [ ] **An exchange sacrifice**: in Analysis, paste
+      `r3r1k1/pp1q1ppp/2n5/4pb1B/2PpN3/3P2P1/PP4KP/R2Q1R2 w - - 4 18` and play Rxf5: the Engine
+      section says "It sacrifices the rook on f5, and the engine's line wins the material back",
+      and the "Then …" line below agrees (White wins material). Seen working in the dev app.
+- [ ] **Missed**: in the same position play a3 instead: "Better was Rxf5: it sacrifices the
+      rook on f5…" (if the engine's best line there takes the rook).
+- [ ] **"Then …" after a capture** (fixed with this branch): play an even trade such as
+      Bxc6 dxc6 in the Ruy Lopez: the line under the explanation no longer says Black wins
+      material; it counts from before the capture.
+- [ ] **No false sacrifice**: an ordinary exchange (e.g. Bxc6 dxc6 in the Ruy Lopez) never
+      says "sacrifices".
+
 ## The only good move, P2.4h (branch feature/only-move)
 
 - [ ] **Played the only move**: in Analysis, paste

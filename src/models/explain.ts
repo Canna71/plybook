@@ -19,6 +19,7 @@ import {
 } from "../reasons/threats";
 import { MoveValues, positionalReasons } from "../reasons/positional";
 import { keepsWords, keptWords, onlyMove } from "../reasons/onlymove";
+import { describeSacrifice, saidSacrifice } from "../reasons/sacrifice";
 import type { EngineInfo } from "../engine/engineinterfaces";
 
 export type ExplainInput = {
@@ -408,6 +409,17 @@ export function explainMoveFull(
         }
     }
 
+    // a sacrifice: the move offers material the answer takes, and the line gets it back
+    const offered =
+        verdict && !bad && replyPv
+            ? saidSacrifice(input.fenBefore, [input.uci, ...replyPv])
+            : undefined;
+    if (offered) {
+        const text = describeSacrifice(offered);
+        sentences.push(`It ${text}.`);
+        fromLine(text, "reply");
+    }
+
     // the game: a third repetition, which a FEN alone does not show
     if (input.history) {
         const key = placeKey(moved.fen);
@@ -546,7 +558,15 @@ export function explainMoveFull(
             : undefined;
     if (bad && bestMove) {
         const bestIdea = bestPv ? lineIdea(input.fenBefore, bestPv) : undefined;
-        if (bestIdea?.motif || bestIdea?.mates) {
+        const bestSacrifice = bestPv
+            ? saidSacrifice(input.fenBefore, bestPv)
+            : undefined;
+        if (bestSacrifice) {
+            // the point of the better line is what it gives: "Better was Bxh7+: it sacrifices …"
+            const text = `${bestMove.san}: it ${describeSacrifice(bestSacrifice)}`;
+            sentences.push(`Better was ${text}.`);
+            fromLine(text, "best");
+        } else if (bestIdea?.motif || bestIdea?.mates) {
             // the better move's idea, named: "Better was Nxf7, a fork of …"
             const text = describeIdea(bestIdea);
             sentences.push(`Better was ${text}.`);

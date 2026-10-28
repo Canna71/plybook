@@ -151,8 +151,10 @@ of moves, P1.2).
 
 ## Not done (yet)
 
-- Sacrifices, as evidence (P2.4i, from the Chesserly study). The only good move (P2.4h) is
-  done: `reasons/onlymove.ts`, said from the engine's two best lines.
+Both ideas from the Chesserly study that explain moves are done: the only good move (P2.4h,
+`reasons/onlymove.ts`, from the engine's two best lines) and sacrifices (P2.4i,
+`reasons/sacrifice.ts`, from the line played out, measured in `docs/REASONS.md`). The other
+two, book moves in the review and accuracy by phase, are P1.5 and P1.6.
 
 The Engine section, the review's key moments and the tutor's questions all use
 `explainMoveFull` (P2.4d); the first two show the Evidence panel. Since P2.4e the engine

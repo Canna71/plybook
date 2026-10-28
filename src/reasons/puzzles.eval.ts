@@ -44,6 +44,8 @@ import {
 import { nullMoveFen } from "../models/threat";
 import { Uci } from "./uci.eval-helper";
 import { onlyMove } from "./onlymove";
+import { Sacrifice, sacrifice } from "./sacrifice";
+import { lineOutcome } from "../models/whatif";
 import { parsePieceValues } from "../engine/piecevalues";
 
 const CSV = process.env.PUZZLES_CSV;
@@ -178,6 +180,44 @@ function inspect(p: Puzzle) {
         ].join("\n"),
     );
 }
+
+/**
+ * P2.4i: the sacrifice detector (sacrifice.ts) on the solution line, from the position the
+ * solver faces, against Lichess's "sacrifice" tag. Versions by how much is given and what the
+ * line gets for it.
+ */
+it.skipIf(!CSV || !process.env.SACRIFICE)("sacrifice vs the puzzle tag", () => {
+    const puzzles = readPuzzles(CSV!);
+    const found = (
+        p: Puzzle,
+        min: number,
+        paid: (s: Sacrifice) => boolean,
+        atOnce: boolean,
+    ) => {
+        const pos = Chess.fromSetup(parseFen(p.fen).unwrap()).unwrap();
+        pos.play(parseUci(p.moves[0])!);
+        const fen = makeFen(pos.toSetup());
+        const s = sacrifice(fen, p.moves.slice(1), min, atOnce);
+        return s && paid(s) ? new Set(["sacrifice"]) : new Set<string>();
+    };
+    const any = () => true;
+    const back = (s: Sacrifice) => s.outcome !== "neither";
+    for (const [name, min, paid, atOnce] of [
+        ["a pawn or more", 1, any, false],
+        ["2 or more", 2, any, false],
+        ["2 or more, won back or mate", 2, back, false],
+        ["3 or more, won back or mate", 3, back, false],
+        ["2 or more, taken at once", 2, any, true],
+        ["2 or more, taken at once, won back or mate", 2, back, true],
+    ] as const) {
+        const [r] = measure(puzzles, (p) => found(p, min, paid, atOnce), [
+            "sacrifice",
+        ]);
+        console.log(
+            `${name}: tagged ${r.tagged}, precision ${r.precision}, recall ${r.recall}`,
+        );
+    }
+});
 
 const PGN_FILE = process.env.PGN_FILE;
 
@@ -603,6 +643,58 @@ it.skipIf(!GAMES_PGN || !STOCKFISH || !ONLY_MOVE)(
             `positions ${seen}, only move in ${n} (${((100 * n) / seen).toFixed(0)}%):`,
             kept,
         );
+    },
+);
+
+const SACRIFICE_GAMES = Number(process.env.SACRIFICE_GAMES ?? 0);
+
+/**
+ * P2.4i in games: how often does the engine's best line (depth 16) sacrifice, and is it a real
+ * choice? A piece already attacked and lost anyway is not a sacrifice: with the null-move
+ * search (what the opponent wins if we pass), material they win anyway does not count.
+ * Prints examples (EXAMPLES) with both readings, to check by hand.
+ */
+it.skipIf(!GAMES_PGN || !STOCKFISH || !SACRIFICE_GAMES)(
+    "sacrifices in games",
+    async () => {
+        const engine = new Uci(STOCKFISH!);
+        await engine.init();
+        let seen = 0;
+        const counts = { line: 0, lostAnyway: 0, kept: 0, neither: 0 };
+        const shown = { lostAnyway: 0, kept: 0, neither: 0 };
+        for (const fen of gamePositions(GAMES_PGN!)) {
+            if (seen >= SACRIFICE_GAMES) break;
+            const pv = await engine.pv(fen, 16);
+            if (!pv.length) continue;
+            seen++;
+            const s = sacrifice(fen, pv, 2, process.env.AT_ONCE !== "0");
+            if (!s) continue;
+            counts.line++;
+            const passed = nullMoveFen(fen);
+            const threat = passed
+                ? lineOutcome(
+                      passed,
+                      await engine.pv(passed, 12),
+                      opposite(
+                          Chess.fromSetup(parseFen(fen).unwrap()).unwrap().turn,
+                      ),
+                  )
+                : undefined;
+            const anyway = (threat?.materialChange ?? 0) >= s.given;
+            // the rule said: given by choice, and won back or mate within the line
+            const kind = anyway
+                ? "lostAnyway"
+                : s.outcome === "neither"
+                  ? "neither"
+                  : "kept";
+            counts[kind]++;
+            if (shown[kind]++ < EXAMPLES)
+                console.log(
+                    `  ${kind}: ${fen}  ${s.san} gives ${s.given} (${s.role} on ${s.square}), ${s.outcome}; line ${pv.slice(0, 8).join(" ")}`,
+                );
+        }
+        engine.quit();
+        console.log(`positions ${seen}`, counts);
     },
 );
 
