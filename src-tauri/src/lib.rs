@@ -109,6 +109,7 @@ pub fn run() {
             book_import,
             book_remove,
             book_moves,
+            book_build,
             export_save,
             backup_create,
             backup_restore,

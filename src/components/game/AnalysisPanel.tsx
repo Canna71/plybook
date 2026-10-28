@@ -17,6 +17,7 @@ import EngineInfoViewer from "./EngineInfoViewer";
 import Moves from "./Moves";
 import ButtonBar from "./Buttonbar";
 import PositionFacts from "./PositionFacts";
+import OpeningName from "./OpeningName";
 import HumanMoves from "./HumanMoves";
 import TablebaseInfo from "./TablebaseInfo";
 import ReviewPanel from "./ReviewPanel";
@@ -110,6 +111,7 @@ const AnalysisPanel: Component<{
 
             <Show when={analysing() && viewMode() === ViewMode.MOVES}>
                 <PanelSection id="insights" title="About this position">
+                    <OpeningName />
                     <PositionFacts />
                     <HumanMoves
                         moves={props.humanMoves()}
