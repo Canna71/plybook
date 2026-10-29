@@ -705,6 +705,36 @@ How this file is used:
   - **Accessibility**: keyboard navigation, focus states, contrast, screen-reader labels.
   - **Cleanup on the way**: split `GameManager.tsx`, the old `Views/obsoleted` pages, unused
     routes and dead code.
+- [x] **U.2 Drawing on the board with a touchpad** (owner's request 2026-10-28: right-click
+  takes two fingers). A pen mode (a button by the board, or `D`): a one-finger drag draws an
+  arrow, a tap a circle, moves wait until it is off; a small bar with the four colours (the
+  choice kept), undo the last shape, clear the position's shapes. Shift + drag / click keeps
+  working as a shortcut (chessground's own), and the four colours get keyboard modifiers
+  without the right button. Shapes are saved as today (`[%cal]`, `[%csl]`, O.3).
+  - Status 2026-10-28 (`feature/draw-mode`): the drawing bar in the bottom player's row
+    (`DrawBar.tsx`: pen, colours, undo, clear; the colour in `themes.pen`), `D` in the
+    shortcuts, and `common/chessboard.tsx` starting chessground's own drawing on a plain
+    press in pen mode, or on Shift + press with Shift green, + Option blue, + Cmd red, + both
+    yellow (`models/drawing.ts`). Not while playing the engine. Checked in the dev app with
+    the driver's new `draw` command (arrows, circles, colours, undo, clear).
+  - Fixed on the way: a circle was saved as an arrow to a1 (`[%cal Gc5a1]`): chessops writes
+    a circle as a shape to its own square, ReChess passed none (square 0). Circles drawn by
+    right-click before this were saved wrongly too; they show as arrows to a1 in old files.
+  - Known limit: undo removes the last arrow first, then circles (PGN keeps circles and
+    arrows apart, not the order they were drawn).
+- [ ] **U.3 Board and piece customization** (owner's request 2026-10-28):
+  - Board colours: light and dark squares picked freely, plus presets; the board drawn by the
+    app (no image, no licence question).
+  - Textures (wood, marble, maple…): only images whose licence allows shipping them with a
+    GPL app are bundled (each checked, listed in the README); others can be imported.
+  - Highlight colours (last move, check, selected square, arrows) and the coordinates' style.
+  - More piece sets from Lichess's (about 40): each licence checked; non-commercial ones
+    (CC BY-NC) only as optional downloads the user chooses, never bundled.
+  - Your own pieces: a folder of 12 images named wK, wQ… (SVG or PNG) imported as a set.
+- [ ] **U.4 App themes** (owner's request 2026-10-28): presets beyond light and dark (paper,
+  high contrast, a Lichess-like dark), an accent colour, custom themes as a small file of
+  `--rc-*` token values, theme packs (board + pieces + app colours together), and a live
+  preview in Settings → Appearance.
 
 ## Last
 

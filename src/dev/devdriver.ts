@@ -5,7 +5,8 @@
 //
 // A command: { "id": "any unique value", "go": "/route", "click": "css selector",
 //              "type": "text", "key": "ArrowRight", "theme": "light" | "dark" | "",
-//              "move": "e2e4 g1f3", "scroll": "css selector", "hover": "css selector" }
+//              "move": "e2e4 g1f3", "draw": "e2e4 d4d4", "scroll": "css selector",
+//              "hover": "css selector" }
 
 import anylogger from "anylogger";
 const log = anylogger("devdriver");
@@ -20,6 +21,8 @@ type Command = {
     theme?: "light" | "dark" | "";
     /** Moves on the main board, as UCI, separated by spaces */
     move?: string;
+    /** Drags on the main board, "e2e4" or "e4e4" for one square, separated by spaces */
+    draw?: string;
     /** Scrolls this element into view (after the other commands) */
     scroll?: string;
     /** Moves the mouse onto this element (mouseenter and mouseover) */
@@ -43,22 +46,54 @@ function mainBoard(): HTMLElement | undefined {
     return best;
 }
 
-/** Clicks a square as a user would: press on the board, release on the document. */
-function clickSquare(board: HTMLElement, square: string) {
+/** A point at the centre of a square of the board, for mouse events */
+function squareAt(board: HTMLElement, square: string) {
     const r = board.getBoundingClientRect();
     const white = !board.closest(".orientation-black");
     const file = square.charCodeAt(0) - 97;
     const rank = square.charCodeAt(1) - 49;
     const col = white ? file : 7 - file;
     const row = white ? 7 - rank : rank;
-    const at = {
+    return {
         clientX: r.left + ((col + 0.5) * r.width) / 8,
         clientY: r.top + ((row + 0.5) * r.height) / 8,
         button: 0,
         bubbles: true,
     };
+}
+
+/** Clicks a square as a user would: press on the board, release on the document. */
+function clickSquare(board: HTMLElement, square: string) {
+    const at = squareAt(board, square);
     board.dispatchEvent(new MouseEvent("mousedown", at));
     document.dispatchEvent(new MouseEvent("mouseup", at));
+}
+
+const frame = () => new Promise((done) => setTimeout(done, 50));
+
+/**
+ * Drags from one square to another with frames in between, as a hand does: chessground
+ * notes the square under the pointer on the next frame, so a press released at once draws
+ * nothing. The same square twice is a click that lasts (a circle in pen mode).
+ */
+async function dragSquares(board: HTMLElement, from: string, to: string) {
+    board.dispatchEvent(new MouseEvent("mousedown", squareAt(board, from)));
+    await frame();
+    document.dispatchEvent(new MouseEvent("mousemove", squareAt(board, to)));
+    await frame();
+    document.dispatchEvent(new MouseEvent("mouseup", squareAt(board, to)));
+}
+
+/** Drags each "e2e4" in turn (arrows in pen mode; "e4e4" a circle) */
+async function drawShapes(shapes: string) {
+    for (const s of shapes
+        .split(/\s+/)
+        .filter((m) => /^[a-h][1-8][a-h][1-8]$/.test(m))) {
+        const board = mainBoard();
+        if (!board) return log.warn("no board for", s);
+        await dragSquares(board, s.slice(0, 2), s.slice(2, 4));
+        await frame();
+    }
 }
 
 /** Plays each move by clicking its two squares (click-to-move), one after another. */
@@ -133,6 +168,7 @@ export function startDevDriver(navigate: (to: string) => void) {
                 );
             }
             if (cmd.move) playMoves(cmd.move);
+            if (cmd.draw) void drawShapes(cmd.draw);
             if (cmd.scroll) {
                 const el = document.querySelector(cmd.scroll);
                 if (el) el.scrollIntoView({ block: "center" });

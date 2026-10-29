@@ -18,6 +18,8 @@ type ShortcutsOptions = {
     playBestMove: () => void;
     /** Moving through the game is allowed (not while playing the engine or in a puzzle) */
     canNavigate: Accessor<boolean>;
+    /** Pen mode on or off (U.2) */
+    togglePen: () => void;
     /** The editor takes keys now (a side panel takes them only after a click inside it) */
     isActive: Accessor<boolean>;
     help: Signal<boolean>;
@@ -59,6 +61,7 @@ export function useShortcuts(o: ShortcutsOptions) {
             if (on) o.engineAnalysisOn[1](true);
         },
         bestMove: o.playBestMove,
+        pen: o.togglePen,
         help: () => o.help[1]((open) => !open),
     };
 
