@@ -32,6 +32,8 @@ pgnparse = "0.1.15"
 pgn-reader = "0.29"
 shakmaty = "0.30"
 zstd = "0.13"
+# piece images embedded in installed sets' stylesheets (pieces.rs)
+base64 = "0.22"
 tauri-plugin-process = "2.2.0"
 tauri-plugin-dialog = "2"
 tauri-plugin-clipboard-manager = "2.2.0"

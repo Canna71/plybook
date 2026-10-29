@@ -44,17 +44,23 @@ dubrovny, icpieces, anarcandy, disguised, cooke, monarchy, minimal-warmth, xkcd)
 | riohacha | the lila authors | AGPLv3+ (Lichess: not stated) | yes, to confirm |
 | trendy | Benjamin Kinard | CC BY 3.0 | yes, with credit |
 | trendy_ink | Benjamin Kinard, caderek | CC BY 3.0 | yes, with credit |
-| alpha | Eric Bentzen | "free for personal non commercial use" | **no** |
-| cardinal | sadsnake1 | CC BY-NC-SA 4.0 | **no** (non-commercial) |
-| fresca | sadsnake1 | CC BY-NC-SA 4.0 | **no** (non-commercial) |
-| staunty | sadsnake1 | CC BY-NC-SA 4.0 | **no** (non-commercial) |
-| tatiana | sadsnake1 | CC BY-NC-SA 4.0 | **no** (non-commercial) |
-| cases | M. Leschemelle, A. Hernandez Marroquin | "freeware" | **unclear** (no redistribution grant) |
-| motif | Armando Hernandez Marroquin | "freeware" | **unclear** |
-| pirat | Klaus Wolf | "freeware" | **unclear** |
-| regular | Alastair Scott | "freeware" | **unclear** |
-| smart | Christoph Wirth | "free" | **unclear** |
-| traveller | Alan Cowderoy | "freeware" | **unclear** |
+| alpha | Eric Bentzen | "free for personal non commercial use" | kept: ReChess is free and non-commercial |
+| cardinal | sadsnake1 | CC BY-NC-SA 4.0 | kept: non-commercial, with credit |
+| fresca | sadsnake1 | CC BY-NC-SA 4.0 | kept: non-commercial, with credit |
+| staunty | sadsnake1 | CC BY-NC-SA 4.0 | kept: non-commercial, with credit |
+| tatiana | sadsnake1 | CC BY-NC-SA 4.0 | kept: non-commercial, with credit |
 
-The sets marked no or unclear are waiting for the owner's decision (ROADMAP U.3): keep them,
-or drop them from the app and let users add them themselves.
+The non-commercial sets stay in the app by the owner's decision (2026-10-29): ReChess is
+given away free. They keep their own licence, not the app's GPL; anyone selling a build of
+ReChess would have to take them out.
+
+## Not shipped: downloaded on the user's request
+
+cases (Matthieu Leschemelle, Armando Hernandez Marroquin), motif (Armando Hernandez
+Marroquin), pirat (Klaus Wolf), regular (Alastair Scott), smart (Christoph Wirth) and
+traveller (Alan Cowderoy) are published as "freeware" or "free", with no right to
+redistribute them, so the app does not ship them since 2026-10-29. Settings → Appearance →
+More piece sets downloads them for the user from
+[sharechess](https://github.com/caderek/sharechess) (commit `f249b986`), where they are
+published with their authors' names (`src-tauri/src/pieces.rs`); a user can also add any set
+of their own from a folder of 12 images.

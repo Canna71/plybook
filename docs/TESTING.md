@@ -127,6 +127,19 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Installing piece sets, U.3 (branch feature/own-pieces)
+
+- [ ] **Download**: Settings → Appearance → More piece sets → "Download Pirat": the set is
+      installed, chosen and shown; it moves from the buttons to the list with Remove (seen in
+      the dev app, as was Remove).
+- [ ] **Your own set**: "Add your own set…", choose a folder with wK.svg … bP.svg (e.g. one of
+      Lichess's piece folders): installed under the folder's name; a folder missing a piece
+      says which one.
+- [ ] **Remove the set in use**: the pieces become Merida, and the menu says Merida.
+- [ ] **An old setting**: if you used Cases, Motif, Pirat, Regular, Smart or Traveller before
+      this, the board shows Merida until you download that set again.
+- [ ] **Backup**: a backup made after installing a set contains `Themes/pieces/<name>`.
+
 ## Board colours, U.3 (branch feature/board-themes)
 
 - [ ] **Presets**: Settings → Appearance → Board: each preset changes the preview and the

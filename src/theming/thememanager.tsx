@@ -10,6 +10,7 @@ import {
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { installedPiecesCss } from "../storage/pieces";
 
 const cssLoader = new CSSLoader();
 
@@ -76,14 +77,26 @@ async function loadPiecesStyle(setting: string) {
     if (!setting) return;
     const piecesTheme = PIECE_ALIASES[setting] ?? setting;
     cssLoader.unloadCSS("pieces-theme");
-    let css = "";
-    if (piecesTheme in buildinPiecesThemes) {
-        css = buildinPiecesThemes[piecesTheme];
-    } else {
-        css = await loadStyle(`Themes/pieces/${piecesTheme}/pieces.css`);
+    let css = buildinPiecesThemes[piecesTheme];
+    if (css === undefined) {
+        // a set the user installed (pieces.rs), or an older custom set in the config folder;
+        // one no longer there (removed, or dropped from the app and not downloaded yet) falls
+        // back to the default set rather than leaving the board without pieces
+        css = await installedPiecesCss(piecesTheme)
+            .catch(() => loadStyle(`Themes/pieces/${piecesTheme}/pieces.css`))
+            .then((text) => (text.includes("piece.") ? text : undefined))
+            .catch(() => undefined)
+            .then((text) => text ?? buildinPiecesThemes[DEFAULT_PIECES]);
     }
     cssLoader.injectCSS(css, "pieces-theme");
 }
+
+/** The set used when the chosen one cannot be loaded */
+const DEFAULT_PIECES = "merida";
+
+/** Loads the chosen set again: after it was installed or removed */
+export const reloadPieces = () =>
+    loadPiecesStyle(getSettingValue("themes.pieces", DEFAULT_PIECES)!);
 
 async function loadBoardStyle(
     boardTheme: string,

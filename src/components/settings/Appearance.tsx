@@ -1,8 +1,21 @@
-import { Component, For, Show } from "solid-js";
+import { Component, createResource, createSignal, For, Show } from "solid-js";
 import { Config } from "chessground/config";
 import { Chessboard } from "../common/chessboard";
+import Button from "../common/Button";
+import { makeErrorToast, makeToast } from "../common/Toast";
 import { getSettingValue, setSettingValue } from "../../models/settings";
-import { BOARD_THEMES, PIECE_THEMES } from "../../theming/thememanager";
+import {
+    BOARD_THEMES,
+    PIECE_THEMES,
+    reloadPieces,
+} from "../../theming/thememanager";
+import {
+    downloadablePieces,
+    downloadPieces,
+    importPieces,
+    listInstalledPieces,
+    removePieces,
+} from "../../storage/pieces";
 import {
     BOARD_PRESETS,
     BoardColours,
@@ -34,7 +47,15 @@ const Appearance: Component = () => {
             <label class="label is-small">{label}</label>
             <div class="select is-small">
                 <select
-                    value={getSettingValue(key, fallback)}
+                    // a value not among the options (a piece set no longer there) shows
+                    // as the fallback, as the board does
+                    value={
+                        options.some(
+                            (o) => o.value === getSettingValue(key, fallback),
+                        )
+                            ? getSettingValue(key, fallback)
+                            : fallback
+                    }
                     onChange={(e) =>
                         void setSettingValue(key, e.currentTarget.value)
                     }
@@ -57,6 +78,53 @@ const Appearance: Component = () => {
                           " ",
                       ),
         }));
+
+    // piece sets installed by the user (U.3): imported, or downloaded when not shippable
+    const [installed, { refetch }] = createResource(() =>
+        listInstalledPieces().catch(() => [] as string[]),
+    );
+    const [downloadable] = createResource(() =>
+        downloadablePieces().catch(() => [] as string[]),
+    );
+    const [busy, setBusy] = createSignal(false);
+    const label = (n: string) => named([n])[0].label;
+    const pieceSets = () => [
+        ...named(PIECE_THEMES),
+        ...named((installed() ?? []).filter((n) => !PIECE_THEMES.includes(n))),
+    ];
+    const toDownload = () =>
+        (downloadable() ?? []).filter((n) => !installed()?.includes(n));
+    /** Installs a set, then shows it */
+    const install = async (run: () => Promise<string | undefined>) => {
+        setBusy(true);
+        try {
+            const name = await run();
+            if (name) {
+                await refetch();
+                await setSettingValue("themes.pieces", name);
+                await reloadPieces();
+                makeToast(`${label(name)} installed`);
+            }
+        } catch (err) {
+            makeErrorToast(String(err));
+        } finally {
+            setBusy(false);
+        }
+    };
+    const download = (name: string) =>
+        install(async () => {
+            await downloadPieces(name);
+            return name;
+        });
+    const addOwn = () => install(importPieces);
+    const remove = async (name: string) => {
+        await removePieces(name).catch((err) => makeErrorToast(String(err)));
+        await refetch();
+        // the set in use gives way to the default one
+        if (getSettingValue("themes.pieces") === name)
+            await setSettingValue("themes.pieces", "merida");
+        await reloadPieces();
+    };
 
     // the custom board (U.3): its three colours, starting from the preset left behind
     const colours = () =>
@@ -122,17 +190,58 @@ const Appearance: Component = () => {
                             {colourField("Highlights", "highlight")}
                         </div>
                     </Show>
-                    {choice(
-                        "Pieces",
-                        "themes.pieces",
-                        "merida",
-                        named(PIECE_THEMES),
-                    )}
+                    {choice("Pieces", "themes.pieces", "merida", pieceSets())}
                 </div>
                 <div class="appearance-preview">
                     <Chessboard config={() => PREVIEW} />
                 </div>
             </div>
+
+            <h3 class="title is-6 appearance-more">More piece sets</h3>
+            <p class="settings-help">
+                The licences of these sets do not let ReChess ship them:
+                download one and it is fetched for you from
+                sharechess.github.io, where they are published with their
+                authors' names. Or add your own: a folder of 12 images named wK,
+                wQ, wR, wB, wN, wP and bK…bP (SVG or PNG).
+            </p>
+            <div class="buttons">
+                <For each={toDownload()}>
+                    {(name) => (
+                        <Button
+                            class="is-small"
+                            disabled={busy()}
+                            onClick={() => download(name)}
+                        >
+                            Download {label(name)}
+                        </Button>
+                    )}
+                </For>
+                <Button class="is-small" disabled={busy()} onClick={addOwn}>
+                    Add your own set…
+                </Button>
+            </div>
+            <Show when={(installed()?.length ?? 0) > 0}>
+                <table class="table is-narrow">
+                    <tbody>
+                        <For each={installed()}>
+                            {(name) => (
+                                <tr>
+                                    <td>{label(name)}</td>
+                                    <td>
+                                        <Button
+                                            class="is-small is-danger is-outlined"
+                                            onClick={() => remove(name)}
+                                        >
+                                            Remove
+                                        </Button>
+                                    </td>
+                                </tr>
+                            )}
+                        </For>
+                    </tbody>
+                </table>
+            </Show>
         </section>
     );
 };
