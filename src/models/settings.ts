@@ -23,6 +23,10 @@ export interface AppSettings {
         pen?: string;
         /** The squares and highlight of the "custom" board (U.3), as "#rrggbb" */
         boardColours?: { light: string; dark: string; highlight: string };
+        /** A highlight colour over any board's own (U.3), "#rrggbb"; "" for the board's */
+        highlight?: string;
+        /** Board coordinates (U.3): none, along the edges, or on every square */
+        coordinates?: "off" | "edges" | "squares";
     };
     engine?: {
         /** The engine to play against */
@@ -145,6 +149,8 @@ const DEFAULT: AppSettings = {
             dark: "#b58863",
             highlight: "#9bc700",
         },
+        highlight: "",
+        coordinates: "edges",
     },
     engine: {
         lastUsed: "",

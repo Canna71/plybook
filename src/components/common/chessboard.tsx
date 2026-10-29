@@ -10,6 +10,8 @@ import {
 import { Api } from "chessground/api";
 import { start as startDrawing } from "chessground/draw";
 import { PenColour, shiftColour } from "../../models/drawing";
+import { coordinatesConfig } from "../../models/boardtheme";
+import { getSettingValue } from "../../models/settings";
 
 interface ChessboardProps {
     config: Accessor<Config>;
@@ -27,10 +29,22 @@ export function Chessboard(props: ChessboardProps) {
         props.onChessboardClick?.(e);
     };
 
+    // the coordinates style of the settings (U.3), unless a board turns them off itself
+    const style = () => getSettingValue("themes.coordinates", "edges");
+    const withCoordinates = (config: Config): Config =>
+        config.coordinates === false
+            ? config
+            : { ...config, ...coordinatesConfig(style()) };
+    let drawnStyle: string | undefined;
+
     createEffect(() => {
         const ch = api();
         if (ch) {
-            ch.set(props.config());
+            ch.set(withCoordinates(props.config()));
+            // chessground draws the coordinates when it builds the board: a new style redraws it
+            if (drawnStyle !== undefined && drawnStyle !== style())
+                ch.redrawAll();
+            drawnStyle = style();
         }
     });
 
@@ -39,7 +53,7 @@ export function Chessboard(props: ChessboardProps) {
         if (!wrapper) {
             return;
         }
-        const api = Chessground(wrapper, props.config());
+        const api = Chessground(wrapper, withCoordinates(props.config()));
         // the dev driver plays moves with synthetic clicks (src/dev/devdriver.ts)
         if (import.meta.env.DEV) api.state.trustAllEvents = true;
         setApi(api);

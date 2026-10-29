@@ -18,8 +18,10 @@ import {
 } from "../../storage/pieces";
 import {
     BOARD_PRESETS,
+    BOARD_TEXTURES,
     BoardColours,
     CUSTOM_BOARD,
+    TEXTURE_PREFIX,
 } from "../../models/boardtheme";
 
 const UI_THEMES = [
@@ -28,18 +30,28 @@ const UI_THEMES = [
     { value: "dark", label: "Dark" },
 ];
 
+const COORDINATES = [
+    { value: "edges", label: "Along the edges" },
+    { value: "squares", label: "On every square" },
+    { value: "off", label: "None" },
+];
+
 // a position with every piece, to judge a piece set
 const PREVIEW: Config = {
     fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R",
+    // coordinates as the settings say (chessboard.tsx), to judge them too
     viewOnly: true,
-    coordinates: false,
 };
 
 /** Light or dark UI, board colours and piece set; changes apply at once. */
 const Appearance: Component = () => {
     const choice = (
         label: string,
-        key: "themes.ui" | "themes.board" | "themes.pieces",
+        key:
+            | "themes.ui"
+            | "themes.board"
+            | "themes.pieces"
+            | "themes.coordinates",
         fallback: string,
         options: { value: string; label: string }[],
     ) => (
@@ -73,11 +85,19 @@ const Appearance: Component = () => {
             label:
                 n === CUSTOM_BOARD
                     ? "Custom colours"
-                    : (n.charAt(0).toUpperCase() + n.slice(1)).replace(
-                          /_/g,
-                          " ",
-                      ),
+                    : (n.charAt(0).toUpperCase() + n.slice(1))
+                          .replace(/_/g, " ")
+                          // "wood2" -> "Wood 2"
+                          .replace(/([a-z])(\d+)$/, "$1 $2"),
         }));
+
+    // a highlight colour over any board (U.3): "" for the board's own
+    const ownHighlight = () => getSettingValue("themes.highlight", "");
+    const setOwnHighlight = (own: boolean) =>
+        void setSettingValue(
+            "themes.highlight",
+            own ? BOARD_PRESETS.classic.highlight : "",
+        );
 
     // piece sets installed by the user (U.3): imported, or downloaded when not shippable
     const [installed, { refetch }] = createResource(() =>
@@ -171,13 +191,24 @@ const Appearance: Component = () => {
                                     setBoard(e.currentTarget.value)
                                 }
                             >
-                                <For each={named(BOARD_THEMES)}>
-                                    {(o) => (
-                                        <option value={o.value}>
-                                            {o.label}
-                                        </option>
-                                    )}
-                                </For>
+                                <optgroup label="Colours">
+                                    <For each={named(BOARD_THEMES)}>
+                                        {(o) => (
+                                            <option value={o.value}>
+                                                {o.label}
+                                            </option>
+                                        )}
+                                    </For>
+                                </optgroup>
+                                <optgroup label="Textures (Lichess)">
+                                    <For each={Object.keys(BOARD_TEXTURES)}>
+                                        {(t) => (
+                                            <option value={TEXTURE_PREFIX + t}>
+                                                {label(t)}
+                                            </option>
+                                        )}
+                                    </For>
+                                </optgroup>
                             </select>
                         </div>
                     </div>
@@ -190,6 +221,49 @@ const Appearance: Component = () => {
                             {colourField("Highlights", "highlight")}
                         </div>
                     </Show>
+                    <Show
+                        when={getSettingValue("themes.board") !== CUSTOM_BOARD}
+                    >
+                        <div class="field">
+                            <label class="label is-small">Highlights</label>
+                            <div class="appearance-highlight">
+                                <div class="select is-small">
+                                    <select
+                                        value={ownHighlight() ? "own" : "board"}
+                                        onChange={(e) =>
+                                            setOwnHighlight(
+                                                e.currentTarget.value === "own",
+                                            )
+                                        }
+                                    >
+                                        <option value="board">
+                                            The board's own
+                                        </option>
+                                        <option value="own">My colour</option>
+                                    </select>
+                                </div>
+                                <Show when={ownHighlight()}>
+                                    <input
+                                        type="color"
+                                        title="Last move, selected square and move dots"
+                                        value={ownHighlight()}
+                                        onInput={(e) =>
+                                            void setSettingValue(
+                                                "themes.highlight",
+                                                e.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </Show>
+                            </div>
+                        </div>
+                    </Show>
+                    {choice(
+                        "Coordinates",
+                        "themes.coordinates",
+                        "edges",
+                        COORDINATES,
+                    )}
                     {choice("Pieces", "themes.pieces", "merida", pieceSets())}
                 </div>
                 <div class="appearance-preview">

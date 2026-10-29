@@ -153,6 +153,22 @@
             gap: var(--rc-space-1);
         }
 
+        .appearance-highlight {
+            display: flex;
+            align-items: center;
+            gap: var(--rc-space-2);
+
+            input[type="color"] {
+                width: 32px;
+                height: 22px;
+                padding: 0;
+                border: 1px solid var(--rc-border);
+                border-radius: var(--rc-radius-small);
+                background: none;
+                cursor: pointer;
+            }
+        }
+
         .appearance-colour {
             display: flex;
             align-items: center;

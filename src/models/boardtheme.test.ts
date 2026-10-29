@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
     BOARD_PRESETS,
+    BOARD_TEXTURES,
     boardCss,
     boardSvg,
+    coordinatesConfig,
+    highlightCss,
     rgba,
+    textureOf,
     validColour,
 } from "./boardtheme";
 
@@ -41,6 +45,43 @@ describe("board colours", () => {
         );
         expect(validColour("#ABCDEF", "#000000")).toBe("#abcdef");
         expect(validColour(42, "#000000")).toBe("#000000");
+    });
+
+    it("draws a texture from its file, coordinates in its measured colours", () => {
+        const wood = textureOf("texture:wood")!;
+        const css = boardCss(wood, wood.file);
+        expect(css).toContain('url("/boards/wood.jpg")');
+        expect(css).toContain("background-size: cover");
+        expect(css).toContain(`color: ${wood.dark}`);
+        // only plain file names of ours: anything else draws the two colours
+        expect(boardCss(wood, "../x.jpg")).not.toContain("/boards/");
+        expect(textureOf("wood")).toBeUndefined();
+        expect(textureOf("texture:nothing")).toBeUndefined();
+    });
+
+    it("every texture's file is a plain name, and its colours valid", () => {
+        for (const t of Object.values(BOARD_TEXTURES)) {
+            expect(t.file).toMatch(/^[a-z0-9_]+\.(jpg|png)$/);
+            for (const v of [t.light, t.dark, t.highlight])
+                expect(validColour(v, "")).toBe(v);
+        }
+    });
+
+    it("the highlight rules alone, for a colour over any board", () => {
+        const css = highlightCss("#ff0000");
+        expect(css).toContain("square.last-move");
+        expect(css).toContain(rgba("#ff0000", 0.41));
+        expect(css).not.toContain("cg-board {");
+    });
+
+    it("coordinates: none, the edges, every square", () => {
+        expect(coordinatesConfig("off")).toEqual({
+            coordinates: false,
+            coordinatesOnSquares: false,
+        });
+        expect(coordinatesConfig("edges").coordinates).toBe(true);
+        expect(coordinatesConfig("squares").coordinatesOnSquares).toBe(true);
+        expect(coordinatesConfig(undefined).coordinates).toBe(true);
     });
 
     it("rgba reads #rrggbb", () => {
