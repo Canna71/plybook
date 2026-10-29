@@ -773,6 +773,14 @@ How this file is used:
     the CSS. The preview is the app itself: changes apply at once.
   - Not checked by hand: import and export (file dialogs the dev driver cannot use).
 
+- [ ] **U.5 Help for users** (found missing 2026-10-29; deferred by the owner): today the app
+  has the shortcuts dialog (`?`), the first-start checklist on Today and short help texts in
+  Settings, and the repository has design and developer notes only. Wanted: a user guide
+  (`docs/GUIDE.md`, one section per screen: what it is for and how to use it, with
+  screenshots), shown in the app as a Help screen (sidebar and ⌘K, the same text bundled, so it
+  works offline), and "?" links from each screen to its section. The README (rewritten for the
+  public repository, 2026-10-29) links to it.
+
 ## Last
 
 - [~] **X.1 App auto-update** (moved here from O.6 by the owner, 2026-10-25). Tauri's updater
