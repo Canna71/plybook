@@ -154,6 +154,14 @@ body,
     border-left: 3px solid var(--rc-danger);
 }
 
+// a toast that offers something (components/shell/useSites.tsx): text, then its buttons
+.rc-toast-offer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--rc-space-2);
+}
+
 // --- a reusable empty state: what's missing and what to do
 .rc-empty {
     color: var(--rc-text-muted);

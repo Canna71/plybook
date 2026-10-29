@@ -16,6 +16,7 @@ import { VDivider } from "../components/common/VDivider";
 import { VideoPlayer } from "../components/video/VideoPlayer";
 import { useSplitter } from "../components/common/useSplitter";
 import { getSettingValue, setSettingValue } from "../models/settings";
+import { useSites } from "../components/shell/useSites";
 
 const Layout: ParentComponent = (props) => {
     const divider = useSplitter((layout) => {
@@ -61,6 +62,8 @@ const Layout: ParentComponent = (props) => {
         }
     };
     onMount(() => document.addEventListener("paste", onPaste));
+    // chess sites (I.5): what is copied from them, or downloaded there, reaches the Library
+    useSites(navigate);
     // dev builds: a script can drive the app for screenshots (src/dev/devdriver.ts)
     if (import.meta.env.DEV) {
         onMount(() => {

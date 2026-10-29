@@ -39,6 +39,11 @@ export interface AppSettings {
         /** Board coordinates (U.3): none, along the edges, or on every square */
         coordinates?: "off" | "edges" | "squares";
     };
+    /** Chess sites opened in the app (I.5) */
+    sites?: {
+        /** The user's own, after Chessable, chess.com and Lichess */
+        bookmarks?: { label: string; url: string }[];
+    };
     engine?: {
         /** The engine to play against */
         lastUsed?: string;
@@ -164,6 +169,7 @@ const DEFAULT: AppSettings = {
         highlight: "",
         coordinates: "edges",
     },
+    sites: { bookmarks: [] },
     engine: {
         lastUsed: "",
         analysisProfile: "",
