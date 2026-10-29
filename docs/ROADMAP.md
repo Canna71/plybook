@@ -739,11 +739,16 @@ How this file is used:
     14 sets added (MIT, Apache, GPL, AGPL, CC BY, CC BY-SA, CC0; list and licences in
     `src/assets/styles/pieces/README.md`), made with `tools/piece-css.mjs`; the app now lists
     every folder there (`import.meta.glob`) instead of naming each set.
-  - [ ] **Owner's decision**: 11 of the 18 sets shipped before have licences that do not allow
-    shipping them in a GPL app: 5 non-commercial (alpha, cardinal, fresca, staunty, tatiana)
-    and 6 "freeware" or "free" with no right to redistribute (cases, motif, pirat, regular,
-    smart, traveller). Keep them, or drop them (users could import them as their own set).
-  - Your own pieces: a folder of 12 images named wK, wQ… (SVG or PNG) imported as a set.
+  - [x] **Owner's decision** (2026-10-29): of the 18 sets shipped before, the 5 non-commercial
+    ones (alpha, cardinal, fresca, staunty, tatiana) stay, ReChess being free; the 6
+    "freeware" ones with no right to redistribute (cases, motif, pirat, regular, smart,
+    traveller) leave the app and are downloaded on the user's request from sharechess
+    (`feature/own-pieces`). A setting naming one of them shows Merida until it is downloaded.
+  - [x] Your own pieces: a folder of 12 images named wK, wQ… (SVG or PNG) imported as a set.
+    Done 2026-10-29 (`src-tauri/src/pieces.rs`): Settings → Appearance → More piece sets →
+    "Add your own set…" (Lichess's names wK.svg or sharechess's kw.svg, SVG, PNG or WebP),
+    sets kept in `<AppLocalData>/Themes/pieces` (in backups) and read through a command (no
+    wider webview access), removable; a set that cannot be loaded falls back to Merida.
 - [ ] **U.4 App themes** (owner's request 2026-10-28): presets beyond light and dark (paper,
   high contrast, a Lichess-like dark), an accent colour, custom themes as a small file of
   `--rc-*` token values, theme packs (board + pieces + app colours together), and a live

@@ -143,6 +143,10 @@
         }
 
         // the custom board's colours (U.3)
+        &+ .appearance-more {
+            margin-top: var(--rc-space-5);
+        }
+
         .appearance-colours {
             display: flex;
             flex-direction: column;

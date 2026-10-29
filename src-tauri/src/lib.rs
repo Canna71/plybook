@@ -11,6 +11,7 @@ mod lichess_puzzles;
 mod migrate;
 mod model;
 mod net;
+mod pieces;
 mod repertoire;
 mod secrets;
 
@@ -25,6 +26,7 @@ use library::*;
 use lichess_puzzles::*;
 use model::*;
 use net::*;
+use pieces::*;
 use repertoire::*;
 use secrets::*;
 
@@ -110,6 +112,12 @@ pub fn run() {
             book_remove,
             book_moves,
             book_build,
+            pieces_list,
+            pieces_css_of,
+            pieces_import,
+            pieces_downloadable,
+            pieces_download,
+            pieces_remove,
             export_save,
             backup_create,
             backup_restore,

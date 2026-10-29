@@ -114,7 +114,10 @@ src-tauri/src/
   library.rs               files dropped on the window (paths kept from the window event) copied into
                            a Library folder: the webview names only the folder, never a source path
   secrets.rs               API tokens in the OS keychain, never returned to the webview
-  books.rs                 Polyglot opening books (binary search on disk) in <AppLocalData>/Books
+  books.rs                 Polyglot opening books (binary search on disk) in <AppLocalData>/Books,
+                           and books made from a PGN of games (book_build)
+  pieces.rs                piece sets the user installs (a folder of 12 images, or a set the app
+                           may not ship, downloaded on request) in <AppLocalData>/Themes/pieces
   net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts
   model.rs                 the optional explanation model (P2.4b): Anthropic or an OpenAI-compatible
                            endpoint, fixed system prompt; provider, endpoint and key are one keychain
