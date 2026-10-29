@@ -11,7 +11,8 @@ later), so the app as distributed is under the same license. Chess engines such 
 install them yourself, and they keep their own licenses.
 
 Piece sets each keep their own licence (GPL, AGPL, MIT, Apache, CC BY, CC BY-SA, CC0 and others):
-authors, licences and sources are in `src/assets/styles/pieces/README.md`.
+authors, licences and sources are in `src/assets/styles/pieces/README.md`. Board textures are
+Lichess's (AGPLv3+), credited in `public/boards/README.md`.
 
 Data bundled with the app: opening names (ECO codes and names) from
 [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings), CC0 1.0, in

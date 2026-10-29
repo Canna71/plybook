@@ -6,6 +6,9 @@ import {
     BoardColours,
     boardCss,
     CUSTOM_BOARD,
+    highlightCss,
+    textureOf,
+    validColour,
 } from "../models/boardtheme";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { appConfigDir, join } from "@tauri-apps/api/path";
@@ -55,7 +58,8 @@ export function useThemes() {
         const boardTheme = getSettingValue("themes.board", "bluish");
         // read here, so picking a colour redraws the custom board at once
         const colours = getSettingValue("themes.boardColours");
-        loadBoardStyle(boardTheme!, colours);
+        const highlight = getSettingValue("themes.highlight", "");
+        loadBoardStyle(boardTheme!, colours, highlight);
     });
     // light/dark UI: Bulma and the tokens read data-theme on <html>; none follows the system
     createEffect(() => {
@@ -101,11 +105,16 @@ export const reloadPieces = () =>
 async function loadBoardStyle(
     boardTheme: string,
     colours: Partial<BoardColours> | undefined,
+    /** The user's highlight colour over the board's own ("" none) */
+    highlight: string | undefined,
 ) {
     if (!boardTheme) return;
     cssLoader.unloadCSS("board-theme");
     let css = "";
-    if (boardTheme === CUSTOM_BOARD) {
+    const texture = textureOf(boardTheme);
+    if (texture) {
+        css = boardCss(texture, texture.file);
+    } else if (boardTheme === CUSTOM_BOARD) {
         css = boardCss(colours ?? {});
     } else if (
         boardTheme in BOARD_PRESETS &&
@@ -117,6 +126,8 @@ async function loadBoardStyle(
     } else {
         css = await loadStyle(`Themes/boards/${boardTheme}.css`);
     }
+    // later rules of the same weight win: the user's highlight over any board's
+    if (highlight && validColour(highlight, "")) css += highlightCss(highlight);
     cssLoader.injectCSS(css, "board-theme");
 }
 

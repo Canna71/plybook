@@ -127,6 +127,17 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Textures, highlights and coordinates, U.3 (branch feature/board-textures)
+
+- [ ] **Textures**: Settings → Appearance → Board → "Textures (Lichess)": each one fills the
+      boards (Analysis, Puzzles, Play) with a8 light, and its coordinates are readable (Wood seen
+      in the dev app).
+- [ ] **In a built app**: the textures load (they are files of the app, allowed by the CSP).
+- [ ] **My highlight colour**: Highlights → "My colour", pick one: the last move and the
+      selected square take it, on a texture and on Bluish (red on Wood seen in the dev app).
+- [ ] **Coordinates**: "On every square" labels each square; "None" removes them; "Along the
+      edges" is the old look (all seen in the dev app on Analysis).
+
 ## Installing piece sets, U.3 (branch feature/own-pieces)
 
 - [ ] **Download**: Settings → Appearance → More piece sets → "Download Pirat": the set is
