@@ -758,10 +758,20 @@ How this file is used:
     "Add your own set…" (Lichess's names wK.svg or sharechess's kw.svg, SVG, PNG or WebP),
     sets kept in `<AppLocalData>/Themes/pieces` (in backups) and read through a command (no
     wider webview access), removable; a set that cannot be loaded falls back to Merida.
-- [ ] **U.4 App themes** (owner's request 2026-10-28): presets beyond light and dark (paper,
+- [x] **U.4 App themes** (owner's request 2026-10-28): presets beyond light and dark (paper,
   high contrast, a Lichess-like dark), an accent colour, custom themes as a small file of
   `--rc-*` token values, theme packs (board + pieces + app colours together), and a live
   preview in Settings → Appearance.
+  - Done 2026-10-29 (`feature/app-themes`), `models/uitheme.ts`: six presets (Paper, Forest,
+    Club dark, Midnight, High contrast light and dark), each a light or dark base and a few of
+    Bulma's variables, written under `:root[data-theme=…]` so they win over Bulma's own; an
+    accent colour over any theme (Bulma's primary, with white or black text on it by its
+    lightness); each preset suggests a board and pieces, offered by a "Use its board and
+    pieces too" button (the pack), never forced; custom themes imported from a JSON file
+    (`{"name", "mode", "vars": {"--bulma-…": …}}`) and the theme in use exported to one (a
+    "json" kind for `export_save`). Only `--bulma-*` / `--rc-*` names with plain values reach
+    the CSS. The preview is the app itself: changes apply at once.
+  - Not checked by hand: import and export (file dialogs the dev driver cannot use).
 
 ## Last
 

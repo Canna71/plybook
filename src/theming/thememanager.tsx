@@ -14,6 +14,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { installedPiecesCss } from "../storage/pieces";
+import { themeCss, themeOf } from "../models/uitheme";
 
 const cssLoader = new CSSLoader();
 
@@ -61,12 +62,21 @@ export function useThemes() {
         const highlight = getSettingValue("themes.highlight", "");
         loadBoardStyle(boardTheme!, colours, highlight);
     });
-    // light/dark UI: Bulma and the tokens read data-theme on <html>; none follows the system
+    // the app's theme: Bulma and the tokens read data-theme on <html> (none follows the
+    // system); a preset or custom theme (U.4) sets its mode and its variables, an accent
+    // colour goes over any of them
     createEffect(() => {
         const ui = getSettingValue("themes.ui", "system");
-        if (ui === "light" || ui === "dark")
-            document.documentElement.dataset.theme = ui;
+        const theme = themeOf(ui, getSettingValue("themes.customTheme"));
+        const accent = getSettingValue("themes.accent", "");
+        const mode =
+            theme?.mode ?? (ui === "light" || ui === "dark" ? ui : undefined);
+        if (mode) document.documentElement.dataset.theme = mode;
         else delete document.documentElement.dataset.theme;
+        const css = themeCss(mode, theme?.vars ?? {}, accent || undefined);
+        // an injected <style>, which unloadCSS (for links) does not remove
+        if (css) cssLoader.injectCSS(css, "ui-theme");
+        else document.getElementById("ui-theme")?.remove();
     });
 }
 

@@ -17,8 +17,19 @@ export interface AppSettings {
     themes?: {
         board?: string;
         pieces?: string;
-        /** Light or dark UI; "system" follows the operating system */
-        ui?: "system" | "light" | "dark";
+        /**
+         * The app's theme: "system" follows the operating system, "light", "dark", a preset of
+         * models/uitheme.ts (U.4) or "custom" (customTheme)
+         */
+        ui?: string;
+        /** An accent colour over any theme (U.4), "#rrggbb"; "" for the theme's own */
+        accent?: string;
+        /** The theme imported from a file (U.4) */
+        customTheme?: {
+            label: string;
+            mode: "light" | "dark";
+            vars: Record<string, string>;
+        };
         /** The pen's colour when drawing on the board (U.2): green, red, blue or yellow */
         pen?: string;
         /** The squares and highlight of the "custom" board (U.3), as "#rrggbb" */
@@ -143,6 +154,7 @@ const DEFAULT: AppSettings = {
         board: "bluish",
         pieces: "merida",
         ui: "system",
+        accent: "",
         pen: "green",
         boardColours: {
             light: "#f0d9b5",
