@@ -116,6 +116,8 @@ src-tauri/src/
   secrets.rs               API tokens in the OS keychain, never returned to the webview
   books.rs                 Polyglot opening books (binary search on disk) in <AppLocalData>/Books,
                            and books made from a PGN of games (book_build)
+  sites.rs                 chess sites in a window of their own (no app permissions); PGN downloads
+                           there saved to Library/Downloads, the clipboard read only while it is open
   pieces.rs                piece sets the user installs (a folder of 12 images, or a set the app
                            may not ship, downloaded on request) in <AppLocalData>/Themes/pieces
   net.rs                   all HTTP (chess.com / Lichess game import), fixed hosts

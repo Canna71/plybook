@@ -14,6 +14,7 @@ mod net;
 mod pieces;
 mod repertoire;
 mod secrets;
+mod sites;
 
 use backup::*;
 use books::*;
@@ -29,6 +30,7 @@ use net::*;
 use pieces::*;
 use repertoire::*;
 use secrets::*;
+use sites::*;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -118,6 +120,9 @@ pub fn run() {
             pieces_downloadable,
             pieces_download,
             pieces_remove,
+            site_open,
+            site_is_open,
+            site_clipboard,
             export_save,
             backup_create,
             backup_restore,

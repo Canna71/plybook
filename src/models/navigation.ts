@@ -116,6 +116,13 @@ export const NAVIGATION: NavGroup[] = [
                 route: "/boardeditor",
                 keywords: "setup position fen",
             },
+            {
+                id: "sites",
+                label: "Chess sites",
+                icon: "sites",
+                route: "/sites",
+                keywords: "chessable chess.com lichess browser web copy",
+            },
         ],
     },
 ];

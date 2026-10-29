@@ -12,6 +12,7 @@ import {
     IconHistory,
     IconHome,
     IconLayoutBoard,
+    IconWorld,
     IconLayoutSidebarLeftCollapse,
     IconLayoutSidebarLeftExpand,
     IconPuzzle,
@@ -43,6 +44,7 @@ const ICONS: Record<string, () => JSX.Element> = {
     database: () => <IconDatabase />,
     scan: () => <IconScan />,
     editor: () => <IconLayoutBoard />,
+    sites: () => <IconWorld />,
     settings: () => <IconSettings />,
 };
 

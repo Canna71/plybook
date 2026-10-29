@@ -597,6 +597,31 @@ How this file is used:
   access, most boards are drawn from page elements rather than images, and it would be a
   second-rate browser. Covered by P4.1b (scan from screen) and I.3.
 
+- [x] **I.5 Chess sites in the app** (owner's request 2026-10-29, Chessable first; done the same
+  day on `feature/sites`: `src-tauri/src/sites.rs`, `Views/Sites.tsx`, `models/sites.ts`,
+  `components/shell/useSites.tsx`; the copy offer checked in the dev app with the Lichess
+  window open; downloads and logins need a hand, TESTING.md): chess.com,
+  Lichess and Chessable (and the user's bookmarks) in a ReChess window, and what the user takes
+  from them saved to the Library. Unlike I.4 this is a browser for the user's own sites, not
+  for scanning.
+  - A site window: `WebviewWindow` on the https page, with no app permissions (capabilities are
+    for the main window only, and remote pages get no IPC), its own login. Some sign-ins
+    (Google) refuse embedded browsers; e-mail and password works.
+  - Downloads: a PGN downloaded in the site window (a site's own export button: Chessable's
+    export, chess.com's and Lichess's PGN downloads) is saved to `Library/Downloads` and
+    announced in the app; other downloads go where they would.
+  - Copy to Library: while a site window is open, a PGN, a move list or a FEN copied anywhere
+    is offered as "Add to Library" (saved in `Library/Clipped`, a bare move list with an Event
+    tag) or "Open". The clipboard is read by a Rust command that answers only while the site
+    window is open (`site_clipboard`); the webview has no clipboard permission.
+  - Bookmarks: any https page, in Settings (`sites.bookmarks`), shown after the three sites.
+  - **Chessable, decided 2026-10-29**: its export (`/export?dl=1&bid=…&oid=…`, shown on
+    variations marked exportable) covers only the courses the user made; purchased courses are
+    not exportable, by Chessable's choice (against piracy, per its support). ReChess uses the
+    official export through the site window, and does not read purchased courses out of
+    Chessable's private JSON with the user's session: that would get around a publisher's
+    protection of paid content. Its terms could not be read (the page needs JavaScript).
+
 ## Shared foundations
 
 - [x] **S.1 Secret storage** (`feature/secrets`; owner review pending) for the Lichess token

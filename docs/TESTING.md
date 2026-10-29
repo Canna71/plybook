@@ -127,6 +127,22 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Chess sites, I.5 (branch feature/sites)
+
+- [ ] **Chessable login**: Tools → Chess sites → Chessable: the site opens in its own window;
+      log in (e-mail and password); your courses show. Closing and reopening keeps you logged in.
+- [ ] **Chessable export** (a course you made): its export button downloads a PGN; ReChess
+      says "Saved … to Library/Downloads" with Open, and the file is in the Library.
+- [ ] **Lichess download**: in the Lichess window open a game, then its PGN download: saved in
+      Library/Downloads and announced.
+- [ ] **chess.com copy**: open a game, Share → PGN → Copy: ReChess offers "You copied a game";
+      "Add to Library" saves it in Library/Clipped (seen in the dev app with a copied move list).
+- [ ] **Only while open**: with the site window closed, copying a PGN offers nothing (paste with
+      ⌘V still opens it in Analysis).
+- [ ] **Bookmarks**: add "chesstempo.com": it opens; an http:// address is refused; remove it.
+- [ ] **Isolation**: the site window has no ReChess menus or access; other downloads (a PDF)
+      go to the usual Downloads folder.
+
 ## App themes, U.4 (branch feature/app-themes)
 
 - [ ] **Presets**: Settings → Appearance → Theme → each of Paper, Forest, Club dark, Midnight,
