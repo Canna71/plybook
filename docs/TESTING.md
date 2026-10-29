@@ -136,6 +136,10 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       on the last move and the selected square in Analysis; kept after a restart.
 - [ ] **Coordinates** stay readable on every preset (light on dark squares and the reverse).
 - [ ] **In a built app** (the CSP applies there, not in dev): the boards still show.
+- [ ] **New piece sets**: Settings → Appearance → Pieces lists 32 sets in alphabetical order;
+      each of the 14 new ones (Celtic, Chessnut, Fantasy, Firi, Kiwen suwi, Letter, Mpchess,
+      Papercut, Pirouetti, Pixel, Rhosgfx, Shapes, Spatial, Totoy) shows all 12 pieces in the
+      preview and on the boards (Fantasy seen in the dev app).
 
 ## Drawing with a touchpad, U.2 (branch feature/draw-mode)
 

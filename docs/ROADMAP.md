@@ -734,8 +734,15 @@ How this file is used:
   - Textures (wood, marble, maple…): only images whose licence allows shipping them with a
     GPL app are bundled (each checked, listed in the README); others can be imported.
   - Highlight colours (last move, check, selected square, arrows) and the coordinates' style.
-  - More piece sets from Lichess's (about 40): each licence checked; non-commercial ones
-    (CC BY-NC) only as optional downloads the user chooses, never bundled.
+  - [x] More piece sets from Lichess's (about 40): each licence checked; non-commercial ones
+    (CC BY-NC) only as optional downloads the user chooses, never bundled. Done 2026-10-29:
+    14 sets added (MIT, Apache, GPL, AGPL, CC BY, CC BY-SA, CC0; list and licences in
+    `src/assets/styles/pieces/README.md`), made with `tools/piece-css.mjs`; the app now lists
+    every folder there (`import.meta.glob`) instead of naming each set.
+  - [ ] **Owner's decision**: 11 of the 18 sets shipped before have licences that do not allow
+    shipping them in a GPL app: 5 non-commercial (alpha, cardinal, fresca, staunty, tatiana)
+    and 6 "freeware" or "free" with no right to redistribute (cases, motif, pirat, regular,
+    smart, traveller). Keep them, or drop them (users could import them as their own set).
   - Your own pieces: a folder of 12 images named wK, wQ… (SVG or PNG) imported as a set.
 - [ ] **U.4 App themes** (owner's request 2026-10-28): presets beyond light and dark (paper,
   high contrast, a Lichess-like dark), an accent colour, custom themes as a small file of

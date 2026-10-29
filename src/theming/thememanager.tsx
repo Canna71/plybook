@@ -13,45 +13,20 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const cssLoader = new CSSLoader();
 
-import alfarishy from "/src/assets/styles/pieces/alfarishy/pieces.css?inline";
-import alpha from "/src/assets/styles/pieces/alpha/pieces.css?inline";
-import cardinal from "/src/assets/styles/pieces/cardinal/pieces.css?inline";
-import cases from "/src/assets/styles/pieces/cases/pieces.css?inline";
-import cburnett from "/src/assets/styles/pieces/cburnett/pieces.css?inline";
-import fresca from "/src/assets/styles/pieces/fresca/pieces.css?inline";
-import icon54 from "/src/assets/styles/pieces/icon54/pieces.css?inline";
-import merida from "/src/assets/styles/pieces/merida/pieces.css?inline";
-import motif from "/src/assets/styles/pieces/motif/pieces.css?inline";
-import pirat from "/src/assets/styles/pieces/pirat/pieces.css?inline";
-import regular from "/src/assets/styles/pieces/regular/pieces.css?inline";
-import richaca from "/src/assets/styles/pieces/riohacha/pieces.css?inline";
-import smart from "/src/assets/styles/pieces/smart/pieces.css?inline";
-import staunty from "/src/assets/styles/pieces/staunty/pieces.css?inline";
-import tatiana from "/src/assets/styles/pieces/tatiana/pieces.css?inline";
-import traveller from "/src/assets/styles/pieces/traveller/pieces.css?inline";
-import trendy from "/src/assets/styles/pieces/trendy/pieces.css?inline";
-import trendy_ink from "/src/assets/styles/pieces/trendy_ink/pieces.css?inline";
-
-const buildinPiecesThemes = {
-    alfarishy,
-    alpha,
-    cardinal,
-    cases,
-    cburnett,
-    fresca,
-    icon54,
-    merida,
-    motif,
-    pirat,
-    regular,
-    richaca,
-    smart,
-    staunty,
-    tatiana,
-    traveller,
-    trendy,
-    trendy_ink,
-} as Record<string, string>;
+// every piece set in src/assets/styles/pieces, by its folder's name (their sources and licences
+// are in that folder's README.md)
+const pieceSheets = import.meta.glob<string>(
+    "/src/assets/styles/pieces/*/pieces.css",
+    { query: "?inline", import: "default", eager: true },
+);
+const buildinPiecesThemes: Record<string, string> = Object.fromEntries(
+    Object.entries(pieceSheets).map(([path, css]) => [
+        path.split("/").at(-2)!,
+        css,
+    ]),
+);
+/** Settings written before the set kept its folder's name */
+const PIECE_ALIASES: Record<string, string> = { richaca: "riohacha" };
 
 import brown from "/src/assets/styles/boards/brown.css?inline";
 import bluish from "/src/assets/styles/boards/bluish.css?inline";
@@ -70,7 +45,7 @@ export const BOARD_THEMES = [
     ...Object.keys(BOARD_PRESETS).filter((n) => !(n in boardBuiltinStyles)),
     CUSTOM_BOARD,
 ];
-export const PIECE_THEMES = Object.keys(buildinPiecesThemes);
+export const PIECE_THEMES = Object.keys(buildinPiecesThemes).sort();
 
 export function useThemes() {
     createEffect(() => {
@@ -97,8 +72,9 @@ async function loadStyle(path: string) {
     return css;
 }
 
-async function loadPiecesStyle(piecesTheme: string) {
-    if (!piecesTheme) return;
+async function loadPiecesStyle(setting: string) {
+    if (!setting) return;
+    const piecesTheme = PIECE_ALIASES[setting] ?? setting;
     cssLoader.unloadCSS("pieces-theme");
     let css = "";
     if (piecesTheme in buildinPiecesThemes) {
