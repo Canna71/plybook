@@ -1,167 +1,112 @@
-# Rechess
+# ReChess
 
-A tool for practicing and studying chess.
+**A free desktop app for studying chess: analyse your games, find out *why* a move is good or
+bad, and train on your own mistakes.** For macOS, with Windows following.
 
-## License
+![Analysis: a blunder explained in words, with the engine's lines](docs/screenshots/analysis-explained.png)
 
-GPL-3.0-or-later (see `LICENSE`). ReChess builds on [chessground](https://github.com/lichess-org/chessground)
-and [chessops](https://github.com/niklasf/chessops) in the app, and [shakmaty](https://github.com/niklasf/shakmaty)
-and [pgn-reader](https://github.com/niklasf/rust-pgn-reader) in its Rust side, all GPL-3.0 (or
-later), so the app as distributed is under the same license. Chess engines such as Stockfish are not bundled: you
-install them yourself, and they keep their own licenses.
+Most analysis tools tell you a move is a blunder and show the engine's line. ReChess also tells
+you why, in words: what the move allowed, what the better move did, the tactic behind it, and
+whether it was the only good move. Every claim comes from the engine's lines and the position
+on the board, and it says when it is only an interpretation.
 
-Piece sets each keep their own licence (GPL, AGPL, MIT, Apache, CC BY, CC BY-SA, CC0 and others):
-authors, licences and sources are in `src/assets/styles/pieces/README.md`. Board textures are
-Lichess's (AGPLv3+), credited in `public/boards/README.md`.
+## What it does
 
-Data bundled with the app: opening names (ECO codes and names) from
-[lichess-org/chess-openings](https://github.com/lichess-org/chess-openings), CC0 1.0, in
-`src/assets/openings` (see its README for the version). No opening book is bundled: Settings →
-Opening books imports one or makes one from a PGN of games you choose, such as a month of the
-[Lichess database](https://database.lichess.org) (CC0).
+**Analyse and understand**
+- Analysis with any UCI engine (Stockfish, Lc0): several lines, an evaluation bar, the
+  opponent's threat, endgame tablebases.
+- Explanations in plain words, from the engine's lines and the board:
+  - forks, pins and skewers;
+  - threats stopped and created;
+  - sacrifices;
+  - "the only move";
+  - positional ideas such as a bad bishop, holes, space, prophylaxis and king activity in the
+    endgame.
+- Human moves: what players of your level would play here, with the Maia networks for Lc0.
+- Opening names and an opening explorer: your own game databases, opening books, and Lichess
+  online.
 
+**Review your games**
+- Import your games from chess.com and Lichess, and keep them in sync.
+- A full review of each game, in the background if you like:
+  - accuracy, mistakes and blunders, the key moments;
+  - book moves left out;
+  - accuracy by phase (opening, middlegame, endgame) over your recent games.
+- Your mistakes become puzzles, repeated until you know them.
 
+**Train**
+- The Lichess puzzle database, at your rating and by theme.
+- Opening repertoires with spaced repetition.
+- Play the engine at any strength, with clocks and an opening book, or with a tutor that
+  explains as you play.
+- "Guess the move" through any game: name up to three candidates, then see the game's move,
+  the engine's best and how close you came.
 
-## Features in the roadmap:
+**Read and organise**
+- A library of your PGN files and game databases, with search by player, opening or position.
+- Read chess books as PDFs with every diagram clickable, scan a position from a screenshot or
+  the screen, and attach YouTube videos to positions.
+- Annotate games: comments, variations, arrows and circles (with a pen for touchpads), and
+  export a position or a game as an image or an animated GIF.
 
-- Play against the computer
-- Play against a friend
-- Study chess openings
-- Study endgames
-- Study tactics
-- Study strategy
-- Analyze games
-- Create and share chess puzzles
-- Create and share chess games
-- Access online chess databases (e.g. Lichess)
-- Access online chess engines (e.g. Stockfish)
-- Store books, games, puzzles, etc. locally
-- Sync books, games, puzzles, etc. with cloud storage
-- Capture board positions from images
-- Connect to physical chess boards (e.g. DGT boards) (if possible)
+**Make it yours**
+- Board colours, 18 wood, marble and other textures, and more than 30 piece sets; add your own.
+- Light, dark and other app themes, an accent colour, and themes you can share as files.
+- Keyboard shortcuts for everything, a command palette (⌘K), backups, and automatic updates.
 
+![A dark theme with a wood board, arrows and the opening's name](docs/screenshots/analysis-dark.png)
 
-## Recommended IDE Setup
+## Install
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+Download the latest version from the [Releases](https://github.com/Canna71/rechess/releases)
+page: a `.dmg` for macOS (Apple silicon or Intel) or an installer for Windows. Windows may warn
+on a first install, because the installer is not code-signed.
 
-## To run the project
+ReChess does not include a chess engine. To analyse:
+1. Download [Stockfish](https://stockfishchess.org/download/).
+2. In ReChess, open Settings → Engines → **Add engine…** and choose it.
+
+For human-like moves, add [Lc0](https://lczero.org/) with a
+[Maia](https://maiachess.com) network.
+
+Optional:
+- **Lichess puzzles:** download them from the Puzzles page.
+- **Your games:** add your chess.com or Lichess account in Settings → Accounts.
+- **Opening book:** make one in Settings → Opening books from any PGN of games, such as a month
+  of the [Lichess database](https://database.lichess.org).
+
+Everything stays on your computer: your games, puzzles and notes are files and a local
+database, and API keys go to the system keychain.
+
+## Build from source
 
 ```bash
 pnpm install
 pnpm tauri dev
 ```
 
-### macOS builds: sign with a stable identity
+You need Node 22, pnpm 10, Rust 1.97 or newer, and a C compiler: the Xcode command line tools
+on macOS, or the MSVC build tools on Windows. [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+covers the rest:
+- checks, signing and releases;
+- how the code is organised;
+- design notes on explanations and position scanning.
 
-Unsigned (ad-hoc) builds get a new identity on every build, so macOS forgets permissions such as
-Screen Recording (used by "Capture from screen") and asks again after each rebuild. Sign with your
-certificate instead; list yours with `security find-identity -v -p codesigning`:
+The plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
-```bash
-export APPLE_SIGNING_IDENTITY="Apple Development: Your Name (TEAMID)"   # e.g. in ~/.zshrc
-pnpm build:mac        # tauri build --bundles app, refuses to run unsigned
-```
+## Credits and licence
 
-After the first signed build, remove old `rechess` entries in System Settings → Privacy &
-Security → Screen Recording, grant the permission again and reopen ReChess once.
-
-### Releases and updates
-
-The app checks `latest.json` on the newest GitHub release a little after start (Settings →
-Updates) and installs an update only if its signature matches the `pubkey` in
-`src-tauri/tauri.conf.json`. The repository must be public, so the app can download releases
-without logging in.
-
-One-time setup:
-
-1. Generate the updater key, and keep the private half and its password safe (losing it means
-   installed apps can no longer update):
-   ```bash
-   pnpm tauri signer generate -w ~/.tauri/rechess.key
-   ```
-   Put the public key (the contents of `~/.tauri/rechess.key.pub`) in `tauri.conf.json`
-   `plugins.updater.pubkey`.
-2. Add the repository secrets (Settings → Secrets and variables → Actions):
-   - `TAURI_SIGNING_PRIVATE_KEY` (the contents of `~/.tauri/rechess.key`) and
-     `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`;
-   - for macOS, a **Developer ID Application** certificate (an "Apple Development" one is not
-     enough to give the app to others): `APPLE_CERTIFICATE` (the exported .p12, base64:
-     `base64 -i cert.p12 | pbcopy`), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`
-     (`Developer ID Application: Your Name (TEAMID)`), and for notarization `APPLE_ID`,
-     `APPLE_PASSWORD` (an app-specific password from account.apple.com) and `APPLE_TEAM_ID`.
-
-To release, set the new `version` in `package.json` (the app reads its version from there), commit,
-and push a matching tag:
-
-```bash
-git tag v0.2.0 && git push origin v0.2.0
-```
-
-`.github/workflows/release.yml` builds macOS (Apple silicon and Intel) and Windows into a
-**draft** release. Write the notes (they are shown in the app), then publish it: from then on the
-apps offer it. Windows installers are not code-signed, so SmartScreen warns on a first install.
-
-### To build icons:
-
-```bash
-pnpm tauri icon ./tools/Logo.png
-```
-
-## Dependencies
-
-A C compiler for the bundled SQLite: Xcode command line tools on macOS, MSVC build tools on Windows.
-
-### Data from older versions (SurrealDB)
-
-Versions before the SQLite move kept puzzles and played games in `<AppLocalData>/db`. To bring
-them over, close ReChess and run once (this needs LLVM/libclang to build):
-
-```bash
-cd tools/surreal-export
-cargo run --release -- "$HOME/Library/Application Support/com.canna71.rechess"
-```
-
-The next start imports `surreal-export.json`; the old `db` folder is left alone and can be deleted.
-
-## Links
-
-https://github.com/lichess-org/chessground
-
-https://github.com/lichess-org/pgn-viewer
-
-https://lichess.org/editor
-
-https://github.com/nmrugg/stockfish.js
-
-https://niklasf.github.io/chessops/
-
-https://github.com/victorocna/chessground-stockfish/tree/master
-
-https://stockfishchess.org/
-
-https://lczero.org/
-
-https://github.com/lichess-org/stockfish.js
-
-https://github.com/hi-ogawa/Stockfish
-
-https://stackoverflow.com/questions/77194959/how-to-integrate-stockfish-in-html-with-chess-js-and-chessboard-js
-
-https://lichess.org/source
-
-https://github.com/lichess-org/lila/tree/master/ui
-
-https://www.chessboardjsx.com/integrations/stockfish
-
-https://codesandbox.io/p/sandbox/chess-with-react-chessground-forked-qwjntr?file=%2Fsrc%2Fengine%2Fenginegame.js%3A4%2C27
-
-https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
-
-https://github.com/niklasf/chessops/blob/edd0823f31551452f63aa8cb41d91675d548b8f7/src/pgn.ts#L202
-
-# Sidecar
-
-https://medium.com/@samuelint/tauri-how-to-start-stop-a-sidecar-and-pipe-sidecar-stdout-stderr-to-app-logs-from-rust-8f81a92111ad
-
-https://github.com/tauri-apps/tauri/discussions/3273
+ReChess is free software under the **GPL-3.0-or-later** (see [`LICENSE`](LICENSE)). It builds on
+the work of the Lichess community and others:
+- **chessground and chessops** (GPL-3.0) for the board and the rules.
+- **shakmaty and pgn-reader** (GPL-3.0) on the Rust side.
+- **Stockfish, Lc0 and Maia:** you install them yourself, and they keep their own licences.
+- **Piece sets:** each keeps its own licence (GPL, AGPL, MIT, Apache, Creative Commons). Some are
+  for non-commercial use only. Authors and licences are in
+  [`src/assets/styles/pieces/README.md`](src/assets/styles/pieces/README.md).
+- **Board textures:** Lichess's (AGPLv3+), credited in
+  [`public/boards/README.md`](public/boards/README.md).
+- **Opening names** from [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings)
+  (CC0).
+- **Puzzles and game data** from the [Lichess database](https://database.lichess.org) (CC0),
+  downloaded on your request.
