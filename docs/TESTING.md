@@ -127,6 +127,21 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## App themes, U.4 (branch feature/app-themes)
+
+- [ ] **Presets**: Settings → Appearance → Theme → each of Paper, Forest, Club dark, Midnight,
+      High contrast (light, dark) recolours the whole app at once; text stays readable on
+      every screen (Today, Analysis, Library, Settings) (Midnight and Paper seen in the dev app).
+- [ ] **Pack**: with a preset chosen, "Use its board … and pieces … too" sets both, then goes
+      away (seen with Paper).
+- [ ] **Accent**: "My colour", pick one: buttons, the sidebar's marker and other accents take it,
+      text on primary buttons stays readable (dark text on a light accent).
+- [ ] **Export**: "Export this theme…" saves a .json; open it: name, mode and variables.
+- [ ] **Import**: "Import a theme…" with that file (change a value first, e.g.
+      `--bulma-scheme-h`): the theme appears as the file's name in the Theme menu and is used;
+      a file that is not a theme says why.
+- [ ] **System**: back on "Same as the system", the app follows the macOS appearance again.
+
 ## Textures, highlights and coordinates, U.3 (branch feature/board-textures)
 
 - [ ] **Textures**: Settings → Appearance → Board → "Textures (Lichess)": each one fills the

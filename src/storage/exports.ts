@@ -7,7 +7,7 @@ import { invoke } from "@tauri-apps/api/core";
  */
 export const saveExport = async (
     bytes: Uint8Array,
-    kind: "png" | "gif",
+    kind: "png" | "gif" | "json",
     name: string,
 ) =>
     (await invoke<string | null>("export_save", bytes, {

@@ -11,6 +11,7 @@ fn filter(kind: &str) -> Option<(&'static str, &'static [&'static str])> {
     match kind {
         "png" => Some(("PNG image", &["png"])),
         "gif" => Some(("Animated GIF", &["gif"])),
+        "json" => Some(("Theme file", &["json"])),
         _ => None,
     }
 }

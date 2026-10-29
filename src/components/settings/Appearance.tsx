@@ -23,6 +23,15 @@ import {
     CUSTOM_BOARD,
     TEXTURE_PREFIX,
 } from "../../models/boardtheme";
+import {
+    accentVars,
+    CUSTOM_THEME,
+    parseThemeFile,
+    themeFile,
+    themeOf,
+    UI_PRESETS,
+} from "../../models/uitheme";
+import { saveExport } from "../../storage/exports";
 
 const UI_THEMES = [
     { value: "system", label: "Same as the system" },
@@ -91,6 +100,73 @@ const Appearance: Component = () => {
                           .replace(/([a-z])(\d+)$/, "$1 $2"),
         }));
 
+    // the app's theme (U.4): presets, the user's imported theme, an accent over any of them
+    const customTheme = () => getSettingValue("themes.customTheme");
+    const accent = () => getSettingValue("themes.accent", "");
+    const currentTheme = () =>
+        themeOf(getSettingValue("themes.ui", "system"), customTheme());
+    /** A preset's board and pieces, when they are not the ones in use (a theme pack) */
+    const packToUse = () => {
+        const t = currentTheme();
+        if (!t?.board || !t.pieces) return undefined;
+        const same =
+            getSettingValue("themes.board") === t.board &&
+            getSettingValue("themes.pieces") === t.pieces;
+        return same
+            ? undefined
+            : {
+                  board: boardLabel(t.board),
+                  pieces: label(t.pieces),
+              };
+    };
+    const usePack = async () => {
+        const t = currentTheme();
+        if (!t?.board || !t.pieces) return;
+        await setSettingValue("themes.board", t.board);
+        await setSettingValue("themes.pieces", t.pieces);
+    };
+
+    let themeInput!: HTMLInputElement;
+    const importTheme = async (input: HTMLInputElement) => {
+        const file = input.files?.[0];
+        input.value = ""; // the same file again is a new choice
+        if (!file) return;
+        const theme = parseThemeFile(await file.text());
+        if (typeof theme === "string") return makeErrorToast(theme);
+        await setSettingValue("themes.customTheme", theme);
+        await setSettingValue("themes.ui", CUSTOM_THEME);
+        makeToast(`${theme.label} imported`);
+    };
+    const exportTheme = async () => {
+        // the theme in use, its accent included; light, dark and system as a bare mode
+        const ui = getSettingValue("themes.ui", "system");
+        const t = currentTheme();
+        const mode =
+            t?.mode ??
+            (ui === "dark" ||
+            (ui === "system" &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches)
+                ? "dark"
+                : "light");
+        const vars = {
+            ...(t?.vars ?? {}),
+            ...(accent() ? accentVars(accent()) : {}),
+        };
+        const name = t?.label ?? "My theme";
+        try {
+            const saved = await saveExport(
+                new TextEncoder().encode(
+                    themeFile({ label: name, mode, vars }),
+                ),
+                "json",
+                `${name}.json`,
+            );
+            if (saved) makeToast(`Saved ${saved}`);
+        } catch (err) {
+            makeErrorToast(String(err));
+        }
+    };
+
     // a highlight colour over any board (U.3): "" for the board's own
     const ownHighlight = () => getSettingValue("themes.highlight", "");
     const setOwnHighlight = (own: boolean) =>
@@ -108,6 +184,11 @@ const Appearance: Component = () => {
     );
     const [busy, setBusy] = createSignal(false);
     const label = (n: string) => named([n])[0].label;
+    /** "texture:wood" -> "Wood" */
+    const boardLabel = (b: string) =>
+        label(
+            b.startsWith(TEXTURE_PREFIX) ? b.slice(TEXTURE_PREFIX.length) : b,
+        );
     const pieceSets = () => [
         ...named(PIECE_THEMES),
         ...named((installed() ?? []).filter((n) => !PIECE_THEMES.includes(n))),
@@ -178,7 +259,106 @@ const Appearance: Component = () => {
             <h2 class="title is-4">Appearance</h2>
             <div class="appearance">
                 <div class="appearance-choices">
-                    {choice("Theme", "themes.ui", "system", UI_THEMES)}
+                    <div class="field">
+                        <label class="label is-small">Theme</label>
+                        <div class="select is-small">
+                            <select
+                                value={getSettingValue("themes.ui", "system")}
+                                onChange={(e) =>
+                                    void setSettingValue(
+                                        "themes.ui",
+                                        e.currentTarget.value,
+                                    )
+                                }
+                            >
+                                <For each={UI_THEMES}>
+                                    {(o) => (
+                                        <option value={o.value}>
+                                            {o.label}
+                                        </option>
+                                    )}
+                                </For>
+                                <optgroup label="Themes">
+                                    <For each={Object.entries(UI_PRESETS)}>
+                                        {([name, t]) => (
+                                            <option value={name}>
+                                                {t.label}
+                                            </option>
+                                        )}
+                                    </For>
+                                    <Show when={customTheme()}>
+                                        {(t) => (
+                                            <option value={CUSTOM_THEME}>
+                                                {t().label}
+                                            </option>
+                                        )}
+                                    </Show>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                    <Show when={packToUse()}>
+                        {(pack) => (
+                            <Button class="is-small" onClick={usePack}>
+                                Use its board ({pack().board}) and pieces (
+                                {pack().pieces}) too
+                            </Button>
+                        )}
+                    </Show>
+                    <div class="field">
+                        <label class="label is-small">Accent</label>
+                        <div class="appearance-highlight">
+                            <div class="select is-small">
+                                <select
+                                    value={accent() ? "own" : "theme"}
+                                    onChange={(e) =>
+                                        void setSettingValue(
+                                            "themes.accent",
+                                            e.currentTarget.value === "own"
+                                                ? "#2e8b57"
+                                                : "",
+                                        )
+                                    }
+                                >
+                                    <option value="theme">
+                                        The theme's own
+                                    </option>
+                                    <option value="own">My colour</option>
+                                </select>
+                            </div>
+                            <Show when={accent()}>
+                                <input
+                                    type="color"
+                                    title="Buttons, selections and the other accents"
+                                    value={accent()}
+                                    onInput={(e) =>
+                                        void setSettingValue(
+                                            "themes.accent",
+                                            e.currentTarget.value,
+                                        )
+                                    }
+                                />
+                            </Show>
+                        </div>
+                    </div>
+                    <div class="buttons appearance-theme-files">
+                        <Button
+                            class="is-small"
+                            onClick={() => themeInput.click()}
+                        >
+                            Import a theme…
+                        </Button>
+                        <Button class="is-small" onClick={exportTheme}>
+                            Export this theme…
+                        </Button>
+                        <input
+                            ref={themeInput}
+                            type="file"
+                            accept=".json,application/json"
+                            hidden
+                            onChange={(e) => importTheme(e.currentTarget)}
+                        />
+                    </div>
                     <div class="field">
                         <label class="label is-small">Board</label>
                         <div class="select is-small">
