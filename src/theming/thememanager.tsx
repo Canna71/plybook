@@ -1,6 +1,12 @@
 import { createEffect } from "solid-js";
 import { getSettingValue } from "../models/settings";
 import { CSSLoader } from "./CssLoader";
+import {
+    BOARD_PRESETS,
+    BoardColours,
+    boardCss,
+    CUSTOM_BOARD,
+} from "../models/boardtheme";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -55,8 +61,15 @@ const boardBuiltinStyles = {
     brown: brown,
 } as Record<string, string>;
 
-/** The built-in board and piece themes, by name (Settings → Appearance). */
-export const BOARD_THEMES = Object.keys(boardBuiltinStyles);
+/**
+ * The built-in board and piece themes, by name (Settings → Appearance): the boards of the
+ * original stylesheets, the colour presets (U.3) and the user's own colours.
+ */
+export const BOARD_THEMES = [
+    ...Object.keys(boardBuiltinStyles),
+    ...Object.keys(BOARD_PRESETS).filter((n) => !(n in boardBuiltinStyles)),
+    CUSTOM_BOARD,
+];
 export const PIECE_THEMES = Object.keys(buildinPiecesThemes);
 
 export function useThemes() {
@@ -64,7 +77,9 @@ export function useThemes() {
         const piecesTheme = getSettingValue("themes.pieces", "merida");
         loadPiecesStyle(piecesTheme!);
         const boardTheme = getSettingValue("themes.board", "bluish");
-        loadBoardStyle(boardTheme!);
+        // read here, so picking a colour redraws the custom board at once
+        const colours = getSettingValue("themes.boardColours");
+        loadBoardStyle(boardTheme!, colours);
     });
     // light/dark UI: Bulma and the tokens read data-theme on <html>; none follows the system
     createEffect(() => {
@@ -94,11 +109,21 @@ async function loadPiecesStyle(piecesTheme: string) {
     cssLoader.injectCSS(css, "pieces-theme");
 }
 
-async function loadBoardStyle(boardTheme: string) {
+async function loadBoardStyle(
+    boardTheme: string,
+    colours: Partial<BoardColours> | undefined,
+) {
     if (!boardTheme) return;
     cssLoader.unloadCSS("board-theme");
     let css = "";
-    if (boardTheme in boardBuiltinStyles) {
+    if (boardTheme === CUSTOM_BOARD) {
+        css = boardCss(colours ?? {});
+    } else if (
+        boardTheme in BOARD_PRESETS &&
+        !(boardTheme in boardBuiltinStyles)
+    ) {
+        css = boardCss(BOARD_PRESETS[boardTheme]);
+    } else if (boardTheme in boardBuiltinStyles) {
         css = boardBuiltinStyles[boardTheme] as string;
     } else {
         css = await loadStyle(`Themes/boards/${boardTheme}.css`);

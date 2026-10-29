@@ -21,6 +21,8 @@ export interface AppSettings {
         ui?: "system" | "light" | "dark";
         /** The pen's colour when drawing on the board (U.2): green, red, blue or yellow */
         pen?: string;
+        /** The squares and highlight of the "custom" board (U.3), as "#rrggbb" */
+        boardColours?: { light: string; dark: string; highlight: string };
     };
     engine?: {
         /** The engine to play against */
@@ -138,6 +140,11 @@ const DEFAULT: AppSettings = {
         pieces: "merida",
         ui: "system",
         pen: "green",
+        boardColours: {
+            light: "#f0d9b5",
+            dark: "#b58863",
+            highlight: "#9bc700",
+        },
     },
     engine: {
         lastUsed: "",
