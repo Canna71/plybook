@@ -85,7 +85,9 @@ const PdfReader: Component = () => {
     const path = () => (typeof params.path === "string" ? params.path : "");
 
     const [doc] = createResource(path, async (p) => {
-        const pdf = await openPdf(new Blob([await readDataBytes(p)]));
+        const pdf = await openPdf(
+            new Blob([new Uint8Array(await readDataBytes(p)).buffer]),
+        );
         recordRecent(p, "book");
         return pdf;
     });

@@ -127,6 +127,20 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       yet). The PGN editor's comments still highlight squares as before, and comment arrows to
       or from a1 now show (a1 was dropped).
 
+## Board colours, U.3 (branch feature/board-themes)
+
+- [ ] **Presets**: Settings → Appearance → Board: each preset changes the preview and the
+      boards everywhere (Analysis, Puzzles, Play); a8 is a light square.
+- [ ] **Custom colours**: choose "Custom colours": it starts from the preset you had; change
+      the light, dark and highlight colours: the preview follows at once; the highlight shows
+      on the last move and the selected square in Analysis; kept after a restart.
+- [ ] **Coordinates** stay readable on every preset (light on dark squares and the reverse).
+- [ ] **In a built app** (the CSP applies there, not in dev): the boards still show.
+- [ ] **New piece sets**: Settings → Appearance → Pieces lists 32 sets in alphabetical order;
+      each of the 14 new ones (Celtic, Chessnut, Fantasy, Firi, Kiwen suwi, Letter, Mpchess,
+      Papercut, Pirouetti, Pixel, Rhosgfx, Shapes, Spatial, Totoy) shows all 12 pieces in the
+      preview and on the boards (Fantasy seen in the dev app).
+
 ## Drawing with a touchpad, U.2 (branch feature/draw-mode)
 
 - [ ] **Pen mode with a real touchpad**: in Analysis click the pen under the board (or press

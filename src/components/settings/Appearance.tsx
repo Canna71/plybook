@@ -1,8 +1,13 @@
-import { Component, For } from "solid-js";
+import { Component, For, Show } from "solid-js";
 import { Config } from "chessground/config";
 import { Chessboard } from "../common/chessboard";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import { BOARD_THEMES, PIECE_THEMES } from "../../theming/thememanager";
+import {
+    BOARD_PRESETS,
+    BoardColours,
+    CUSTOM_BOARD,
+} from "../../models/boardtheme";
 
 const UI_THEMES = [
     { value: "system", label: "Same as the system" },
@@ -44,8 +49,41 @@ const Appearance: Component = () => {
     const named = (names: string[]) =>
         names.map((n) => ({
             value: n,
-            label: (n.charAt(0).toUpperCase() + n.slice(1)).replace(/_/g, " "),
+            label:
+                n === CUSTOM_BOARD
+                    ? "Custom colours"
+                    : (n.charAt(0).toUpperCase() + n.slice(1)).replace(
+                          /_/g,
+                          " ",
+                      ),
         }));
+
+    // the custom board (U.3): its three colours, starting from the preset left behind
+    const colours = () =>
+        getSettingValue("themes.boardColours") ?? BOARD_PRESETS.classic;
+    const setBoard = (name: string) => {
+        const left = getSettingValue("themes.board", "bluish");
+        if (name === CUSTOM_BOARD && left && left in BOARD_PRESETS)
+            void setSettingValue("themes.boardColours", {
+                ...BOARD_PRESETS[left],
+            });
+        void setSettingValue("themes.board", name);
+    };
+    const setColour = (which: keyof BoardColours, value: string) =>
+        void setSettingValue("themes.boardColours", {
+            ...colours(),
+            [which]: value,
+        });
+    const colourField = (label: string, which: keyof BoardColours) => (
+        <label class="appearance-colour">
+            <input
+                type="color"
+                value={colours()[which]}
+                onInput={(e) => setColour(which, e.currentTarget.value)}
+            />
+            {label}
+        </label>
+    );
 
     return (
         <section class="settings-section">
@@ -53,12 +91,37 @@ const Appearance: Component = () => {
             <div class="appearance">
                 <div class="appearance-choices">
                     {choice("Theme", "themes.ui", "system", UI_THEMES)}
-                    {choice(
-                        "Board",
-                        "themes.board",
-                        "bluish",
-                        named(BOARD_THEMES),
-                    )}
+                    <div class="field">
+                        <label class="label is-small">Board</label>
+                        <div class="select is-small">
+                            <select
+                                value={getSettingValue(
+                                    "themes.board",
+                                    "bluish",
+                                )}
+                                onChange={(e) =>
+                                    setBoard(e.currentTarget.value)
+                                }
+                            >
+                                <For each={named(BOARD_THEMES)}>
+                                    {(o) => (
+                                        <option value={o.value}>
+                                            {o.label}
+                                        </option>
+                                    )}
+                                </For>
+                            </select>
+                        </div>
+                    </div>
+                    <Show
+                        when={getSettingValue("themes.board") === CUSTOM_BOARD}
+                    >
+                        <div class="field appearance-colours">
+                            {colourField("Light squares", "light")}
+                            {colourField("Dark squares", "dark")}
+                            {colourField("Highlights", "highlight")}
+                        </div>
+                    </Show>
                     {choice(
                         "Pieces",
                         "themes.pieces",

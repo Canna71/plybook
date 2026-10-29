@@ -141,5 +141,30 @@
             width: 200px;
             flex: none;
         }
+
+        // the custom board's colours (U.3)
+        .appearance-colours {
+            display: flex;
+            flex-direction: column;
+            gap: var(--rc-space-1);
+        }
+
+        .appearance-colour {
+            display: flex;
+            align-items: center;
+            gap: var(--rc-space-2);
+            font-size: var(--rc-text-sm);
+            cursor: pointer;
+
+            input[type="color"] {
+                width: 32px;
+                height: 22px;
+                padding: 0;
+                border: 1px solid var(--rc-border);
+                border-radius: var(--rc-radius-small);
+                background: none;
+                cursor: pointer;
+            }
+        }
     }
 }

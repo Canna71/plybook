@@ -722,14 +722,27 @@ How this file is used:
     right-click before this were saved wrongly too; they show as arrows to a1 in old files.
   - Known limit: undo removes the last arrow first, then circles (PGN keeps circles and
     arrows apart, not the order they were drawn).
-- [ ] **U.3 Board and piece customization** (owner's request 2026-10-28):
-  - Board colours: light and dark squares picked freely, plus presets; the board drawn by the
-    app (no image, no licence question).
+- [~] **U.3 Board and piece customization** (owner's request 2026-10-28):
+  - [x] Board colours: light and dark squares picked freely, plus presets; the board drawn by the
+    app (no image, no licence question). Done 2026-10-29 (`feature/board-themes`):
+    `models/boardtheme.ts` draws the board as an SVG from two colours and a highlight (last
+    move, selected square, move dots; the coordinates in the other square colour); 11 presets
+    (Classic, Blue, Green, Olive, Grey, Purple, Ice, Coral, Sand, Night, High contrast) next to
+    the old Bluish and Brown, and "Custom colours" with three pickers in Settings →
+    Appearance, starting from the preset chosen before (`themes.boardColours`). Colours from
+    the settings file are checked before they reach the CSS.
   - Textures (wood, marble, maple…): only images whose licence allows shipping them with a
     GPL app are bundled (each checked, listed in the README); others can be imported.
   - Highlight colours (last move, check, selected square, arrows) and the coordinates' style.
-  - More piece sets from Lichess's (about 40): each licence checked; non-commercial ones
-    (CC BY-NC) only as optional downloads the user chooses, never bundled.
+  - [x] More piece sets from Lichess's (about 40): each licence checked; non-commercial ones
+    (CC BY-NC) only as optional downloads the user chooses, never bundled. Done 2026-10-29:
+    14 sets added (MIT, Apache, GPL, AGPL, CC BY, CC BY-SA, CC0; list and licences in
+    `src/assets/styles/pieces/README.md`), made with `tools/piece-css.mjs`; the app now lists
+    every folder there (`import.meta.glob`) instead of naming each set.
+  - [ ] **Owner's decision**: 11 of the 18 sets shipped before have licences that do not allow
+    shipping them in a GPL app: 5 non-commercial (alpha, cardinal, fresca, staunty, tatiana)
+    and 6 "freeware" or "free" with no right to redistribute (cases, motif, pirat, regular,
+    smart, traveller). Keep them, or drop them (users could import them as their own set).
   - Your own pieces: a folder of 12 images named wK, wQ… (SVG or PNG) imported as a set.
 - [ ] **U.4 App themes** (owner's request 2026-10-28): presets beyond light and dark (paper,
   high contrast, a Lichess-like dark), an accent colour, custom themes as a small file of
