@@ -3,10 +3,12 @@
 import { Chess } from "chessops";
 import { parseFen } from "chessops/fen";
 import { parsePgn } from "chessops/pgn";
+import { chessableToPgn, isChessableLesson } from "./chessable";
 
 export type Pasted =
     | { kind: "fen"; fen: string }
-    | { kind: "pgn"; pgn: string; games: number }
+    /** `note`: what the conversion could not keep (a Chessable lesson cut short) */
+    | { kind: "pgn"; pgn: string; games: number; note?: string }
     | { kind: "lichess"; gameId: string };
 
 /** lichess.org/AbCdEfGh, optionally with the 4 player characters, /black, #ply… */
@@ -28,6 +30,20 @@ function asFen(text: string): string | undefined {
 export function parsePasted(raw: string): Pasted | undefined {
     const text = raw.trim();
     if (!text) return undefined;
+
+    // a Chessable lesson's JSON, converted to one game (paste/chessable.ts)
+    if (isChessableLesson(text)) {
+        const converted = chessableToPgn(text);
+        if (typeof converted === "string") return undefined;
+        return {
+            kind: "pgn",
+            pgn: converted.pgn,
+            games: 1,
+            note: converted.stoppedAt
+                ? `The lesson stops at ${converted.stoppedAt}: that move is not legal there`
+                : undefined,
+        };
+    }
 
     const lichess = LICHESS_GAME.exec(text);
     if (lichess) return { kind: "lichess", gameId: lichess[1] };

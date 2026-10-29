@@ -10,7 +10,7 @@ import {
     setPendingScan,
 } from "../paste/pending";
 import { parsePasted } from "../paste/pasted";
-import { makeErrorToast } from "../components/common/Toast";
+import { makeErrorToast, makeToast } from "../components/common/Toast";
 import "./Layout.scss";
 import { VDivider } from "../components/common/VDivider";
 import { VideoPlayer } from "../components/video/VideoPlayer";
@@ -47,6 +47,7 @@ const Layout: ParentComponent = (props) => {
                 break;
             case "pgn":
                 openGames(pasted.pgn);
+                if (pasted.note) makeToast(pasted.note, 8000);
                 break;
             case "lichess":
                 try {

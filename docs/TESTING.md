@@ -143,6 +143,20 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Isolation**: the site window has no ReChess menus or access; other downloads (a PDF)
       go to the usual Downloads folder.
 
+## Chessable lesson JSON (branch feature/chessable-json)
+
+- [ ] **Paste a lesson**: copy a lesson's JSON (the Smithy's Opening Fundamentals Game 1 sample,
+      Tarrasch–Kelz), click outside any text field and press ⌘V: Analysis opens on the rook-odds
+      start (no a1 rook) with 29 moves to 15. Rxf8#, the comments, arrows and circles at 10. Nd5,
+      13. Bg5+ and 12. d3, "!" on 14. Qf8+, and the result 1-0 (the converter output was checked
+      in a test).
+- [ ] **Save**: save it to the Library; reopen it: the headers (Event, Annotator, Source)
+      and the drawings are still there.
+- [ ] **Site window**: with the Chessable window open, copy the same JSON: "You copied a game";
+      Add to Library saves it in Library/Clipped.
+- [ ] **Cut short**: edit one move in the JSON to an illegal one (e.g. `"move_black":"Ke6"` on
+      move 2) and paste it: the game stops before that move and a toast names it.
+
 ## App themes, U.4 (branch feature/app-themes)
 
 - [ ] **Presets**: Settings → Appearance → Theme → each of Paper, Forest, Club dark, Midnight,

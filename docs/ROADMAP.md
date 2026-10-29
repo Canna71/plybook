@@ -621,6 +621,13 @@ How this file is used:
     official export through the site window, and does not read purchased courses out of
     Chessable's private JSON with the user's session: that would get around a publisher's
     protection of paid content. Its terms could not be read (the page needs JavaScript).
+  - [x] **Pasted lessons** (`feature/chessable-json`, `src/paste/chessable.ts`): a lesson's
+    JSON (`{"lesson": {"moves": [...]}}`) that the user has and pastes (⌘V) opens in Analysis
+    as one game, and is offered for the Library while a site window is open. It keeps the
+    start position (odds games, diagrams), comments (SAN markers and HTML removed), circles
+    and arrows (`[%csl]`/`[%cal]`), move annotations (`$n`) and the result. Each move is checked,
+    and the game stops at the first illegal one with a toast that names it. Nothing is fetched:
+    the converter reads only what is pasted.
 
 ## Shared foundations
 
