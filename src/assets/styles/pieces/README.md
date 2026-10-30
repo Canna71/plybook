@@ -44,15 +44,15 @@ dubrovny, icpieces, anarcandy, disguised, cooke, monarchy, minimal-warmth, xkcd)
 | riohacha | the lila authors | AGPLv3+ (Lichess: not stated) | yes, to confirm |
 | trendy | Benjamin Kinard | CC BY 3.0 | yes, with credit |
 | trendy_ink | Benjamin Kinard, caderek | CC BY 3.0 | yes, with credit |
-| alpha | Eric Bentzen | "free for personal non commercial use" | kept: ReChess is free and non-commercial |
+| alpha | Eric Bentzen | "free for personal non commercial use" | kept: Plybook is free and non-commercial |
 | cardinal | sadsnake1 | CC BY-NC-SA 4.0 | kept: non-commercial, with credit |
 | fresca | sadsnake1 | CC BY-NC-SA 4.0 | kept: non-commercial, with credit |
 | staunty | sadsnake1 | CC BY-NC-SA 4.0 | kept: non-commercial, with credit |
 | tatiana | sadsnake1 | CC BY-NC-SA 4.0 | kept: non-commercial, with credit |
 
-The non-commercial sets stay in the app by the owner's decision (2026-10-29): ReChess is
+The non-commercial sets stay in the app by the owner's decision (2026-10-29): Plybook is
 given away free. They keep their own licence, not the app's GPL; anyone selling a build of
-ReChess would have to take them out.
+Plybook would have to take them out.
 
 ## Not shipped: downloaded on the user's request
 

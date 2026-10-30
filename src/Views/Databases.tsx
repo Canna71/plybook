@@ -73,7 +73,7 @@ const Databases: Component = () => {
     const remove = async (db: DatabaseInfo) => {
         const yes = await ask(
             `Delete the database "${db.name}" (${db.gameCount} games)? The PGN file is not touched.`,
-            { title: "Re:Chess", kind: "warning" },
+            { title: "Plybook", kind: "warning" },
         );
         if (!yes) return;
         await deleteDatabase(db.id);

@@ -76,7 +76,7 @@ export function diagramPgn(book: string, d: ScannedDiagram): string {
         header("Result", "*"),
         header("SetUp", "1"),
         header("FEN", d.fen),
-        header("Annotator", "ReChess scan"),
+        header("Annotator", "Plybook scan"),
         "",
         [...tokens, "*"].join(" "),
         "",

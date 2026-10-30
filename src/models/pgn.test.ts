@@ -24,7 +24,7 @@ describe("[%eval] comments", () => {
         });
     });
 
-    it("round-trips what ReChess writes", () => {
+    it("round-trips what Plybook writes", () => {
         for (const evaluation of [
             { pawns: 0.5, depth: 18, ext: "g1f3" },
             { pawns: 0, depth: 0 },

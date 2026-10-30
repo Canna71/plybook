@@ -7,5 +7,5 @@ under the [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) public d
 dedication.
 
 Columns: `eco` (the ECO code), `name` (the English name, "Family: Variation, Subvariation"),
-`pgn` (the moves from the starting position). ReChess reads them in `models/openings.ts`
+`pgn` (the moves from the starting position). Plybook reads them in `models/openings.ts`
 (P1.7). To update, copy the five files again from the repository and change the commit above.

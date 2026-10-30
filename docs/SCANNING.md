@@ -1,6 +1,6 @@
 # Position recognition, book scanning and the PDF reader
 
-How ReChess reads chess positions from images, book pages and PDFs (roadmap P4.1, P4.1b, P4.3,
+How Plybook reads chess positions from images, book pages and PDFs (roadmap P4.1, P4.1b, P4.3,
 P4.4), what was learned getting it to work, and where to pick it up again. Everything runs
 locally in the webview; nothing is uploaded.
 

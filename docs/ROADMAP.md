@@ -821,11 +821,18 @@ How this file is used:
 
 Fixes and requests from using the app, in the order given. IDs are `F.n`.
 
-- [ ] **F.1 Rename the app** to Plyground or Plybook (the owner renames the repository and
-  folder later). This covers the visible name: `productName` in `tauri.conf.json`, the window
-  title, the README, the guide and the app's own texts. The bundle identifier
-  (`com.canna71.rechess`) decides where every user's data lives. Keep it, or plan a move like
-  `migrate.rs` did before. Decide the name first.
+- [x] **F.1 Rename the app to Plybook** (named by the owner 2026-10-31; `feature/plybook`; the
+  owner renames the repository and folder later):
+  - Renamed: `productName` and the window title, the app's texts and dialogs, backup file
+    names, the Annotator of made PGNs, the site window's title, the web user agent, and the
+    docs. Past entries in this roadmap keep the old name.
+  - Kept (CLAUDE.md, Gotchas): the bundle identifier, so every user's data stays where it is,
+    and the keychain service, the database file, the backup manifest (old backups restore),
+    crate and package names, and the GitHub URLs.
+  - When the repository is renamed: the URLs in the README, `net.rs`'s user agent and the
+    updater feed in `tauri.conf.json`.
+  - The packaged app is now `Plybook.app`. On Windows the installer's upgrade code follows the
+    product name. Nothing has been released yet, so no installed copy is left behind.
 - [ ] **F.2 Evaluate Apple Intelligence on the Mac** ("Siri AI") as an explanation model
   (P2.4b). Apple's on-device Foundation Models framework (macOS 26) is free, offline and needs
   no key. It is a Swift API, so it needs a small Swift bridge from Rust. Questions: is the

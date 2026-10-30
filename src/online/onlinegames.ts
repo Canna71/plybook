@@ -96,7 +96,7 @@ export type SyncResult = {
 
 /**
  * Downloads the games since the latest month already on disk. Games already in a month file
- * are kept as they are, so notes added in ReChess survive a sync.
+ * are kept as they are, so notes added in Plybook survive a sync.
  */
 export async function syncAccount(account: OnlineAccount): Promise<SyncResult> {
     const folder = await accountFolder(account);

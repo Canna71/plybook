@@ -58,7 +58,7 @@ export function scheduleUpdateCheck(delay = 20_000) {
             .then((update) => {
                 if (update)
                     makeToast(
-                        `ReChess ${update.version} is available: install it in Settings → Updates`,
+                        `Plybook ${update.version} is available: install it in Settings → Updates`,
                         10_000,
                     );
             })

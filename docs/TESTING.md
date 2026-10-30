@@ -131,17 +131,30 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 
 - [ ] **Chessable login**: Tools → Chess sites → Chessable: the site opens in its own window;
       log in (e-mail and password); your courses show. Closing and reopening keeps you logged in.
-- [ ] **Chessable export** (a course you made): its export button downloads a PGN; ReChess
+- [ ] **Chessable export** (a course you made): its export button downloads a PGN; Plybook
       says "Saved … to Library/Downloads" with Open, and the file is in the Library.
 - [ ] **Lichess download**: in the Lichess window open a game, then its PGN download: saved in
       Library/Downloads and announced.
-- [ ] **chess.com copy**: open a game, Share → PGN → Copy: ReChess offers "You copied a game";
+- [ ] **chess.com copy**: open a game, Share → PGN → Copy: Plybook offers "You copied a game";
       "Add to Library" saves it in Library/Clipped (seen in the dev app with a copied move list).
 - [ ] **Only while open**: with the site window closed, copying a PGN offers nothing (paste with
       ⌘V still opens it in Analysis).
 - [ ] **Bookmarks**: add "chesstempo.com": it opens; an http:// address is refused; remove it.
-- [ ] **Isolation**: the site window has no ReChess menus or access; other downloads (a PDF)
+- [ ] **Isolation**: the site window has no Plybook menus or access; other downloads (a PDF)
       go to the usual Downloads folder.
+
+## Plybook, F.1 (branch feature/plybook)
+
+Seen in the dev app: the window title and the texts.
+
+- [ ] **Built app**: `pnpm build:mac` makes `Plybook.app`. In the Dock, menu bar and ⌘Tab it
+      is called Plybook.
+- [ ] **Your data is still there**: the built app opens your Library, settings, puzzles and
+      history, and a saved Lichess token still works (Settings → Accounts).
+- [ ] **Screen Recording**: macOS may ask again for the renamed app. Capture from screen works
+      after allowing it (remove old `rechess` entries there).
+- [ ] **Backups**: a new backup is named "Plybook backup ….zip", and an older "ReChess backup"
+      zip still restores.
 
 ## Help, U.5 (branch feature/help)
 
@@ -448,16 +461,16 @@ repository.
       and latest.json. Publish it.
 - [ ] **macOS install**: the .dmg opens without "unidentified developer" (notarized).
 - [ ] **An update**: with 0.1.0 installed, release 0.1.1 the same way. After a restart, about
-      20 s in, "ReChess 0.1.1 is available"; Settings → Updates shows it with its notes;
+      20 s in, "Plybook 0.1.1 is available"; Settings → Updates shows it with its notes;
       "Install and restart" downloads (bar), restarts, and Updates shows 0.1.1. Library,
       settings and puzzles are untouched.
 - [ ] **Windows**: the same update from 0.1.0 to 0.1.1 on Windows.
-- [ ] **Check now** with no newer release: "ReChess is up to date". Switching off "Check for a
-      new version when ReChess starts": no toast on the next start.
+- [ ] **Check now** with no newer release: "Plybook is up to date". Switching off "Check for a
+      new version when Plybook starts": no toast on the next start.
 
 ## Auto sync and review, P1.4 (branch feature/auto-sync)
 
-- [ ] **Add an account** (Settings → Accounts) and play a game online; restart ReChess after
+- [ ] **Add an account** (Settings → Accounts) and play a game online; restart Plybook after
       6 hours (or remove `lastSync` from the account in settings.json): about 15 s after
       start, "N new games from Lichess: reviewing them in the background", then "Reviewed N
       new games: M mistakes to look at on Today".

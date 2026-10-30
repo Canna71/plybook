@@ -1,6 +1,6 @@
 # Reasons in chess terms (P2.8): research report
 
-How ReChess can say *why* a move is good or bad the way a coach does ("it stops Ng5 from
+How Plybook can say *why* a move is good or bad the way a coach does ("it stops Ng5 from
 taking on f7", "it pins the knight and wins it") instead of "it gives away 10% of winning
 chances". Written 2026-10-26, before building; the plan at the end is what P2.8 will build.
 
@@ -25,7 +25,7 @@ what the move stops, what it prepares, why a quiet move is good.
   quiet move, defensive move, sacrifice, exposed king, f2/f7 attacks, named mates (back rank,
   smothered, Anastasia, Arabian, Boden, hook, dovetail…), endgame types. Each rule looks at the
   positions after the solver's moves and compares piece values. It is the closest thing to what
-  we need and its tags give us a test set. It is AGPL and ReChess is MIT: **we reimplement the
+  we need and its tags give us a test set. It is AGPL and Plybook is MIT: **we reimplement the
   ideas, we do not copy the code.**
 - **Concept-guided commentary** (Kim et al., NAACL 2025, arXiv 2410.20811): an LLM writes the
   commentary, but from concepts scored by the engine and with *all existing attacks listed in

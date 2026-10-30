@@ -1,11 +1,11 @@
-# ReChess
+# Plybook
 
 **A free desktop app for studying chess: analyse your games, find out *why* a move is good or
 bad, and train on your own mistakes.** For macOS, with Windows following.
 
 ![Analysis: a blunder explained in words, with the engine's lines](docs/screenshots/analysis-explained.png)
 
-Most analysis tools tell you a move is a blunder and show the engine's line. ReChess also tells
+Most analysis tools tell you a move is a blunder and show the engine's line. Plybook also tells
 you why, in words: what the move allowed, what the better move did, the tactic behind it, and
 whether it was the only good move. Every claim comes from the engine's lines and the position
 on the board, and it says when it is only an interpretation.
@@ -62,9 +62,9 @@ Download the latest version from the [Releases](https://github.com/Canna71/reche
 page: a `.dmg` for macOS (Apple silicon or Intel) or an installer for Windows. Windows may warn
 on a first install, because the installer is not code-signed.
 
-ReChess does not include a chess engine. To analyse:
+Plybook does not include a chess engine. To analyse:
 1. Download [Stockfish](https://stockfishchess.org/download/).
-2. In ReChess, open Settings → Engines → **Add engine…** and choose it.
+2. In Plybook, open Settings → Engines → **Add engine…** and choose it.
 
 For human-like moves, add [Lc0](https://lczero.org/) with a
 [Maia](https://maiachess.com) network.
@@ -99,7 +99,7 @@ The plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Credits and licence
 
-ReChess is free software under the **GPL-3.0-or-later** (see [`LICENSE`](LICENSE)). It builds on
+Plybook is free software under the **GPL-3.0-or-later** (see [`LICENSE`](LICENSE)). It builds on
 the work of the Lichess community and others:
 - **chessground and chessops** (GPL-3.0) for the board and the rules.
 - **shakmaty and pgn-reader** (GPL-3.0) on the Rust side.

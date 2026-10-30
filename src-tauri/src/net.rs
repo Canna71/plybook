@@ -7,7 +7,7 @@ use std::path::Path;
 use std::time::Duration;
 
 const USER_AGENT: &str = concat!(
-    "ReChess/",
+    "Plybook/",
     env!("CARGO_PKG_VERSION"),
     " (+https://github.com/Canna71/rechess)"
 );

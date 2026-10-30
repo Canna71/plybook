@@ -1,4 +1,4 @@
-//! Chess sites in a ReChess window (I.5): chess.com, Lichess, Chessable or the user's bookmarks,
+//! Chess sites in a Plybook window (I.5): chess.com, Lichess, Chessable or the user's bookmarks,
 //! in a window of their own. The window loads the remote page with no access to the app:
 //! capabilities are granted to the main window only, and remote pages get no IPC. What the
 //! user takes from a site reaches the app two ways, both started by the user: a PGN downloaded
@@ -83,7 +83,7 @@ pub async fn site_open<R: Runtime>(app: AppHandle<R>, url: String) -> Result<(),
     let pending: Arc<Mutex<HashMap<String, PathBuf>>> = Arc::default();
     let events = app.clone();
     let window = WebviewWindowBuilder::new(&app, SITE_WINDOW, WebviewUrl::External(url))
-        .title("ReChess · Sites")
+        .title("Plybook · Sites")
         .inner_size(1200.0, 850.0)
         .on_download(move |_webview, event| {
             match event {

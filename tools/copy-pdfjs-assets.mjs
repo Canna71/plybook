@@ -17,7 +17,7 @@ cpSync(join(source, "standard_fonts"), join(target, "standard_fonts"), {
 });
 mkdirSync(join(target, "wasm"));
 for (const file of readdirSync(join(source, "wasm"))) {
-    // quickjs runs PDF scripts, which ReChess does not enable
+    // quickjs runs PDF scripts, which Plybook does not enable
     if (file.startsWith("quickjs")) continue;
     cpSync(join(source, "wasm", file), join(target, "wasm", file));
 }

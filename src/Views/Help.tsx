@@ -82,7 +82,7 @@ const Help: Component = () => {
         <div class="help_view">
             <PageHeader
                 title="Help"
-                description="How to use each screen of ReChess. Most screens have a ? button in their header that opens their part of this guide; F1 does it from anywhere."
+                description="How to use each screen of Plybook. Most screens have a ? button in their header that opens their part of this guide; F1 does it from anywhere."
             />
             <div class="help-layout">
                 <nav class="help-contents" aria-label="Contents">

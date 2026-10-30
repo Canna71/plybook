@@ -58,7 +58,7 @@ const Sites: Component = () => {
         <div class="sites_view">
             <PageHeader
                 title="Chess sites"
-                description="Open a site in a ReChess window and log in as in any browser; the site cannot reach your Library or settings. While the window is open, a game, move list or position you copy is offered for the Library, and a PGN you download there (a site's own export) is saved in Library/Downloads."
+                description="Open a site in a Plybook window and log in as in any browser; the site cannot reach your Library or settings. While the window is open, a game, move list or position you copy is offered for the Library, and a PGN you download there (a site's own export) is saved in Library/Downloads."
             />
             <ul class="site-list">
                 <For each={SITES}>{(site) => card(site)}</For>

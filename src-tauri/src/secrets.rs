@@ -125,7 +125,7 @@ pub async fn secret_status(secrets: State<'_, Secrets>) -> Result<SecretStatus, 
 #[tauri::command]
 pub fn open_lichess_token_page() -> Result<(), String> {
     open::that_detached(
-        "https://lichess.org/account/oauth/token/create?description=ReChess%20opening%20explorer",
+        "https://lichess.org/account/oauth/token/create?description=Plybook%20opening%20explorer",
     )
     .map_err(|e| e.to_string())
 }

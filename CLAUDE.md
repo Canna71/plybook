@@ -1,4 +1,4 @@
-# ReChess
+# Plybook
 
 Desktop chess study app: play vs engine, analysis, game review, PGN library and puzzles.
 **Tauri 2** (Rust, `src-tauri/`) + **SolidJS + TypeScript + Vite** (`src/`), using lichess
@@ -199,6 +199,11 @@ User data locations (resolved by Tauri from the bundle identifier):
 
 ## Gotchas
 
+- **The app is called Plybook** (F.1, 2026-10-31: `productName`, window title, texts and docs).
+  The old name stays in internal names that hold data or code: the bundle identifier, the
+  keychain service (`secrets.rs`), `rechess.sqlite`, the backup manifest `rechess-backup.json`,
+  the crate and package names, and the GitHub URLs until the repository is renamed. Don't
+  rename those.
 - **Bundle identifier is `com.canna71.rechess`** (decided). Changing it moves every user's
   Library, settings and DB; `migrate.rs` exists to move data from the old `rechess` identifier.
 - `src-tauri/gen/schemas` is generated/ignored. The capability `$schema`

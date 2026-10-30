@@ -1,6 +1,6 @@
-# ReChess user guide
+# Plybook user guide
 
-This guide covers each screen in ReChess: what it is for and how to use it. The app has the same
+This guide covers each screen in Plybook: what it is for and how to use it. The app has the same
 text under **Help** in the sidebar. Most screens also have a **?** button in the header that
 opens their section here, and **F1** opens it from anywhere.
 
@@ -9,10 +9,10 @@ opens their section here, and **F1** opens it from anywhere.
 ## Getting started
 <!-- help: start -->
 
-ReChess does not include a chess engine, so start by adding one:
+Plybook does not include a chess engine, so start by adding one:
 
 1. Download [Stockfish](https://stockfishchess.org/download/).
-2. In ReChess, open **Settings → Engines → Add engine…** and choose the file you downloaded.
+2. In Plybook, open **Settings → Engines → Add engine…** and choose the file you downloaded.
 
 The **Get started** list on Today shows what else is worth setting up. Each step links to the
 place where you do it:
@@ -132,7 +132,7 @@ Books lists the PDF books in your Library (the add button copies them into Libra
 one opens at the page where you left it.
 
 In the reader:
-- Click a diagram: ReChess reads the position from the picture and opens it in the notes beside
+- Click a diagram: Plybook reads the position from the picture and opens it in the notes beside
   the page. Correct it there if needed, and say whose move it is.
 - In the notes, play the moves the book gives (select them in the text), turn text into a
   comment, or **Study this position** in Analysis.
@@ -214,8 +214,8 @@ Lumbra's Gigabase.
 
 Turns a picture of a chess board into a position you can analyse:
 - **Capture from screen:** select an area of the screen (a game in a browser, a video, another
-  app). On macOS this needs the Screen Recording permission for ReChess.
-- **Paste** a screenshot or a book diagram with ⌘V anywhere in ReChess.
+  app). On macOS this needs the Screen Recording permission for Plybook.
+- **Paste** a screenshot or a book diagram with ⌘V anywhere in Plybook.
 - **Choose an image** file.
 
 Check the position it read, set whose turn it is, and open it in Analysis. Everything is read on
@@ -231,7 +231,7 @@ the position, play it out against the engine, or look it up in your databases.
 ## Chess sites
 <!-- help: sites -->
 
-Opens chess.com, Lichess, Chessable or your own bookmarks in a ReChess window. You log in there
+Opens chess.com, Lichess, Chessable or your own bookmarks in a Plybook window. You log in there
 as in any browser. The site cannot reach your Library or settings.
 
 - **Copy:** while the window is open, a game, move list or position you copy there is offered
@@ -239,7 +239,7 @@ as in any browser. The site cannot reach your Library or settings.
 - **Download:** a PGN you download there with the site's own export button is saved in
   **Library/Downloads**.
 - **Chessable:** courses you made can be exported with Chessable's export button. Purchased
-  courses cannot be exported (Chessable's choice), and ReChess does not get around that.
+  courses cannot be exported (Chessable's choice), and Plybook does not get around that.
 - **Bookmarks:** add any https site in Settings.
 
 Some sign-ins, such as "Sign in with Google", refuse windows inside apps. Use e-mail and password
@@ -262,7 +262,7 @@ there.
   - sync on start, and review of new games in the background;
   - a Lichess token for higher limits, kept in the system keychain.
 - **Explanations:** optionally, a language model (Anthropic, or an OpenAI-compatible server such
-  as Ollama or LM Studio) to reword explanations. It only rewords what ReChess found; it adds no
+  as Ollama or LM Studio) to reword explanations. It only rewords what Plybook found; it adds no
   analysis of its own.
 - **Backups:** a daily backup, backups made by hand, and restore.
 - **Updates:** the version you have, a check for a new one, and install.
