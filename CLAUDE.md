@@ -226,6 +226,9 @@ how each is computed, and `pnpm eval:reasons`, which measures detectors against 
 puzzle themes. Read it before touching `models/explain.ts` or `src/reasons`.
 `docs/EXPLANATIONS.md` is the explanation's structured result (`explainMoveFull`: evidence,
 limits, validation), the rules that keep it honest, and why not ChessCoach or Queen.
+`docs/GUIDE.md` is the user guide, bundled into the app's Help screen (`Views/Help.tsx`): each
+section is named by a `<!-- help: <screen id> -->` line, and a new screen needs its section
+(`models/guide.test.ts` fails otherwise). Update it in the branch that changes what a screen does.
 `docs/DEVELOPMENT.md` is the developer guide (setup, checks, signing, releases); the README is for
 users of the public repository (features, install, credits): keep developer material out of it.
 `docs/TESTING.md` lists what the owner still has to try by hand (things automated checks can't

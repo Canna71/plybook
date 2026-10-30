@@ -78,6 +78,9 @@ Optional:
 Everything stays on your computer: your games, puzzles and notes are files and a local
 database, and API keys go to the system keychain.
 
+The [user guide](docs/GUIDE.md) explains every screen. The app has the same guide under
+**Help**, and **F1** opens the part for the screen you are on.
+
 ## Build from source
 
 ```bash

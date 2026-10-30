@@ -1,5 +1,5 @@
 import { onCleanup, onMount, ParentComponent, Show } from "solid-js";
-import { useNavigate } from "@solidjs/router";
+import { useLocation, useNavigate } from "@solidjs/router";
 import Sidebar, { sidebarCollapsed } from "./Sidebar";
 import { CommandPalette } from "../components/shell/CommandPalette";
 import { invoke } from "@tauri-apps/api/core";
@@ -17,6 +17,7 @@ import { VideoPlayer } from "../components/video/VideoPlayer";
 import { useSplitter } from "../components/common/useSplitter";
 import { getSettingValue, setSettingValue } from "../models/settings";
 import { useSites } from "../components/shell/useSites";
+import { helpRoute } from "../models/navigation";
 
 const Layout: ParentComponent = (props) => {
     const divider = useSplitter((layout) => {
@@ -63,6 +64,17 @@ const Layout: ParentComponent = (props) => {
         }
     };
     onMount(() => document.addEventListener("paste", onPaste));
+
+    // F1 (or ⌘?, the macOS help key): the user guide at this screen's section (U.5)
+    const location = useLocation();
+    const onHelpKey = (e: KeyboardEvent) => {
+        if (e.key === "F1" || ((e.metaKey || e.ctrlKey) && e.key === "?")) {
+            e.preventDefault();
+            navigate(helpRoute(location.pathname));
+        }
+    };
+    onMount(() => document.addEventListener("keydown", onHelpKey));
+    onCleanup(() => document.removeEventListener("keydown", onHelpKey));
     // chess sites (I.5): what is copied from them, or downloaded there, reaches the Library
     useSites(navigate);
     // dev builds: a script can drive the app for screenshots (src/dev/devdriver.ts)

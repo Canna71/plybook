@@ -135,11 +135,26 @@ export const SETTINGS_ITEM: NavItem = {
     keywords: "preferences engines appearance theme backups accounts",
 };
 
-/** Every screen, in sidebar order, Settings last. */
+export const HELP_ITEM: NavItem = {
+    id: "help",
+    label: "Help",
+    icon: "help",
+    route: "/help",
+    keywords: "guide manual how to documentation",
+};
+
+/** Every screen, in sidebar order, Help and Settings last. */
 export const allNavItems = (): NavItem[] => [
     ...NAVIGATION.flatMap((g) => g.items),
+    HELP_ITEM,
     SETTINGS_ITEM,
 ];
+
+/** The Help screen at a screen's section of the user guide (docs/GUIDE.md) */
+export const helpRoute = (pathname: string) => {
+    const id = activeNavItem(pathname)?.id;
+    return id && id !== "help" ? `/help?section=${id}` : "/help";
+};
 
 const pathOf = (route: string) => route.split("?")[0];
 

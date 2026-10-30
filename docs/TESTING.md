@@ -143,6 +143,21 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Isolation**: the site window has no ReChess menus or access; other downloads (a PDF)
       go to the usual Downloads folder.
 
+## Help, U.5 (branch feature/help)
+
+Seen in the dev app: the Help screen, a section from `?section=`, the header "?", search, F1
+from Analysis, light and dark.
+
+- [ ] **Read it through**: Help in the sidebar; read each section against the screen it
+      describes. Anything wrong, missing or unclear is a fix to `docs/GUIDE.md`.
+- [ ] **⌘? on macOS**: ⌘⇧/ opens Help at the current screen's section, as F1 does.
+- [ ] **Shortcuts dialog**: in Analysis press ?, then "The user guide": the dialog closes and
+      Help opens at Analysis.
+- [ ] **Links**: in Help, "Your data" (Library section) jumps to that section; "Stockfish"
+      (Getting started) opens stockfish.org in the site window.
+- [ ] **⌘K**: type "help" or "guide": Help is offered.
+- [ ] **Built app**: in a build (CSP on), Help shows its text and tables.
+
 ## Chessable lesson JSON (branch feature/chessable-json)
 
 - [ ] **Paste a lesson**: copy a lesson's JSON (the Smithy's Opening Fundamentals Game 1 sample,
