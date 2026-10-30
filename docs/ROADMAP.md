@@ -817,6 +817,39 @@ How this file is used:
   - Left: screenshots per screen. The two existing ones are used, because new ones would show
     the owner's own games and files.
 
+## Owner feedback (2026-10-30)
+
+Fixes and requests from using the app, in the order given. IDs are `F.n`.
+
+- [ ] **F.1 Rename the app** to Plyground or Plybook (the owner renames the repository and
+  folder later). This covers the visible name: `productName` in `tauri.conf.json`, the window
+  title, the README, the guide and the app's own texts. The bundle identifier
+  (`com.canna71.rechess`) decides where every user's data lives. Keep it, or plan a move like
+  `migrate.rs` did before. Decide the name first.
+- [ ] **F.2 Evaluate Apple Intelligence on the Mac** ("Siri AI") as an explanation model
+  (P2.4b). Apple's on-device Foundation Models framework (macOS 26) is free, offline and needs
+  no key. It is a Swift API, so it needs a small Swift bridge from Rust. Questions: is the
+  model good enough to reword explanations without adding claims, and what happens on Macs and
+  Windows without it.
+- [ ] **F.3 Where a pasted PGN goes**: choose the Library folder when saving a pasted game
+  (check first where Save puts it today), and move files between Library folders (drag, or
+  "Move to…").
+- [ ] **F.4 Moves: alignment and indentation.** The comments in the Moves panel are
+  right-aligned and justified, which reads badly. A comment also splits a move pair into
+  "1. e4 …" and "1. … e5" rows, and variations don't keep their indentation. Comments should
+  be left-aligned, under the move they belong to, and a variation indented by its depth (seen
+  with the Tarrasch–Kelz lesson).
+- [ ] **F.5 Font size settings** in Appearance for parts of the UI, starting with the Moves
+  panel and comments.
+- [ ] **F.6 Editing player names: how to finish.** The name field under the board stays in
+  editing mode. Enter (and Tab) should save, Esc should cancel, and a click outside should
+  save. Show that it is editable without looking like a field that is always open.
+- [ ] **F.7 A more modern app icon and logo** (`tools/Logo.png`, then
+  `pnpm tauri icon ./tools/Logo.png`). Do it with F.1 if the name changes.
+- [ ] **F.8 Captured pieces wrap under the board.** The material won, shown beside the player's
+  name, wraps onto further lines when there are many pieces, and those lines are covered by the
+  board. Keep it on one line (smaller icons, or "♙×3 +2"), or give it room.
+
 ## Last
 
 - [~] **X.1 App auto-update** (moved here from O.6 by the owner, 2026-10-25). Tauri's updater
