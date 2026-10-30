@@ -4,6 +4,7 @@ import Home from "./Views/Home";
 import Layout from "./Views/Layout";
 import BoardEditorView from "./Views/BoardEditorView";
 import Sites from "./Views/Sites";
+import Help from "./Views/Help";
 import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
@@ -42,6 +43,7 @@ function App() {
                 />
                 <Route path="/boardeditor" component={BoardEditorView} />
                 <Route path="/sites" component={Sites} />
+                <Route path="/help" component={Help} />
                 <Route path="/play" component={Play} />
                 <Route path="/library" component={LibraryFolder} />
                 <Route path="/history" component={History} />

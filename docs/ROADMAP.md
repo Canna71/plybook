@@ -805,13 +805,17 @@ How this file is used:
     the CSS. The preview is the app itself: changes apply at once.
   - Not checked by hand: import and export (file dialogs the dev driver cannot use).
 
-- [ ] **U.5 Help for users** (found missing 2026-10-29; deferred by the owner): today the app
-  has the shortcuts dialog (`?`), the first-start checklist on Today and short help texts in
-  Settings, and the repository has design and developer notes only. Wanted: a user guide
-  (`docs/GUIDE.md`, one section per screen: what it is for and how to use it, with
-  screenshots), shown in the app as a Help screen (sidebar and ⌘K, the same text bundled, so it
-  works offline), and "?" links from each screen to its section. The README (rewritten for the
-  public repository, 2026-10-29) links to it.
+- [x] **U.5 Help for users** (found missing 2026-10-29; done 2026-10-30 on `feature/help`):
+  - `docs/GUIDE.md`: one section per screen, plus getting started, shortcuts and where data is
+    kept. Each section carries a `<!-- help: <screen id> -->` line, and a test checks that every
+    sidebar screen has one and that the guide's links lead somewhere.
+  - The Help screen (`Views/Help.tsx`, `models/guide.ts`): the same text bundled, so it works
+    offline, with contents and search. It is in the sidebar and ⌘K. Images are left out in the
+    app; web links open in the site window.
+  - Ways in: "?" in every screen header (`PageHeader`), F1 or ⌘? from anywhere (to the current
+    screen's section), and a link in the shortcuts dialog. The README links to the guide.
+  - Left: screenshots per screen. The two existing ones are used, because new ones would show
+    the owner's own games and files.
 
 ## Last
 

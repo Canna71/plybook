@@ -2,6 +2,7 @@
 // models/shortcuts.ts; this hooks it to the editor's state.
 
 import { Accessor, For, onCleanup, onMount, Setter, Signal } from "solid-js";
+import { A } from "@solidjs/router";
 import Modal from "../common/Modal";
 import { GameModel } from "../../models/GameModel";
 import { isMoveNode, Path } from "../../models/pgn";
@@ -115,6 +116,15 @@ export const ShortcutsHelp = (props: { open: Signal<boolean> }) => (
         <p class="help">
             Keys typed in a text field are left alone. In the PDF reader, the
             notes take keys after a click inside them.
+        </p>
+        <p class="help">
+            <A
+                href="/help?section=analysis"
+                onClick={() => props.open[1](false)}
+            >
+                The user guide
+            </A>{" "}
+            explains this screen (F1 opens it from anywhere).
         </p>
     </Modal>
 );

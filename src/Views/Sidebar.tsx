@@ -9,6 +9,7 @@ import {
     IconChessKnight,
     IconDatabase,
     IconFolders,
+    IconHelp,
     IconHistory,
     IconHome,
     IconLayoutBoard,
@@ -24,6 +25,7 @@ import {
 } from "@tabler/icons-solidjs";
 import {
     activeNavItem,
+    HELP_ITEM,
     NAVIGATION,
     NavItem,
     SETTINGS_ITEM,
@@ -45,6 +47,7 @@ const ICONS: Record<string, () => JSX.Element> = {
     scan: () => <IconScan />,
     editor: () => <IconLayoutBoard />,
     sites: () => <IconWorld />,
+    help: () => <IconHelp />,
     settings: () => <IconSettings />,
 };
 
@@ -97,6 +100,7 @@ const Sidebar: Component = () => {
             </div>
 
             <div class="nav-footer">
+                {link(HELP_ITEM)}
                 {link(SETTINGS_ITEM)}
                 <button
                     class="nav-item"

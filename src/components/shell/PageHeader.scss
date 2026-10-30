@@ -31,4 +31,12 @@
         flex-wrap: wrap;
         justify-content: flex-end;
     }
+
+    .page-header-help {
+        color: var(--rc-text-muted);
+
+        &:hover {
+            color: var(--rc-accent);
+        }
+    }
 }
