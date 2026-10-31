@@ -833,11 +833,34 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
     updater feed in `tauri.conf.json`.
   - The packaged app is now `Plybook.app`. On Windows the installer's upgrade code follows the
     product name. Nothing has been released yet, so no installed copy is left behind.
-- [ ] **F.2 Evaluate Apple Intelligence on the Mac** ("Siri AI") as an explanation model
-  (P2.4b). Apple's on-device Foundation Models framework (macOS 26) is free, offline and needs
-  no key. It is a Swift API, so it needs a small Swift bridge from Rust. Questions: is the
-  model good enough to reword explanations without adding claims, and what happens on Macs and
-  Windows without it.
+- [~] **F.2 Evaluate Apple Intelligence on the Mac** ("Siri AI") as an explanation model
+  (P2.4b). Evaluated 2026-10-31 (`feature/apple-model-eval`, `tools/fm-eval/main.swift`);
+  **not built, waiting for the owner's decision**.
+  - **What it is:** Apple's on-device Foundation Models framework (macOS 26+, Apple silicon,
+    Apple Intelligence on). It is free, offline, needs no key, and nothing leaves the Mac.
+    Windows and older Macs don't have it, so it would be one more provider beside Anthropic
+    and OpenAI-compatible, never the only one.
+  - **How it would be reached:** a Swift API, so from Rust either the third-party
+    `foundation-models` crate (Swift behind a C interface) or a small Swift bridge of our own.
+    macOS 27 also has `/usr/bin/fm`, but it needs a licence accepted with `sudo fm license`
+    for every user of the Mac, so it is not something the app should depend on.
+  - **Measured** on this Mac (macOS 27.0.1): available, about 1.5 s per explanation. Four
+    explanations in the app's style (an endgame plan, a blunder with the better move, a fork,
+    prophylaxis), with the app's own system prompt:
+    - Default sampling: 2 of 4 changed the chess. In the blunder, "the queen is lost" became
+      Black losing the queen; in the prophylaxis, "h3 stops Bg4" became "keeps the Bg4 from
+      going to f3".
+    - Greedy decoding: 1 of 4. The prophylaxis was right, the blunder still flipped who loses
+      the queen.
+    - The others were fine, if flatter ("forks" became "hits both", "the only good move"
+      became "the best shot").
+  - **Why it matters:** the rewording check (EXPLANATIONS.md) drops added moves, squares and
+    claims, but not a changed meaning. These errors use only words already in the text, so
+    they would reach the user.
+  - **Options for the owner:** (a) don't add it; Anthropic or a larger local model via Ollama
+    keep doing it well. (b) Add it as an opt-in "Apple (on this Mac), experimental"
+    provider with greedy decoding and a note that it can misword. (c) Re-run the script when
+    Apple updates the model, and decide then.
 - [x] **F.3 Where a pasted PGN goes** (`feature/save-folder`, 2026-10-31):
   - Before: Save put a pasted game in `Library/Pasted` and a database game in
     `Library/From databases`, with no choice. A new analysis opened the system save dialog,
