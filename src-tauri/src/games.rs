@@ -965,14 +965,14 @@ mod tests {
         assert_eq!(left, 0);
     }
 
-    /// Import speed on a real file: RECHESS_BENCH_PGN=/path/to/file.pgn cargo test --release
+    /// Import speed on a real file: PLYBOOK_BENCH_PGN=/path/to/file.pgn cargo test --release
     /// bench_import -- --ignored --nocapture
     #[test]
     #[ignore]
     fn bench_import() {
-        let path = std::env::var("RECHESS_BENCH_PGN").expect("RECHESS_BENCH_PGN");
+        let path = std::env::var("PLYBOOK_BENCH_PGN").expect("PLYBOOK_BENCH_PGN");
         let db_file =
-            std::env::temp_dir().join(format!("rechess-bench-{}.sqlite", std::process::id()));
+            std::env::temp_dir().join(format!("plybook-bench-{}.sqlite", std::process::id()));
         let conn = Connection::open(&db_file).unwrap();
         crate::db::migrate(&conn).unwrap();
         let file = std::fs::File::open(&path).unwrap();

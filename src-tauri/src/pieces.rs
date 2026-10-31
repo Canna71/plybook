@@ -228,7 +228,7 @@ mod tests {
 
     fn folder(files: &[&str]) -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "rechess-pieces-{}-{}",
+            "plybook-pieces-{}-{}",
             std::process::id(),
             files.len()
         ));

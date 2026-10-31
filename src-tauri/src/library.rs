@@ -124,7 +124,7 @@ mod tests {
 
     fn temp(name: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "rechess-library-test-{name}-{}",
+            "plybook-library-test-{name}-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&dir);

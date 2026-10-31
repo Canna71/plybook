@@ -25,7 +25,7 @@ const forwarder = `
 `;
 
 export const devLog = (): Plugin => ({
-    name: "rechess-devlog",
+    name: "plybook-devlog",
     apply: "serve",
     configureServer(server) {
         server.middlewares.use("/__devlog", (req, res) => {

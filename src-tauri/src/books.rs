@@ -524,7 +524,7 @@ mod tests {
             .collect();
         rows.sort();
         let path = std::env::temp_dir().join(format!(
-            "rechess-book-{}-{}.bin",
+            "plybook-book-{}-{}.bin",
             std::process::id(),
             rows.len()
         ));
@@ -588,14 +588,14 @@ mod tests {
 
     /// A real book (e.g. python-chess's data/polyglot/performance.bin):
     /// Makes a book from a real PGN (a Lichess month, .pgn or .pgn.zst) and prints what it holds:
-    /// RECHESS_BENCH_PGN=/path/games.pgn RECHESS_BENCH_ELO=2000 \
+    /// PLYBOOK_BENCH_PGN=/path/games.pgn PLYBOOK_BENCH_ELO=2000 \
     ///   cargo test --release --lib real_games -- --ignored --nocapture
     /// The book is left in the temporary folder, for `real_book` below.
     #[test]
     #[ignore]
     fn real_games() {
-        let source = PathBuf::from(std::env::var("RECHESS_BENCH_PGN").expect("RECHESS_BENCH_PGN"));
-        let min_elo = std::env::var("RECHESS_BENCH_ELO").map_or(2000, |e| e.parse().unwrap());
+        let source = PathBuf::from(std::env::var("PLYBOOK_BENCH_PGN").expect("PLYBOOK_BENCH_PGN"));
+        let min_elo = std::env::var("PLYBOOK_BENCH_ELO").map_or(2000, |e| e.parse().unwrap());
         let file = File::open(&source).unwrap();
         let input: Box<dyn Read> = if source.extension().is_some_and(|e| e == "zst") {
             Box::new(zstd::Decoder::new(file).unwrap())
@@ -604,7 +604,7 @@ mod tests {
         };
         let started = std::time::Instant::now();
         let (entries, games, used) = build_entries(input, options(min_elo, 5), |_, _| {}).unwrap();
-        let path = std::env::temp_dir().join("rechess-real-games.bin");
+        let path = std::env::temp_dir().join("plybook-real-games.bin");
         write_book(&path, &entries).unwrap();
         eprintln!(
             "{games} games, {used} rated {min_elo}+, {} moves, {} KB, {:.1} s -> {}",
@@ -620,11 +620,11 @@ mod tests {
         );
     }
 
-    /// RECHESS_BENCH_BOOK=/path/book.bin cargo test --lib real_book -- --ignored --nocapture
+    /// PLYBOOK_BENCH_BOOK=/path/book.bin cargo test --lib real_book -- --ignored --nocapture
     #[test]
     #[ignore]
     fn real_book() {
-        let path = PathBuf::from(std::env::var("RECHESS_BENCH_BOOK").expect("RECHESS_BENCH_BOOK"));
+        let path = PathBuf::from(std::env::var("PLYBOOK_BENCH_BOOK").expect("PLYBOOK_BENCH_BOOK"));
         let start = moves_in(&path, START).unwrap();
         eprintln!(
             "start: {:?}",
@@ -708,7 +708,7 @@ mod tests {
             build_entries(GAMES.as_bytes(), options(2000, 1), |_, _| {}).unwrap();
         // the weak game and the set-up position are left out; the illegal O-O-O ends its game
         assert_eq!((games, used), (5, 3));
-        let path = std::env::temp_dir().join(format!("rechess-made-{}.bin", std::process::id()));
+        let path = std::env::temp_dir().join(format!("plybook-made-{}.bin", std::process::id()));
         write_book(&path, &entries).unwrap();
         let start = moves_in(&path, START).unwrap();
         // e4: a win and a draw for White (2 + 1); d4: a loss (0), there to be avoided

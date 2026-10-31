@@ -178,7 +178,7 @@ mod tests {
 
     #[test]
     fn finds_a_free_name() {
-        let dir = std::env::temp_dir().join(format!("rechess-sites-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("plybook-sites-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         assert_eq!(free_path(&dir, "My: line.pgn"), dir.join("My- line.pgn"));

@@ -968,8 +968,21 @@ Second round, in the order given; bugs first when working through it.
   candidates did work (checked by clicking and by dragging: e4, Nf3, d4), but nothing said
   so. A "How it works" at the top (open at the first move) says what it trains and how to
   enter candidates, and the message counts them ("1 candidate: move another piece…").
-- [ ] **F.18 Rename the project to Plybook throughout:** the bundle identifier, the data
-  folder and the other internal names F.1 kept, with the move of every user's data.
+- [x] **F.18 Rename the project to Plybook throughout** (approved by the owner 2026-10-31,
+  before any release; `feature/feedback-answers`). Bundle identifier `com.canna71.plybook`,
+  keychain service, `plybook.sqlite`, backup manifest `plybook-backup.json`, crate `plybook`
+  (`plybook_lib`), package `plybook`, dev tools (`tools/shot.sh` finds the `plybook` process,
+  shots in `/tmp/plybook-shots`), bench variables `PLYBOOK_*`.
+  - Data moves on the first start (`migrate.rs`, tested): the `com.canna71.rechess` folders
+    (and the older `rechess` ones) into the new identifier's, and `rechess.sqlite` (with its
+    WAL files) to `plybook.sqlite`. Secrets move from the old keychain service the first time
+    each is read; old backups (`rechess-backup.json`) still restore (tested).
+  - Done on the owner's Mac: 1.5 GB moved (Library, engines, 3.3 million puzzles, settings,
+    accounts, both secrets); a clone of the old folder was kept as
+    `com.canna71.rechess.before-plybook` until the owner confirms.
+  - Left to the owner: renaming the repository and the project folder; then the GitHub URLs
+    (README, `net.rs` user agent, updater feed in `tauri.conf.json`). macOS permissions
+    (Screen Recording) and keychain approvals are asked again, as for a new app.
 - [x] **F.19 Chessable paste: `"studyCol": "black"` sets the board's orientation**
   (`feature/feedback-features`): written as the PGN's `[Orientation]`, so it stays when saved.
   No sample had the field, so it is read at the top level, in `lesson` or on the first move.

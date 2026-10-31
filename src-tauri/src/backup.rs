@@ -20,7 +20,9 @@ use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipArchive, ZipWriter};
 
 const BACKUPS: &str = "Backups";
-const MANIFEST: &str = "rechess-backup.json";
+const MANIFEST: &str = "plybook-backup.json";
+/// The manifest's name in backups made before the rename to Plybook (F.18), still restored
+const OLD_MANIFEST: &str = "rechess-backup.json";
 const DATA: &str = "data.sqlite";
 const SETTINGS: &str = "settings.json";
 const BOOKS: &str = "Books";
@@ -240,7 +242,7 @@ fn allowed(path: &Path) -> bool {
         .next()
         .and_then(|c| c.as_os_str().to_str())
         .unwrap_or_default();
-    matches!(first, MANIFEST | DATA | SETTINGS | BOOKS) || FOLDERS.contains(&first)
+    matches!(first, MANIFEST | OLD_MANIFEST | DATA | SETTINGS | BOOKS) || FOLDERS.contains(&first)
 }
 
 /// Unpacks a backup into `staging`, refusing anything that is not a Plybook backup and any
@@ -249,8 +251,13 @@ fn extract(zip_path: &Path, staging: &Path) -> Result<Manifest, String> {
     let mut zip = ZipArchive::new(File::open(zip_path).map_err(|e| e.to_string())?)
         .map_err(|_| "Not a zip file".to_string())?;
     let manifest: Manifest = {
+        let name = if zip.index_for_name(MANIFEST).is_some() {
+            MANIFEST
+        } else {
+            OLD_MANIFEST
+        };
         let mut entry = zip
-            .by_name(MANIFEST)
+            .by_name(name)
             .map_err(|_| "Not a Plybook backup".to_string())?;
         let mut text = String::new();
         entry.read_to_string(&mut text).map_err(|e| e.to_string())?;
@@ -455,7 +462,7 @@ mod tests {
 
     fn temp(name: &str) -> PathBuf {
         let dir =
-            std::env::temp_dir().join(format!("rechess-backup-test-{name}-{}", std::process::id()));
+            std::env::temp_dir().join(format!("plybook-backup-test-{name}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         dir
@@ -562,6 +569,25 @@ mod tests {
         extract(&zip_path, &staging).unwrap();
         assert!(!dir.join("escaped.txt").exists());
         assert!(!staging.join("Engines").exists());
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn restores_backups_made_before_the_rename() {
+        let dir = temp("old-manifest");
+        let zip_path = dir.join("old.zip");
+        let mut zip = ZipWriter::new(File::create(&zip_path).unwrap());
+        zip.start_file(OLD_MANIFEST, SimpleFileOptions::default())
+            .unwrap();
+        zip.write_all(br#"{"format":1,"created":"","tables":[],"full":false}"#)
+            .unwrap();
+        zip.start_file(SETTINGS, SimpleFileOptions::default())
+            .unwrap();
+        zip.write_all(b"{}").unwrap();
+        zip.finish().unwrap();
+        let staging = dir.join("s");
+        extract(&zip_path, &staging).unwrap();
+        assert!(staging.join(SETTINGS).exists());
         fs::remove_dir_all(dir).unwrap();
     }
 }

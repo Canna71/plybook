@@ -128,7 +128,8 @@ src-tauri/src/
   engine.rs                engine process management (engine_list/spawn/write/kill) + open_library_path
   export.rs                export_save: save dialog + write for exported images/GIFs (raw bytes body)
   backup.rs                backups (zip of Library, settings, the user's own tables), restore, daily auto
-  migrate.rs               one-time move of user data from the old "rechess" identifier folders
+  migrate.rs               one-time move of user data from older identifiers' folders
+                           ("com.canna71.rechess", "rechess") and of rechess.sqlite
 src-tauri/capabilities/    webview permissions (default.json, desktop.json)
 ```
 
@@ -142,7 +143,7 @@ User data locations (resolved by Tauri from the bundle identifier):
 - `<AppLocalData>/Books` Polyglot opening books (imported in Settings)
 - `<AppLocalData>/Backups` automatic daily backups and the copies made before a restore
   (`backup.rs`; a new user table belongs in its `USER_TABLES`, or backups miss it)
-- `<AppLocalData>/rechess.sqlite` database (the old SurrealDB `db/` folder is no longer read;
+- `<AppLocalData>/plybook.sqlite` database (the old SurrealDB `db/` folder is no longer read;
   `tools/surreal-export` turns it into `surreal-export.json`, imported on the next start)
 - `<AppConfig>` settings JSON
 
@@ -200,13 +201,16 @@ User data locations (resolved by Tauri from the bundle identifier):
 
 ## Gotchas
 
-- **The app is called Plybook** (F.1, 2026-10-31: `productName`, window title, texts and docs).
-  The old name stays in internal names that hold data or code: the bundle identifier, the
-  keychain service (`secrets.rs`), `rechess.sqlite`, the backup manifest `rechess-backup.json`,
-  the crate and package names, and the GitHub URLs until the repository is renamed. Don't
-  rename those.
-- **Bundle identifier is `com.canna71.rechess`** (decided). Changing it moves every user's
-  Library, settings and DB; `migrate.rs` exists to move data from the old `rechess` identifier.
+- **The app is called Plybook** (F.1 for the visible name; F.18, 2026-10-31, for the internal
+  ones): bundle identifier `com.canna71.plybook`, keychain service `com.canna71.plybook`,
+  `plybook.sqlite`, backup manifest `plybook-backup.json`, crate `plybook` / `plybook_lib`,
+  package `plybook`. The old `rechess` names stay only where old data is read: `migrate.rs`
+  (folders of `com.canna71.rechess` and `rechess`, and `rechess.sqlite`), `secrets.rs`
+  (`OLD_SERVICE`, moved on first read) and `backup.rs` (`OLD_MANIFEST`). The GitHub URLs keep
+  `Canna71/rechess` until the repository is renamed (README, `net.rs` user agent, updater
+  feed in `tauri.conf.json`).
+- **Bundle identifier is `com.canna71.plybook`** (decided). Changing it moves every user's
+  Library, settings and DB; `migrate.rs` moves data from the older identifiers at startup.
 - `src-tauri/gen/schemas` is generated/ignored. The capability `$schema`
   points at `gen/schemas`, which appears after the first `cargo build`/`tauri dev`.
 - On macOS, a downloaded engine binary may be quarantined or not executable (`chmod +x`,

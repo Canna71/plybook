@@ -323,11 +323,12 @@ Everything stays on your computer:
 | Library (games, studies, books) | `Library` in the data folder |
 | Engines | `Engines` in the data folder |
 | Opening books | `Books` in the data folder |
-| Puzzles, history, repertoire progress | `rechess.sqlite` in the data folder |
+| Puzzles, history, repertoire progress | `plybook.sqlite` in the data folder |
 | Backups | `Backups` in the data folder |
 
-The data folder is `~/Library/Application Support/com.canna71.rechess` on macOS and
-`%LOCALAPPDATA%\com.canna71.rechess` on Windows. API tokens and keys are kept in the system
+The data folder is `~/Library/Application Support/com.canna71.plybook` on macOS and
+`%LOCALAPPDATA%\com.canna71.plybook` on Windows (data from older versions, in
+`com.canna71.rechess`, is moved there on the first start). API tokens and keys are kept in the system
 keychain, not in files.
 
 **Backups** (Settings → Backups) zip the Library, your settings and your own records, once a day

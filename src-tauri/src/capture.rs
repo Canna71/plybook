@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn a_missing_or_empty_capture_means_cancelled() {
-        let dir = std::env::temp_dir().join(format!("rechess-capture-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("plybook-capture-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("capture.png");
         assert_eq!(take_capture(&path).unwrap(), None);

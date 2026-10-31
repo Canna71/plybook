@@ -100,7 +100,7 @@ them over, close Plybook and run once (this needs LLVM/libclang to build):
 
 ```bash
 cd tools/surreal-export
-cargo run --release -- "$HOME/Library/Application Support/com.canna71.rechess"
+cargo run --release -- "$HOME/Library/Application Support/com.canna71.plybook"
 ```
 
 The next start imports `surreal-export.json`; the old `db` folder is left alone and can be deleted.

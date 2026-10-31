@@ -2879,6 +2879,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "plybook"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "chrono",
+ "keyring",
+ "open",
+ "pgn-reader 0.29.1",
+ "pgnparse",
+ "rand 0.8.5",
+ "reqwest",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "shakmaty 0.30.2",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-clipboard-manager",
+ "tauri-plugin-dialog",
+ "tauri-plugin-fs",
+ "tauri-plugin-process",
+ "tauri-plugin-shell",
+ "tauri-plugin-updater",
+ "tauri-plugin-window-state",
+ "zip 2.6.1",
+ "zstd",
+]
+
+[[package]]
 name = "png"
 version = "0.17.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3141,35 +3170,6 @@ name = "raw-window-handle"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20675572f6f24e9e76ef639bc5552774ed45f1c30e2951e1e99c59888861c539"
-
-[[package]]
-name = "rechess"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "chrono",
- "keyring",
- "open",
- "pgn-reader 0.29.1",
- "pgnparse",
- "rand 0.8.5",
- "reqwest",
- "rusqlite",
- "serde",
- "serde_json",
- "shakmaty 0.30.2",
- "tauri",
- "tauri-build",
- "tauri-plugin-clipboard-manager",
- "tauri-plugin-dialog",
- "tauri-plugin-fs",
- "tauri-plugin-process",
- "tauri-plugin-shell",
- "tauri-plugin-updater",
- "tauri-plugin-window-state",
- "zip 2.6.1",
- "zstd",
-]
 
 [[package]]
 name = "redox_syscall"
