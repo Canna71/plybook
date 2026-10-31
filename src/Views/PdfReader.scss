@@ -153,13 +153,27 @@
         }
     }
 
+    // dragged to size the notes column (F.24); the line shows on hover and while dragging
+    .reader-divider {
+        flex: 0 0 6px;
+        cursor: ew-resize;
+        touch-action: none;
+        border-left: 1px solid var(--rc-border);
+        transition: background 0.15s;
+
+        &:hover,
+        &:active {
+            background: var(--rc-accent);
+        }
+    }
+
     .reader-side {
-        // wide enough for the notes' board and moves beside the page
+        // wide enough for the notes' board and moves beside the page; the divider sets
+        // flex-basis once dragged
         flex: 0 0 clamp(340px, 40%, 600px);
         min-width: 0;
         padding: 12px;
         overflow: auto;
-        border-left: 1px solid rgba(127, 127, 127, 0.3);
         display: flex;
         flex-direction: column;
         gap: 8px;

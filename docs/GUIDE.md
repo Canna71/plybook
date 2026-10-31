@@ -137,7 +137,9 @@ one opens at the page where you left it.
 
 In the reader:
 - Click a diagram: Plybook reads the position from the picture and opens it in the notes beside
-  the page. Correct it there if needed, and say whose move it is.
+  the page. Correct it there if needed, and say whose move it is (until you add moves, which
+  start from that side).
+- Drag the line between the book and the notes to widen either; double-click it to go back.
 - In the notes, play the moves the book gives (select them in the text), turn text into a
   comment, or **Study this position** in Analysis.
 - What you do in the notes is kept with the book.

@@ -984,7 +984,10 @@ Second round, in the order given; bugs first when working through it.
   (`feature/feedback-round-2`). A game's board faces the side to move unless its PGN says
   otherwise; a diagram's notes now carry the printed orientation (`[Orientation]`), and older
   notes get it when opened.
-- [ ] **F.24 PDF reader: a draggable divider** between the book and the diagram (within limits).
+- [x] **F.24 PDF reader: a draggable divider** between the book and the diagram (within limits)
+  (`feature/feedback-features`). The notes column keeps at least 300 px (the board) and the
+  book 320 px; the width is kept for every book (`reader.sideWidth`), and a double-click
+  goes back to the usual width.
 - [ ] **F.25 Navigation history:** back and forward between the places visited.
 - [x] **F.26 Play the engine: items not aligned vertically** when they sit side by side
   (`feature/feedback-features`). The header's labels sat on the text baseline while Bulma's

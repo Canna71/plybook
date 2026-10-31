@@ -63,6 +63,9 @@ const log = anylogger("reader");
 
 const PLACES_SETTING = "reader.places";
 const PAGES_SETTING = "reader.pages";
+/** The narrowest notes column and book the divider leaves (F.24) */
+const MIN_SIDE = 300;
+const MIN_PAGES = 320;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
 
@@ -132,7 +135,40 @@ const PdfReader: Component = () => {
     const [searching, setSearching] = createSignal(false);
 
     let scroller!: HTMLDivElement;
+    let body!: HTMLDivElement;
     const pageElements: HTMLDivElement[] = [];
+
+    // #region the divider between the book and the notes (F.24): 0 keeps the CSS width
+    const [sideWidth, setSideWidth] = createSignal(
+        getSettingValue("reader.sideWidth", 0),
+    );
+    const dragDivider = (e: PointerEvent) => {
+        const handle = e.currentTarget as HTMLElement;
+        handle.setPointerCapture(e.pointerId);
+        e.preventDefault();
+        const move = (ev: PointerEvent) => {
+            const right = body.getBoundingClientRect().right;
+            // room for the notes' board, and for a readable page
+            const max = Math.max(MIN_SIDE, body.clientWidth - MIN_PAGES);
+            setSideWidth(
+                Math.round(
+                    Math.min(max, Math.max(MIN_SIDE, right - ev.clientX)),
+                ),
+            );
+        };
+        const up = () => {
+            handle.removeEventListener("pointermove", move);
+            handle.removeEventListener("pointerup", up);
+            void setSettingValue("reader.sideWidth", sideWidth());
+        };
+        handle.addEventListener("pointermove", move);
+        handle.addEventListener("pointerup", up);
+    };
+    const resetDivider = () => {
+        setSideWidth(0);
+        void setSettingValue("reader.sideWidth", 0);
+    };
+    // #endregion
 
     onMount(() => {
         warmUpScanner();
@@ -579,7 +615,7 @@ const PdfReader: Component = () => {
                     </label>
                 </Show>
             </div>
-            <div class="reader-body">
+            <div class="reader-body" ref={body}>
                 <div class="reader-pages" ref={scroller} onScroll={onScroll}>
                     <Show when={doc.error}>
                         <p class="notification is-danger is-light">
@@ -614,7 +650,20 @@ const PdfReader: Component = () => {
                         </For>
                     </Show>
                 </div>
-                <div class="reader-side">
+                <div
+                    class="reader-divider"
+                    title="Drag to resize; double-click for the usual width"
+                    onPointerDown={dragDivider}
+                    onDblClick={resetDivider}
+                />
+                <div
+                    class="reader-side"
+                    style={
+                        sideWidth()
+                            ? { "flex-basis": `${sideWidth()}px` }
+                            : undefined
+                    }
+                >
                     <form class="field has-addons" onSubmit={runFind}>
                         <div class="control is-expanded">
                             <input

@@ -13,6 +13,10 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Show in Finder, F.15**: in a built app, Library → Show in Finder opens the folder.
 - [ ] **Play header, F.26**: Play the engine, with the tutor off and on: the labels and their
       dropdowns are centred on one line, in both themes.
+- [ ] **Reader divider, F.24**: drag the line between the book and the notes both ways: it
+      stops before the notes get narrower than the board needs, and before the book gets too
+      narrow; the pages redraw sharp at the new width. Reopen the book: same width. Double-
+      click the line: back to the usual width.
 - [ ] **Whose move, F.27**: start a game as Black: "Thinking…" by the engine first, then
       "Your move" by you. Both disappear at mate or after resigning.
 
