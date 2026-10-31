@@ -1,0 +1,75 @@
+// the Library folder chooser (FolderPicker.tsx), shaped like the command palette
+.folder-picker-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.25);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 12vh;
+}
+
+.folder-picker {
+    width: min(440px, calc(100vw - 32px));
+    background-color: var(--rc-bg);
+    border: 1px solid var(--rc-border-strong);
+    border-radius: var(--bulma-radius-large);
+    box-shadow: var(--rc-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    header {
+        padding: var(--rc-space-3) var(--rc-space-4);
+        border-bottom: 1px solid var(--rc-border);
+        font-weight: 600;
+        color: var(--rc-text-strong);
+    }
+
+    .folder-picker-list {
+        max-height: 50vh;
+        overflow: auto;
+        margin: 0;
+        padding: var(--rc-space-1) 0;
+        list-style: none;
+        outline: none;
+
+        li {
+            display: flex;
+            align-items: center;
+            gap: var(--rc-space-2);
+            padding: var(--rc-space-1) var(--rc-space-3);
+            cursor: default;
+            color: var(--rc-text);
+
+            svg {
+                width: 16px;
+                height: 16px;
+                color: var(--rc-text-muted);
+                flex-shrink: 0;
+            }
+
+            &.selected {
+                background-color: color-mix(
+                    in srgb,
+                    var(--rc-accent) 18%,
+                    transparent
+                );
+                color: var(--rc-text-strong);
+            }
+        }
+
+        .folder-picker-empty {
+            color: var(--rc-text-muted);
+        }
+    }
+
+    footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--rc-space-2);
+        padding: var(--rc-space-3) var(--rc-space-4);
+        border-top: 1px solid var(--rc-border);
+    }
+}

@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
     displayName,
+    folderDepth,
+    folderLabel,
     folderOf,
     formatSize,
     kindOf,
     LibraryEntry,
     matchesQuery,
+    moveTargets,
     sortEntries,
 } from "./library";
 
@@ -107,5 +110,40 @@ describe("formatSize", () => {
         expect(formatSize(2048)).toBe("2 KB");
         expect(formatSize(5 * 1024 * 1024)).toBe("5.0 MB");
         expect(formatSize(25 * 1024 * 1024)).toBe("25 MB");
+    });
+});
+
+describe("moving within the Library", () => {
+    const folders = [
+        "Library",
+        "Library/Openings",
+        "Library/Openings/Italian",
+        "Library/Openings/Italiana",
+        "Library/Pasted",
+    ];
+
+    it("labels and indents folders", () => {
+        expect(folderLabel("Library/Openings/Italian", "/")).toBe(
+            "Library / Openings / Italian",
+        );
+        expect(folderDepth("Library", "/")).toBe(0);
+        expect(folderDepth("Library/Openings/Italian", "/")).toBe(2);
+    });
+
+    it("moves a file anywhere but where it is", () => {
+        expect(moveTargets("Library/Pasted/game.pgn", folders, "/")).toEqual([
+            "Library",
+            "Library/Openings",
+            "Library/Openings/Italian",
+            "Library/Openings/Italiana",
+        ]);
+    });
+
+    it("moves a folder neither into itself nor into its own folders", () => {
+        expect(moveTargets("Library/Openings/Italian", folders, "/")).toEqual([
+            "Library",
+            "Library/Openings/Italiana",
+            "Library/Pasted",
+        ]);
     });
 });

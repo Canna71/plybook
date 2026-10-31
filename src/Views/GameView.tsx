@@ -7,7 +7,7 @@ import {
     Setter,
     Show,
 } from "solid-js";
-import { save } from "@tauri-apps/plugin-dialog";
+import { pickFolder } from "../components/common/FolderPicker";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
 import {
@@ -58,6 +58,9 @@ import { Color } from "chessops";
 import { recordRecent } from "../storage/recent";
 import anylogger from "anylogger";
 const log = anylogger("gameview");
+
+/** The folder the last game without a file was saved in, offered first next time */
+let lastSaveFolder: string | undefined;
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -275,9 +278,21 @@ const GameView = () => {
         const pgnText = newPgn();
         if (pgnText) {
             const copyFolder = libraryCopyFolder();
-            if (copyFolder) {
-                // copy into the Library, where it can be annotated
-                const folder = await join("Library", copyFolder);
+            const hasFile =
+                !!historyId() || typeof searchParams.path === "string";
+            if (copyFolder || !hasFile) {
+                // into a Library folder the user picks (F.3), where it can be annotated
+                const folder = await pickFolder({
+                    title: "Save in the Library",
+                    action: "Save",
+                    initial:
+                        lastSaveFolder ??
+                        (copyFolder
+                            ? await join("Library", copyFolder)
+                            : "Library"),
+                });
+                if (!folder) return;
+                lastSaveFolder = folder;
                 await mkdir(folder, {
                     baseDir: BaseDirectory.AppLocalData,
                     recursive: true,
@@ -294,20 +309,8 @@ const GameView = () => {
                     setModified(false);
             } else if (typeof searchParams.path === "string") {
                 await writeDataFile(searchParams.path, pgnText);
-                // await writeDataFile("test.pgn", pgnText);
                 setModified(false);
                 refresh();
-            } else {
-                const path = await save({
-                    filters: [
-                        {
-                            name: "PGN File",
-                            extensions: ["pgn"],
-                        },
-                    ],
-                });
-                path && (await writeDataFile(path, pgnText));
-                path && setModified(false);
             }
         }
     };

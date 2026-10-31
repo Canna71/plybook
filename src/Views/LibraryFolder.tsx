@@ -35,6 +35,7 @@ import {
     createNewDataFolder,
     deleteDataFileOrFolder,
     getDefaultStudyContent,
+    moveDataFile,
     openDataPath,
     renameOrCreateDataFile,
 } from "../storage/fs";
@@ -48,11 +49,13 @@ import {
 import { forgetRecent, recentFiles } from "../storage/recent";
 import {
     displayName,
+    folderLabel,
     folderOf,
     formatSize,
     KIND_LABEL,
     LibraryEntry,
     matchesQuery,
+    moveTargets,
     SortKey,
     sortEntries,
 } from "../models/library";
@@ -61,6 +64,7 @@ import { getSettingValue, setSettingValue } from "../models/settings";
 import { ContentContext } from "../components/common/ContentContext";
 import Editable from "../components/common/Editable";
 import Menu, { MenuItem } from "../components/common/Menu";
+import { pickFolder } from "../components/common/FolderPicker";
 import BreadCrumb from "../components/common/BreadCrumb";
 import PageHeader from "../components/shell/PageHeader";
 import { makeErrorToast, makeToast } from "../components/common/Toast";
@@ -199,6 +203,23 @@ const LibraryFolder = () => {
         changed();
     };
 
+    const onMove = async (entry: LibraryEntry) => {
+        const to = await pickFolder({
+            title: `Move ${file(displayName(entry))} to`,
+            action: "Move",
+            filter: (folders) => moveTargets(entry.path, folders, sep()),
+        });
+        if (!to) return;
+        try {
+            await moveDataFile(entry.path, to);
+            forgetRecent(entry.path);
+            makeToast(`Moved to ${folderLabel(to, sep())}`);
+        } catch (e) {
+            makeErrorToast(`Could not move: ${e}`);
+        }
+        changed();
+    };
+
     const showInFinder = (path: string) =>
         openDataPath(path).catch((e) => {
             log.error(e);
@@ -208,6 +229,7 @@ const LibraryFolder = () => {
     const rowMenu = (entry: LibraryEntry): MenuItem[] => [
         { label: "Open", onClick: () => navigate(openLink(entry)) },
         { label: "Rename", onClick: () => setRenaming(entry.path) },
+        { label: "Move to…", onClick: () => onMove(entry) },
         ...(entry.kind === "folder"
             ? [
                   {

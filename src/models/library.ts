@@ -82,6 +82,28 @@ export function folderOf(path: string, separator: string): string {
     return parts.join(" / ");
 }
 
+/** "Library/Online/Lichess" -> "Library / Online / Lichess": a folder in the folder chooser */
+export function folderLabel(path: string, separator: string): string {
+    return path.split(separator).join(" / ");
+}
+
+/** How deep a folder is under the Library ("Library" is 0), for indenting the chooser */
+export const folderDepth = (path: string, separator: string) =>
+    path.split(separator).length - 1;
+
+/** The folders `path` may move into: not where it is, and a folder not into itself or its own
+ * folders (F.3, "Move to…") */
+export function moveTargets(
+    path: string,
+    folders: string[],
+    separator: string,
+): string[] {
+    const parent = path.split(separator).slice(0, -1).join(separator);
+    return folders.filter(
+        (f) => f !== parent && f !== path && !f.startsWith(path + separator),
+    );
+}
+
 /** "820 KB", "12.4 MB" */
 export function formatSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`;

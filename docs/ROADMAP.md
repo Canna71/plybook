@@ -838,9 +838,16 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
   no key. It is a Swift API, so it needs a small Swift bridge from Rust. Questions: is the
   model good enough to reword explanations without adding claims, and what happens on Macs and
   Windows without it.
-- [ ] **F.3 Where a pasted PGN goes**: choose the Library folder when saving a pasted game
-  (check first where Save puts it today), and move files between Library folders (drag, or
-  "Move to…").
+- [x] **F.3 Where a pasted PGN goes** (`feature/save-folder`, 2026-10-31):
+  - Before: Save put a pasted game in `Library/Pasted` and a database game in
+    `Library/From databases`, with no choice. A new analysis opened the system save dialog,
+    which could put it outside the Library.
+  - Now Save asks for a Library folder for any game without a file. The chooser
+    (`components/common/FolderPicker.tsx`, `pickFolder()`) defaults to the folder used last
+    this session, or the old folder for that kind of game, so Enter keeps the old one-step save.
+  - Library → ⋯ → **Move to…** moves a file or folder with the same chooser. It never
+    overwrites ("name (1)"), and a folder can't go into itself (`moveTargets`, tested).
+  - Left: dragging files onto folders.
 - [x] **F.4 Moves: alignment and indentation** (`feature/moves-layout`, 2026-10-31):
   - The cause: the move-number column was styled as each row's first cell, and a comment row's
     one cell is a first cell too, so comments were right-aligned and muted, in side lines as
