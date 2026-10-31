@@ -37,6 +37,20 @@ describe("history", () => {
         expect(historyFor(undefined, START)).toBeUndefined();
     });
 
+    it("writes castling as engines read it, not as the king taking its rook", () => {
+        const castled = makeGame(
+            "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. O-O d6 5. d3 Bg4 6. Nc3 Qd7 7. Be3 O-O-O *",
+        );
+        const end = castled.mainline.at(-1)!;
+        const h = gameHistory(castled, end.path)!;
+        expect(h.moves).toContain("e1h1");
+        const sent = historyFor(h, end.fen)!;
+        expect(sent.moves[6]).toBe("e1g1");
+        expect(sent.moves[13]).toBe("e8c8");
+        expect(sent.moves).not.toContain("e1h1");
+        expect(sent.moves).not.toContain("e8a8");
+    });
+
     it("goes one move further", () => {
         expect(withMove({ start: START, moves: ["e2e4"] }, "e7e5")).toEqual({
             start: START,

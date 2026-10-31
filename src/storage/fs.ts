@@ -122,30 +122,24 @@ export async function listAppData(path: string) {
     });
 }
 
-export async function renameOrCreateDataFile(
-    oldName: string | undefined,
-    newName: string,
-    content?: string,
-) {
-    const path = basePath(oldName || newName);
-    const oldExt = oldName ? fileOrFolderExtension(oldName) : "";
-    const newExt = fileOrFolderExtension(newName);
-    if (oldExt && !newExt) {
-        newName = `${newName}.${oldExt}`;
-    }
-    const newFullPath = `${path}${sep()}${newName}`;
+/** Renames a file or folder in its folder to `newName` (the whole name, see `renamedName`); never
+ * over another one. The new path. */
+export async function renameDataFile(path: string, newName: string) {
+    if (!newName || newName.startsWith(".")) throw new Error("No name given");
+    const newPath = `${basePath(path)}${sep()}${newName}`;
+    if (newPath === path) return path;
+    // a different case of the same name is the same file on macOS and Windows
     if (
-        oldName &&
-        (await exists(oldName, { baseDir: BaseDirectory.AppLocalData }))
+        newPath.toLowerCase() !== path.toLowerCase() &&
+        (await exists(newPath, { baseDir: BaseDirectory.AppLocalData }))
     ) {
-        await rename(oldName, newFullPath, {
-            oldPathBaseDir: BaseDirectory.AppLocalData,
-            newPathBaseDir: BaseDirectory.AppLocalData,
-        });
-    } else {
-        await writeDataFile(newFullPath, content || "");
-        return newFullPath;
+        throw new Error(`“${newName}” already exists`);
     }
+    await rename(path, newPath, {
+        oldPathBaseDir: BaseDirectory.AppLocalData,
+        newPathBaseDir: BaseDirectory.AppLocalData,
+    });
+    return newPath;
 }
 
 // create a new file with a tentative name, appending progressive numbers if the file already exists
@@ -256,12 +250,6 @@ export function baseName(name: string) {
 
 export function basePath(name: string) {
     return name.split(sep()).slice(0, -1).join(sep());
-}
-
-export function fileOrFolderExtension(name: string) {
-    const base = baseName(name);
-    const dotIndex = base.lastIndexOf(".");
-    return dotIndex !== -1 ? base.substring(dotIndex + 1) : "";
 }
 
 export function getDefaultStudyContent() {

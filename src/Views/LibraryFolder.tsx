@@ -37,7 +37,7 @@ import {
     getDefaultStudyContent,
     moveDataFile,
     openDataPath,
-    renameOrCreateDataFile,
+    renameDataFile,
 } from "../storage/fs";
 import {
     importDropped,
@@ -56,6 +56,7 @@ import {
     LibraryEntry,
     matchesQuery,
     moveTargets,
+    renamedName,
     SortKey,
     sortEntries,
 } from "../models/library";
@@ -179,8 +180,11 @@ const LibraryFolder = () => {
 
     const onRenamed = async (entry: LibraryEntry, newName: string) => {
         try {
-            await renameOrCreateDataFile(entry.path, newName);
-            forgetRecent(entry.path);
+            const path = await renameDataFile(
+                entry.path,
+                renamedName(entry, newName),
+            );
+            if (path !== entry.path) forgetRecent(entry.path);
         } catch (e) {
             makeErrorToast(`Could not rename: ${e}`);
         }

@@ -9,6 +9,7 @@ import {
     LibraryEntry,
     matchesQuery,
     moveTargets,
+    renamedName,
     sortEntries,
 } from "./library";
 
@@ -34,6 +35,34 @@ describe("displayName", () => {
         expect(displayName(entry("Italian.pgn", "games"))).toBe("Italian");
         expect(displayName(entry("v1.2", "folder"))).toBe("v1.2");
         expect(displayName(entry(".pgn", "games"))).toBe(".pgn");
+    });
+});
+
+describe("renamedName", () => {
+    it("keeps a file's extension when the new name has periods of its own", () => {
+        expect(
+            renamedName(
+                entry("Untitled.pgn", "games"),
+                "Muhlock vs. Kostics, 1912",
+            ),
+        ).toBe("Muhlock vs. Kostics, 1912.pgn");
+        expect(renamedName(entry("Italian.pgn", "games"), "Giuoco 2.0")).toBe(
+            "Giuoco 2.0.pgn",
+        );
+        expect(renamedName(entry("Book.pdf", "book"), " My System ")).toBe(
+            "My System.pdf",
+        );
+    });
+
+    it("adds no second extension, and leaves folders alone", () => {
+        expect(renamedName(entry("a.pgn", "games"), "b.PGN")).toBe("b.PGN");
+        expect(renamedName(entry("Vol. 1", "folder"), "Vol. 2")).toBe("Vol. 2");
+    });
+
+    it("replaces characters file systems refuse", () => {
+        expect(
+            renamedName(entry("a.pgn", "games"), "Kasparov/Karpov: 1985"),
+        ).toBe("Kasparov-Karpov- 1985.pgn");
     });
 });
 

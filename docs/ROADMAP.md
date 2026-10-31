@@ -927,13 +927,57 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
     stayed in view for 120 ms and is cancelled when it leaves; the 12 pages seen last keep
     their image, so going back is instant.
   - Measured on an M4: a page now appears in 60–260 ms while scans continue in the worker.
-- [ ] **F.10 Selecting text in scanned PDFs.** Some books (*My System*) are images only (JBIG2
-  scans, no text layer), so there is nothing to select, find or read moves from. Needs OCR;
-  the options are with the owner.
+- [-] **F.10 Selecting text in scanned PDFs.** Some books (*My System*) are images only (JBIG2
+  scans, no text layer), so there is nothing to select, find or read moves from. **Not
+  planned** (owner, 2026-10-31): scanned books are the minority, and users can add a text
+  layer with an external OCR tool first.
 - [ ] **F.11 Diagrams at an intermediate position.** A book's diagram often shows the game
   after some moves the text gives before it. Read those moves from the text, check they lead
   to the diagram's position, and keep them as the game before the diagram (see P4.4e). Needs
-  text, so scanned books need F.10 first.
+  a text layer (books with text, or scans OCR'd outside the app).
+
+## Owner feedback (2026-10-31)
+
+Second round, in the order given; bugs first when working through it.
+
+- [ ] **F.12 App versioning:** a script that bumps the version (`package.json`, which
+  `tauri.conf.json` reads, and `Cargo.toml`), and the version shown in the app.
+- [x] **F.13 Rename an open game** by editing its title (`feature/feedback-round-2`): the title
+  of a Library file is editable and renames the file. The game reopens at its new path, and
+  unsaved edits stay unsaved there.
+- [x] **F.14 [Bug] Renaming a file to "Muhlock vs. Kostics, 1912" drops it from the Library**
+  (`feature/feedback-round-2`). The rename took " Kostics, 1912" for the extension and added
+  no `.pgn`, and the Library shows only `.pgn` and `.pdf` files. `renamedName` (tested) now
+  keeps the file's own extension, replaces characters file systems refuse, and leaves folder
+  names alone; a rename never overwrites another file.
+  - Left: repertoire cards and puzzle scores are keyed by the file's path, so they don't follow
+    a rename or a move (F.3's Move to… either).
+- [ ] **F.15 A button to open the Library folder** in Finder or Explorer.
+- [ ] **F.16 No sound in studies:** by design, or missing?
+- [ ] **F.17 [Bug?] Guess the move is unclear:** how to add more than one candidate, and what
+  it is for.
+- [ ] **F.18 Rename the project to Plybook throughout:** the bundle identifier, the data
+  folder and the other internal names F.1 kept, with the move of every user's data.
+- [ ] **F.19 Chessable paste: `"studyCol": "black"` sets the board's orientation.**
+- [ ] **F.20 [Bug] Downloading Lichess puzzles** shows no progress and nothing is downloaded.
+- [ ] **F.21 A comment without a move:** a comment on the starting position (a diagram)
+  without entering a move first, kept in a PGN field.
+- [ ] **F.22 [Bug] PDF reader: the side-to-move dropdown sometimes disappears.**
+- [ ] **F.23 PDF reader: changing the side to move must not flip the board.**
+- [ ] **F.24 PDF reader: a draggable divider** between the book and the diagram (within limits).
+- [ ] **F.25 Navigation history:** back and forward between the places visited.
+- [ ] **F.26 Play the engine: items not aligned vertically** when they sit side by side.
+- [ ] **F.27 Play the engine: show whose turn it is**, so it is clear whether the engine is
+  thinking.
+- [x] **F.28 [Bug] Play the engine: no reply after castling** and **F.29 [Bug] Game review
+  hangs** ("Analyzing position 19 of 20" after 10. O-O), one cause (`feature/feedback-round-2`).
+  Since P2.4e the engine gets the game's moves, so repetitions count. chessops writes castling
+  as the king taking its own rook (`e1h1`); Stockfish, not in Chess960 mode, takes that for an
+  illegal move, drops the moves after it and searches an earlier position, for the wrong side.
+  `historyFor` (the only way moves reach the engine) now writes castling as `e1g1` (tested).
+  The reported game now reviews to the end.
+  - Left: reading the log in a built app (the built app has no dev tools).
+- [ ] **F.30 Puzzles from chess.com:** how to get them.
 
 ## Last
 

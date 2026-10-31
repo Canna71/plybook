@@ -2,7 +2,14 @@
 // fifty-move counter, but not which positions came before, so an engine given only the FEN
 // cannot see a draw by repetition. Searching `position fen <start> moves …` lets it.
 
-import { Chess, parseUci } from "chessops";
+import {
+    Chess,
+    makeUci,
+    NormalMove,
+    parseUci,
+    squareFile,
+    squareRank,
+} from "chessops";
 import { makeFen, parseFen } from "chessops/fen";
 import { PositionHistory } from "../engine/engineinterfaces";
 import { GameModel } from "./GameModel";
@@ -35,8 +42,29 @@ export const withMove = (
     history && { start: history.start, moves: [...history.moves, uci] };
 
 /**
- * `history` when its moves are legal from its start and lead to `fen`; otherwise undefined, so
- * the engine gets the plain position rather than a game that is not this one's.
+ * A move as a standard UCI engine reads it. chessops writes castling as the king taking its own
+ * rook (`e1h1`), which an engine not in Chess960 mode takes for an illegal move: Stockfish then
+ * drops the rest of the moves and searches an earlier position, for the other side (F.28, F.29).
+ */
+function engineUci(pos: Chess, move: NormalMove): string {
+    if (
+        pos.board.getRole(move.from) === "king" &&
+        pos.board.rook.has(move.to) &&
+        pos.board[pos.turn].has(move.to)
+    ) {
+        const file = squareFile(move.to) > squareFile(move.from) ? 6 : 2;
+        return makeUci({
+            from: move.from,
+            to: squareRank(move.from) * 8 + file,
+        });
+    }
+    return makeUci(move);
+}
+
+/**
+ * `history` when its moves are legal from its start and lead to `fen`, with castling written as
+ * engines expect; otherwise undefined, so the engine gets the plain position rather than a game
+ * that is not this one's.
  */
 export function historyFor(
     history: PositionHistory | undefined,
@@ -46,12 +74,15 @@ export function historyFor(
     const setup = parseFen(history.start);
     const pos = setup.isOk ? Chess.fromSetup(setup.value) : undefined;
     if (!pos?.isOk) return undefined;
+    const moves: string[] = [];
     for (const uci of history.moves) {
         const move = parseUci(uci);
-        if (!move || !pos.value.isLegal(move)) return undefined;
+        if (!move || !("from" in move) || !pos.value.isLegal(move))
+            return undefined;
+        moves.push(engineUci(pos.value, move));
         pos.value.play(move);
     }
     return placeKey(makeFen(pos.value.toSetup())) === placeKey(fen)
-        ? history
+        ? { start: history.start, moves }
         : undefined;
 }
