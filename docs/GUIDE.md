@@ -254,6 +254,7 @@ there.
 - **Appearance:**
   - the app's theme (light, dark or a preset), and an accent colour;
   - the board's colours or texture, the piece set, and coordinates;
+  - text size for the whole app, or only for the moves or the comments (90–150%);
   - your own piece sets and themes, from files.
 - **Engines:** add a UCI engine (Stockfish, Lc0), choose the one for analysis and the one for
   playing, and set their options. For human-like moves, give Lc0 a Maia network.
