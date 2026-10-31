@@ -918,6 +918,22 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
   open name field took its 20em minimum and squeezed the material until it wrapped. Now the
   material stays on one line, with pieces of a kind overlapping a little as on chess sites, and
   the name gives way first (an ellipsis). All 15 pieces fit beside a name.
+- [x] **F.9 The PDF reader is slow to show pages** (reported 2026-10-31 with *My System*, a
+  318-page scanned book; `feature/pdf-reader-speed`). Pages stayed dark for seconds:
+  - Finding diagrams took up to 1.7 s a page on the main thread, and nothing could be painted
+    meanwhile. Page scans now run in a Web Worker (`scan/scanworker.ts`, with the model in
+    `scan/model.ts`), and wait until the visible pages are drawn.
+  - Every page scrolled past was still drawn in full. Drawing now starts once a page has
+    stayed in view for 120 ms and is cancelled when it leaves; the 12 pages seen last keep
+    their image, so going back is instant.
+  - Measured on an M4: a page now appears in 60–260 ms while scans continue in the worker.
+- [ ] **F.10 Selecting text in scanned PDFs.** Some books (*My System*) are images only (JBIG2
+  scans, no text layer), so there is nothing to select, find or read moves from. Needs OCR;
+  the options are with the owner.
+- [ ] **F.11 Diagrams at an intermediate position.** A book's diagram often shows the game
+  after some moves the text gives before it. Read those moves from the text, check they lead
+  to the diagram's position, and keep them as the game before the diagram (see P4.4e). Needs
+  text, so scanned books need F.10 first.
 
 ## Last
 

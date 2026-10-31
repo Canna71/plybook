@@ -28,12 +28,49 @@ export async function openPdf(file: Blob): Promise<PdfDocument> {
 export const renderPage = (pdf: PdfDocument, number: number, size: number) =>
     render(pdf, number, (w, h) => size / Math.max(w, h));
 
-/** Renders page `number` (from 1) onto a new canvas `width` pixels wide, for reading. */
-export const renderPageWidth = (
+/** A page being drawn for reading: `cancel` stops it (scrolled away), and `canvas` rejects */
+export type PageRender = {
+    canvas: Promise<HTMLCanvasElement>;
+    cancel: () => void;
+};
+
+/**
+ * Renders page `number` (from 1) onto a new canvas `width` pixels wide, for reading. A plain
+ * GPU canvas (no pixels read back), and cancellable: pages scrolled past must not keep the
+ * worker busy while the page the reader stopped on waits.
+ */
+export function renderPageWidth(
     pdf: PdfDocument,
     number: number,
     width: number,
-) => render(pdf, number, (w) => width / w);
+): PageRender {
+    let cancelled = false;
+    let task: { cancel: () => void } | undefined;
+    const canvas = (async () => {
+        const page = await pdf.getPage(number);
+        if (cancelled) throw new Error("cancelled");
+        const unscaled = page.getViewport({ scale: 1 });
+        const viewport = page.getViewport({ scale: width / unscaled.width });
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(viewport.width);
+        canvas.height = Math.round(viewport.height);
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const rendering = page.render({ canvas, viewport });
+        task = rendering;
+        await rendering.promise;
+        page.cleanup();
+        return canvas;
+    })();
+    return {
+        canvas,
+        cancel: () => {
+            cancelled = true;
+            task?.cancel();
+        },
+    };
+}
 
 /**
  * Lays the page's text, invisible but selectable, over its canvas in `container`. Sized by the

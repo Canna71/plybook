@@ -26,6 +26,7 @@ import {
     openPdf,
     pageAspect,
     PdfDocument,
+    PageRender,
     PdfTextLayer,
     renderPage,
     renderPageWidth,
@@ -74,6 +75,21 @@ type PageDiagram = {
 
 // one page scan at a time: fast scrolling queues pages, and pages scrolled past are skipped
 let scanQueue: Promise<unknown> = Promise.resolve();
+
+// the pages being drawn for reading: diagram scans wait until there are none, so a page the
+// reader looks at never waits behind a scan (both use the pdf.js worker and the main thread)
+const [pageRenders, setPageRenders] = createSignal(0);
+const pagesDrawn = () =>
+    new Promise<void>((resolve) => {
+        const check = () =>
+            pageRenders() === 0 ? resolve() : setTimeout(check, 100);
+        check();
+    });
+
+/** Canvases kept for pages scrolled away from, so going back shows them at once */
+const KEPT_PAGES = 12;
+/** How long a page must stay in view before it is drawn: fast scrolling draws nothing */
+const SETTLE_MS = 120;
 
 /**
  * Reads a PDF from the Library: pages render as they scroll into view; the diagrams on each
@@ -229,6 +245,11 @@ const PdfReader: Component = () => {
             const d = doc();
             if (!d || !isVisible()) {
                 // scrolled past before its turn: scan when it shows again
+                setDiagrams(n, undefined!);
+                return;
+            }
+            await pagesDrawn();
+            if (!isVisible()) {
                 setDiagrams(n, undefined!);
                 return;
             }
@@ -764,6 +785,17 @@ const PdfReader: Component = () => {
     );
 };
 
+// the pages out of view that still have a canvas, oldest first
+let kept: (() => void)[] = [];
+const keep = (drop: () => void) => {
+    if (kept.includes(drop)) return;
+    kept.push(drop);
+    while (kept.length > KEPT_PAGES) kept.shift()!();
+};
+const forget = (drop: () => void) => {
+    kept = kept.filter((d) => d !== drop);
+};
+
 /** One page: a placeholder of the right shape, rendered while it is on screen. */
 const ReaderPage: Component<{
     ref: (el: HTMLDivElement) => void;
@@ -800,26 +832,52 @@ const ReaderPage: Component<{
         onCleanup(() => observer.disconnect());
     });
 
-    // render while visible (sharp on high-density screens); drop the canvas when far away
+    // drawn once it has settled in view (sharp on high-density screens), cancelled when it
+    // leaves before; a page scrolled away from keeps its canvas among the last KEPT_PAGES
+    let drawnWidth = 0;
+    const dropCanvas = () => {
+        el.querySelector("canvas")?.remove();
+        drawnWidth = 0;
+    };
+    onCleanup(() => forget(dropCanvas));
     createEffect(() => {
-        const w = props.width();
+        const w = Math.round(props.width() * (window.devicePixelRatio || 1));
         if (!visible()) {
-            el.querySelector("canvas")?.remove();
+            if (drawnWidth) keep(dropCanvas);
             return;
         }
+        forget(dropCanvas);
+        if (drawnWidth === w) return;
         const token = ++rendering;
-        renderPageWidth(
-            props.doc,
-            props.number,
-            Math.round(w * (window.devicePixelRatio || 1)),
-        )
-            .then((canvas) => {
-                if (token !== rendering) return;
-                canvas.classList.add("reader-canvas");
-                el.querySelector("canvas")?.remove();
-                el.prepend(canvas);
-            })
-            .catch((err) => log.warn("page render failed", props.number, err));
+        let drawing: PageRender | undefined;
+        // pending from now (scans wait), until drawn or given up, counted once
+        let counted = true;
+        setPageRenders((n) => n + 1);
+        const done = () => {
+            if (counted) setPageRenders((n) => n - 1);
+            counted = false;
+        };
+        const timer = setTimeout(() => {
+            drawing = renderPageWidth(props.doc, props.number, w);
+            drawing.canvas
+                .then((canvas) => {
+                    if (token !== rendering) return;
+                    canvas.classList.add("reader-canvas");
+                    el.querySelector("canvas")?.remove();
+                    el.prepend(canvas);
+                    drawnWidth = w;
+                })
+                .catch((err) => {
+                    if (token === rendering)
+                        log.warn("page render failed", props.number, err);
+                })
+                .finally(done);
+        }, SETTLE_MS);
+        onCleanup(() => {
+            clearTimeout(timer);
+            drawing?.cancel();
+            done();
+        });
     });
 
     // selectable text over the canvas, sized by --total-scale-factor so zoom needs no redraw

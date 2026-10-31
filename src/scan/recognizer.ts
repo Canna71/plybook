@@ -1,6 +1,5 @@
-// Board recognition in the webview (fenshot + onnxruntime-web, all local). The model and the
-// WebAssembly runtime are bundled assets, loaded on the first scan; one session serves single
-// images and whole book pages.
+// Board recognition in the webview (fenshot + onnxruntime-web, all local). Single images are read
+// here; whole book pages in a worker (scanworker.ts), so the reader keeps painting meanwhile.
 
 import {
     BoardScanResult,
@@ -8,44 +7,69 @@ import {
     recognizeGray,
     rgbaToGray,
 } from "@scoriiu/fenshot";
-import modelUrl from "@scoriiu/fenshot/model/chess-tiles-v2.onnx?url";
-import ortWasmUrl from "onnxruntime-web/ort-wasm-simd-threaded.wasm?url";
-import ortMjsUrl from "onnxruntime-web/ort-wasm-simd-threaded.mjs?url";
-import { classifierFor, findDiagramsOnPage, TileModel } from "./pages";
+import anylogger from "anylogger";
+import { classifierFor, findDiagramsOnPage } from "./pages";
+import { tileModel } from "./model";
 import { scannedPosition, ScannedPosition } from "./scan";
+import type { ScanRequest } from "./scanworker";
+
+const log = anylogger("recognizer");
 
 /** Detection works on moderate resolutions; larger images are scaled down first. */
 const MAX_DETECT_DIM = 1600;
 
-let model: Promise<TileModel> | undefined;
+type ScanReply = { id: number; found?: BoardScanResult[]; error?: string };
 
-function tileModel(): Promise<TileModel> {
-    if (!model) {
-        model = (async () => {
-            const ort = await import("onnxruntime-web/wasm");
-            // one thread: no workers, which the CSP would have to allow
-            ort.env.wasm.numThreads = 1;
-            // file paths instead of a folder prefix: Vite names the assets with hashes
-            ort.env.wasm.wasmPaths = { mjs: ortMjsUrl, wasm: ortWasmUrl };
-            const session = await ort.InferenceSession.create(modelUrl, {
-                executionProviders: ["wasm"],
-            });
-            return async (tiles: Float32Array) => {
-                const out = await session.run({
-                    tiles: new ort.Tensor("float32", tiles, [64, 1024]),
-                });
-                return out["probs"].data as Float32Array;
-            };
-        })();
-        // a failed start is retried on the next scan
-        model.catch(() => (model = undefined));
+let worker: Worker | undefined;
+let workerFailed = false;
+let nextId = 0;
+const pending = new Map<number, (reply: ScanReply) => void>();
+
+/** The page-scan worker, started on first use; undefined where none can start. */
+function scanWorker(): Worker | undefined {
+    if (worker || workerFailed) return worker;
+    try {
+        worker = new Worker(new URL("./scanworker.ts", import.meta.url), {
+            type: "module",
+        });
+        worker.onmessage = (e: MessageEvent<ScanReply>) => {
+            pending.get(e.data.id)?.(e.data);
+            pending.delete(e.data.id);
+        };
+        worker.onerror = (e) => {
+            log.warn(
+                "scan worker failed; scanning on the main thread",
+                e.message,
+            );
+            workerFailed = true;
+            worker?.terminate();
+            worker = undefined;
+            for (const resolve of pending.values())
+                resolve({ id: -1, error: "scan worker failed" });
+            pending.clear();
+        };
+    } catch (err) {
+        log.warn("no scan worker; scanning on the main thread", err);
+        workerFailed = true;
     }
-    return model;
+    return worker;
 }
 
-/** Loads the runtime ahead of a likely scan. */
+function askWorker(w: Worker, gray?: GrayImage): Promise<ScanReply> {
+    const id = nextId++;
+    return new Promise((resolve) => {
+        pending.set(id, resolve);
+        const request: ScanRequest = { id, gray };
+        // the pixels move to the worker instead of being copied
+        w.postMessage(request, gray ? [gray.data.buffer] : []);
+    });
+}
+
+/** Loads the runtime ahead of a likely scan, in the worker that will scan pages. */
 export function warmUpScanner() {
-    void tileModel().catch(() => undefined);
+    const w = scanWorker();
+    if (w) void askWorker(w);
+    else void tileModel().catch(() => undefined);
 }
 
 /** The grey image the detector reads, scaled down to at most `maxDim`. */
@@ -77,7 +101,18 @@ export async function scanImage(
     return result ? scannedPosition(result) : undefined;
 }
 
-/** Every diagram on a page (rendered by the caller), in reading order. */
+/**
+ * Every diagram on a page (rendered by the caller), in reading order. `gray` is handed to the
+ * worker: don't use it afterwards.
+ */
 export async function scanPage(gray: GrayImage): Promise<BoardScanResult[]> {
+    const w = scanWorker();
+    if (w) {
+        const reply = await askWorker(w, gray);
+        if (reply.found) return reply.found;
+        if (!workerFailed) throw new Error(reply.error);
+        // the worker died with this page: the main thread no longer has its pixels
+        throw new Error("page scan interrupted");
+    }
     return findDiagramsOnPage(gray, await tileModel());
 }

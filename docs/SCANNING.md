@@ -9,7 +9,7 @@ locally in the webview; nothing is uploaded.
 | Module | Role |
 | --- | --- |
 | `@scoriiu/fenshot` 0.1.5 (MIT) | Board detector (`findChessboardCorners`, `snapCorners`), tile extraction, the CNN tile classifier model `chess-tiles-v2.onnx` (1.3 MB, 64 tiles of 32×32 → 13 classes), `recognizeGray`, orientation and FEN helpers. |
-| `onnxruntime-web` 1.26 | Runs the model. Single-threaded (`numThreads = 1`): threads need workers the CSP would have to allow. Wasm paths come from Vite `?url` imports because asset names are hashed. Needs `'wasm-unsafe-eval'` in the CSP. |
+| `onnxruntime-web` 1.26 | Runs the model. Single-threaded (`numThreads = 1`): more threads need SharedArrayBuffer, so cross-origin isolation. Wasm paths come from Vite `?url` imports because asset names are hashed. Needs `'wasm-unsafe-eval'` in the CSP. |
 | `pdfjs-dist` 6.4 | Renders PDF pages to canvases. Worker via `?url`; image decoders (`wasm/`) and standard fonts are served from `/pdfjs`, copied by `tools/copy-pdfjs-assets.mjs` on `pnpm dev`/`build` (git-ignored). Close a document with `pdf.loadingTask.destroy()` (there is no `PDFDocumentProxy.destroy()` in v6). |
 | `src/scan/recognizer.ts` | The one ONNX session (`tileModel()`, loaded lazily, retried on failure), `warmUpScanner()`, `imageToGray(image, maxDim = 1600)`, `scanImage(blob)` for a single screenshot, `scanPage(gray)` for a book page. |
 | `src/scan/pages.ts` | Pure (no DOM) multi-diagram logic: regions, frames, scaling, masking, reading order. Tested in Node with the real model. |
@@ -155,9 +155,19 @@ Recognition:
 - 3D/photographed boards are not supported.
 
 Performance:
-- Everything runs on the main thread, single-threaded ONNX. A worker (with `worker-src` in
-  the CSP) and caching scan results per book (SQLite, keyed by file hash + page) would make
-  reopening a book instant.
+- Whole pages (the PDF reader and the book scan) are scanned in a module Web Worker
+  (`scanworker.ts`, the model in `model.ts`). Detection takes up to about 1.7 s a page, and on
+  the main thread the reader could paint nothing meanwhile. The page is still drawn and
+  turned grey on the main thread (pdf.js needs a canvas), and the grey pixels are transferred
+  to the worker. The worker is a bundled asset, so the CSP's `script-src 'self'` covers it; it
+  needs Vite's `worker.format: "es"` (the ONNX runtime is a dynamic import). If the worker
+  can't start, scans fall back to the main thread. Single images (Scan a position) still
+  run on the main thread. ONNX stays single-threaded inside the worker.
+- The reader draws a page only after it has been in view for 120 ms, cancels the drawing when
+  it leaves, and scans only once the visible pages are drawn. The last 12 pages keep their
+  canvas.
+- Caching scan results per book (SQLite, keyed by file hash + page) would make reopening a
+  book instant.
 
 Reader (see the P4.4 follow-ups in `docs/ROADMAP.md`): exact position memory, text selection,
 copying text into annotations, a PGN per position, positions and moves from the text.
