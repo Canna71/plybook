@@ -940,8 +940,11 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
 
 Second round, in the order given; bugs first when working through it.
 
-- [ ] **F.12 App versioning:** a script that bumps the version (`package.json`, which
-  `tauri.conf.json` reads, and `Cargo.toml`), and the version shown in the app.
+- [x] **F.12 App versioning** (`feature/feedback-features`): `pnpm bump patch | minor | major
+  | X.Y.Z` (`tools/bump-version.mjs`) writes `package.json` (which `tauri.conf.json` reads),
+  `src-tauri/Cargo.toml` and the app's `Cargo.lock` entry, and prints the commit and tag
+  commands for a release (DEVELOPMENT.md). The version shows in Help's header, besides
+  Settings → Updates.
 - [x] **F.13 Rename an open game** by editing its title (`feature/feedback-round-2`): the title
   of a Library file is editable and renames the file. The game reopens at its new path, and
   unsaved edits stay unsaved there.

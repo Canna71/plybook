@@ -22,6 +22,7 @@ pnpm lint --fix           # autofix formatting (see the Solid ref gotcha below)
 pnpm test                 # Vitest unit tests (src/**/*.test.ts, Node environment)
 pnpm build                # vite build -> dist/
 pnpm tauri build          # packaged app (.app/.dmg on macOS, .msi/.exe on Windows)
+pnpm bump patch           # new version (minor, major, X.Y.Z): package.json, Cargo.toml, Cargo.lock
 pnpm build:mac            # signed macOS .app; needs APPLE_SIGNING_IDENTITY (see README): ad-hoc
                           # builds lose macOS permissions (Screen Recording) on every rebuild
 pnpm tauri icon ./tools/logo/icon.svg   # regenerate app icons (the emerald tile, F.7)

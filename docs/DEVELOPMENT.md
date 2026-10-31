@@ -72,12 +72,16 @@ One-time setup:
      (`Developer ID Application: Your Name (TEAMID)`), and for notarization `APPLE_ID`,
      `APPLE_PASSWORD` (an app-specific password from account.apple.com) and `APPLE_TEAM_ID`.
 
-To release, set the new `version` in `package.json` (the app reads its version from there), commit,
-and push a matching tag:
+To release, set the new version with `pnpm bump patch` (or `minor`, `major`, `X.Y.Z`). It writes
+`package.json` (the app reads its version from there), `src-tauri/Cargo.toml` and `Cargo.lock`,
+and prints the commands to commit and push a matching tag:
 
 ```bash
-git tag v0.2.0 && git push origin v0.2.0
+git commit -am "chore: version 0.2.0"
+git tag v0.2.0 && git push origin develop v0.2.0
 ```
+
+The app shows its version in Help and in Settings → Updates.
 
 `.github/workflows/release.yml` builds macOS (Apple silicon and Intel) and Windows into a
 **draft** release. Write the notes (they are shown in the app), then publish it: from then on the
