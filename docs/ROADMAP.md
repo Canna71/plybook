@@ -880,8 +880,17 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
   - The name reads as plain text, and looks like a field only on hover and while typing.
   - `Editable` saves only a changed value, so clicking in and out no longer marks the game
     modified. This also covers Library renames and the game title.
-- [ ] **F.7 A more modern app icon and logo** (`tools/Logo.png`, then
-  `pnpm tauri icon ./tools/Logo.png`). Do it with F.1 if the name changes.
+- [x] **F.7 A more modern app icon and logo** (`feature/logo`, 2026-10-31):
+  - Picked by the owner from three candidates (the original mark on a teal tile, on a dark
+    tile, or an open book of chessboards), then from three warmer hues: **emerald**.
+  - The icon (`tools/logo/icon.svg`): the original mark (two knights, a rook between them) in
+    white on an emerald rounded tile (`#4fd884` → `#16884a`), on Apple's grid (824 on 1024), with
+    a soft shine and shadow. The app icons are generated from it
+    (`pnpm tauri icon ./tools/logo/icon.svg`).
+  - Inside the app (`components/shell/Logo.tsx`): the same tile in the app's accent colour, as
+    the owner asked, so it follows the theme and accent; at the top of the sidebar with the
+    name, a link to Today.
+  - `tools/Logo.svg`, `Logo.png` and the Affinity file stay as the original artwork.
 - [x] **F.8 Captured pieces wrap under the board** (`feature/quick-fixes`, 2026-10-31). The
   open name field took its 20em minimum and squeezed the material until it wrapped. Now the
   material stays on one line, with pieces of a kind overlapping a little as on chess sites, and

@@ -75,6 +75,19 @@
         text-overflow: ellipsis;
     }
 
+    // the app's mark and name at the top (F.7); a link to Today
+    .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: var(--rc-space-2);
+        padding: var(--rc-space-1) var(--rc-space-1) var(--rc-space-1);
+        color: var(--rc-text-strong);
+        font-size: var(--rc-text-md);
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+    }
+
     // the command palette's entry, like a search field
     .nav-search {
         border: 1px solid var(--rc-border);

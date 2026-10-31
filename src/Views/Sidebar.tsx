@@ -32,6 +32,7 @@ import {
 } from "../models/navigation";
 import { getSettingValue, setSettingValue } from "../models/settings";
 import { openCommandPalette } from "../components/shell/CommandPalette";
+import Logo from "../components/shell/Logo";
 import "./Sidebar.scss";
 
 const ICONS: Record<string, () => JSX.Element> = {
@@ -76,6 +77,10 @@ const Sidebar: Component = () => {
 
     return (
         <nav class="app-sidebar" classList={{ collapsed: collapsed() }}>
+            <A href="/" class="nav-brand" title="Plybook">
+                <Logo />
+                <span class="nav-label">Plybook</span>
+            </A>
             <button
                 class="nav-item nav-search"
                 title={`Go to… (${isMac ? "⌘" : "Ctrl+"}K)`}
