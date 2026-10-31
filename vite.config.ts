@@ -18,6 +18,10 @@ export default defineConfig(async () => ({
     },
     build: {
         target: "esnext",
+        // sounds stay files: Vite would inline the small ones (moves, captures) as data: URLs,
+        // which the CSP blocks for media, so a built app was silent on most moves (F.16)
+        assetsInlineLimit: (file: string) =>
+            file.endsWith(".mp3") ? false : undefined,
     },
     // the page-scan worker (src/scan/scanworker.ts) is a module worker that loads the ONNX
     // runtime on demand, which needs ES output

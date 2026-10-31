@@ -332,6 +332,28 @@ const GuessTheMove: Component = () => {
                     </div>
                 </div>
 
+                {/* F.17: what this is for and how candidates are entered */}
+                <details class="guess-intro" open={index() === 0}>
+                    <summary>How it works</summary>
+                    <p>
+                        Play through a game as one side, as if you were at the
+                        board. At each of that side's moves, think first:{" "}
+                        <strong>
+                            move a piece to add a candidate, up to{" "}
+                            {MAX_CANDIDATES}
+                        </strong>
+                        . The piece goes back after each one and the candidate
+                        stays as a blue arrow (× removes it).
+                    </p>
+                    <p>
+                        <strong>Reveal</strong> then shows the move played in
+                        the game (yellow) and the engine's best (green), and how
+                        much each of your candidates loses. Finding good
+                        candidates, not only the game's move, is the skill it
+                        trains.
+                    </p>
+                </details>
+
                 <Show when={!analysisProfile()}>
                     <p class="notification is-warning is-light">
                         <A href="/settings?section=engines">
@@ -359,8 +381,14 @@ const GuessTheMove: Component = () => {
                         const r = result();
                         if (!turn())
                             return "Pick another game or side to go on.";
-                        if (!r)
-                            return `Move a piece to add a candidate (up to ${MAX_CANDIDATES}), then reveal.`;
+                        if (!r) {
+                            const n = candidates().length;
+                            if (n === 0)
+                                return `Move a piece to add a candidate (up to ${MAX_CANDIDATES}), then reveal.`;
+                            return n < MAX_CANDIDATES
+                                ? `${n} candidate${n > 1 ? "s" : ""}: move another piece to add one more, or reveal.`
+                                : `${MAX_CANDIDATES} candidates, the most: reveal, or remove one to change it.`;
+                        }
                         return r.foundBest
                             ? "You had the best move among your candidates."
                             : "The best move was not among your candidates.";

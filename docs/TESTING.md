@@ -5,6 +5,11 @@ not been tried in the running app yet. Test in a **built** app where noted (`pnp
 the CSP and signing only apply there. Tick an item when it's confirmed, note what went wrong
 when it isn't, and remove ticked items once their roadmap entry says "confirmed by the owner".
 
+## Owner feedback, round 2: answers (branch feature/feedback-answers)
+
+- [ ] **Sound, F.16 (built app)**: step through a Library study with →: every move makes a
+      sound, captures too, not only checks and castling.
+
 ## Owner feedback, round 2: features (branch feature/feedback-features)
 
 - [ ] **Chessable orientation, F.19**: paste a lesson from a Black course (`"studyCol":

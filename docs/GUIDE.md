@@ -129,7 +129,9 @@ A game's header has options of its own:
 - **Repertoire** (For White or For Black) makes the file a repertoire (see
   [Repertoires](#repertoires)).
 - **Guess the move** plays through the game with you: at each of your turns, name up to three
-  candidate moves. Then you see the game's move, the engine's best and how close you came.
+  candidate moves by moving pieces (each goes back and stays as a blue arrow), then
+  **Reveal**: you see the game's move, the engine's best and how close each candidate came.
+  It trains finding candidates, as you would over the board.
 
 ## Books
 <!-- help: books -->

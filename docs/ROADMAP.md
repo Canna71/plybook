@@ -958,9 +958,16 @@ Second round, in the order given; bugs first when working through it.
 - [x] **F.15 A button to open the Library folder** in Finder or Explorer
   (`feature/feedback-features`). It was in the header's ⋯ menu; now it is a button, "Show in
   Finder" ("Explorer" on Windows), for the folder being viewed.
-- [ ] **F.16 No sound in studies:** by design, or missing?
-- [ ] **F.17 [Bug?] Guess the move is unclear:** how to add more than one candidate, and what
-  it is for.
+- [x] **F.16 No sound in studies** (a Library study; `feature/feedback-answers`). Not by
+  design, and not only studies: Vite inlines assets under 4 KB as `data:` URLs, which the CSP
+  (`default-src`, no `media-src`) blocks for audio, so a built app played only the larger
+  sounds (check, castling, game end) and was silent on ordinary moves and captures. Sounds
+  are always files now (`assetsInlineLimit` in `vite.config.ts`). Dev builds have no CSP,
+  which is why it never showed there.
+- [x] **F.17 [Bug?] Guess the move is unclear** (`feature/feedback-answers`). Several
+  candidates did work (checked by clicking and by dragging: e4, Nf3, d4), but nothing said
+  so. A "How it works" at the top (open at the first move) says what it trains and how to
+  enter candidates, and the message counts them ("1 candidate: move another piece…").
 - [ ] **F.18 Rename the project to Plybook throughout:** the bundle identifier, the data
   folder and the other internal names F.1 kept, with the move of every user's data.
 - [x] **F.19 Chessable paste: `"studyCol": "black"` sets the board's orientation**
