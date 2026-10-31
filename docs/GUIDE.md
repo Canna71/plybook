@@ -87,7 +87,9 @@ Maia network) show what players of a given rating would play here.
 The opening's name appears above the moves.
 
 **Annotating**
-- **Comments:** write under a move in the Moves section.
+- **Comments:** write under a move in the Moves section. **More** (⋯) → **Comment on the
+  starting position** comments on a position before any move (a diagram, say); it is the PGN
+  comment before the first move, which other chess programs show too.
 - **Arrows and circles:** right-click and drag on the board. On a touchpad, turn on the pen
   (**D**, or the pen button by the board): a plain click draws a circle and a drag draws an
   arrow. Shift + drag always draws. Hold Option for blue, ⌘ for red, or both for yellow.
@@ -111,6 +113,7 @@ folder on your computer (see [Your data](#your-data)).
 
 - **Add files:** drop PGN or PDF files on the window, or use the add button. They are copied
   into the folder you are viewing.
+- **Show in Finder** (Explorer on Windows) opens the folder you are viewing on your computer.
 - **New** creates a folder or an empty study. **Search the Library** finds files by name, in
   every folder. To find games by player or opening, import them into [Databases](#databases).
 - **More** (⋯) on a file or folder: open, rename, **Move to…** another folder, delete, or
@@ -136,7 +139,9 @@ one opens at the page where you left it.
 
 In the reader:
 - Click a diagram: Plybook reads the position from the picture and opens it in the notes beside
-  the page. Correct it there if needed, and say whose move it is.
+  the page. Correct it there if needed, and say whose move it is (until you add moves, which
+  start from that side).
+- Drag the line between the book and the notes to widen either; double-click it to go back.
 - In the notes, play the moves the book gives (select them in the text), turn text into a
   comment, or **Study this position** in Analysis.
 - What you do in the notes is kept with the book.
@@ -184,6 +189,8 @@ Play a game against the engine.
   position is in the book, the engine plays a book move) and time per move. With Lc0 and a Maia
   network, the engine plays like a human of that rating.
 - **Clocks:** minutes plus seconds added per move, or no clock. The engine plays on its clock.
+- **Whose move:** during a game, "Your move" shows beside your name, and "Thinking…" beside
+  the engine's while it chooses.
 
 The **tutor** plays at your level and warns you of threats. It also asks before you keep a
 mistake: choose whether it asks about every slip, mistakes or only blunders. Set your rating
@@ -297,6 +304,7 @@ Anywhere:
 | ⌘K (Ctrl+K) | Go to a screen, setting, action or file |
 | ⌘V (Ctrl+V) | Open a pasted position, game, link or screenshot |
 | F1 | Help for the screen you are on |
+| ⌘[ and ⌘] (Alt+← and Alt+→) | Back and forward between the places you visited (also the arrows by the name at the top of the sidebar) |
 
 Keys typed in a text field are left alone.
 

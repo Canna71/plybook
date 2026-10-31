@@ -940,8 +940,11 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
 
 Second round, in the order given; bugs first when working through it.
 
-- [ ] **F.12 App versioning:** a script that bumps the version (`package.json`, which
-  `tauri.conf.json` reads, and `Cargo.toml`), and the version shown in the app.
+- [x] **F.12 App versioning** (`feature/feedback-features`): `pnpm bump patch | minor | major
+  | X.Y.Z` (`tools/bump-version.mjs`) writes `package.json` (which `tauri.conf.json` reads),
+  `src-tauri/Cargo.toml` and the app's `Cargo.lock` entry, and prints the commit and tag
+  commands for a release (DEVELOPMENT.md). The version shows in Help's header, besides
+  Settings → Updates.
 - [x] **F.13 Rename an open game** by editing its title (`feature/feedback-round-2`): the title
   of a Library file is editable and renames the file. The game reopens at its new path, and
   unsaved edits stay unsaved there.
@@ -952,21 +955,30 @@ Second round, in the order given; bugs first when working through it.
   names alone; a rename never overwrites another file.
   - Left: repertoire cards and puzzle scores are keyed by the file's path, so they don't follow
     a rename or a move (F.3's Move to… either).
-- [ ] **F.15 A button to open the Library folder** in Finder or Explorer.
+- [x] **F.15 A button to open the Library folder** in Finder or Explorer
+  (`feature/feedback-features`). It was in the header's ⋯ menu; now it is a button, "Show in
+  Finder" ("Explorer" on Windows), for the folder being viewed.
 - [ ] **F.16 No sound in studies:** by design, or missing?
 - [ ] **F.17 [Bug?] Guess the move is unclear:** how to add more than one candidate, and what
   it is for.
 - [ ] **F.18 Rename the project to Plybook throughout:** the bundle identifier, the data
   folder and the other internal names F.1 kept, with the move of every user's data.
-- [ ] **F.19 Chessable paste: `"studyCol": "black"` sets the board's orientation.**
+- [x] **F.19 Chessable paste: `"studyCol": "black"` sets the board's orientation**
+  (`feature/feedback-features`): written as the PGN's `[Orientation]`, so it stays when saved.
+  No sample had the field, so it is read at the top level, in `lesson` or on the first move.
 - [x] **F.20 [Bug] Downloading Lichess puzzles** shows no progress and nothing is downloaded
   (`feature/feedback-round-2`). The progress bar appeared before the first numbers, and a
   `<progress>`'s `value` set to undefined throws, so the click handler stopped before asking
   for the download. The same bar was in Settings → Updates, the game review and the database
   import; all use `components/common/Progress.tsx` now, which shows a busy bar until a value
   is known. Checked in the dev app: 293 MB downloaded, 3,289,936 puzzles imported.
-- [ ] **F.21 A comment without a move:** a comment on the starting position (a diagram)
-  without entering a move first, kept in a PGN field.
+- [x] **F.21 A comment without a move** (`feature/feedback-features`): ⋯ → "Comment on the
+  starting position" (on a move: "Add a comment to this move"). It is PGN's own place for it,
+  the comment before the first move (`{ … } 1. e4`), which other programs show; the model
+  already kept it and the Moves list showed it, but comments could only be added from a
+  move's menu, and the Moves panel showed its hint instead of the list while there were no
+  moves. The game's description (⋯ → Write a description, a `[Description]` tag) is the other
+  place, for notes about the whole game.
 - [x] **F.22 [Bug] PDF reader: the side-to-move dropdown sometimes disappears**
   (`feature/feedback-round-2`). It was hidden on purpose once the diagram had a notes file,
   which is written at the first change, so it seemed to vanish at random. It now stays: while
@@ -977,11 +989,23 @@ Second round, in the order given; bugs first when working through it.
   (`feature/feedback-round-2`). A game's board faces the side to move unless its PGN says
   otherwise; a diagram's notes now carry the printed orientation (`[Orientation]`), and older
   notes get it when opened.
-- [ ] **F.24 PDF reader: a draggable divider** between the book and the diagram (within limits).
-- [ ] **F.25 Navigation history:** back and forward between the places visited.
-- [ ] **F.26 Play the engine: items not aligned vertically** when they sit side by side.
-- [ ] **F.27 Play the engine: show whose turn it is**, so it is clear whether the engine is
-  thinking.
+- [x] **F.24 PDF reader: a draggable divider** between the book and the diagram (within limits)
+  (`feature/feedback-features`). The notes column keeps at least 300 px (the board) and the
+  book 320 px; the width is kept for every book (`reader.sideWidth`), and a double-click
+  goes back to the usual width.
+- [x] **F.25 Navigation history** (`feature/feedback-features`): ← and → beside the name at
+  the top of the sidebar, ⌘[ / ⌘] (Alt+← / Alt+→ on Windows). They use the webview's own
+  history, so every way of getting somewhere counts; whether there is somewhere to go is read
+  from the router's numbering of history entries (`components/shell/navHistory.ts`). Hidden in
+  the collapsed sidebar, where the keys still work.
+- [x] **F.26 Play the engine: items not aligned vertically** when they sit side by side
+  (`feature/feedback-features`). The header's labels sat on the text baseline while Bulma's
+  `.buttons` gave their dropdowns a bottom margin; "Engine plays" was in a row that was never
+  made flex. Both are centred now, and Tutor and Time control have room between them.
+- [x] **F.27 Play the engine: show whose turn it is** (`feature/feedback-features`): a "Your
+  move" badge beside your name, and a pulsing "Thinking…" beside the engine's, from the game's
+  last position (stepping back through the moves doesn't change it), gone when the game ends.
+  The empty Moves panel no longer says to start a game once one has started.
 - [x] **F.28 [Bug] Play the engine: no reply after castling** and **F.29 [Bug] Game review
   hangs** ("Analyzing position 19 of 20" after 10. O-O), one cause (`feature/feedback-round-2`).
   Since P2.4e the engine gets the game's moves, so repetitions count. chessops writes castling

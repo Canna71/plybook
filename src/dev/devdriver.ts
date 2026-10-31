@@ -6,7 +6,8 @@
 // A command: { "id": "any unique value", "go": "/route", "click": "css selector",
 //              "type": "text", "key": "ArrowRight", "theme": "light" | "dark" | "",
 //              "move": "e2e4 g1f3", "draw": "e2e4 d4d4", "scroll": "css selector",
-//              "hover": "css selector", "paste": "PGN, FEN or a Chessable lesson's JSON" }
+//              "hover": "css selector", "paste": "PGN, FEN or a Chessable lesson's JSON",
+//              "blur": true }
 
 import anylogger from "anylogger";
 import { parsePasted } from "../paste/pasted";
@@ -31,6 +32,8 @@ type Command = {
     hover?: string;
     /** Text opened as ⌘V outside a field opens it (instead of "go") */
     paste?: string;
+    /** Leaves the focused field (after "type") */
+    blur?: boolean;
 };
 
 const POLL = 500;
@@ -164,14 +167,21 @@ export function startDevDriver(navigate: (to: string) => void) {
             }
             // text into the focused field, as if typed
             if (cmd.type !== undefined) {
-                const el = document.activeElement as HTMLInputElement | null;
+                const el = document.activeElement as HTMLElement | null;
                 if (el && "value" in el) {
-                    el.value = cmd.type;
+                    (el as HTMLInputElement).value = cmd.type;
                     el.dispatchEvent(new Event("input", { bubbles: true }));
                     // selects (and some fields) listen for change instead
                     el.dispatchEvent(new Event("change", { bubbles: true }));
+                } else if (el?.isContentEditable) {
+                    // comments are edited in place
+                    el.textContent = cmd.type;
+                    el.dispatchEvent(new Event("input", { bubbles: true }));
                 }
             }
+            // leaves the focused field, as clicking elsewhere does (comments save on blur)
+            if (cmd.blur)
+                (document.activeElement as HTMLElement | null)?.blur();
             if (cmd.key) {
                 document.dispatchEvent(
                     new KeyboardEvent("keydown", {

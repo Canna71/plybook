@@ -123,6 +123,34 @@ describe("chessable lessons", () => {
         expect(out.pgn).toMatch(/2\. Nf3 \*\n$/);
     });
 
+    it("faces the board to the side the course is studied from", () => {
+        const studied = (where: object) => {
+            const out = chessableToPgn(
+                JSON.stringify({
+                    ...where,
+                    lesson: {
+                        ...("lesson" in where ? (where.lesson as object) : {}),
+                        moves: [
+                            {
+                                move_white: "e4",
+                                move_black: "e5",
+                                ...("move" in where
+                                    ? (where.move as object)
+                                    : {}),
+                            },
+                        ],
+                    },
+                }),
+            );
+            if (typeof out === "string") throw new Error(out);
+            return parsePgn(out.pgn)[0].headers.get("Orientation");
+        };
+        expect(studied({ studyCol: "black" })).toBe("black");
+        expect(studied({ lesson: { studyCol: "white" } })).toBe("white");
+        expect(studied({ move: { studyCol: "black" } })).toBe("black");
+        expect(studied({})).toBeUndefined();
+    });
+
     it("rejects what is not a lesson", () => {
         expect(typeof chessableToPgn("{")).toBe("string");
         expect(typeof chessableToPgn('{"lesson": {"moves": []}}')).toBe(

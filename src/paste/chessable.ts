@@ -28,6 +28,7 @@ type ChessableMove = {
     drawing_black?: ChessableDrawing[] | null;
     drawing_initial?: ChessableDrawing[] | null;
     result?: string | null;
+    studyCol?: string;
     opening_name?: string;
     book_name?: string;
     chapterTitle?: string;
@@ -38,8 +39,21 @@ type ChessableLesson = {
     lesson?: {
         moves?: ChessableMove[];
         authors?: Record<string, { name?: string }>;
+        studyCol?: string;
     };
+    studyCol?: string;
 };
+
+/** The side the course is studied from ("studyCol"), which the board should face (F.19) */
+function studySide(lesson: ChessableLesson, first: ChessableMove) {
+    const col = (
+        lesson.studyCol ??
+        lesson.lesson?.studyCol ??
+        first.studyCol ??
+        ""
+    ).toLowerCase();
+    return col.startsWith("b") ? "black" : col.startsWith("w") ? "white" : "";
+}
 
 /** Whether a text looks like a lesson's JSON (cheap: before parsing it) */
 export const isChessableLesson = (text: string) =>
@@ -159,6 +173,8 @@ export function chessableToPgn(
         INITIAL_FEN.split(" ").slice(0, 4).join(" ")
     )
         headers.push(tag("SetUp", "1"), tag("FEN", fen));
+    const side = studySide(lesson, first);
+    if (side) headers.push(tag("Orientation", side));
 
     const out: string[] = [];
     const initial = drawingCommands(first.drawing_initial);

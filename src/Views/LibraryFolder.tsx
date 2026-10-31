@@ -25,11 +25,14 @@ import {
     IconDots,
     IconFileImport,
     IconFolder,
+    IconFolderOpen,
     IconFolderPlus,
     IconPlus,
     IconSearch,
 } from "@tabler/icons-solidjs";
 import anylogger from "anylogger";
+import Button from "../components/common/Button";
+import { fileBrowserName } from "../models/osutils";
 import {
     createNewDataFile,
     createNewDataFolder,
@@ -237,7 +240,7 @@ const LibraryFolder = () => {
         ...(entry.kind === "folder"
             ? [
                   {
-                      label: "Show in Finder",
+                      label: `Show in ${fileBrowserName()}`,
                       onClick: () => showInFinder(entry.path),
                   },
               ]
@@ -410,17 +413,19 @@ const LibraryFolder = () => {
                     <IconFileImport />
                     Import…
                 </label>
+                {/* F.15: the folder itself, on the computer */}
+                <Button
+                    title={`Open this folder in ${fileBrowserName()}`}
+                    onClick={() => showInFinder(folder())}
+                >
+                    <IconFolderOpen />
+                    Show in {fileBrowserName()}
+                </Button>
                 <Menu
                     title="More"
                     iconOnly
                     alignRight
-                    items={[
-                        {
-                            label: "Show in Finder",
-                            onClick: () => showInFinder(folder()),
-                        },
-                        { label: "Refresh", onClick: changed },
-                    ]}
+                    items={[{ label: "Refresh", onClick: changed }]}
                 >
                     <IconDots />
                 </Menu>

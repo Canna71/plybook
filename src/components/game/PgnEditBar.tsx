@@ -19,6 +19,7 @@ import {
     IconDots,
     IconDownload,
     IconGif,
+    IconMessagePlus,
     IconPhotoDown,
     IconPlayerPlayFilled,
     IconSwitchVertical,
@@ -142,6 +143,15 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
             );
     };
 
+    // an empty comment opens for typing, as "Add Comment After" on a move does
+    const onAddComment = () => {
+        const g = game();
+        if (g)
+            setGame(
+                g.insertComment(currentPath() ?? Path.root, "", false, true),
+            );
+    };
+
     const onEditDescription = () => {
         setIsEditingDescription(true);
     };
@@ -210,6 +220,15 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
                             onClick: onPlayAgainstEngine,
                         },
                         "separator",
+                        {
+                            // F.21: also with no move yet, on the starting position (a
+                            // PGN comment before the first move)
+                            label: (currentPath() ?? Path.root).empty()
+                                ? "Comment on the starting position"
+                                : "Add a comment to this move",
+                            icon: <IconMessagePlus />,
+                            onClick: onAddComment,
+                        },
                         {
                             label: isEditingDescription()
                                 ? "Finish the description"

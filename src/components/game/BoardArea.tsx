@@ -39,7 +39,17 @@ const BoardArea: Component<BoardAreaProps> = (props) => {
         startingPositionSignal: [startingPosition, setStartingPosition],
         orientation,
         isPuzzleMode,
+        engineColorSignal: [engineColor],
+        isPlayingOnSignal: [isPlayingOn],
     } = useContext(GameContext)!;
+
+    /** Playing the engine: whose move it is in the game (F.27), whatever position is shown */
+    const toMove = (): Color | undefined => {
+        const g = game();
+        if (!isPlayingOn() || !g) return undefined;
+        const end = g.mainline.at(-1)?.pos ?? g.initial.pos;
+        return end.isEnd() ? undefined : end.turn;
+    };
 
     let chessBoardDiv: HTMLDivElement | undefined;
 
@@ -71,6 +81,14 @@ const BoardArea: Component<BoardAreaProps> = (props) => {
                         />
                     )}
                 </Show>
+            </Show>
+            <Show when={toMove() === p.side()}>
+                <span
+                    class="board-turn"
+                    classList={{ thinking: engineColor() === p.side() }}
+                >
+                    {engineColor() === p.side() ? "Thinking…" : "Your move"}
+                </span>
             </Show>
             <Show when={p.drawing && props.pen}>
                 {(pen) => <DrawBar penOn={pen().on} setPenOn={pen().setOn} />}

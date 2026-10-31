@@ -117,6 +117,8 @@ export interface AppSettings {
         places?: Record<string, ReaderPlace>;
         /** The page each PDF was left at, before `places`; still read for older books */
         pages?: Record<string, number>;
+        /** The notes column's width in pixels, as the divider was dragged (F.24) */
+        sideWidth?: number;
     };
     library?: {
         /** The Library browser's order: by name, or modified (newest first) */

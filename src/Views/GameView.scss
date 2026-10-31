@@ -15,6 +15,20 @@
         flex: 1;
     }
 
+    // a label with its control (Play: Tutor, Time control, Your level): centred on one line,
+    // without the margin Bulma's .buttons gives its children (F.26)
+    > label,
+    > label .select {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--rc-space-1);
+        margin-bottom: 0;
+    }
+
+    > label + label {
+        margin-left: var(--rc-space-3);
+    }
+
     // a labelled setting of the file (repertoire, puzzle priority)
     .header-field {
         display: flex;

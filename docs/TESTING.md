@@ -5,6 +5,27 @@ not been tried in the running app yet. Test in a **built** app where noted (`pnp
 the CSP and signing only apply there. Tick an item when it's confirmed, note what went wrong
 when it isn't, and remove ticked items once their roadmap entry says "confirmed by the owner".
 
+## Owner feedback, round 2: features (branch feature/feedback-features)
+
+- [ ] **Chessable orientation, F.19**: paste a lesson from a Black course (`"studyCol":
+      "black"`): the board has Black at the bottom. If not, send me where `studyCol` sits in
+      the JSON.
+- [ ] **Show in Finder, F.15**: in a built app, Library → Show in Finder opens the folder.
+- [ ] **Play header, F.26**: Play the engine, with the tutor off and on: the labels and their
+      dropdowns are centred on one line, in both themes.
+- [ ] **Reader divider, F.24**: drag the line between the book and the notes both ways: it
+      stops before the notes get narrower than the board needs, and before the book gets too
+      narrow; the pages redraw sharp at the new width. Reopen the book: same width. Double-
+      click the line: back to the usual width.
+- [ ] **Comment without a move, F.21**: open a position with no moves (paste a FEN), ⋯ →
+      Comment on the starting position, type, click away. Save, close and reopen: the comment
+      is there, above the moves once you add some.
+- [ ] **Back and forward, F.25**: go Library → a game → Puzzles, then ⌘[ twice and ⌘] once
+      (and the arrows at the top of the sidebar). In a game with unsaved moves, going back
+      behaves as leaving it from the sidebar does.
+- [ ] **Whose move, F.27**: start a game as Black: "Thinking…" by the engine first, then
+      "Your move" by you. Both disappear at mate or after resigning.
+
 ## Owner feedback, round 2 (branch feature/feedback-round-2)
 
 - [ ] **Castling, F.28**: Play the engine, castle as soon as you can. The engine replies, and

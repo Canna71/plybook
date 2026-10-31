@@ -2,8 +2,17 @@
 // on the left, the sections on the right; `?section=<screen id>` opens a screen's own section
 // (the "?" in each screen's header, and F1).
 
-import { Component, createEffect, createSignal, For, on, Show } from "solid-js";
+import {
+    Component,
+    createEffect,
+    createResource,
+    createSignal,
+    For,
+    on,
+    Show,
+} from "solid-js";
 import { useSearchParams } from "@solidjs/router";
+import { getVersion } from "@tauri-apps/api/app";
 import showdown from "showdown";
 import DOMPurify from "dompurify";
 import guideText from "../../docs/GUIDE.md?raw";
@@ -34,6 +43,8 @@ const intro = html(guide.intro);
 const Help: Component = () => {
     const [params, setParams] = useSearchParams<{ section?: string }>();
     const [query, setQuery] = createSignal("");
+    // the app's version (F.12), as Settings → Updates shows it
+    const [version] = createResource(() => getVersion());
     const shown = () => searchGuide(guide, query());
 
     let article: HTMLElement | undefined;
@@ -82,7 +93,7 @@ const Help: Component = () => {
         <div class="help_view">
             <PageHeader
                 title="Help"
-                description="How to use each screen of Plybook. Most screens have a ? button in their header that opens their part of this guide; F1 does it from anywhere."
+                description={`Plybook ${version() ?? ""}: how to use each screen. Most screens have a ? button in their header that opens their part of this guide; F1 does it from anywhere.`}
             />
             <div class="help-layout">
                 <nav class="help-contents" aria-label="Contents">
