@@ -19,6 +19,11 @@ export default defineConfig(async () => ({
     build: {
         target: "esnext",
     },
+    // the page-scan worker (src/scan/scanworker.ts) is a module worker that loads the ONNX
+    // runtime on demand, which needs ES output
+    worker: {
+        format: "es" as const,
+    },
     // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
     //
     // 1. prevent vite from obscuring rust errors

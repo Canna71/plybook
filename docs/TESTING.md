@@ -5,6 +5,16 @@ not been tried in the running app yet. Test in a **built** app where noted (`pnp
 the CSP and signing only apply there. Tick an item when it's confirmed, note what went wrong
 when it isn't, and remove ticked items once their roadmap entry says "confirmed by the owner".
 
+## PDF reader speed, F.9 (branch feature/pdf-reader-speed)
+
+- [ ] **Built app, the important one**: open a scanned book (*My System*) with Find diagrams
+      on. Diagrams still get outlined. If none ever do, the worker is blocked: tell me.
+- [ ] **Pages appear quickly**: scroll through 20–30 pages and stop. The page you stop on
+      appears in well under a second, not after several seconds of grey.
+- [ ] **Going back**: scroll back a few pages; they are there at once (no redraw).
+- [ ] **Zoom**: − and + redraw the pages sharply at the new size.
+- [ ] **Book scan**: Scan whole book still finds the diagrams and its progress moves.
+
 ## UX overhaul, step 1: look and themes (branch feature/ux-overhaul)
 
 - [ ] **Overall look** in both themes: Settings → Appearance → Theme, try Light and Dark; walk
