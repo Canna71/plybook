@@ -1,6 +1,6 @@
 name: Release
 
-# Pushing a tag vX.Y.Z (the version in package.json) builds, signs and uploads ReChess for
+# Pushing a tag vX.Y.Z (the version in package.json) builds, signs and uploads Plybook for
 # macOS and Windows to a draft GitHub release, with the updater bundles and latest.json.
 # Publishing the draft makes it the update the apps find (X.1). Secrets: see README, Releases.
 
@@ -76,8 +76,8 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: ReChess ${{ github.ref_name }}
-          releaseBody: See the notes below. Already installed? ReChess updates itself (Settings → Updates).
+          releaseName: Plybook ${{ github.ref_name }}
+          releaseBody: See the notes below. Already installed? Plybook updates itself (Settings → Updates).
           releaseDraft: true
           # the NSIS installer updates without asking for admin rights
           updaterJsonPreferNsis: true

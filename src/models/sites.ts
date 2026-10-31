@@ -1,4 +1,4 @@
-// Chess sites in a ReChess window (I.5): the sites offered, the user's bookmarks, and what
+// Chess sites in a Plybook window (I.5): the sites offered, the user's bookmarks, and what
 // copied text is offered for the Library. Pure, for tests; the window is src-tauri/src/sites.rs.
 
 import { parsePasted } from "../paste/pasted";

@@ -243,7 +243,7 @@ fn allowed(path: &Path) -> bool {
     matches!(first, MANIFEST | DATA | SETTINGS | BOOKS) || FOLDERS.contains(&first)
 }
 
-/// Unpacks a backup into `staging`, refusing anything that is not a ReChess backup and any
+/// Unpacks a backup into `staging`, refusing anything that is not a Plybook backup and any
 /// entry that would land outside it.
 fn extract(zip_path: &Path, staging: &Path) -> Result<Manifest, String> {
     let mut zip = ZipArchive::new(File::open(zip_path).map_err(|e| e.to_string())?)
@@ -251,13 +251,13 @@ fn extract(zip_path: &Path, staging: &Path) -> Result<Manifest, String> {
     let manifest: Manifest = {
         let mut entry = zip
             .by_name(MANIFEST)
-            .map_err(|_| "Not a ReChess backup".to_string())?;
+            .map_err(|_| "Not a Plybook backup".to_string())?;
         let mut text = String::new();
         entry.read_to_string(&mut text).map_err(|e| e.to_string())?;
-        serde_json::from_str(&text).map_err(|_| "Not a ReChess backup".to_string())?
+        serde_json::from_str(&text).map_err(|_| "Not a Plybook backup".to_string())?
     };
     if manifest.format > FORMAT {
-        return Err("This backup was made by a newer version of ReChess".into());
+        return Err("This backup was made by a newer version of Plybook".into());
     }
     for i in 0..zip.len() {
         let mut entry = zip.by_index(i).map_err(|e| e.to_string())?;
@@ -366,16 +366,16 @@ fn auto_backups(dir: &Path) -> Vec<PathBuf> {
 pub async fn backup_create<R: Runtime>(app: AppHandle<R>) -> Result<Option<String>, String> {
     let picker = app.clone();
     let name = format!(
-        "ReChess backup {}.zip",
+        "Plybook backup {}.zip",
         chrono::Local::now().format("%Y-%m-%d")
     );
     let picked = tauri::async_runtime::spawn_blocking(move || {
         picker
             .dialog()
             .file()
-            .set_title("Back up ReChess")
+            .set_title("Back up Plybook")
             .set_file_name(&name)
-            .add_filter("ReChess backup", &["zip"])
+            .add_filter("Plybook backup", &["zip"])
             .blocking_save_file()
     })
     .await
@@ -402,9 +402,9 @@ pub async fn backup_restore<R: Runtime>(
         picker
             .dialog()
             .file()
-            .set_title("Restore a ReChess backup")
+            .set_title("Restore a Plybook backup")
             .set_directory(backups)
-            .add_filter("ReChess backup", &["zip"])
+            .add_filter("Plybook backup", &["zip"])
             .blocking_pick_file()
     })
     .await

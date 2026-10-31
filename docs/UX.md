@@ -1,6 +1,6 @@
 # UX overhaul (U.1)
 
-The plan for making ReChess feel like one product, designed as if starting over, delivered in
+The plan for making Plybook feel like one product, designed as if starting over, delivered in
 steps the owner evaluates one at a time. Branch: `feature/ux-overhaul`.
 
 ## Where we are
@@ -47,7 +47,7 @@ Decisions taken (owner: "do it your own way"; easy to revisit):
 
 ```
 ┌──────────────┐
-│ ♞ ReChess    │   ⌘K  Go to…  (command palette: screens, files, actions)
+│ ♞ Plybook    │   ⌘K  Go to…  (command palette: screens, files, actions)
 │              │
 │ ⌂ Today      │   dashboard: what to do now
 │              │

@@ -188,7 +188,7 @@ const GameView = () => {
                 );
             } catch (e) {
                 message("Error reading the puzzle: \n" + String(e), {
-                    title: "Re:Chess",
+                    title: "Plybook",
                     kind: "error",
                 });
                 log.error(e);
@@ -205,7 +205,7 @@ const GameView = () => {
                 );
             } catch (e) {
                 message("Error reading game from database: \n" + String(e), {
-                    title: "Re:Chess",
+                    title: "Plybook",
                     kind: "error",
                 });
                 log.error(e);
@@ -218,7 +218,7 @@ const GameView = () => {
                 setHistoryName(historyTitle(game.whiteName, game.blackName));
             } catch (e) {
                 message("Error reading game from history: \n" + String(e), {
-                    title: "Re:Chess",
+                    title: "Plybook",
                     kind: "error",
                 });
                 log.error(e);
@@ -232,7 +232,7 @@ const GameView = () => {
             } catch (e) {
                 // Shows message
                 message("Error reading file: \n" + searchParams.path, {
-                    title: "Re:Chess",
+                    title: "Plybook",
                     kind: "error",
                 });
                 log.error(e);

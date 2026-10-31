@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 
 /**
- * Lets the user drag a rectangle anywhere on screen (ReChess hides meanwhile) and resolves to
+ * Lets the user drag a rectangle anywhere on screen (Plybook hides meanwhile) and resolves to
  * that region as a PNG, or undefined if the selection was cancelled.
  */
 export async function captureScreenRegion(): Promise<Blob | undefined> {

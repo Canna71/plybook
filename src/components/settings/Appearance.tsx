@@ -453,7 +453,7 @@ const Appearance: Component = () => {
 
             <h3 class="title is-6 appearance-more">More piece sets</h3>
             <p class="settings-help">
-                The licences of these sets do not let ReChess ship them:
+                The licences of these sets do not let Plybook ship them:
                 download one and it is fetched for you from
                 sharechess.github.io, where they are published with their
                 authors' names. Or add your own: a folder of 12 images named wK,

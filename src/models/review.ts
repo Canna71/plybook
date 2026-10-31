@@ -1,5 +1,5 @@
 // Game review maths, following Lichess (lila: WinPercent, AccuracyPercent, Advice).
-// Evaluations in ReChess PGNs are stored from White's point of view.
+// Evaluations in Plybook PGNs are stored from White's point of view.
 
 import { Color, Position } from "chessops";
 import { parseUci } from "chessops/util";

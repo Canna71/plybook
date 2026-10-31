@@ -1,5 +1,5 @@
 //! "Scan from screen": the user drags a rectangle over a chessboard anywhere on screen and the
-//! image goes to the scanner in the webview. ReChess hides while the user selects.
+//! image goes to the scanner in the webview. Plybook hides while the user selects.
 //!
 //! macOS uses the system's interactive capture (`/usr/sbin/screencapture`, fixed arguments).
 //! Windows is not supported yet: Win+Shift+S then paste does the same.
@@ -26,7 +26,7 @@ mod screen_permission {
         fn CGRequestScreenCaptureAccess() -> bool;
     }
 
-    /// Whether ReChess may capture other apps' windows. Without the permission macOS captures
+    /// Whether Plybook may capture other apps' windows. Without the permission macOS captures
     /// only the wallpaper and our own windows, which would scan as "no board".
     pub fn ensure() -> Result<(), String> {
         // SAFETY: plain CoreGraphics calls without arguments, available since macOS 10.15
@@ -36,9 +36,9 @@ mod screen_permission {
         // shows the system prompt the first time; later it is a no-op
         unsafe { CGRequestScreenCaptureAccess() };
         Err(
-            "ReChess needs the Screen Recording permission to read boards from other apps. \
+            "Plybook needs the Screen Recording permission to read boards from other apps. \
              Allow it in System Settings → Privacy & Security → Screen Recording, then restart \
-             ReChess."
+             Plybook."
                 .to_string(),
         )
     }

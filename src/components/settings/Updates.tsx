@@ -24,7 +24,7 @@ const Updates: Component = () => {
         setChecking(true);
         try {
             const update = await checkForUpdate();
-            if (!update) makeToast("ReChess is up to date");
+            if (!update) makeToast("Plybook is up to date");
         } catch (err) {
             makeErrorToast(`Could not check for updates: ${err}`);
         } finally {
@@ -48,8 +48,8 @@ const Updates: Component = () => {
         <section class="settings-section">
             <h2 class="title is-4">Updates</h2>
             <p class="settings-help">
-                ReChess {version() ?? ""}. New versions are published on GitHub;
-                an update is installed only if it is signed with the ReChess
+                Plybook {version() ?? ""}. New versions are published on GitHub;
+                an update is installed only if it is signed with the Plybook
                 release key.
             </p>
             <label class="checkbox">
@@ -64,7 +64,7 @@ const Updates: Component = () => {
                         );
                     }}
                 />{" "}
-                Check for a new version when ReChess starts
+                Check for a new version when Plybook starts
             </label>
             <div class="buttons mt-3">
                 <Button
@@ -79,7 +79,7 @@ const Updates: Component = () => {
                 {(update) => (
                     <div class="box mt-4">
                         <p>
-                            <strong>ReChess {update().version}</strong> is
+                            <strong>Plybook {update().version}</strong> is
                             available
                             <Show when={update().date}>
                                 {(date) => <> ({date().slice(0, 10)})</>}
@@ -113,7 +113,7 @@ const Updates: Component = () => {
                                 }
                             />
                             <p class="settings-help">
-                                Downloading and installing; ReChess restarts
+                                Downloading and installing; Plybook restarts
                                 when it is done.
                             </p>
                         </Show>

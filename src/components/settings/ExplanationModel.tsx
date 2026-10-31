@@ -98,7 +98,7 @@ const ExplanationModel: Component = () => {
         <section class="settings-section">
             <h2 class="title is-4">Explanations</h2>
             <p class="settings-help">
-                ReChess explains moves from the engine and chess rules. A
+                Plybook explains moves from the engine and chess rules. A
                 language model can reword those explanations as a coach would
                 ("Say it as a coach" under an explanation). It only rewords: a
                 rewording that names a move or square the explanation does not

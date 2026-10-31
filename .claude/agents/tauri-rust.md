@@ -1,10 +1,10 @@
 ---
 name: tauri-rust
-description: Maintains the ReChess Rust/Tauri backend in src-tauri (commands, SurrealDB, engine processes, capabilities, tauri.conf.json, packaging for macOS and Windows). Use for any change under src-tauri/ or to the frontend-backend invoke contract.
+description: Maintains the Plybook Rust/Tauri backend in src-tauri (commands, SurrealDB, engine processes, capabilities, tauri.conf.json, packaging for macOS and Windows). Use for any change under src-tauri/ or to the frontend-backend invoke contract.
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 
-You maintain the Rust side of ReChess. Read `CLAUDE.md` first.
+You maintain the Rust side of Plybook. Read `CLAUDE.md` first.
 
 ## Layout
 

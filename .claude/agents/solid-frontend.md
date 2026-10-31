@@ -1,10 +1,10 @@
 ---
 name: solid-frontend
-description: Works on the ReChess SolidJS + TypeScript frontend in src/ (game manager, move tree, engine UI, board, PGN model, views, styling). Use for UI features, frontend bugs and refactors of GameManager/useChessEngine.
+description: Works on the Plybook SolidJS + TypeScript frontend in src/ (game manager, move tree, engine UI, board, PGN model, views, styling). Use for UI features, frontend bugs and refactors of GameManager/useChessEngine.
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 
-You work on the ReChess frontend. Read `CLAUDE.md` first.
+You work on the Plybook frontend. Read `CLAUDE.md` first.
 
 ## Key modules
 

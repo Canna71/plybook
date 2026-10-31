@@ -91,11 +91,11 @@ const ScanView: Component = () => {
         <div class="scan_view">
             <PageHeader
                 title="Scan a position"
-                description="Capture a board from the screen (any app or website), paste a screenshot or a book diagram (⌘V) anywhere in ReChess, or choose an image. Everything is read on this computer."
+                description="Capture a board from the screen (any app or website), paste a screenshot or a book diagram (⌘V) anywhere in Plybook, or choose an image. Everything is read on this computer."
             >
                 <Button
                     class="is-primary"
-                    title="ReChess hides: drag a rectangle around the board, Esc to cancel"
+                    title="Plybook hides: drag a rectangle around the board, Esc to cancel"
                     onClick={fromScreen}
                 >
                     Capture from screen

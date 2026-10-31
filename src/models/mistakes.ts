@@ -76,7 +76,7 @@ export function mistakePuzzles(
             header("Result", "*"),
             header("SetUp", "1"),
             header("FEN", m.fenBefore!),
-            header("Annotator", "ReChess review"),
+            header("Annotator", "Plybook review"),
         ];
         const comment =
             `In the game you played ${played}, which lost ` +

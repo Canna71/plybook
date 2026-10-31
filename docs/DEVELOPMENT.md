@@ -1,6 +1,6 @@
-# Developing ReChess
+# Developing Plybook
 
-ReChess is a [Tauri 2](https://tauri.app) app: a Rust side (`src-tauri/`) and a SolidJS +
+Plybook is a [Tauri 2](https://tauri.app) app: a Rust side (`src-tauri/`) and a SolidJS +
 TypeScript front end (`src/`), with [chessground](https://github.com/lichess-org/chessground)
 for the board and [chessops](https://github.com/niklasf/chessops) for the rules. The layout of
 the code, the conventions and the gotchas are in [`CLAUDE.md`](../CLAUDE.md); the plan is in
@@ -45,7 +45,7 @@ pnpm build:mac        # tauri build --bundles app, refuses to run unsigned
 ```
 
 After the first signed build, remove old `rechess` entries in System Settings → Privacy &
-Security → Screen Recording, grant the permission again and reopen ReChess once.
+Security → Screen Recording, grant the permission again and reopen Plybook once.
 
 ## Releases and updates
 
@@ -92,7 +92,7 @@ pnpm tauri icon ./tools/Logo.png
 ## Data from older versions (SurrealDB)
 
 Versions before the SQLite move kept puzzles and played games in `<AppLocalData>/db`. To bring
-them over, close ReChess and run once (this needs LLVM/libclang to build):
+them over, close Plybook and run once (this needs LLVM/libclang to build):
 
 ```bash
 cd tools/surreal-export

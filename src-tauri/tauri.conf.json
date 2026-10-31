@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "rechess",
+  "productName": "Plybook",
   "version": "../package.json",
   "identifier": "com.canna71.rechess",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "rechess",
+        "title": "Plybook",
         "width": 800,
         "height": 600
       }
