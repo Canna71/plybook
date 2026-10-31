@@ -11,6 +11,13 @@ export type EditableProps = {
 
 const Editable: Component<EditableProps> = (props) => {
     const [value, setValue] = createSignal(props.initialValue);
+    // saved only when changed: a click in and out leaves the game unmodified
+    let saved = props.initialValue;
+    const save = () => {
+        if (value() === saved) return;
+        saved = value();
+        props.onSave?.(saved);
+    };
     // eslint-disable-next-line prefer-const -- assigned by Solid via ref={...}
     let ref: HTMLSpanElement | null = null;
 
@@ -26,8 +33,8 @@ const Editable: Component<EditableProps> = (props) => {
         } else if (e.key === "Escape") {
             // keep the name it had
             e.preventDefault();
-            setValue(props.initialValue);
-            ref!.textContent = props.initialValue;
+            setValue(saved);
+            ref!.textContent = saved;
             ref!.blur();
         }
     };
@@ -53,7 +60,7 @@ const Editable: Component<EditableProps> = (props) => {
             role={props.editable() ? "textbox" : undefined}
             onInput={handleInput}
             onKeyDown={handleKeyDown}
-            onBlur={() => props.onSave?.(value())}
+            onBlur={save}
             style={{ "white-space": "nowrap", "overflow-x": "auto" }}
         >
             {props.initialValue}

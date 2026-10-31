@@ -143,6 +143,19 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Isolation**: the site window has no Plybook menus or access; other downloads (a PDF)
       go to the usual Downloads folder.
 
+## Player names and captured pieces, F.6 and F.8 (branch feature/quick-fixes)
+
+Seen in the dev app: the name as plain text, the field on focus, a press on the board closing
+it, and 15 captured pieces on one line.
+
+- [ ] **Rename and click the board**: click a player's name, type a new one, click a square:
+      the name is kept (also in the saved PGN's White/Black), and the move works.
+- [ ] **Esc**: type, then Esc: the old name comes back.
+- [ ] **No change, no Save**: click into a name and out again: the game is not marked modified.
+- [ ] **Other renames still work**: rename a file in the Library, and a game's title above the
+      board.
+- [ ] **Long names**: a long name ends with "…" and the captured pieces stay visible.
+
 ## Plybook, F.1 (branch feature/plybook)
 
 Seen in the dev app: the window title and the texts.

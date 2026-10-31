@@ -1,17 +1,27 @@
+// the material won, beside a player's name: one line, pieces of a kind overlapping a little
+// as on chess sites, so a long row of pawns stays short (F.8)
 .chess-material {
     display: flex;
     flex-direction: row;
-    height: 100%;
-    margin-top: auto;
+    align-items: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    gap: 4px;
 
     .chess-material-items {
-        height: 100%;
+        display: flex;
+        align-items: center;
 
         .chess-material-icon {
-           
+            display: inline-flex;
+
+            & + .chess-material-icon {
+                margin-left: -6px;
+            }
+
             svg {
-            width: 14px;
-            height: 14px;
+                width: 16px;
+                height: 16px;
             }
         }
     }
