@@ -983,9 +983,14 @@ Second round, in the order given; bugs first when working through it.
   notes get it when opened.
 - [ ] **F.24 PDF reader: a draggable divider** between the book and the diagram (within limits).
 - [ ] **F.25 Navigation history:** back and forward between the places visited.
-- [ ] **F.26 Play the engine: items not aligned vertically** when they sit side by side.
-- [ ] **F.27 Play the engine: show whose turn it is**, so it is clear whether the engine is
-  thinking.
+- [x] **F.26 Play the engine: items not aligned vertically** when they sit side by side
+  (`feature/feedback-features`). The header's labels sat on the text baseline while Bulma's
+  `.buttons` gave their dropdowns a bottom margin; "Engine plays" was in a row that was never
+  made flex. Both are centred now, and Tutor and Time control have room between them.
+- [x] **F.27 Play the engine: show whose turn it is** (`feature/feedback-features`): a "Your
+  move" badge beside your name, and a pulsing "Thinking…" beside the engine's, from the game's
+  last position (stepping back through the moves doesn't change it), gone when the game ends.
+  The empty Moves panel no longer says to start a game once one has started.
 - [x] **F.28 [Bug] Play the engine: no reply after castling** and **F.29 [Bug] Game review
   hangs** ("Analyzing position 19 of 20" after 10. O-O), one cause (`feature/feedback-round-2`).
   Since P2.4e the engine gets the game's moves, so repetitions count. chessops writes castling

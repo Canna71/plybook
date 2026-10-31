@@ -185,6 +185,8 @@ Play a game against the engine.
   position is in the book, the engine plays a book move) and time per move. With Lc0 and a Maia
   network, the engine plays like a human of that rating.
 - **Clocks:** minutes plus seconds added per move, or no clock. The engine plays on its clock.
+- **Whose move:** during a game, "Your move" shows beside your name, and "Thinking…" beside
+  the engine's while it chooses.
 
 The **tutor** plays at your level and warns you of threats. It also asks before you keep a
 mistake: choose whether it asks about every slip, mistakes or only blunders. Set your rating

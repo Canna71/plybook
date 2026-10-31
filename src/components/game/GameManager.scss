@@ -91,6 +91,31 @@
             gap: var(--rc-space-2);
         }
 
+        // whose move it is, playing the engine (F.27)
+        .board-turn {
+            margin-right: auto;
+            padding: 1px var(--rc-space-2);
+            border-radius: 999px;
+            font-size: var(--rc-text-sm);
+            font-weight: 600;
+            white-space: nowrap;
+            color: var(--bulma-primary-invert);
+            background: var(--rc-accent);
+
+            &.thinking {
+                color: var(--rc-text-muted);
+                background: var(--rc-surface-2);
+                border: 1px solid var(--rc-border);
+                animation: board-turn-pulse 1.4s ease-in-out infinite;
+            }
+        }
+
+        @keyframes board-turn-pulse {
+            50% {
+                opacity: 0.5;
+            }
+        }
+
         // the board as large as its column allows, in width and height (step 4a): the
         // column is a size container, and the board is min(width, height − player rows)
         &.board-fit {

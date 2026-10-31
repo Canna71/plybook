@@ -95,9 +95,11 @@ const AnalysisPanel: Component<{
                         when={props.hasMoves()}
                         fallback={
                             <p class="panel-hint">
-                                {playingEngine()
-                                    ? "Choose the engine's colour and start a new game."
-                                    : "Make a move on the board, or paste a PGN or a FEN (⌘V)."}
+                                {playingEngine() && isPlayingOn()
+                                    ? "The game has started: the moves appear here."
+                                    : playingEngine()
+                                      ? "Choose the engine's colour and start a new game."
+                                      : "Make a move on the board, or paste a PGN or a FEN (⌘V)."}
                             </p>
                         }
                     >

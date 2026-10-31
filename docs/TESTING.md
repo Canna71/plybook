@@ -11,6 +11,10 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       "black"`): the board has Black at the bottom. If not, send me where `studyCol` sits in
       the JSON.
 - [ ] **Show in Finder, F.15**: in a built app, Library → Show in Finder opens the folder.
+- [ ] **Play header, F.26**: Play the engine, with the tutor off and on: the labels and their
+      dropdowns are centred on one line, in both themes.
+- [ ] **Whose move, F.27**: start a game as Black: "Thinking…" by the engine first, then
+      "Your move" by you. Both disappear at mate or after resigning.
 
 ## Owner feedback, round 2 (branch feature/feedback-round-2)
 
