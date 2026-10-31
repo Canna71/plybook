@@ -7,7 +7,7 @@
 set -e
 cd "$(dirname "$0")/.."
 NAME=${1:?name}
-SHOTS=${SHOTS:-/tmp/rechess-shots}
+SHOTS=${SHOTS:-/tmp/plybook-shots}
 mkdir -p "$SHOTS"
 if [ ! -x tools/winid ]; then
     swiftc -O tools/winid.swift -o tools/winid
@@ -18,7 +18,8 @@ if [ -n "$2" ]; then
     printf '%s' "$2" | sed "s/^{/{\"id\":\"$ID\",/" > public/dev-driver.json
     sleep "${WAIT:-1.5}"
 fi
-WIN=$(tools/winid rechess)
+# the dev app's process is named after the crate (src-tauri/Cargo.toml)
+WIN=$(tools/winid plybook)
 screencapture -x -o -l "$WIN" "$SHOTS/$NAME-full.png"
 sips -Z 1400 "$SHOTS/$NAME-full.png" --out "$SHOTS/$NAME.png" >/dev/null
 rm "$SHOTS/$NAME-full.png"

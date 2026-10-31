@@ -382,7 +382,9 @@ const GameView = () => {
             0, // expected time
             0, // time taken
         );
-        updatePerformanceScore(filePath()!, score);
+        // a puzzle without a file (chess.com's daily, F.30) has no score to keep
+        const path = filePath();
+        if (path) updatePerformanceScore(path, score);
     };
 
     const puzzlePriorities = () => {

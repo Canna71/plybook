@@ -6,7 +6,9 @@ use serde::{Deserialize, Serialize};
 use tauri::State;
 
 /// Keychain service name: one entry per secret under it.
-const SERVICE: &str = "com.canna71.rechess";
+const SERVICE: &str = "com.canna71.plybook";
+/// The service before the rename to Plybook (F.18): a secret found only there moves over
+const OLD_SERVICE: &str = "com.canna71.rechess";
 
 /// The secrets the app knows; nothing else can be stored.
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
@@ -38,14 +40,30 @@ pub trait SecretStore: Send + Sync {
 /// identity changes; signed builds (`pnpm build:mac`) keep access.
 pub struct Keychain;
 
+fn read_entry(service: &str, key: &str) -> Result<Option<String>, String> {
+    let entry = keyring::Entry::new(service, key).map_err(|e| e.to_string())?;
+    match entry.get_password() {
+        Ok(value) => Ok(Some(value)),
+        Err(keyring::Error::NoEntry) => Ok(None),
+        Err(e) => Err(format!("Could not read the keychain: {e}")),
+    }
+}
+
 impl SecretStore for Keychain {
     fn get(&self, key: &str) -> Result<Option<String>, String> {
-        let entry = keyring::Entry::new(SERVICE, key).map_err(|e| e.to_string())?;
-        match entry.get_password() {
-            Ok(value) => Ok(Some(value)),
-            Err(keyring::Error::NoEntry) => Ok(None),
-            Err(e) => Err(format!("Could not read the keychain: {e}")),
+        if let Some(value) = read_entry(SERVICE, key)? {
+            return Ok(Some(value));
         }
+        // saved before the rename: moved under the new service the first time it is read
+        let Some(value) = read_entry(OLD_SERVICE, key)? else {
+            return Ok(None);
+        };
+        if self.set(key, &value).is_ok() {
+            if let Ok(old) = keyring::Entry::new(OLD_SERVICE, key) {
+                let _ = old.delete_credential();
+            }
+        }
+        Ok(Some(value))
     }
 
     fn set(&self, key: &str, value: &str) -> Result<(), String> {
@@ -196,7 +214,7 @@ pub(crate) mod tests {
     #[test]
     #[ignore]
     fn real_keychain_round_trip() {
-        let entry = keyring::Entry::new("com.canna71.rechess.test", "round-trip").unwrap();
+        let entry = keyring::Entry::new("com.canna71.plybook.test", "round-trip").unwrap();
         entry.set_password("lip_test").unwrap();
         assert_eq!(entry.get_password().unwrap(), "lip_test");
         entry.delete_credential().unwrap();

@@ -51,7 +51,7 @@ replaceIn(
 );
 replaceIn(
     "src-tauri/Cargo.lock",
-    /(\nname = "rechess"\nversion = ")[^"]+(")/,
+    /(\nname = "plybook"\nversion = ")[^"]+(")/,
     `$1${version}$2`,
 );
 

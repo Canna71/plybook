@@ -153,6 +153,10 @@ export function startDevDriver(navigate: (to: string) => void) {
                 navigate("/analysis?source=pasted");
             } else if (pasted?.kind === "fen")
                 navigate(`/analysis?fen=${encodeURIComponent(pasted.fen)}`);
+            else if (pasted?.kind === "chesscomDaily")
+                void import("../online/chesscomdaily").then((m) =>
+                    m.openChesscomDaily(navigate, pasted.url),
+                );
             else log.warn("not a game or a position", cmd.paste.slice(0, 40));
         }
         // after the route has rendered

@@ -3,7 +3,7 @@
 import CoreGraphics
 import Foundation
 
-let wanted = CommandLine.arguments.count > 1 ? CommandLine.arguments[1].lowercased() : "rechess"
+let wanted = CommandLine.arguments.count > 1 ? CommandLine.arguments[1].lowercased() : "plybook"
 let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
 guard let list = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
     exit(1)

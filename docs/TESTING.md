@@ -5,6 +5,22 @@ not been tried in the running app yet. Test in a **built** app where noted (`pnp
 the CSP and signing only apply there. Tick an item when it's confirmed, note what went wrong
 when it isn't, and remove ticked items once their roadmap entry says "confirmed by the owner".
 
+## Owner feedback, round 2: answers (branch feature/feedback-answers)
+
+- [ ] **Rename, F.18 (built app)**: the first start of a build moves nothing more (the dev
+      app already moved the data); everything is there: Library, books and their notes,
+      puzzles, history, repertoires, engines, accounts, the Lichess token (Settings →
+      Accounts), the explanation model (Settings → Explanations), backups. Screen capture
+      asks for the permission again: grant it to Plybook. Then delete
+      `~/Library/Application Support/com.canna71.rechess.before-plybook`.
+- [ ] **Old backup, F.18**: Settings → Backups → restore one made before today: it restores.
+
+- [ ] **Sound, F.16 (built app)**: step through a Library study with →: every move makes a
+      sound, captures too, not only checks and castling.
+- [ ] **chess.com daily, F.30 (built app)**: copy today's result from chess.com and ⌘V in
+      the app: the puzzle opens. Puzzles → chess.com daily does the same. An older day's
+      link says only today's is available.
+
 ## Owner feedback, round 2: features (branch feature/feedback-features)
 
 - [ ] **Chessable orientation, F.19**: paste a lesson from a Black course (`"studyCol":

@@ -9,6 +9,7 @@ import { useNavigate } from "@solidjs/router";
 import { NameWithoutExtension } from "../storage/fs";
 import { mistakesFolder } from "../storage/mistakes";
 import { makeToast } from "../components/common/Toast";
+import { openChesscomDaily } from "../online/chesscomdaily";
 
 const Puzzles: Component = () => {
     const [puzzles] = createResource<Study[] | undefined>(listPuzzles);
@@ -41,6 +42,12 @@ const Puzzles: Component = () => {
                     onClick={async () => nextPuzzle(await mistakesFolder())}
                 >
                     Train my mistakes
+                </Button>
+                <Button
+                    title="Today's daily puzzle from chess.com (pasting its link or a shared result opens it too)"
+                    onClick={() => openChesscomDaily(navigate)}
+                >
+                    chess.com daily
                 </Button>
             </PageHeader>
             <LichessPuzzles />

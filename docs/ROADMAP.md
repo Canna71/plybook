@@ -958,11 +958,31 @@ Second round, in the order given; bugs first when working through it.
 - [x] **F.15 A button to open the Library folder** in Finder or Explorer
   (`feature/feedback-features`). It was in the header's ⋯ menu; now it is a button, "Show in
   Finder" ("Explorer" on Windows), for the folder being viewed.
-- [ ] **F.16 No sound in studies:** by design, or missing?
-- [ ] **F.17 [Bug?] Guess the move is unclear:** how to add more than one candidate, and what
-  it is for.
-- [ ] **F.18 Rename the project to Plybook throughout:** the bundle identifier, the data
-  folder and the other internal names F.1 kept, with the move of every user's data.
+- [x] **F.16 No sound in studies** (a Library study; `feature/feedback-answers`). Not by
+  design, and not only studies: Vite inlines assets under 4 KB as `data:` URLs, which the CSP
+  (`default-src`, no `media-src`) blocks for audio, so a built app played only the larger
+  sounds (check, castling, game end) and was silent on ordinary moves and captures. Sounds
+  are always files now (`assetsInlineLimit` in `vite.config.ts`). Dev builds have no CSP,
+  which is why it never showed there.
+- [x] **F.17 [Bug?] Guess the move is unclear** (`feature/feedback-answers`). Several
+  candidates did work (checked by clicking and by dragging: e4, Nf3, d4), but nothing said
+  so. A "How it works" at the top (open at the first move) says what it trains and how to
+  enter candidates, and the message counts them ("1 candidate: move another piece…").
+- [x] **F.18 Rename the project to Plybook throughout** (approved by the owner 2026-10-31,
+  before any release; `feature/feedback-answers`). Bundle identifier `com.canna71.plybook`,
+  keychain service, `plybook.sqlite`, backup manifest `plybook-backup.json`, crate `plybook`
+  (`plybook_lib`), package `plybook`, dev tools (`tools/shot.sh` finds the `plybook` process,
+  shots in `/tmp/plybook-shots`), bench variables `PLYBOOK_*`.
+  - Data moves on the first start (`migrate.rs`, tested): the `com.canna71.rechess` folders
+    (and the older `rechess` ones) into the new identifier's, and `rechess.sqlite` (with its
+    WAL files) to `plybook.sqlite`. Secrets move from the old keychain service the first time
+    each is read; old backups (`rechess-backup.json`) still restore (tested).
+  - Done on the owner's Mac: 1.5 GB moved (Library, engines, 3.3 million puzzles, settings,
+    accounts, both secrets); a clone of the old folder was kept as
+    `com.canna71.rechess.before-plybook` until the owner confirms.
+  - Left to the owner: renaming the repository and the project folder; then the GitHub URLs
+    (README, `net.rs` user agent, updater feed in `tauri.conf.json`). macOS permissions
+    (Screen Recording) and keychain approvals are asked again, as for a new app.
 - [x] **F.19 Chessable paste: `"studyCol": "black"` sets the board's orientation**
   (`feature/feedback-features`): written as the PGN's `[Orientation]`, so it stays when saved.
   No sample had the field, so it is read at the top level, in `lesson` or on the first move.
@@ -1014,7 +1034,14 @@ Second round, in the order given; bugs first when working through it.
   `historyFor` (the only way moves reach the engine) now writes castling as `e1g1` (tested).
   The reported game now reviews to the end.
   - Left: reading the log in a built app (the built app has no dev tools).
-- [ ] **F.30 Puzzles from chess.com:** how to get them.
+- [x] **F.30 Puzzles from chess.com** (`feature/feedback-answers`). chess.com has no puzzle
+  download; its public API gives the daily puzzle (today's only) with FEN and solution
+  (`online_chesscom_daily_puzzle` in `net.rs`). Pasting a shared result (the owner's: title,
+  `chess.com/daily/2026-10-31` link, score and an emoji picture, which can't tell pieces
+  apart) or the link opens it as a puzzle when it is today's, and says so otherwise; Puzzles
+  has a "chess.com daily" button (`online/chesscomdaily.ts`, `models/chesscompuzzle.ts`,
+  tested). Checked in the dev app with the owner's text: opened and solved. No score is
+  kept for it (it has no file).
 
 ## Last
 

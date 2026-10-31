@@ -19,6 +19,7 @@ import { useSplitter } from "../components/common/useSplitter";
 import { getSettingValue, setSettingValue } from "../models/settings";
 import { useSites } from "../components/shell/useSites";
 import { helpRoute } from "../models/navigation";
+import { openChesscomDaily } from "../online/chesscomdaily";
 
 const Layout: ParentComponent = (props) => {
     const divider = useSplitter((layout) => {
@@ -61,6 +62,9 @@ const Layout: ParentComponent = (props) => {
                 } catch (err) {
                     makeErrorToast(String(err));
                 }
+                break;
+            case "chesscomDaily":
+                await openChesscomDaily(navigate, pasted.url);
                 break;
         }
     };

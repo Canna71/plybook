@@ -1,4 +1,4 @@
-//! The app database, SQLite in `<AppLocalData>/rechess.sqlite`: puzzles (spaced repetition over
+//! The app database, SQLite in `<AppLocalData>/plybook.sqlite`: puzzles (spaced repetition over
 //! Library files) and games played against the engine. The JSON shapes are the ones the
 //! frontend used with the former SurrealDB database.
 
@@ -14,7 +14,8 @@ use tauri::{AppHandle, Manager, State};
 #[derive(Default)]
 pub struct Database(pub Mutex<Option<Connection>>);
 
-const DB_FILE: &str = "rechess.sqlite";
+/// Named rechess.sqlite before the rename to Plybook; migrate.rs renames an old one (F.18)
+pub(crate) const DB_FILE: &str = "plybook.sqlite";
 /// Written by tools/surreal-export from the old SurrealDB database; imported once.
 const SURREAL_EXPORT: &str = "surreal-export.json";
 
@@ -691,7 +692,7 @@ mod tests {
     #[test]
     fn surreal_export_is_imported() {
         let conn = memory_db();
-        let dir = std::env::temp_dir().join(format!("rechess-import-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("plybook-import-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join(SURREAL_EXPORT);
         std::fs::write(

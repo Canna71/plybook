@@ -27,6 +27,7 @@ Two ways to get around quickly:
   action or a Library file.
 - **⌘V** outside a text field opens what you pasted. A screenshot of a board is scanned for its
   position. A FEN, a PGN, a Lichess game link or a Chessable lesson's JSON opens in Analysis.
+  chess.com's daily puzzle (its link, or the result shared from it) opens as a puzzle.
 
 ## Today
 <!-- help: today -->
@@ -129,7 +130,9 @@ A game's header has options of its own:
 - **Repertoire** (For White or For Black) makes the file a repertoire (see
   [Repertoires](#repertoires)).
 - **Guess the move** plays through the game with you: at each of your turns, name up to three
-  candidate moves. Then you see the game's move, the engine's best and how close you came.
+  candidate moves by moving pieces (each goes back and stays as a blue arrow), then
+  **Reveal**: you see the game's move, the engine's best and how close each candidate came.
+  It trains finding candidates, as you would over the board.
 
 ## Books
 <!-- help: books -->
@@ -169,10 +172,12 @@ mistake, later and later as you get it right.
 ## Puzzles
 <!-- help: puzzles -->
 
-Puzzles come from three places:
+Puzzles come from four places:
 - **Your studies:** games marked as puzzles.
 - **Your mistakes:** from reviewed games, where you find the move you missed.
 - **The Lichess puzzle set:** downloaded once from this page, picked at your rating and by theme.
+- **chess.com's daily puzzle:** the **chess.com daily** button, or paste (⌘V) the result you
+  share from chess.com, or its link. chess.com gives only today's puzzle, not older ones.
 
 **Pick a puzzle** starts one, and **Train my mistakes** plays only the puzzles made from your
 games. Play the move you think is best. If you are stuck, a hint shows the
@@ -318,11 +323,12 @@ Everything stays on your computer:
 | Library (games, studies, books) | `Library` in the data folder |
 | Engines | `Engines` in the data folder |
 | Opening books | `Books` in the data folder |
-| Puzzles, history, repertoire progress | `rechess.sqlite` in the data folder |
+| Puzzles, history, repertoire progress | `plybook.sqlite` in the data folder |
 | Backups | `Backups` in the data folder |
 
-The data folder is `~/Library/Application Support/com.canna71.rechess` on macOS and
-`%LOCALAPPDATA%\com.canna71.rechess` on Windows. API tokens and keys are kept in the system
+The data folder is `~/Library/Application Support/com.canna71.plybook` on macOS and
+`%LOCALAPPDATA%\com.canna71.plybook` on Windows (data from older versions, in
+`com.canna71.rechess`, is moved there on the first start). API tokens and keys are kept in the system
 keychain, not in files.
 
 **Backups** (Settings → Backups) zip the Library, your settings and your own records, once a day

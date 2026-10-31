@@ -479,15 +479,15 @@ mod tests {
         assert_eq!((middlegame.attempts, middlegame.solved), (2, 1));
     }
 
-    /// Import on the real file: RECHESS_BENCH_PUZZLES=/path/lichess_db_puzzle.csv.zst
+    /// Import on the real file: PLYBOOK_BENCH_PUZZLES=/path/lichess_db_puzzle.csv.zst
     /// cargo test --release bench_puzzles -- --ignored --nocapture
     #[test]
     #[ignore]
     fn bench_puzzles() {
-        let path = std::env::var("RECHESS_BENCH_PUZZLES").expect("RECHESS_BENCH_PUZZLES");
+        let path = std::env::var("PLYBOOK_BENCH_PUZZLES").expect("PLYBOOK_BENCH_PUZZLES");
         for min_popularity in [90, 80, 50, -100] {
             let db_file =
-                std::env::temp_dir().join(format!("rechess-puzzles-{min_popularity}.sqlite"));
+                std::env::temp_dir().join(format!("plybook-puzzles-{min_popularity}.sqlite"));
             let _ = std::fs::remove_file(&db_file);
             let conn = Connection::open(&db_file).unwrap();
             crate::db::migrate(&conn).unwrap();
