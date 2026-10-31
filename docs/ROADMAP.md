@@ -959,11 +959,24 @@ Second round, in the order given; bugs first when working through it.
 - [ ] **F.18 Rename the project to Plybook throughout:** the bundle identifier, the data
   folder and the other internal names F.1 kept, with the move of every user's data.
 - [ ] **F.19 Chessable paste: `"studyCol": "black"` sets the board's orientation.**
-- [ ] **F.20 [Bug] Downloading Lichess puzzles** shows no progress and nothing is downloaded.
+- [x] **F.20 [Bug] Downloading Lichess puzzles** shows no progress and nothing is downloaded
+  (`feature/feedback-round-2`). The progress bar appeared before the first numbers, and a
+  `<progress>`'s `value` set to undefined throws, so the click handler stopped before asking
+  for the download. The same bar was in Settings → Updates, the game review and the database
+  import; all use `components/common/Progress.tsx` now, which shows a busy bar until a value
+  is known. Checked in the dev app: 293 MB downloaded, 3,289,936 puzzles imported.
 - [ ] **F.21 A comment without a move:** a comment on the starting position (a diagram)
   without entering a move first, kept in a PGN field.
-- [ ] **F.22 [Bug] PDF reader: the side-to-move dropdown sometimes disappears.**
-- [ ] **F.23 PDF reader: changing the side to move must not flip the board.**
+- [x] **F.22 [Bug] PDF reader: the side-to-move dropdown sometimes disappears**
+  (`feature/feedback-round-2`). It was hidden on purpose once the diagram had a notes file,
+  which is written at the first change, so it seemed to vanish at random. It now stays: while
+  the notes have no moves, changing it starts them again from the new side (comments kept,
+  `restartedNotes`); once they have moves it is greyed out and says why. Reopened notes show
+  their own side to move rather than the guess from the text.
+- [x] **F.23 PDF reader: changing the side to move must not flip the board**
+  (`feature/feedback-round-2`). A game's board faces the side to move unless its PGN says
+  otherwise; a diagram's notes now carry the printed orientation (`[Orientation]`), and older
+  notes get it when opened.
 - [ ] **F.24 PDF reader: a draggable divider** between the book and the diagram (within limits).
 - [ ] **F.25 Navigation history:** back and forward between the places visited.
 - [ ] **F.26 Play the engine: items not aligned vertically** when they sit side by side.

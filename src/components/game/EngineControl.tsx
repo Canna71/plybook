@@ -10,6 +10,7 @@ import {
     useContext,
 } from "solid-js";
 import { GameContext, ReviewProgress } from "./GameContext";
+import Progress from "../common/Progress";
 import { useNavigate } from "@solidjs/router";
 
 import "./EngineControl.scss";
@@ -562,11 +563,10 @@ const ReviewProgressIndicator = ({
     return (
         <div class="review-progress">
             Reviewing...
-            <progress
-                id="file"
+            <Progress
                 max={reviewProgress()?.total}
                 value={reviewProgress()?.current}
-            ></progress>
+            />
         </div>
     );
 };

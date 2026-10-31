@@ -6,6 +6,9 @@ import {
     diagramFileName,
     diagramPgn,
     normalPgn,
+    notesStart,
+    restartedNotes,
+    withOrientation,
 } from "./scancollection";
 
 // Black to move in the Italian: ...Nf6 is the engine's choice
@@ -66,6 +69,43 @@ describe("scanned collections", () => {
             .replace("Nf6 4.", "Nf6  4.");
         expect(normalPgn(respaced)).toBe(normalPgn(pgn));
         expect(normalPgn(pgn.replace("d3", "d4"))).not.toBe(normalPgn(pgn));
+    });
+
+    it("keeps the printed orientation, so the board doesn't turn with the side to move", () => {
+        const pgn = diagramPgn("T", {
+            page: 1,
+            index: 1,
+            fen: FEN,
+            orientation: "white",
+        });
+        expect(makeGame(pgn).headers.get("Orientation")).toBe("white");
+        const old = diagramPgn("T", { page: 1, index: 1, fen: FEN });
+        expect(
+            makeGame(withOrientation(old, "black")).headers.get("Orientation"),
+        ).toBe("black");
+        expect(withOrientation(pgn, "black")).toBe(pgn);
+    });
+
+    it("starts notes without moves again from the other side", () => {
+        const white = FEN.replace(" b ", " w ");
+        const notes = diagramPgn("T", { page: 1, index: 1, fen: FEN }).replace(
+            "*",
+            "{ Rubinstein's idea } *",
+        );
+        expect(notesStart(notes)).toEqual({ turn: "black", moves: false });
+        const restarted = restartedNotes(notes, white, "white")!;
+        expect(notesStart(restarted)).toEqual({ turn: "white", moves: false });
+        expect(restarted).toContain("Rubinstein's idea");
+        expect(makeGame(restarted).headers.get("Orientation")).toBe("white");
+
+        const withMoves = diagramPgn("T", {
+            page: 1,
+            index: 1,
+            fen: FEN,
+            solution: ["g8f6"],
+        });
+        expect(notesStart(withMoves).moves).toBe(true);
+        expect(restartedNotes(withMoves, white)).toBeUndefined();
     });
 
     it("stops the solution at a move that does not fit", () => {

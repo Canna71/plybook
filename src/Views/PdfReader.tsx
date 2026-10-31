@@ -49,6 +49,9 @@ import {
     diagramFileName,
     diagramPgn,
     normalPgn,
+    notesStart,
+    restartedNotes,
+    withOrientation,
 } from "../models/scancollection";
 import GameManager, { GameManagerApi } from "../components/game/GameManager";
 import { join } from "@tauri-apps/api/path";
@@ -329,6 +332,8 @@ const PdfReader: Component = () => {
     }>();
     // a signal: previews of the moves a text would add follow the notes' editor
     const [notesApi, setNotesApi] = createSignal<GameManagerApi>();
+    // moves start from the side to move: once there are some, it can't change
+    const [notesHaveMoves, setNotesHaveMoves] = createSignal(false);
     // the editor re-writes the PGN as it loads it: that is not a change worth saving
     let baseline = "";
     let loading = false;
@@ -356,6 +361,7 @@ const PdfReader: Component = () => {
     const onNotesChange = (pgn: string) => {
         const game = notesGame();
         if (!game) return;
+        setNotesHaveMoves(notesStart(pgn).moves);
         const normal = normalPgn(pgn);
         if (loading) baseline = normal;
         if (normal === baseline) return;
@@ -370,6 +376,7 @@ const PdfReader: Component = () => {
             void writeNotes();
             setNotesGame(undefined);
             setNotesApi(undefined);
+            setNotesHaveMoves(false);
             if (!d) return;
             const p = scannedPosition(d.read, d.turn);
             if (!p.legal) return;
@@ -383,18 +390,44 @@ const PdfReader: Component = () => {
                 ? await readDataFile(file)
                 : undefined;
             if (selected() !== d) return;
-            const pgn =
-                saved ??
-                diagramPgn(NameWithoutExtension(baseName(path())), {
-                    ...d,
-                    fen: p.fen,
-                });
+            const start = saved ? notesStart(saved) : undefined;
+            // the notes' own start wins over the guess from the text
+            if (start?.turn && start.turn !== d.turn) {
+                setSelected({ ...d, turn: start.turn });
+                return;
+            }
+            setNotesHaveMoves(!!start?.moves);
+            const pgn = saved
+                ? withOrientation(saved, d.orientation)
+                : diagramPgn(NameWithoutExtension(baseName(path())), {
+                      ...d,
+                      fen: p.fen,
+                  });
             baseline = normalPgn(pgn);
             loading = true;
             setNotesGame({ file, pgn });
             setTimeout(() => (loading = false), 500);
         }),
     );
+
+    /** Whose move it is in the diagram; saved notes without moves start again from it (F.22). */
+    const changeTurn = async (turn: Color) => {
+        const d = selected();
+        if (!d) return;
+        const game = notesGame();
+        const p = scannedPosition(d.read, turn);
+        if (game && hasNotes(d) && p.legal) {
+            await writeNotes();
+            const restarted = restartedNotes(
+                await readDataFile(game.file),
+                p.fen,
+                d.orientation,
+            );
+            if (!restarted) return;
+            await writeDataFile(game.file, restarted);
+        }
+        if (selected() === d) setSelected({ ...d, turn });
+    };
 
     /** Analysis of the notes once there are any, else of the position. */
     const analyze = async () => {
@@ -626,24 +659,19 @@ const PdfReader: Component = () => {
                                 Page {selected()!.page}, diagram{" "}
                                 {selected()!.index}
                             </strong>
-                            {/* hidden, not removed, once there are notes: the board below must not move */}
-                            <div
-                                class="select is-small"
-                                style={{
-                                    visibility: hasNotes(selected()!)
-                                        ? "hidden"
-                                        : "visible",
-                                }}
-                            >
+                            <div class="select is-small">
                                 <select
-                                    title="Whose move it is in the diagram"
+                                    title={
+                                        notesHaveMoves()
+                                            ? "The notes have moves from this side: delete them to change whose move it is"
+                                            : "Whose move it is in the diagram"
+                                    }
+                                    disabled={notesHaveMoves()}
                                     value={selected()!.turn}
                                     onChange={(e) =>
-                                        setSelected({
-                                            ...selected()!,
-                                            turn: e.currentTarget
-                                                .value as Color,
-                                        })
+                                        void changeTurn(
+                                            e.currentTarget.value as Color,
+                                        )
                                     }
                                 >
                                     <option value="white">White to move</option>

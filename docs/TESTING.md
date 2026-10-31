@@ -17,6 +17,12 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Rename from the title, F.13**: open a Library game, click its title above the board,
       type a new name, Enter. The Library shows the new name. Make a move first and rename:
       the move is still there and Save is still on.
+- [ ] **Progress bars, F.20**: in a built app, Settings → Updates → install an update (when
+      there is one) and Databases → import a PGN: the bar moves and the job finishes. (The
+      Lichess download and the game review were checked in the dev app.)
+- [ ] **Side to move in the reader, F.22/F.23**: pick a diagram, switch White/Black to move:
+      the board doesn't turn. Make a move: the dropdown greys out (hover says why). Close and
+      reopen the diagram: it shows the side you chose.
 
 ## PDF reader speed, F.9 (branch feature/pdf-reader-speed)
 

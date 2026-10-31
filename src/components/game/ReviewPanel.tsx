@@ -4,6 +4,7 @@
 import { Show, useContext } from "solid-js";
 import { IconDeviceAnalytics } from "@tabler/icons-solidjs";
 import Button from "../common/Button";
+import Progress from "../common/Progress";
 import Review from "./Review";
 import { GameContext } from "./GameContext";
 
@@ -17,7 +18,7 @@ const ReviewPanel = () => {
                 when={!isReviewing()}
                 fallback={
                     <div class="review-progress">
-                        <progress
+                        <Progress
                             class="progress is-primary is-small"
                             value={reviewProgress()?.current}
                             max={reviewProgress()?.total}

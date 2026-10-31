@@ -1,6 +1,7 @@
 import { Component, createResource, createSignal, Show } from "solid-js";
 import { getVersion } from "@tauri-apps/api/app";
 import Button from "../common/Button";
+import Progress from "../common/Progress";
 import { makeErrorToast, makeToast } from "../common/Toast";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import {
@@ -103,14 +104,10 @@ const Updates: Component = () => {
                                 </Button>
                             }
                         >
-                            <progress
+                            <Progress
                                 class="progress is-primary mt-3"
-                                max="1"
-                                value={
-                                    Number.isNaN(installing())
-                                        ? undefined
-                                        : installing()
-                                }
+                                max={1}
+                                value={installing()}
                             />
                             <p class="settings-help">
                                 Downloading and installing; Plybook restarts
