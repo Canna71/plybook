@@ -16,7 +16,7 @@ import {
     getDefaultStudyContent,
     NameWithoutExtension,
     readDataFile,
-    renameOrCreateDataFile,
+    renameDataFile,
     writeDataFile,
 } from "../storage/fs";
 import { useLocation, useNavigate, useSearchParams } from "@solidjs/router";
@@ -37,7 +37,8 @@ import {
 } from "../storage/db";
 import { historyTitle } from "../models/history";
 import { mistakesFolder } from "../storage/mistakes";
-import { makeToast } from "../components/common/Toast";
+import { makeErrorToast, makeToast } from "../components/common/Toast";
+import { renamedName } from "../models/library";
 import {
     getLichessPuzzle,
     pickNextLichessPuzzle,
@@ -55,12 +56,14 @@ import { makeGame } from "../models/pgn";
 import { pendingPgn, setPendingPgn } from "../paste/pending";
 import { listRepertoires, setRepertoire } from "../storage/repertoire";
 import { Color } from "chessops";
-import { recordRecent } from "../storage/recent";
+import { forgetRecent, recordRecent } from "../storage/recent";
 import anylogger from "anylogger";
 const log = anylogger("gameview");
 
 /** The folder the last game without a file was saved in, offered first next time */
 let lastSaveFolder: string | undefined;
+/** Unsaved edits of a game renamed from its title, kept when it reopens at its new path */
+let renamedEdits: { path: string; pgn: string } | undefined;
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -182,6 +185,9 @@ const GameView = () => {
         const id = historyId();
         const dbId = databaseGameId();
         const lichessId = lichessPuzzleId();
+        const edits = renamedEdits;
+        renamedEdits = undefined;
+        let original: string | undefined;
         if (lichessId) {
             try {
                 const puzzle = await getLichessPuzzle(lichessId);
@@ -229,6 +235,10 @@ const GameView = () => {
         } else if (typeof searchParams.path === "string") {
             try {
                 pgnText = await readDataFile(searchParams.path);
+                if (edits?.path === searchParams.path) {
+                    original = pgnText;
+                    pgnText = edits.pgn;
+                }
                 // for Today's "Continue" (a puzzle isn't something to continue)
                 if (location.pathname !== "/puzzle")
                     recordRecent(searchParams.path, "game");
@@ -246,7 +256,7 @@ const GameView = () => {
             setOriginalPgn(pgnText);
             setPuzzleNote(undefined);
         });
-        setModified(false);
+        setModified(original !== undefined && original !== pgnText);
     });
 
     const memoNewPgn = createMemo(newPgn, undefined, {
@@ -315,13 +325,29 @@ const GameView = () => {
         }
     };
 
+    /** The title renames the file (F.13); unsaved edits stay unsaved, at the new path */
     const onRename = async (text: string) => {
-        await renameOrCreateDataFile(
-            filePath(),
-            text,
-            newPgn() || getDefaultStudyContent(),
-        );
-        refresh();
+        const path = filePath();
+        if (!path) return;
+        try {
+            const renamed = await renameDataFile(
+                path,
+                renamedName({ name: baseName(path), kind: "games" }, text),
+            );
+            if (renamed === path) return;
+            forgetRecent(path);
+            const pgn = newPgn();
+            if (modified() && pgn) renamedEdits = { path: renamed, pgn };
+            refresh();
+            navigate(
+                `${location.pathname}?path=${encodeURIComponent(renamed)}`,
+                {
+                    replace: true,
+                },
+            );
+        } catch (e) {
+            makeErrorToast(`Could not rename: ${e}`);
+        }
     };
 
     const onPuzzleFinished = async (
@@ -417,7 +443,7 @@ const GameView = () => {
                 <div class="game-name">
                     <BreadCrumb path={folderPath} />
                     <Editable
-                        editable={() => false}
+                        editable={() => !!filePath() && !isPuzzleMode()}
                         initialValue={displayedName() || ""}
                         onSave={onRename}
                     ></Editable>

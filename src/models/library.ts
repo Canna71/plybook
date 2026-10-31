@@ -36,6 +36,23 @@ export function kindOf(
     return undefined;
 }
 
+/**
+ * The file or folder name a rename gives: the name as typed, with characters file systems refuse
+ * replaced, and a file's own extension kept. The name being edited is shown without the extension
+ * (`displayName`) and may have periods of its own ("Muhlock vs. Kostics, 1912"), so what follows
+ * its last period is not an extension (F.14).
+ */
+export function renamedName(
+    entry: Pick<LibraryEntry, "name" | "kind">,
+    typed: string,
+): string {
+    const name = typed.trim().replace(/[\\/:*?"<>|]/g, "-");
+    if (entry.kind === "folder") return name;
+    const dot = entry.name.lastIndexOf(".");
+    const ext = dot > 0 ? entry.name.slice(dot) : "";
+    return name.toLowerCase().endsWith(ext.toLowerCase()) ? name : name + ext;
+}
+
 /** The name without its extension (folders keep theirs: "v1.2" is a name). */
 export function displayName(entry: Pick<LibraryEntry, "name" | "kind">) {
     if (entry.kind === "folder") return entry.name;

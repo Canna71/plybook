@@ -1,7 +1,7 @@
 // Diagrams scanned from a book, saved as one PGN per diagram so each can be studied or, with a
 // solution, trained as a puzzle.
 
-import { Chess, parseUci } from "chessops";
+import { Chess, Color, parseUci } from "chessops";
 import { parseFen } from "chessops/fen";
 import { makePgn, parsePgn } from "chessops/pgn";
 import { makeSanAndPlay } from "chessops/san";
@@ -13,6 +13,9 @@ export type ScannedDiagram = {
     fen: string;
     /** The engine's best move(s), in UCI, when solved */
     solution?: string[];
+    /** The side at the bottom of the printed diagram, kept so the board doesn't turn to face
+     * the side to move (F.23) */
+    orientation?: Color;
 };
 
 const header = (name: string, value: string) =>
@@ -41,6 +44,44 @@ export function bookQuote(text: string, page: number): string {
         .replace(/\s+/g, " ")
         .trim();
     return quote ? `${quote} (p. ${page})` : "";
+}
+
+/** A diagram's notes: whose move it is at their start, and whether they have moves yet. */
+export function notesStart(pgn: string): { turn?: Color; moves: boolean } {
+    const game = parsePgn(pgn)[0];
+    if (!game) return { moves: false };
+    const fen = game.headers.get("FEN");
+    const setup = fen ? parseFen(fen) : undefined;
+    return {
+        turn: setup?.isOk ? setup.value.turn : undefined,
+        moves: game.moves.children.length > 0,
+    };
+}
+
+/**
+ * A diagram's notes with another start (the side to move changed in the reader, F.22), and the
+ * printed orientation, comments kept; undefined once they have moves, which would not fit.
+ */
+export function restartedNotes(
+    pgn: string,
+    fen: string,
+    orientation?: Color,
+): string | undefined {
+    const game = parsePgn(pgn)[0];
+    if (!game || game.moves.children.length) return undefined;
+    game.headers.set("SetUp", "1");
+    game.headers.set("FEN", fen);
+    if (orientation) game.headers.set("Orientation", orientation);
+    return makePgn(game);
+}
+
+/** Notes saved before they recorded the printed orientation get it, so the board keeps it (F.23). */
+export function withOrientation(pgn: string, orientation: Color): string {
+    if (/^\[Orientation /m.test(pgn)) return pgn;
+    const game = parsePgn(pgn)[0];
+    if (!game) return pgn;
+    game.headers.set("Orientation", orientation);
+    return makePgn(game);
 }
 
 /** A PGN as chessops writes it, so the same games compare equal however they were spaced. */
@@ -76,6 +117,7 @@ export function diagramPgn(book: string, d: ScannedDiagram): string {
         header("Result", "*"),
         header("SetUp", "1"),
         header("FEN", d.fen),
+        ...(d.orientation ? [header("Orientation", d.orientation)] : []),
         header("Annotator", "Plybook scan"),
         "",
         [...tokens, "*"].join(" "),

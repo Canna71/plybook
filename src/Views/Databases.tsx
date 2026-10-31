@@ -2,6 +2,7 @@ import { Component, createResource, createSignal, For, Show } from "solid-js";
 import { useNavigate, useSearchParams } from "@solidjs/router";
 import { ask } from "@tauri-apps/plugin-dialog";
 import Button from "../components/common/Button";
+import Progress from "../components/common/Progress";
 import { makeErrorToast, makeToast } from "../components/common/Toast";
 import {
     DatabaseInfo,
@@ -107,10 +108,9 @@ const Databases: Component = () => {
             <Show when={importing() && progress()}>
                 {(p) => (
                     <div class="import-progress">
-                        <progress
+                        <Progress
                             class="progress is-primary is-small"
                             value={percent()}
-                            max="100"
                         />
                         {p().games.toLocaleString()} games
                         {p().skipped ? `, ${p().skipped} skipped` : ""}

@@ -1,6 +1,7 @@
 import { Component, createResource, createSignal, For, Show } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import Button from "../common/Button";
+import Progress from "../common/Progress";
 import { makeErrorToast, makeToast } from "../common/Toast";
 import { themeLabel } from "../../models/lichesspuzzle";
 import { getSettingValue, setSettingValue } from "../../models/settings";
@@ -233,10 +234,9 @@ const LichessPuzzles: Component = () => {
             </Show>
             <Show when={busy()}>
                 <div class="import-progress">
-                    <progress
+                    <Progress
                         class="progress is-primary is-small"
                         value={percent()}
-                        max="100"
                     />
                     {progressText()}
                 </div>

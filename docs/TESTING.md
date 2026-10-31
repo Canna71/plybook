@@ -5,6 +5,25 @@ not been tried in the running app yet. Test in a **built** app where noted (`pnp
 the CSP and signing only apply there. Tick an item when it's confirmed, note what went wrong
 when it isn't, and remove ticked items once their roadmap entry says "confirmed by the owner".
 
+## Owner feedback, round 2 (branch feature/feedback-round-2)
+
+- [ ] **Castling, F.28**: Play the engine, castle as soon as you can. The engine replies, and
+      keeps replying for the rest of the game.
+- [ ] **Review after castling, F.29**: your game that hung (…10. O-O) reviews to the end.
+      (Checked in the dev app; confirm in the built one.)
+- [ ] **Rename in the Library, F.14**: rename a game to "Muhlock vs. Kostics, 1912". It stays in
+      the list with that name, and opens. Renaming to the name of another file in the same
+      folder says it already exists and changes nothing.
+- [ ] **Rename from the title, F.13**: open a Library game, click its title above the board,
+      type a new name, Enter. The Library shows the new name. Make a move first and rename:
+      the move is still there and Save is still on.
+- [ ] **Progress bars, F.20**: in a built app, Settings → Updates → install an update (when
+      there is one) and Databases → import a PGN: the bar moves and the job finishes. (The
+      Lichess download and the game review were checked in the dev app.)
+- [ ] **Side to move in the reader, F.22/F.23**: pick a diagram, switch White/Black to move:
+      the board doesn't turn. Make a move: the dropdown greys out (hover says why). Close and
+      reopen the diagram: it shows the side you chose.
+
 ## PDF reader speed, F.9 (branch feature/pdf-reader-speed)
 
 - [ ] **Built app, the important one**: open a scanned book (*My System*) with Find diagrams
