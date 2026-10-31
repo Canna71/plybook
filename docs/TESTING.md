@@ -143,6 +143,17 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Isolation**: the site window has no Plybook menus or access; other downloads (a PDF)
       go to the usual Downloads folder.
 
+## Icon and logo, F.7 (branch feature/logo)
+
+Seen in the dev app: the mark and name at the top of the sidebar in the accent colour, dark
+and light, and the mark alone with the sidebar collapsed.
+
+- [ ] **Built app**: `pnpm build:mac`: Plybook.app shows the emerald icon in the Finder, the
+      Dock and ⌘Tab. macOS caches icons, so if the old one shows, restart the Dock
+      (`killall Dock`).
+- [ ] **Accent**: Settings → Appearance → Accent → My colour: the sidebar's mark takes it.
+- [ ] **Windows** (when built there): the taskbar and Start menu icon.
+
 ## Text sizes, F.5 (branch feature/font-sizes)
 
 Seen in the dev app: Moves at 130% (figurines and side lines too), comments at 115% on their

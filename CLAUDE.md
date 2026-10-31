@@ -24,7 +24,7 @@ pnpm build                # vite build -> dist/
 pnpm tauri build          # packaged app (.app/.dmg on macOS, .msi/.exe on Windows)
 pnpm build:mac            # signed macOS .app; needs APPLE_SIGNING_IDENTITY (see README): ad-hoc
                           # builds lose macOS permissions (Screen Recording) on every rebuild
-pnpm tauri icon ./tools/Logo.png   # regenerate app icons
+pnpm tauri icon ./tools/logo/icon.svg   # regenerate app icons (the emerald tile, F.7)
 
 # Rust: CI runs fmt --check, clippy -D warnings and tests (macOS and Windows); run them
 # locally whenever src-tauri/ changes.
