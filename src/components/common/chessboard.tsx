@@ -61,7 +61,18 @@ export function Chessboard(props: ChessboardProps) {
         // chessground caches where the board is and forgets it only on resize or scroll: a
         // board moved by the layout around it (a panel above it changing) would take presses
         // on the wrong squares. Forget it at every press, before chessground handles it.
-        const forgetBounds = () => api.state.dom.bounds.clear();
+        // A press also ends typing elsewhere (a player's name, F.6): chessground prevents the
+        // press's default, which is what would take the focus away from the field.
+        const forgetBounds = () => {
+            api.state.dom.bounds.clear();
+            const typing = document.activeElement as HTMLElement | null;
+            if (
+                typing?.isContentEditable ||
+                typing instanceof HTMLInputElement ||
+                typing instanceof HTMLTextAreaElement
+            )
+                typing.blur();
+        };
         for (const type of ["mousedown", "touchstart"])
             wrapper.addEventListener(type, forgetBounds, {
                 capture: true,

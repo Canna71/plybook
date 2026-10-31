@@ -855,14 +855,19 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
   - Dev driver: a `paste` command opens a PGN, FEN or lesson as ⌘V does.
 - [ ] **F.5 Font size settings** in Appearance for parts of the UI, starting with the Moves
   panel and comments.
-- [ ] **F.6 Editing player names: how to finish.** The name field under the board stays in
-  editing mode. Enter (and Tab) should save, Esc should cancel, and a click outside should
-  save. Show that it is editable without looking like a field that is always open.
+- [x] **F.6 Editing player names: how to finish** (`feature/quick-fixes`, 2026-10-31):
+  - Enter, Tab or a click elsewhere saves, and Esc cancels; the first two worked already.
+  - The board kept the field open: chessground prevents a press's default, so the focus
+    stayed. A press on the board now ends typing (`chessboard.tsx`).
+  - The name reads as plain text, and looks like a field only on hover and while typing.
+  - `Editable` saves only a changed value, so clicking in and out no longer marks the game
+    modified. This also covers Library renames and the game title.
 - [ ] **F.7 A more modern app icon and logo** (`tools/Logo.png`, then
   `pnpm tauri icon ./tools/Logo.png`). Do it with F.1 if the name changes.
-- [ ] **F.8 Captured pieces wrap under the board.** The material won, shown beside the player's
-  name, wraps onto further lines when there are many pieces, and those lines are covered by the
-  board. Keep it on one line (smaller icons, or "♙×3 +2"), or give it room.
+- [x] **F.8 Captured pieces wrap under the board** (`feature/quick-fixes`, 2026-10-31). The
+  open name field took its 20em minimum and squeezed the material until it wrapped. Now the
+  material stays on one line, with pieces of a kind overlapping a little as on chess sites, and
+  the name gives way first (an ellipsis). All 15 pieces fit beside a name.
 
 ## Last
 
