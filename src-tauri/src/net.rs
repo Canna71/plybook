@@ -219,6 +219,29 @@ pub async fn online_lichess_game(id: String) -> Result<String, String> {
     }
 }
 
+/// chess.com's daily puzzle, as its public API gives it (F.30). The API has today's only.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ChesscomPuzzle {
+    pub title: String,
+    /// The puzzle's page, `https://www.chess.com/daily/YYYY-MM-DD`: what a shared result links
+    pub url: String,
+    pub fen: String,
+    /// The position (FEN tag) and the solution, the solver's move first
+    pub pgn: String,
+}
+
+/// Today's chess.com daily puzzle.
+#[tauri::command]
+pub async fn online_chesscom_daily_puzzle() -> Result<ChesscomPuzzle, String> {
+    let body = get_text(
+        client()?.get("https://api.chess.com/pub/puzzle"),
+        Site::Chesscom,
+        "daily puzzle",
+    )
+    .await?;
+    serde_json::from_str(&body).map_err(|e| format!("chess.com's daily puzzle: {e}"))
+}
+
 #[derive(Deserialize, Clone, Copy, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum ExplorerSource {

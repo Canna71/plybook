@@ -9,7 +9,13 @@ export type Pasted =
     | { kind: "fen"; fen: string }
     /** `note`: what the conversion could not keep (a Chessable lesson cut short) */
     | { kind: "pgn"; pgn: string; games: number; note?: string }
-    | { kind: "lichess"; gameId: string };
+    | { kind: "lichess"; gameId: string }
+    /** chess.com's daily puzzle, from its link (alone or in the result shared from the site) */
+    | { kind: "chesscomDaily"; url: string };
+
+/** chess.com/daily/2026-10-31: the daily puzzle's page, which a shared result links */
+const CHESSCOM_DAILY =
+    /https?:\/\/(?:www\.)?chess\.com\/daily\/(\d{4}-\d{2}-\d{2})/;
 
 /** lichess.org/AbCdEfGh, optionally with the 4 player characters, /black, #ply… */
 const LICHESS_GAME =
@@ -47,6 +53,14 @@ export function parsePasted(raw: string): Pasted | undefined {
 
     const lichess = LICHESS_GAME.exec(text);
     if (lichess) return { kind: "lichess", gameId: lichess[1] };
+
+    // anywhere in the text: a shared result has a title, a score and a picture around it
+    const daily = CHESSCOM_DAILY.exec(text);
+    if (daily)
+        return {
+            kind: "chesscomDaily",
+            url: `https://www.chess.com/daily/${daily[1]}`,
+        };
 
     const fen = asFen(text);
     if (fen) return { kind: "fen", fen };

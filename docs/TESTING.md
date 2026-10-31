@@ -9,6 +9,9 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 
 - [ ] **Sound, F.16 (built app)**: step through a Library study with →: every move makes a
       sound, captures too, not only checks and castling.
+- [ ] **chess.com daily, F.30 (built app)**: copy today's result from chess.com and ⌘V in
+      the app: the puzzle opens. Puzzles → chess.com daily does the same. An older day's
+      link says only today's is available.
 
 ## Owner feedback, round 2: features (branch feature/feedback-features)
 

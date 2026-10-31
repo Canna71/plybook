@@ -82,6 +82,7 @@ pub fn run() {
             library_import_dropped,
             online_fetch_games,
             online_lichess_game,
+            online_chesscom_daily_puzzle,
             gamedb_list,
             gamedb_delete,
             gamedb_search,

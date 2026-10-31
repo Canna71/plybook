@@ -1021,7 +1021,14 @@ Second round, in the order given; bugs first when working through it.
   `historyFor` (the only way moves reach the engine) now writes castling as `e1g1` (tested).
   The reported game now reviews to the end.
   - Left: reading the log in a built app (the built app has no dev tools).
-- [ ] **F.30 Puzzles from chess.com:** how to get them.
+- [x] **F.30 Puzzles from chess.com** (`feature/feedback-answers`). chess.com has no puzzle
+  download; its public API gives the daily puzzle (today's only) with FEN and solution
+  (`online_chesscom_daily_puzzle` in `net.rs`). Pasting a shared result (the owner's: title,
+  `chess.com/daily/2026-10-31` link, score and an emoji picture, which can't tell pieces
+  apart) or the link opens it as a puzzle when it is today's, and says so otherwise; Puzzles
+  has a "chess.com daily" button (`online/chesscomdaily.ts`, `models/chesscompuzzle.ts`,
+  tested). Checked in the dev app with the owner's text: opened and solved. No score is
+  kept for it (it has no file).
 
 ## Last
 

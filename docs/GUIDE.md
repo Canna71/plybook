@@ -27,6 +27,7 @@ Two ways to get around quickly:
   action or a Library file.
 - **⌘V** outside a text field opens what you pasted. A screenshot of a board is scanned for its
   position. A FEN, a PGN, a Lichess game link or a Chessable lesson's JSON opens in Analysis.
+  chess.com's daily puzzle (its link, or the result shared from it) opens as a puzzle.
 
 ## Today
 <!-- help: today -->
@@ -171,10 +172,12 @@ mistake, later and later as you get it right.
 ## Puzzles
 <!-- help: puzzles -->
 
-Puzzles come from three places:
+Puzzles come from four places:
 - **Your studies:** games marked as puzzles.
 - **Your mistakes:** from reviewed games, where you find the move you missed.
 - **The Lichess puzzle set:** downloaded once from this page, picked at your rating and by theme.
+- **chess.com's daily puzzle:** the **chess.com daily** button, or paste (⌘V) the result you
+  share from chess.com, or its link. chess.com gives only today's puzzle, not older ones.
 
 **Pick a puzzle** starts one, and **Train my mistakes** plays only the puzzles made from your
 games. Play the move you think is best. If you are stuck, a hint shows the
