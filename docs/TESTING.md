@@ -177,7 +177,8 @@ line), dark and light: comments left-aligned, side lines as text, a click in a n
 it.
 
 - [ ] **The Chessable lesson**: paste the Tarrasch–Kelz JSON again: every comment reads left
-      to right under its move.
+      to right under its move, and the move numbers sit in a narrow column at the left (a
+      game opening with a comment used to push them to a third of the panel).
 - [ ] **Editing**: click into a comment in a side line and type: it edits in place, and
       right-click on a side-line move still offers comment, annotate and delete.
 - [ ] **A game with many side lines** (a study from the Library): long lines wrap cleanly, and
