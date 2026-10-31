@@ -132,6 +132,14 @@
         max-width: 640px;
     }
 
+    // the three text sizes (F.5), side by side
+    .appearance-text-sizes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--rc-space-4);
+        margin-bottom: var(--rc-space-5);
+    }
+
     .appearance {
         display: flex;
         gap: var(--rc-space-5);

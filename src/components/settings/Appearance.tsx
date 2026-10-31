@@ -45,6 +45,14 @@ const COORDINATES = [
     { value: "off", label: "None" },
 ];
 
+const TEXT_SIZES = [
+    { value: 90, label: "Smaller (90%)" },
+    { value: 100, label: "Normal" },
+    { value: 115, label: "Larger (115%)" },
+    { value: 130, label: "Large (130%)" },
+    { value: 150, label: "Largest (150%)" },
+];
+
 // a position with every piece, to judge a piece set
 const PREVIEW: Config = {
     fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R",
@@ -99,6 +107,40 @@ const Appearance: Component = () => {
                           // "wood2" -> "Wood 2"
                           .replace(/([a-z])(\d+)$/, "$1 $2"),
         }));
+
+    // text sizes (F.5), written as a whole
+    const textSize = (label: string, part: "app" | "moves" | "comments") => {
+        const sizes = () =>
+            getSettingValue("themes.textSize") ?? {
+                app: 100,
+                moves: 100,
+                comments: 100,
+            };
+        return (
+            <div class="field">
+                <label class="label is-small">{label}</label>
+                <div class="select is-small">
+                    <select
+                        value={String(sizes()[part])}
+                        onChange={(e) =>
+                            void setSettingValue("themes.textSize", {
+                                ...sizes(),
+                                [part]: Number(e.currentTarget.value),
+                            })
+                        }
+                    >
+                        <For each={TEXT_SIZES}>
+                            {(s) => (
+                                <option value={String(s.value)}>
+                                    {s.label}
+                                </option>
+                            )}
+                        </For>
+                    </select>
+                </div>
+            </div>
+        );
+    };
 
     // the app's theme (U.4): presets, the user's imported theme, an accent over any of them
     const customTheme = () => getSettingValue("themes.customTheme");
@@ -449,6 +491,17 @@ const Appearance: Component = () => {
                 <div class="appearance-preview">
                     <Chessboard config={() => PREVIEW} />
                 </div>
+            </div>
+
+            <h3 class="title is-6 appearance-more">Text</h3>
+            <p class="settings-help">
+                Larger or smaller text for the whole app, or only for the moves
+                and the comments beside the board.
+            </p>
+            <div class="appearance-text-sizes">
+                {textSize("App", "app")}
+                {textSize("Moves", "moves")}
+                {textSize("Comments", "comments")}
             </div>
 
             <h3 class="title is-6 appearance-more">More piece sets</h3>

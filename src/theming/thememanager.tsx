@@ -78,6 +78,21 @@ export function useThemes() {
         if (css) cssLoader.injectCSS(css, "ui-theme");
         else document.getElementById("ui-theme")?.remove();
     });
+    // text sizes (F.5): the app's through the root font size (Bulma and the tokens are in
+    // rem), the Moves list's and comments' as scales its styles multiply by
+    createEffect(() => {
+        const size = getSettingValue("themes.textSize");
+        const root = document.documentElement;
+        root.style.fontSize = size && size.app !== 100 ? `${size.app}%` : "";
+        root.style.setProperty(
+            "--rc-moves-scale",
+            String((size?.moves ?? 100) / 100),
+        );
+        root.style.setProperty(
+            "--rc-comments-scale",
+            String((size?.comments ?? 100) / 100),
+        );
+    });
 }
 
 async function loadStyle(path: string) {

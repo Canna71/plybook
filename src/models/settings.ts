@@ -38,6 +38,8 @@ export interface AppSettings {
         highlight?: string;
         /** Board coordinates (U.3): none, along the edges, or on every square */
         coordinates?: "off" | "edges" | "squares";
+        /** Text sizes in percent (F.5): the whole app, the Moves list, and comments */
+        textSize?: { app: number; moves: number; comments: number };
     };
     /** Chess sites opened in the app (I.5) */
     sites?: {
@@ -168,6 +170,7 @@ const DEFAULT: AppSettings = {
         },
         highlight: "",
         coordinates: "edges",
+        textSize: { app: 100, moves: 100, comments: 100 },
     },
     sites: { bookmarks: [] },
     engine: {

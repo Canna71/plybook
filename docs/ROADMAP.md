@@ -860,8 +860,14 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
   - In the main line a comment still splits a move pair ("1. e4 …" then "1. … e5"), as
     column views do; the "…" is now a quiet placeholder.
   - Dev driver: a `paste` command opens a PGN, FEN or lesson as ⌘V does.
-- [ ] **F.5 Font size settings** in Appearance for parts of the UI, starting with the Moves
-  panel and comments.
+- [x] **F.5 Font size settings** (`feature/font-sizes`, 2026-10-31): Settings → Appearance →
+  Text has three sizes, 90–150% (`themes.textSize`):
+  - **App:** the root font size; Bulma and the tokens are in rem, so everything scales.
+  - **Moves:** the Moves list and its side lines, figurines and move icons included (their
+    pixel sizes are now em).
+  - **Comments:** in the main line and in side lines.
+  - Moves and comments each multiply a fixed size, so changing one leaves the other alone.
+  - Left: a choice of font, if wanted.
 - [x] **F.6 Editing player names: how to finish** (`feature/quick-fixes`, 2026-10-31):
   - Enter, Tab or a click elsewhere saves, and Esc cancels; the first two worked already.
   - The board kept the field open: chessground prevents a press's default, so the focus

@@ -143,6 +143,17 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Isolation**: the site window has no Plybook menus or access; other downloads (a PDF)
       go to the usual Downloads folder.
 
+## Text sizes, F.5 (branch feature/font-sizes)
+
+Seen in the dev app: Moves at 130% (figurines and side lines too), comments at 115% on their
+own, the whole app at 115%, all set back to Normal.
+
+- [ ] **Restart**: set Moves to Large, quit and reopen: still large.
+- [ ] **Largest app text**: App at 150%: Analysis, Library and Settings still fit, nothing
+      overlaps; the board shrinks to fit.
+- [ ] **Smaller**: Moves at 90% in a long game with annotations (!, ?): the move icons stay
+      lined up with the moves.
+
 ## Save to a folder and Move to…, F.3 (branch feature/save-folder)
 
 Seen in the dev app: Save on a pasted game opens the chooser with Pasted chosen; Cancel saves

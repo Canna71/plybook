@@ -161,9 +161,12 @@
                 user-select: none;
                 border: 1px solid var(--bulma-border);
 
+                // text sizes from Settings → Appearance (F.5): moves and comments each
+                // from a fixed size times their own scale, so neither compounds the other
                 .pgnviewer-moves-panel {
                     padding: 0.5em;
                     cursor: default;
+                    font-size: calc(1rem * var(--rc-moves-scale, 1));
 
                     &.editable {
                         
@@ -189,7 +192,9 @@
                             padding: 2px 6px 6px 2.6em;
                             text-align: left;
                             color: var(--rc-text);
-                            font-size: 90%;
+                            font-size: calc(
+                                var(--rc-text-sm) * var(--rc-comments-scale, 1)
+                            );
                             line-height: 1.45;
                         }
 
@@ -205,7 +210,9 @@
                             background-color: var(--rc-surface);
                             border-radius: 0 var(--rc-radius-small)
                                 var(--rc-radius-small) 0;
-                            font-size: var(--rc-text-sm);
+                            font-size: calc(
+                                var(--rc-text-sm) * var(--rc-moves-scale, 1)
+                            );
                             line-height: 1.9;
 
                             .pgnviewer-variation-text {
@@ -243,6 +250,10 @@
                                 min-height: 0;
                                 margin: 0 4px;
                                 color: var(--rc-text-muted);
+                                font-size: calc(
+                                    var(--rc-text-sm) *
+                                        var(--rc-comments-scale, 1)
+                                );
                             }
                         }
 
@@ -284,22 +295,28 @@
                                 color: #f0c15c; /* Dubious move ?! */
                             }
 
+                            // sizes in em, so they follow the moves' text size (F.5)
                             .pgnviewer-annotation {
                                 float: left;
                                 position: relative;
-                                top: 4px;
-                                width: 20px;
+                                top: 0.3em;
+                                width: 1.4em;
+
+                                svg {
+                                    width: 1.25em;
+                                    height: 1.25em;
+                                }
                             }
                         }
 
                         .pgnviewer-movenumber {
-                            line-height: 24px;
+                            line-height: 1.7em;
                         }
 
                         .pgnviewer-movecontent {
                             display: inline-block;
-                            height: 24px;
-                            line-height: 24px;
+                            height: 1.7em;
+                            line-height: 1.7em;
                             padding: 0 4px;
                             font-weight: 600;
                             white-space: nowrap;
@@ -308,7 +325,7 @@
                             .move-fan-figurine {
                                 svg {
                                     vertical-align: text-bottom;
-                                    height: 18px;
+                                    height: 1.25em;
                                 }
                             }
                         }
