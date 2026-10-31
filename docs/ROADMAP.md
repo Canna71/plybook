@@ -841,11 +841,18 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
 - [ ] **F.3 Where a pasted PGN goes**: choose the Library folder when saving a pasted game
   (check first where Save puts it today), and move files between Library folders (drag, or
   "Move to…").
-- [ ] **F.4 Moves: alignment and indentation.** The comments in the Moves panel are
-  right-aligned and justified, which reads badly. A comment also splits a move pair into
-  "1. e4 …" and "1. … e5" rows, and variations don't keep their indentation. Comments should
-  be left-aligned, under the move they belong to, and a variation indented by its depth (seen
-  with the Tarrasch–Kelz lesson).
+- [x] **F.4 Moves: alignment and indentation** (`feature/moves-layout`, 2026-10-31):
+  - The cause: the move-number column was styled as each row's first cell, and a comment row's
+    one cell is a first cell too, so comments were right-aligned and muted, in side lines as
+    well.
+  - Comments are now left-aligned under their move, at the moves' indent.
+  - Side lines are running text ("3. Bc4 Qh4+ 4. Kf1", comments inline), as books and Lichess
+    print them, rather than a two-column table squeezed into the panel. Each deeper side line
+    is a block one step further in, with a rule on its left. The font no longer shrinks with
+    depth.
+  - In the main line a comment still splits a move pair ("1. e4 …" then "1. … e5"), as
+    column views do; the "…" is now a quiet placeholder.
+  - Dev driver: a `paste` command opens a PGN, FEN or lesson as ⌘V does.
 - [ ] **F.5 Font size settings** in Appearance for parts of the UI, starting with the Moves
   panel and comments.
 - [ ] **F.6 Editing player names: how to finish.** The name field under the board stays in

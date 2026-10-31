@@ -143,6 +143,19 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Isolation**: the site window has no Plybook menus or access; other downloads (a PDF)
       go to the usual Downloads folder.
 
+## Moves layout, F.4 (branch feature/moves-layout)
+
+Seen in the dev app with a test game (comments, a side line with a comment, a nested side
+line), dark and light: comments left-aligned, side lines as text, a click in a nested line plays
+it.
+
+- [ ] **The Chessable lesson**: paste the Tarrasch–Kelz JSON again: every comment reads left
+      to right under its move.
+- [ ] **Editing**: click into a comment in a side line and type: it edits in place, and
+      right-click on a side-line move still offers comment, annotate and delete.
+- [ ] **A game with many side lines** (a study from the Library): long lines wrap cleanly, and
+      the current move stays scrolled into view as you step through with →.
+
 ## Plybook, F.1 (branch feature/plybook)
 
 Seen in the dev app: the window title and the texts.

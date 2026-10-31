@@ -18,7 +18,7 @@ const CommentsRows: Component<{
         <For each={comments()}>
             {(comment, index) => (
                 <tr>
-                    <td colSpan={3}>
+                    <td class="pgnviewer-comment-cell" colSpan={3}>
                         <CommentsView
                             comments={() => comment}
                             path={path}
@@ -54,7 +54,7 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
             />
 
             <tr>
-                <td>
+                <td class="pgnviewer-number-cell">
                     <div class="move-cell">
                         <span class="pgnviewer-movenumber">{move.number}.</span>
                     </div>
@@ -76,8 +76,12 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
 
             <Show when={afterWhite.length && move.black}>
                 <tr>
-                    <td>
-                        <div class="pgnviewer-movenumber">{move.number}.</div>
+                    <td class="pgnviewer-number-cell">
+                        <div class="move-cell">
+                            <span class="pgnviewer-movenumber">
+                                {move.number}.
+                            </span>
+                        </div>
                     </td>
                     <td>
                         <Ply line={move} />
@@ -95,10 +99,7 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
                     {(variation) => (
                         <tr>
                             <td class="pgnviewer-variation-cell" colSpan={3}>
-                                <MovesTree
-                                    movesTree={() => variation}
-                                    initialComments={() => []}
-                                />
+                                <VariationText moves={variation} />
                             </td>
                         </tr>
                     )}
@@ -107,6 +108,75 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
         </>
     );
 };
+
+const InlineComments: Component<{
+    comments: string[];
+    path: Path;
+    starting?: boolean;
+}> = (props) => (
+    <For each={props.comments}>
+        {(comment, index) => (
+            <CommentsView
+                comments={() => comment}
+                path={props.path}
+                index={index()}
+                starting={props.starting}
+            />
+        )}
+    </For>
+);
+
+/** A side line as running text, "3. Bc4 Qh4+ 4. Kf1", as books and Lichess print it: a narrow
+ * panel keeps it readable, and a variation inside it starts a block indented one step more. */
+const VariationText: Component<{ moves: HierarchicalMoveData[] }> = (props) => (
+    <div class="pgnviewer-variation-text">
+        <For each={props.moves}>
+            {(move) => {
+                const starting =
+                    move.white?.startingComments ||
+                    move.black?.startingComments ||
+                    [];
+                const afterWhite = move.white?.comments || [];
+                // Black's move needs its number when it starts the line or follows a comment
+                const blackNumber = !move.white || afterWhite.length > 0;
+                return (
+                    <>
+                        <InlineComments
+                            comments={starting}
+                            path={(move.white ?? move.black)!.path}
+                            starting={true}
+                        />
+                        <Show when={move.white}>
+                            <span class="pgnviewer-movenumber">
+                                {move.number}.
+                            </span>
+                            <Ply line={move} color="white" />
+                            <InlineComments
+                                comments={afterWhite}
+                                path={move.white!.path}
+                            />
+                        </Show>
+                        <Show when={move.black}>
+                            <Show when={blackNumber}>
+                                <span class="pgnviewer-movenumber">
+                                    {move.number}…
+                                </span>
+                            </Show>
+                            <Ply line={move} color="black" />
+                            <InlineComments
+                                comments={move.black!.comments || []}
+                                path={move.black!.path}
+                            />
+                        </Show>
+                        <For each={move.variations ?? []}>
+                            {(variation) => <VariationText moves={variation} />}
+                        </For>
+                    </>
+                );
+            }}
+        </For>
+    </div>
+);
 
 type MoveProps = {
     move: HierarchicalMoveData;
