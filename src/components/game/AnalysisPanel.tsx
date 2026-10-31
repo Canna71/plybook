@@ -38,6 +38,7 @@ const AnalysisPanel: Component<{
 }> = (props) => {
     const {
         viewModeSignal: [viewMode],
+        gameSignal: [game],
         editPgnSignal: [editPgn, setEditPgn],
         isPlayingOnSignal: [isPlayingOn],
         playingEngine,
@@ -92,7 +93,11 @@ const AnalysisPanel: Component<{
             <Show when={viewMode() === ViewMode.MOVES && !isPuzzleMode()}>
                 <PanelSection id="moves" title="Moves" grow>
                     <Show
-                        when={props.hasMoves()}
+                        when={
+                            props.hasMoves() ||
+                            // a comment on the starting position, with no move yet (F.21)
+                            !!game()?.initial.comments.length
+                        }
                         fallback={
                             <p class="panel-hint">
                                 {playingEngine() && isPlayingOn()

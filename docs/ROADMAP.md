@@ -972,8 +972,13 @@ Second round, in the order given; bugs first when working through it.
   for the download. The same bar was in Settings → Updates, the game review and the database
   import; all use `components/common/Progress.tsx` now, which shows a busy bar until a value
   is known. Checked in the dev app: 293 MB downloaded, 3,289,936 puzzles imported.
-- [ ] **F.21 A comment without a move:** a comment on the starting position (a diagram)
-  without entering a move first, kept in a PGN field.
+- [x] **F.21 A comment without a move** (`feature/feedback-features`): ⋯ → "Comment on the
+  starting position" (on a move: "Add a comment to this move"). It is PGN's own place for it,
+  the comment before the first move (`{ … } 1. e4`), which other programs show; the model
+  already kept it and the Moves list showed it, but comments could only be added from a
+  move's menu, and the Moves panel showed its hint instead of the list while there were no
+  moves. The game's description (⋯ → Write a description, a `[Description]` tag) is the other
+  place, for notes about the whole game.
 - [x] **F.22 [Bug] PDF reader: the side-to-move dropdown sometimes disappears**
   (`feature/feedback-round-2`). It was hidden on purpose once the diagram had a notes file,
   which is written at the first change, so it seemed to vanish at random. It now stays: while

@@ -87,7 +87,9 @@ Maia network) show what players of a given rating would play here.
 The opening's name appears above the moves.
 
 **Annotating**
-- **Comments:** write under a move in the Moves section.
+- **Comments:** write under a move in the Moves section. **More** (⋯) → **Comment on the
+  starting position** comments on a position before any move (a diagram, say); it is the PGN
+  comment before the first move, which other chess programs show too.
 - **Arrows and circles:** right-click and drag on the board. On a touchpad, turn on the pen
   (**D**, or the pen button by the board): a plain click draws a circle and a drag draws an
   arrow. Shift + drag always draws. Hold Option for blue, ⌘ for red, or both for yellow.

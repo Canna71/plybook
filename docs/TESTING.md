@@ -17,6 +17,9 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
       stops before the notes get narrower than the board needs, and before the book gets too
       narrow; the pages redraw sharp at the new width. Reopen the book: same width. Double-
       click the line: back to the usual width.
+- [ ] **Comment without a move, F.21**: open a position with no moves (paste a FEN), ⋯ →
+      Comment on the starting position, type, click away. Save, close and reopen: the comment
+      is there, above the moves once you add some.
 - [ ] **Whose move, F.27**: start a game as Black: "Thinking…" by the engine first, then
       "Your move" by you. Both disappear at mate or after resigning.
 
