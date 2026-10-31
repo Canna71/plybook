@@ -860,6 +860,11 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
   - In the main line a comment still splits a move pair ("1. e4 …" then "1. … e5"), as
     column views do; the "…" is now a quiet placeholder.
   - Dev driver: a `paste` command opens a PGN, FEN or lesson as ⌘V does.
+  - Second cause, found by the owner after the merge (`feature/moves-columns`): the moves
+    table is `table-layout: fixed`, which takes column widths from its first row. A game that
+    opens with a comment (one cell over three columns) got three equal thirds, so the number
+    column was a third of the panel and the moves sat right of centre. The columns are now
+    declared in a `<colgroup>`.
 - [x] **F.5 Font size settings** (`feature/font-sizes`, 2026-10-31): Settings → Appearance →
   Text has three sizes, 90–150% (`themes.textSize`):
   - **App:** the root font size; Bulma and the tokens are in rem, so everything scales.

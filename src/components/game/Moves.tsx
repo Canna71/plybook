@@ -197,6 +197,13 @@ const MovesTree: Component<MovesTreeProps> = ({
 }) => {
     return (
         <table class="pgnviewer-moves">
+            {/* the columns, whatever the first row is: a fixed table takes them from its first
+                row, and a comment there (one cell over all three) made three equal thirds */}
+            <colgroup>
+                <col class="pgnviewer-number-col" />
+                <col />
+                <col />
+            </colgroup>
             <CommentsRows comments={initialComments} path={Path.root} />
             <For each={movesTree()}>
                 {(line) => (

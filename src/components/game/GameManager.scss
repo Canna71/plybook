@@ -178,8 +178,11 @@
                         table-layout: fixed;
                         border-collapse: collapse;
 
-                        td.pgnviewer-number-cell {
+                        col.pgnviewer-number-col {
                             width: 2.6em;
+                        }
+
+                        td.pgnviewer-number-cell {
                             text-align: right;
                             padding-right: 6px;
                             color: var(--rc-text-muted);
