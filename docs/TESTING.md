@@ -143,6 +143,22 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Isolation**: the site window has no Plybook menus or access; other downloads (a PDF)
       go to the usual Downloads folder.
 
+## Save to a folder and Move to…, F.3 (branch feature/save-folder)
+
+Seen in the dev app: Save on a pasted game opens the chooser with Pasted chosen; Cancel saves
+nothing.
+
+- [ ] **Save a pasted game**: ⌘V a PGN, Save, pick another folder (↑ ↓ and Enter, or a
+      click and Save): the game opens from its new file there.
+- [ ] **Remembered**: paste another game and Save: the folder from last time is chosen.
+- [ ] **A new analysis**: play a few moves on an empty board, Save: it asks for a folder (no
+      system dialog), and the file is in the Library.
+- [ ] **Move to…**: Library → ⋯ on a file → Move to… → another folder: it moves, a toast says
+      where, and the old folder no longer lists it. The file's own folder is not offered.
+- [ ] **Move a folder**: its own folders are not offered; after the move, its files open.
+- [ ] **Name taken**: move a file into a folder holding one of the same name: it arrives as
+      "name (1)", nothing replaced.
+
 ## Moves layout, F.4 (branch feature/moves-layout)
 
 Seen in the dev app with a test game (comments, a side line with a comment, a nested side

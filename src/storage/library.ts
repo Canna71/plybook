@@ -60,6 +60,22 @@ export async function listAllFiles(
     return nested.flat();
 }
 
+/** The Library and every folder in it, parents before their folders, by name (the folder
+ * chooser, F.3) */
+export async function listFolders(folder = LIBRARY_ROOT): Promise<string[]> {
+    const items = await readDir(folder, {
+        baseDir: BaseDirectory.AppLocalData,
+    });
+    const children = items
+        .filter((item) => kindOf(item.name, item.isDirectory) === "folder")
+        .map((item) => item.name)
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    const nested = await Promise.all(
+        children.map((name) => listFolders(`${folder}${sep()}${name}`)),
+    );
+    return [folder, ...nested.flat()];
+}
+
 /** Library/Scanned: each book's folder with how many diagrams (PGN files) it holds. */
 export async function listScanned(): Promise<Map<string, number>> {
     const root = `${LIBRARY_ROOT}${sep()}Scanned`;

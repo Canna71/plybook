@@ -171,6 +171,27 @@ export async function createNewDataFile(
     return fullPath;
 }
 
+/** Moves a file or folder into another Library folder, as "name (1)" if the name is taken
+ * there; nothing is overwritten. The new path. */
+export async function moveDataFile(path: string, folder: string) {
+    const name = baseName(path);
+    let newName = name;
+    let i = 1;
+    let fullPath = "";
+    while (
+        ((fullPath = await join(folder, newName)),
+        await exists(fullPath, { baseDir: BaseDirectory.AppLocalData }))
+    ) {
+        newName = createIncrementedName(name, newName, i);
+        i++;
+    }
+    await rename(path, fullPath, {
+        oldPathBaseDir: BaseDirectory.AppLocalData,
+        newPathBaseDir: BaseDirectory.AppLocalData,
+    });
+    return fullPath;
+}
+
 function createIncrementedName(name: string, newName: string, i: number) {
     let base = name;
     let ext = "";

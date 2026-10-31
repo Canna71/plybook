@@ -99,8 +99,9 @@ The opening's name appears above the moves.
   - change the starting position;
   - edit the PGN text.
 
-**Save** writes your changes to the game's file. A game that has no file yet (pasted, or from a
-database) is saved as a copy in the Library.
+**Save** writes your changes to the game's file. A game that has no file yet (new, pasted, or
+from a database) asks which Library folder to save it in. The folder you used last is chosen
+already, so Enter saves it there.
 
 ## Library
 <!-- help: library -->
@@ -112,7 +113,9 @@ folder on your computer (see [Your data](#your-data)).
   into the folder you are viewing.
 - **New** creates a folder or an empty study. **Search the Library** finds files by name, in
   every folder. To find games by player or opening, import them into [Databases](#databases).
-- **More** (⋯) on a file: open, rename, delete, or show it in Finder.
+- **More** (⋯) on a file or folder: open, rename, **Move to…** another folder, delete, or
+  (for a folder) show it in Finder. A move never replaces a file: if the name is taken there,
+  it gets a number.
 - **Open a file:** click it. A file with several games lists them, and a game opens in Analysis.
 - **Games from your accounts** go to **Library/Online** (see Settings → Accounts).
 - **Files from sites:** PGNs downloaded in a site window go to **Library/Downloads**, and games

@@ -2,6 +2,7 @@ import { onCleanup, onMount, ParentComponent, Show } from "solid-js";
 import { useLocation, useNavigate } from "@solidjs/router";
 import Sidebar, { sidebarCollapsed } from "./Sidebar";
 import { CommandPalette } from "../components/shell/CommandPalette";
+import { FolderPickerHost } from "../components/common/FolderPicker";
 import { invoke } from "@tauri-apps/api/core";
 import {
     pastedImage,
@@ -111,6 +112,7 @@ const Layout: ParentComponent = (props) => {
             <main class="main-content">{props.children}</main>
             <VideoPlayer />
             <CommandPalette />
+            <FolderPickerHost />
         </main>
     );
 };
