@@ -6,9 +6,11 @@
 // A command: { "id": "any unique value", "go": "/route", "click": "css selector",
 //              "type": "text", "key": "ArrowRight", "theme": "light" | "dark" | "",
 //              "move": "e2e4 g1f3", "draw": "e2e4 d4d4", "scroll": "css selector",
-//              "hover": "css selector" }
+//              "hover": "css selector", "paste": "PGN, FEN or a Chessable lesson's JSON" }
 
 import anylogger from "anylogger";
+import { parsePasted } from "../paste/pasted";
+import { setPendingPgn } from "../paste/pending";
 const log = anylogger("devdriver");
 
 type Command = {
@@ -27,6 +29,8 @@ type Command = {
     scroll?: string;
     /** Moves the mouse onto this element (mouseenter and mouseover) */
     hover?: string;
+    /** Text opened as ⌘V outside a field opens it (instead of "go") */
+    paste?: string;
 };
 
 const POLL = 500;
@@ -139,6 +143,15 @@ export function startDevDriver(navigate: (to: string) => void) {
             else delete document.documentElement.dataset.theme;
         }
         if (cmd.go) navigate(cmd.go);
+        if (cmd.paste !== undefined) {
+            const pasted = parsePasted(cmd.paste);
+            if (pasted?.kind === "pgn") {
+                setPendingPgn(pasted.pgn);
+                navigate("/analysis?source=pasted");
+            } else if (pasted?.kind === "fen")
+                navigate(`/analysis?fen=${encodeURIComponent(pasted.fen)}`);
+            else log.warn("not a game or a position", cmd.paste.slice(0, 40));
+        }
         // after the route has rendered
         setTimeout(() => {
             if (cmd.click) {

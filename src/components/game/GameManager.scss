@@ -175,8 +175,7 @@
                         table-layout: fixed;
                         border-collapse: collapse;
 
-                        > tr > td:first-child,
-                        > tbody > tr > td:first-child {
+                        td.pgnviewer-number-cell {
                             width: 2.6em;
                             text-align: right;
                             padding-right: 6px;
@@ -184,23 +183,66 @@
                             font-variant-numeric: tabular-nums;
                         }
 
+                        // a comment reads as text under its move: left-aligned with the
+                        // moves (past the number column), at every depth of variation
+                        td.pgnviewer-comment-cell {
+                            padding: 2px 6px 6px 2.6em;
+                            text-align: left;
+                            color: var(--rc-text);
+                            font-size: 90%;
+                            line-height: 1.45;
+                        }
+
                         td.pgnviewer-variation-cell {
                             padding: 2px 0 4px 2.6em;
-                            font-size: 90%;
-                            text-align: left !important;
-                            color: inherit !important;
+                        }
 
-                            // a side line: indented, quieter, with a rule on its left
-                            table.pgnviewer-moves {
-                                width: 100%;
-                                border-left: 2px solid var(--rc-border-strong);
-                                background-color: var(--rc-surface);
-                                border-radius: 0 var(--rc-radius-small)
-                                    var(--rc-radius-small) 0;
+                        // a side line (Moves.tsx VariationText): running text, indented,
+                        // quieter, with a rule on its left; one more step for each depth
+                        .pgnviewer-variation-text {
+                            padding: 2px 6px 2px 8px;
+                            border-left: 2px solid var(--rc-border-strong);
+                            background-color: var(--rc-surface);
+                            border-radius: 0 var(--rc-radius-small)
+                                var(--rc-radius-small) 0;
+                            font-size: var(--rc-text-sm);
+                            line-height: 1.9;
 
-                                .pgnviewer-movecontent {
-                                    font-weight: 500;
-                                }
+                            .pgnviewer-variation-text {
+                                margin: 2px 0 2px 1em;
+                            }
+
+                            .pgnviewer-movenumber {
+                                color: var(--rc-text-muted);
+                                margin-left: 4px;
+                                line-height: inherit;
+                            }
+
+                            .move-cell {
+                                display: inline-block;
+                                padding: 0;
+                                font-size: inherit;
+                            }
+
+                            .pgnviewer-movecontent {
+                                font-weight: 500;
+                                height: auto;
+                                line-height: 1.6;
+                                padding: 0 3px;
+                            }
+
+                            .pgnviewer-move .pgnviewer-annotation {
+                                float: none;
+                                display: inline-block;
+                                top: 3px;
+                            }
+
+                            // comments run on in the text, quieter than the moves
+                            .pgnviewer-comments {
+                                display: inline;
+                                min-height: 0;
+                                margin: 0 4px;
+                                color: var(--rc-text-muted);
                             }
                         }
 
@@ -269,6 +311,12 @@
                                     height: 18px;
                                 }
                             }
+                        }
+
+                        // "…" where a comment split a move pair: a placeholder, not a move
+                        .move-cell:not(.pgnviewer-move) .pgnviewer-movecontent {
+                            color: var(--rc-text-muted);
+                            font-weight: 400;
                         }
 
                         // the move on the board: the accent, as in the sidebar
