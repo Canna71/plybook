@@ -5,6 +5,8 @@
 import { Component, For, JSX, Show } from "solid-js";
 import { A, useLocation } from "@solidjs/router";
 import {
+    IconArrowLeft,
+    IconArrowRight,
     IconBooks,
     IconChessKnight,
     IconDatabase,
@@ -32,6 +34,7 @@ import {
 } from "../models/navigation";
 import { getSettingValue, setSettingValue } from "../models/settings";
 import { openCommandPalette } from "../components/shell/CommandPalette";
+import { useNavHistory } from "../components/shell/navHistory";
 import Logo from "../components/shell/Logo";
 import "./Sidebar.scss";
 
@@ -60,6 +63,7 @@ const isMac = navigator.platform.toUpperCase().includes("MAC");
 
 const Sidebar: Component = () => {
     const location = useLocation();
+    const nav = useNavHistory();
     const collapsed = sidebarCollapsed;
     const active = () => activeNavItem(location.pathname)?.id;
 
@@ -77,10 +81,29 @@ const Sidebar: Component = () => {
 
     return (
         <nav class="app-sidebar" classList={{ collapsed: collapsed() }}>
-            <A href="/" class="nav-brand" title="Plybook">
-                <Logo />
-                <span class="nav-label">Plybook</span>
-            </A>
+            <div class="nav-top">
+                <A href="/" class="nav-brand" title="Plybook">
+                    <Logo />
+                    <span class="nav-label">Plybook</span>
+                </A>
+                {/* F.25: back and forward between the places visited */}
+                <span class="nav-history">
+                    <button
+                        title={`Back (${nav.keys.back})`}
+                        disabled={!nav.canBack()}
+                        onClick={nav.back}
+                    >
+                        <IconArrowLeft />
+                    </button>
+                    <button
+                        title={`Forward (${nav.keys.forward})`}
+                        disabled={!nav.canForward()}
+                        onClick={nav.forward}
+                    >
+                        <IconArrowRight />
+                    </button>
+                </span>
+            </div>
             <button
                 class="nav-item nav-search"
                 title={`Go to… (${isMac ? "⌘" : "Ctrl+"}K)`}

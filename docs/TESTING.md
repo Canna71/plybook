@@ -20,6 +20,9 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 - [ ] **Comment without a move, F.21**: open a position with no moves (paste a FEN), ⋯ →
       Comment on the starting position, type, click away. Save, close and reopen: the comment
       is there, above the moves once you add some.
+- [ ] **Back and forward, F.25**: go Library → a game → Puzzles, then ⌘[ twice and ⌘] once
+      (and the arrows at the top of the sidebar). In a game with unsaved moves, going back
+      behaves as leaving it from the sidebar does.
 - [ ] **Whose move, F.27**: start a game as Black: "Thinking…" by the engine first, then
       "Your move" by you. Both disappear at mate or after resigning.
 

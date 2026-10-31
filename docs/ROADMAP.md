@@ -993,7 +993,11 @@ Second round, in the order given; bugs first when working through it.
   (`feature/feedback-features`). The notes column keeps at least 300 px (the board) and the
   book 320 px; the width is kept for every book (`reader.sideWidth`), and a double-click
   goes back to the usual width.
-- [ ] **F.25 Navigation history:** back and forward between the places visited.
+- [x] **F.25 Navigation history** (`feature/feedback-features`): ← and → beside the name at
+  the top of the sidebar, ⌘[ / ⌘] (Alt+← / Alt+→ on Windows). They use the webview's own
+  history, so every way of getting somewhere counts; whether there is somewhere to go is read
+  from the router's numbering of history entries (`components/shell/navHistory.ts`). Hidden in
+  the collapsed sidebar, where the keys still work.
 - [x] **F.26 Play the engine: items not aligned vertically** when they sit side by side
   (`feature/feedback-features`). The header's labels sat on the text baseline while Bulma's
   `.buttons` gave their dropdowns a bottom margin; "Engine plays" was in a row that was never

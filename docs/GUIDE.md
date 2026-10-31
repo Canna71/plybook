@@ -304,6 +304,7 @@ Anywhere:
 | ⌘K (Ctrl+K) | Go to a screen, setting, action or file |
 | ⌘V (Ctrl+V) | Open a pasted position, game, link or screenshot |
 | F1 | Help for the screen you are on |
+| ⌘[ and ⌘] (Alt+← and Alt+→) | Back and forward between the places you visited (also the arrows by the name at the top of the sidebar) |
 
 Keys typed in a text field are left alone.
 
