@@ -5,6 +5,13 @@ not been tried in the running app yet. Test in a **built** app where noted (`pnp
 the CSP and signing only apply there. Tick an item when it's confirmed, note what went wrong
 when it isn't, and remove ticked items once their roadmap entry says "confirmed by the owner".
 
+## Owner feedback, round 2: features (branch feature/feedback-features)
+
+- [ ] **Chessable orientation, F.19**: paste a lesson from a Black course (`"studyCol":
+      "black"`): the board has Black at the bottom. If not, send me where `studyCol` sits in
+      the JSON.
+- [ ] **Show in Finder, F.15**: in a built app, Library → Show in Finder opens the folder.
+
 ## Owner feedback, round 2 (branch feature/feedback-round-2)
 
 - [ ] **Castling, F.28**: Play the engine, castle as soon as you can. The engine replies, and

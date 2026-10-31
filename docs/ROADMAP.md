@@ -952,13 +952,17 @@ Second round, in the order given; bugs first when working through it.
   names alone; a rename never overwrites another file.
   - Left: repertoire cards and puzzle scores are keyed by the file's path, so they don't follow
     a rename or a move (F.3's Move to… either).
-- [ ] **F.15 A button to open the Library folder** in Finder or Explorer.
+- [x] **F.15 A button to open the Library folder** in Finder or Explorer
+  (`feature/feedback-features`). It was in the header's ⋯ menu; now it is a button, "Show in
+  Finder" ("Explorer" on Windows), for the folder being viewed.
 - [ ] **F.16 No sound in studies:** by design, or missing?
 - [ ] **F.17 [Bug?] Guess the move is unclear:** how to add more than one candidate, and what
   it is for.
 - [ ] **F.18 Rename the project to Plybook throughout:** the bundle identifier, the data
   folder and the other internal names F.1 kept, with the move of every user's data.
-- [ ] **F.19 Chessable paste: `"studyCol": "black"` sets the board's orientation.**
+- [x] **F.19 Chessable paste: `"studyCol": "black"` sets the board's orientation**
+  (`feature/feedback-features`): written as the PGN's `[Orientation]`, so it stays when saved.
+  No sample had the field, so it is read at the top level, in `lesson` or on the first move.
 - [x] **F.20 [Bug] Downloading Lichess puzzles** shows no progress and nothing is downloaded
   (`feature/feedback-round-2`). The progress bar appeared before the first numbers, and a
   `<progress>`'s `value` set to undefined throws, so the click handler stopped before asking

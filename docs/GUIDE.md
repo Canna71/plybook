@@ -111,6 +111,7 @@ folder on your computer (see [Your data](#your-data)).
 
 - **Add files:** drop PGN or PDF files on the window, or use the add button. They are copied
   into the folder you are viewing.
+- **Show in Finder** (Explorer on Windows) opens the folder you are viewing on your computer.
 - **New** creates a folder or an empty study. **Search the Library** finds files by name, in
   every folder. To find games by player or opening, import them into [Databases](#databases).
 - **More** (⋯) on a file or folder: open, rename, **Move to…** another folder, delete, or
