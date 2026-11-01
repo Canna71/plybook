@@ -1128,19 +1128,40 @@ Third round, triaged: bugs first, then requests, then research.
   the model may add commentary from the evidence (the lines and board facts), marked as its
   own interpretation, rather than only reword. Outcome: a short plan with examples from the
   owner's games before any code.
-  - [ ] **F.37e Measure on the owner's games**: `src/reasons/owngames.eval.ts`, the mistakes of
+  - [x] **F.37e Measure on the owner's games**: `src/reasons/owngames.eval.ts`, the mistakes of
     given games explained with their lines (the table in EXPLANATIONS.md), rerun after each
-    step. First, as the yardstick.
-  - [ ] **F.37a Settle the line before reading it**: facts and material read where the
-    exchange is over; a first-reply fact the next move undoes is dropped.
-  - [ ] **F.37b A reason for the better move, always**: its threats and settled line, or the
-    largest difference of F.37c.
-  - [ ] **F.37c Compare the two futures**: material, kings, development, pawn weaknesses and
+    step. First, as the yardstick. Done (`feature/explain-settled`): `STOCKFISH=…
+    OWN_GAMES=a.pgn,b.pgn OWN_NAMES=Player,canna71 pnpm eval:reasons -t "own games"`.
+  - [x] **F.37a Settle the line before reading it**: facts and material read where the
+    exchange is over; a first-reply fact the next move undoes is dropped. Done
+    (`feature/explain-settled`): the answer's attacks and pins are named only if they outlast
+    the mover's next move in the line; "After …: wins material" stops at the last capture
+    whose balance the engine's score bears out (`lineOutcome` gives the material after each
+    move). Tested with three of the owner's positions.
+  - [~] **F.37b A reason for the better move, always**: its threats and settled line, or the
+    largest difference of F.37c. Done in part (`feature/explain-settled`): what the better
+    move does that outlasts the answer to it; the answer to the played move that it stops
+    (one that was there before the move and no longer works after the better one: "Better
+    was Qh3: it stops Qxe3", "g6 … stops Qxf7#"); else its positional readings ("e5: it takes
+    a share of the centre"). Left bare in the owner's games: a5, Bd6, Rf1, for F.37c. Its
+    threats (`explainThreats` for the better move) would need one more engine search per
+    moment; not yet.
+  - [~] **F.37c Compare the two futures**: material, kings, development, pawn weaknesses and
     piece values at the settled points of both lines; the largest difference as the cost
     (interpretation). New readings: queens traded when ahead in development; the centre
-    opening with a king in it.
-  - [ ] **F.37d The coach sees the evidence**: the model gets the lines and facts, may say what
+    opening with a king in it. Done in part (`feature/explain-settled`,
+    `reasons/futures.ts`, tested): the queens coming off in the answer's line while the
+    opponent's king is in the centre, and kept on in the better line (9.Re1, 12.e5,
+    13.exd6); a file opened on a king in the centre by the better line (17.g3's Rf1). Left:
+    positions with both kings castled (10…d5's a5, 11…dxe4's Bd6): pawn structure and piece
+    activity compared, next.
+  - [x] **F.37d The coach sees the evidence**: the model gets the lines and facts, may say what
     they show, its moves and squares checked against them, labelled as the coach's reading.
+    Done (`feature/explain-settled`): `coachBrief` (tested) sends the explanation, its
+    evidence with each item's basis and the engine's lines in SAN; the system prompt in
+    `model.rs` asks for what they show (not a rewording), readings said as likely; the check
+    runs against the whole brief; "The coach's reading" above the text. Not yet tried with
+    a model (needs the owner's key).
 - [x] **F.38 PDF reader: a table of contents** to jump to chapters. From the PDF's outline
   where it has one (pdf.js `getOutline`); scanned books often have none, so perhaps the
   user's own bookmarks per book as a fallback. Done (`feature/coach-history-toc`): neither

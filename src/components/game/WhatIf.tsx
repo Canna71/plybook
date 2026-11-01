@@ -196,14 +196,18 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
                             }
                         />
                     </div>
-                    <CoachWords
-                        text={explanation().join(" ")}
-                        fens={() =>
-                            [before()?.fen, move()?.fen].filter(
-                                (f): f is string => !!f,
-                            )
-                        }
-                    />
+                    <Show when={full()}>
+                        {(x) => (
+                            <CoachWords
+                                explanation={x()}
+                                fens={() =>
+                                    [before()?.fen, move()?.fen].filter(
+                                        (f): f is string => !!f,
+                                    )
+                                }
+                            />
+                        )}
+                    </Show>
                     <Show when={full()}>
                         {(x) => <ExplanationEvidence explanation={x()} />}
                     </Show>

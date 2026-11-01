@@ -20,6 +20,7 @@ import {
 import { MoveValues, positionalReasons } from "../reasons/positional";
 import { keepsWords, keptWords, onlyMove } from "../reasons/onlymove";
 import { describeSacrifice, saidSacrifice } from "../reasons/sacrifice";
+import { compareFutures, Futures } from "../reasons/futures";
 import type { EngineInfo } from "../engine/engineinterfaces";
 
 export type ExplainInput = {
@@ -177,6 +178,14 @@ function play(fen: string, uci: string) {
     return { san, fen: makeFen(pos.value.toSetup()) };
 }
 
+/** The position with `side` to move (no en passant): what that side could play there. */
+function withTurn(fen: string, side: Color): string {
+    const parts = fen.split(" ");
+    parts[1] = side === "white" ? "w" : "b";
+    parts[3] = "-";
+    return parts.join(" ");
+}
+
 /** Facts of `after` that were not there in `before`. */
 const newFacts = (before: Fact[], after: Fact[]) => {
     const keys = new Set(before.map((f) => f.key));
@@ -278,11 +287,14 @@ function achievements(
     after: Fact[],
     side: Color,
     told: string[] = [],
+    lasting?: Set<string>,
 ): string[] {
     const created = newFacts(before, after).filter(
         (f) =>
             f.victim === opposite(side) &&
-            !(f.kind === "hanging" && told.includes(squareOf(f))),
+            !(f.kind === "hanging" && told.includes(squareOf(f))) &&
+            // gains the answer undoes are no point (F.37a); `lasting`: the keys after it
+            (!lasting || lasting.has(f.key)),
     );
     // a forked piece is not worth a second mention as merely attacked
     const forked = new Set(created.flatMap((f) => f.targetSquares ?? []));
@@ -295,17 +307,47 @@ function achievements(
     return [...repairs, ...gains].filter((p): p is string => !!p);
 }
 
-/** "After Bxg4 Qd2: Black wins material (+9)." when a line wins material or mates. */
-function consequence(fen: string, pv: string[], side: Color) {
+/** A material balance this far beyond the engine's score is not kept. */
+const MATERIAL_SLACK = 1.5;
+
+/**
+ * "After Qxe3 Bxe3 dxe5: Black wins material (+1)." when a line wins material or mates, up to
+ * a capture (F.37a). With `score`, the engine's evaluation of the line for `side` in pawns, up
+ * to the last capture whose balance it bears out (a score above the balance is fine: more is
+ * coming). A line may end on a capture that is taken back after it (Bxg4 Be2 Bxe2: +12 where
+ * the score is +8.6, so "After Bxg4: +9"), or take a piece the engine sees lost again (4.Nc3:
+ * "+3" where it said +1.2). Without a score, up to the line's last capture.
+ */
+function consequence(fen: string, pv: string[], side: Color, score?: number) {
     const outcome = lineOutcome(fen, pv, side);
-    if (
-        !outcome?.sans.length ||
-        (!outcome.mated && outcome.materialChange === 0)
-    ) {
-        return undefined;
+    if (!outcome?.sans.length) return undefined;
+    if (outcome.mated)
+        return `After ${outcome.sans.join(" ")}: ${describeOutcome(outcome)}.`;
+    let at = outcome.changeAt;
+    if (score !== undefined) {
+        at = 0;
+        outcome.steps.forEach((material, i) => {
+            const changed = material !== (outcome.steps[i - 1] ?? 0);
+            const balance = outcome.start + material;
+            const borne =
+                material > 0
+                    ? balance <= score + MATERIAL_SLACK
+                    : balance >= score - MATERIAL_SLACK;
+            if (changed && borne) at = i + 1;
+        });
     }
-    return `After ${outcome.sans.join(" ")}: ${describeOutcome(outcome)}.`;
+    const material = at ? outcome.steps[at - 1] : 0;
+    if (!material) return undefined;
+    return `After ${outcome.sans.slice(0, at).join(" ")}: ${describeOutcome({ ...outcome, materialChange: material })}.`;
 }
+
+/** An evaluation (White's view) in pawns for `side`; none for a mate score. */
+const pawnsFor = (evaluation: Evaluation | undefined, side: Color) =>
+    evaluation && "pawns" in evaluation
+        ? side === "white"
+            ? evaluation.pawns
+            : -evaluation.pawns
+        : undefined;
 
 /** A few sentences on why a move is good or bad. Empty if the move is not legal in fenBefore. */
 export const explainMove = (input: ExplainInput): string[] =>
@@ -508,6 +550,11 @@ export function explainMoveFull(
 
     // the opponent's answer and where it leads
     const reply = replyPv?.[0] ? play(moved.fen, replyPv[0]) : undefined;
+    // the two futures, the answer's and the better move's, compared (F.37c)
+    const futures: Futures =
+        bad && input.bestUci !== input.uci
+            ? compareFutures(input.fenBefore, input.uci, replyPv, bestPv)
+            : {};
     // what the answer does, named: a fork, a skewer… (taking back is not a free piece)
     const capturedSquare =
         isCaptureAt(input.fenBefore, input.uci) && input.uci.slice(2, 4);
@@ -523,8 +570,11 @@ export function explainMoveFull(
             interpret(costs.map((r) => r.text));
         }
     }
+    // each line's score: the answer's is the position after the move, the better one's before
+    const lineScore = (line: LineLabel, who: Color) =>
+        pawnsFor(line === "reply" ? evAfter : evBefore, who);
     const result = (fen: string, pv: string[], who: Color, line: LineLabel) => {
-        const text = consequence(fen, pv, who);
+        const text = consequence(fen, pv, who, lineScore(line, who));
         if (!text) return;
         sentences.push(text);
         fromLine(text.replace(/\.$/, ""), line);
@@ -541,14 +591,26 @@ export function explainMoveFull(
             fromLine(text, "reply");
             result(moved.fen, replyPv!, opponent, "reply");
         } else {
+            // what the answer attacks or pins, as long as it lasts: a fact the mover's next move
+            // in the line undoes (taking back, a queen trade) is no point (F.37a)
+            const next = replyPv?.[1] ? play(reply.fen, replyPv[1]) : undefined;
+            const lasting = next
+                ? new Set(factsFromFen(next.fen).map((f) => f.key))
+                : undefined;
             const replyGains = newFacts(after, factsFromFen(reply.fen))
                 .filter((f) => f.victim === side)
+                .filter((f) => !lasting || lasting.has(f.key))
                 .map(threatPhrase)
                 .filter((p): p is string => !!p);
             const how = replyGains.length ? ` and ${joinAnd(replyGains)}` : "";
             sentences.push(`${SIDE[opponent]} answers ${reply.san}${how}.`);
             replyGains.forEach((g) => fact(`${reply.san} ${g}`));
             result(moved.fen, replyPv!, opponent, "reply");
+            // what the answer's future costs against the better one's (F.37c): a reading
+            if (futures.cost) {
+                sentences.push(`It ${futures.cost}.`);
+                interpret([futures.cost]);
+            }
         }
     }
 
@@ -573,14 +635,57 @@ export function explainMoveFull(
             sentences.push(`Better was ${text}.`);
             fromLine(text, "best");
         } else {
+            // a reason for the better move whenever there is one (F.37b): what it does that
+            // outlasts the answer, the answer to the played move it rules out, or else a reading
+            // of the position
+            const answer = bestPv?.[1]
+                ? play(bestMove.fen, bestPv[1])
+                : undefined;
             const bestDone = achievements(
                 before,
                 factsFromFen(bestMove.fen),
                 side,
+                [],
+                answer
+                    ? new Set(factsFromFen(answer.fen).map((f) => f.key))
+                    : undefined,
             );
-            const why = bestDone.length ? `: it ${joinAnd(bestDone)}` : "";
-            sentences.push(`Better was ${bestMove.san}${why}.`);
             bestDone.forEach((d) => fact(`${bestMove.san} ${d}`));
+            // the answer that hurt (a capture, a check, a tactic), if it was there before the
+            // move (not one the move made possible: exd5 after d5) and the better move takes
+            // it away: it can no longer be played, or no longer takes anything
+            const answerUci = replyPv?.[0];
+            const hurt =
+                reply &&
+                answerUci &&
+                (isCaptureAt(moved.fen, answerUci) ||
+                    reply.san.includes("+") ||
+                    replyIdea?.motif);
+            const bites = (fen: string) =>
+                !!play(fen, answerUci!) &&
+                (!isCaptureAt(moved.fen, answerUci!) ||
+                    isCaptureAt(fen, answerUci!));
+            const stops =
+                hurt &&
+                bites(withTurn(input.fenBefore, opponent)) &&
+                !bites(bestMove.fen)
+                    ? `stops ${reply!.san}`
+                    : undefined;
+            if (stops) fact(`${bestMove.san} ${stops}`);
+            const done = [...bestDone, ...(stops ? [stops] : [])];
+            const readings = done.length
+                ? []
+                : futures.gain
+                  ? [futures.gain]
+                  : positionalReasons(input.fenBefore, input.bestUci!)
+                        .filter((r) => r.good)
+                        .slice(0, 2)
+                        .map((r) => r.text);
+            interpret(readings);
+            const why = [...done, ...readings];
+            sentences.push(
+                `Better was ${bestMove.san}${why.length ? `: it ${joinAnd(why)}` : ""}.`,
+            );
             if (bestPv) result(input.fenBefore, bestPv, side, "best");
         }
     }

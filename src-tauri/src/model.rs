@@ -1,6 +1,7 @@
 //! An optional AI model that words move explanations as a coach would (P2.4b). The chess is
-//! computed by the app (models/explain.ts); the model only rewrites that text, under a fixed
-//! system prompt kept here, so the webview cannot use the key for anything else.
+//! computed by the app (models/explain.ts); the model says what that explanation and its
+//! evidence show (F.37d; the webview checks it names nothing else, models/coach.ts), under a
+//! fixed system prompt kept here, so the webview cannot use the key for anything else.
 //!
 //! Providers: Anthropic, or any OpenAI-compatible endpoint (Ollama or LM Studio on this
 //! computer, or a hosted service). The provider, its URL and its key are stored together in the
@@ -22,12 +23,15 @@ const FALLBACK_BETA: &str = "server-side-fallback-2026-07-01";
 const MAX_TEXT: usize = 4000;
 const TIMEOUT: Duration = Duration::from_secs(90);
 
-const SYSTEM_PROMPT: &str = "You reword chess move explanations for a club player. You are \
-given an explanation computed by a chess engine and chess rules. Rewrite it as a short paragraph \
-a coach would say: natural, plain words, no more than four sentences. Use only what the text \
-says: do not add moves, variations, evaluations, pieces or squares that are not in it, and keep \
-every move and square exactly as written (for example Nf3, exd5, the knight on d5). No markdown, \
-no lists, no headings. Reply with the paragraph only.";
+const SYSTEM_PROMPT: &str = "You are a chess coach explaining a move to a club player. You \
+are given an explanation computed by a chess engine and chess rules, with its evidence: facts \
+of the position, the engine's lines, and readings marked as not certain. Write a short paragraph, \
+no more than four sentences, that helps the player understand why the move is good or bad: what \
+the opponent gets from it, what the better move keeps or prevents, as the evidence and the lines \
+show. Use only what you are given: every move and square you name must appear in it, written \
+exactly as there (for example Nf3, exd5, the knight on d5); add no moves, variations or \
+evaluations of your own, and say a reading as likely, not as certain. No markdown, no lists, no \
+headings. Reply with the paragraph only.";
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -243,7 +247,8 @@ fn http_error(status: u16, body: &str) -> String {
     }
 }
 
-/// Rewords a computed explanation (plain text) as a coach would.
+/// A coach's paragraph from a computed explanation and its evidence (plain text,
+/// models/coach.ts `coachBrief`).
 #[tauri::command]
 pub async fn model_rephrase(
     secrets: State<'_, Secrets>,

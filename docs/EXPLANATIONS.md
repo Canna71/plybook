@@ -75,9 +75,11 @@ Rules that keep it honest:
 - **History matters.** The engine searches with the game's moves, so it counts repetitions
   (P2.4e); a move that repeats the position a third time says so. Where the scores may come
   from a search without the game (an older review), a repeated position is noted.
-- **A model only rewords**, and its wording is dropped if it names a move or square, or makes a
-  claim (fork, pin, mate, wins, …), that the computed text does not. Grounding does not make a
-  model correct; the check only catches additions.
+- **A model speaks only from the evidence** (P2.4b; since F.37d it gets the evidence, not only
+  the sentences: `coachBrief` in `models/coach.ts`, the facts, the engine's lines in SAN, the
+  readings marked as not certain). Its text is dropped if it names a move or square, or makes a
+  claim (fork, pin, mate, wins, …), that none of that has, and it is shown as "The coach's
+  reading". Grounding does not make a model correct; the check only catches additions.
 
 ## Tests
 
@@ -216,6 +218,21 @@ shown; each keeps the contract above (no claim without its evidence).
   positions.
 
 Order: (e) first (cheap, and it is the yardstick), then (a), (b), (c), (d).
+
+**Done so far.** (e) is `src/reasons/owngames.eval.ts` (`STOCKFISH=… OWN_GAMES=a.pgn,b.pgn
+OWN_NAMES=Player,canna71 pnpm eval:reasons -t "own games"`). After (a): 10…d5 says "White
+answers exd5." and no more; 12.e5 "Black answers Qxe3. After Qxe3 Bxe3 dxe5: Black wins
+material (+1)."; 4.Nc3 no longer claims +3; 12…Ng4 "After Nxc5: White wins material (+3)".
+What is left is mostly silence where a reason is wanted (10…d5, 9.Re1, the better moves
+Qh3, Rf1, a5): (b) and (c). After (b), in part: "Better was Qh3: it stops Qxe3" (12.e5,
+13.exd6), "d5: it stops exd4" (4.Nc3), "Nxe4: it saves the bishop on c5 and stops Nxc5",
+"e5: it takes a share of the centre" (9.Re1); "stops" only for an answer that was there
+before the played move, so not "a5 stops exd5" after 10…d5. Still bare: a5, Bd6, Rf1.
+After (c), in part (`reasons/futures.ts`): 9.Re1 "It lets Black trade queens (Qxd4) while
+Black's king is still in the centre. Better was e5: it keeps the queens on against Black's king
+in the centre."; 12.e5 and 13.exd6 the same about Qxe3; 17.g3 "Better was Rf1: it opens the
+f-file while Black's king is still on it". Still bare: a5 and Bd6, where both kings are
+castled.
 
 ## Not done (yet)
 

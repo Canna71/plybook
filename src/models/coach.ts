@@ -1,6 +1,35 @@
-// The explanation model (P2.4b) only rewords: everything chess in the text was computed by the
-// app (explain.ts). A rewording that names a move or a square the original does not is
-// rejected, so a model that "calculates" anyway is never shown.
+// The explanation model (P2.4b) says what the computed explanation and its evidence show
+// (F.37d): everything chess in them was computed by the app (explain.ts). A wording that names
+// a move or a square they do not is rejected, so a model that "calculates" anyway is never
+// shown.
+
+import type { EvidenceLine, MoveExplanation } from "./explain";
+
+/**
+ * What the model is given (F.37d): the explanation and the evidence behind it, the engine's
+ * lines in moves, the readings marked as not certain. The model may say what this shows, and
+ * its text is checked against all of it (`rewordingProblems(brief, text)`), so it can name a
+ * move of a line the sentences leave out, never one of its own.
+ */
+export function coachBrief(x: MoveExplanation): string {
+    const BASIS = {
+        board: "fact on the board",
+        line: "from the engine's line",
+        interpretation: "a reading, not certain",
+    };
+    const line = (l: EvidenceLine) =>
+        `${l.label === "reply" ? `The answer to ${x.move.san}` : `The better line`}: ${l.san.join(" ")}`;
+    return [
+        `Explanation: ${x.text.join(" ")}`,
+        ...(x.evidence.length
+            ? [
+                  "Evidence:",
+                  ...x.evidence.map((e) => `- ${e.text} (${BASIS[e.basis]})`),
+              ]
+            : []),
+        ...(x.lines.length ? ["Engine lines:", ...x.lines.map(line)] : []),
+    ].join("\n");
+}
 
 /** Moves in SAN (Nf3, exd5, O-O, e8=Q+) and bare squares (d5) */
 const CHESS_WORDS =

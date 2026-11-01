@@ -290,8 +290,9 @@ there.
   - sync on start, and review of new games in the background;
   - a Lichess token for higher limits, kept in the system keychain.
 - **Explanations:** optionally, a language model (Anthropic, or an OpenAI-compatible server such
-  as Ollama or LM Studio) to reword explanations. It only rewords what Plybook found; it adds no
-  analysis of its own.
+  as Ollama or LM Studio) to put explanations as a coach would. It works from what Plybook
+  found (the explanation, the engine's lines and the facts behind them) and adds no analysis
+  of its own: a text naming a move or square that is not in them is not shown.
 - **Backups:** a daily backup, backups made by hand, and restore.
 - **Updates:** the version you have, a check for a new one, and install.
 

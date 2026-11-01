@@ -99,10 +99,11 @@ const ExplanationModel: Component = () => {
             <h2 class="title is-4">Explanations</h2>
             <p class="settings-help">
                 Plybook explains moves from the engine and chess rules. A
-                language model can reword those explanations as a coach would
-                ("Say it as a coach" under an explanation). It only rewords: a
-                rewording that names a move or square the explanation does not
-                is thrown away. Optional; nothing is sent until you ask.
+                language model can put an explanation as a coach would ("Say it
+                as a coach" under an explanation), from the explanation and its
+                evidence: the engine's lines and the facts behind it. Its text
+                is thrown away if it names a move or square that is not in them.
+                Optional; nothing is sent until you ask.
             </p>
             <form onSubmit={save}>
                 <div class="field">
