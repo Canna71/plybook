@@ -28,9 +28,8 @@ release or Windows, below.
 
 ## Owner feedback, round 3: more (branch feature/feedback-round-3-more)
 
-- [ ] **Side to move, F.42**: Collins p. 13: the first diagram ("B") opens with Black to move,
-      the second ("w") with White; p. 12 ("W") with White. A book with "White to play"
-      captions still reads them.
+- [ ] **Side to move, F.42**: confirmed by the owner on Collins p. 13 (2026-11-01). Left: a
+      book with "White to play" captions still reads them.
 - [ ] **Editor trays, F.41**: in the dark theme, the board editor's (and the reader's
       Change the starting position) trays are light, and both colours' pieces are clear.
 - [ ] **A screen that fails, F.40**: nothing to do unless one does: it should say "Something

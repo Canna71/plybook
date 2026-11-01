@@ -36,7 +36,9 @@ cd src-tauri && cargo fmt --check && cargo clippy --all-targets -- -D warnings &
 ## macOS builds: sign with a stable identity
 
 Unsigned (ad-hoc) builds get a new identity on every build, so macOS forgets permissions such as
-Screen Recording (used by "Capture from screen") and asks again after each rebuild. Sign with your
+Screen Recording (used by "Capture from screen") and asks again after each rebuild; the Keychain
+too asks again for the API tokens (Lichess, the explanation model), as "Always Allow" was given
+to the previous build only. `pnpm tauri build` makes such builds. Sign with your
 certificate instead; list yours with `security find-identity -v -p codesigning`:
 
 ```bash
@@ -45,7 +47,8 @@ pnpm build:mac        # tauri build --bundles app, refuses to run unsigned
 ```
 
 After the first signed build, remove old `rechess` entries in System Settings → Privacy &
-Security → Screen Recording, grant the permission again and reopen Plybook once.
+Security → Screen Recording, grant the permission again and reopen Plybook once, and answer
+the Keychain's question with "Always Allow": builds signed with the same certificate keep both.
 
 ## Releases and updates
 

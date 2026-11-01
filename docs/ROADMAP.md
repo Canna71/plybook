@@ -1095,7 +1095,7 @@ Third round, triaged: bugs first, then requests, then research.
   OCR'd B may be an 8, as on Collins's p. 12), after the caption and before the text that
   follows; and when neither the caption nor the letter says, the game before the diagram
   (F.11), checked against the board, sets the side by its length. Tested; p. 12's W seen
-  right in the dev app, p. 13 not yet.
+  right in the dev app; p. 13 confirmed by the owner (2026-11-01).
 - [x] **F.34 PDF reader: the starting-position editor fits without its own scrolling.** It sits
   in a box with its own scroll bar inside the scrolling notes panel, so the board is never
   wholly visible. While editing, the editor takes the height it needs and only the panel
