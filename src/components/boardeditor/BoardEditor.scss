@@ -4,7 +4,8 @@
     display: flex;
     justify-content: center;
     aspect-ratio: 8 / 1;
-    background-color: var(--rc-surface-2);
+    // light in both themes, as the promotion chooser: black pieces vanish on a dark tray
+    background-color: #e9e9e9;
     border-radius: var(--rc-radius-small);
 
     piece {

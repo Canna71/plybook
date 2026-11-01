@@ -1078,15 +1078,24 @@ Third round, triaged: bugs first, then requests, then research.
   loads, and the verdict was worded with the new position's side to move. Done
   (`feature/feedback-round-3`): an answer shows only for the position it was asked for
   ("Tablebase…" meanwhile).
-- [ ] **F.40 [Bug] A reader link to a file that can't be opened stops the app.** The PDF's
+- [x] **F.40 [Bug] A reader link to a file that can't be opened stops the app.** The PDF's
   load error is unhandled (Solid `castError`), and after it no screen changes any more
-  (seen with a wrong path in the dev app). The reader should say it could not open the
-  book; maybe an error boundary around each screen too.
-- [ ] **F.41 Board editor: black pieces barely visible in their tray** in the dark theme
-  (black on the dark tray).
-- [ ] **F.42 [Bug?] PDF reader: side to move against the caption.** Collins p. 13, diagram 1
-  is captioned "B" (Black to move, after 3.Bc4) but the notes say White to move. Check how
-  the caption is read (F.22).
+  (seen with a wrong path in the dev app). Done (`feature/feedback-round-3-more`): a failed
+  resource rethrows its error wherever it is read, so the reader reads the book through a
+  guard and shows its "Could not open the PDF" message; and every screen is in an
+  `ErrorBoundary` (`Layout.tsx`): a screen that throws says so, with Try again, and opening
+  another screen works and resets it.
+- [x] **F.41 Board editor: black pieces barely visible in their tray** in the dark theme
+  (black on the dark tray). Done (`feature/feedback-round-3-more`): the trays are light in
+  both themes, as the promotion chooser.
+- [x] **F.42 [Bug] PDF reader: side to move against the caption.** Collins p. 13, diagram 1
+  is marked "B" (Black to move, after 3.Bc4) but the notes said White to move. Gambit's
+  books print a lone W or B left of the diagram, not a caption below it. Done
+  (`feature/feedback-round-3-more`): `textNearDiagram` reads that letter (`marker`; an
+  OCR'd B may be an 8, as on Collins's p. 12), after the caption and before the text that
+  follows; and when neither the caption nor the letter says, the game before the diagram
+  (F.11), checked against the board, sets the side by its length. Tested; p. 12's W seen
+  right in the dev app, p. 13 not yet.
 - [x] **F.34 PDF reader: the starting-position editor fits without its own scrolling.** It sits
   in a box with its own scroll bar inside the scrolling notes panel, so the board is never
   wholly visible. While editing, the editor takes the height it needs and only the panel

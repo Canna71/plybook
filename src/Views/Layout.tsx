@@ -1,4 +1,13 @@
-import { onCleanup, onMount, ParentComponent, Show } from "solid-js";
+import {
+    createEffect,
+    ErrorBoundary,
+    on,
+    onCleanup,
+    onMount,
+    ParentComponent,
+    Show,
+} from "solid-js";
+import anylogger from "anylogger";
 import { useLocation, useNavigate } from "@solidjs/router";
 import Sidebar, { sidebarCollapsed } from "./Sidebar";
 import { CommandPalette } from "../components/shell/CommandPalette";
@@ -20,6 +29,31 @@ import { getSettingValue, setSettingValue } from "../models/settings";
 import { useSites } from "../components/shell/useSites";
 import { helpRoute } from "../models/navigation";
 import { openChesscomDaily } from "../online/chesscomdaily";
+
+const log = anylogger("layout");
+
+/** A screen that threw: the error, and a fresh try once another screen is opened. */
+const ScreenError = (props: { error: unknown; reset: () => void }) => {
+    const location = useLocation();
+    log.error("screen failed", props.error);
+    createEffect(
+        on(
+            () => location.pathname + location.search,
+            () => props.reset(),
+            { defer: true },
+        ),
+    );
+    return (
+        <div class="notification is-danger is-light m-4">
+            Something went wrong on this screen: {String(props.error)}
+            <div class="mt-2">
+                <button class="button is-small" onClick={() => props.reset()}>
+                    Try again
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const Layout: ParentComponent = (props) => {
     const divider = useSplitter((layout) => {
@@ -113,7 +147,16 @@ const Layout: ParentComponent = (props) => {
                 <VDivider ref={divider} />
             </Show>
 
-            <main class="main-content">{props.children}</main>
+            <main class="main-content">
+                {/* a screen that fails shows why, and the rest of the app goes on (F.40) */}
+                <ErrorBoundary
+                    fallback={(error, reset) => (
+                        <ScreenError error={error} reset={reset} />
+                    )}
+                >
+                    {props.children}
+                </ErrorBoundary>
+            </main>
             <VideoPlayer />
             <CommandPalette />
             <FolderPickerHost />

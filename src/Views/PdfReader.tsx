@@ -114,13 +114,16 @@ const PdfReader: Component = () => {
     const [params] = useSearchParams();
     const path = () => (typeof params.path === "string" ? params.path : "");
 
-    const [doc] = createResource(path, async (p) => {
+    const [loaded] = createResource(path, async (p) => {
         const pdf = await openPdf(
             new Blob([new Uint8Array(await readDataBytes(p)).buffer]),
         );
         recordRecent(p, "book");
         return pdf;
     });
+    // reading a failed resource throws its error, which would stop the whole app (F.40): the
+    // book is read through this, and the failure is shown on its own
+    const doc = () => (loaded.error ? undefined : loaded());
     const [aspect] = createResource(doc, (d) => pageAspect(d, 1));
     onCleanup(() => void doc()?.loadingTask.destroy());
 
@@ -517,10 +520,10 @@ const PdfReader: Component = () => {
     /** Opens a diagram, its side to move from the caption ("White to play") if it says. */
     const pickDiagram = async (d: PageDiagram) => {
         const near = textNearDiagram(await textOf(d.page), d.box);
-        const turn =
-            turnFromText(near.caption) ??
-            turnFromText(near.following) ??
-            d.orientation;
+        // what the book says beside the diagram is sure; the text after it or the board's
+        // orientation is a guess, which the game before the diagram may correct (F.42)
+        const said = turnFromText(near.caption) ?? near.marker;
+        const turn = said ?? turnFromText(near.following) ?? d.orientation;
         const picked = { ...d, turn, following: near.following };
         setSelected(picked);
         setGameBeforeLine(undefined);
@@ -536,8 +539,12 @@ const PdfReader: Component = () => {
             moves &&
             selected()?.page === d.page &&
             selected()?.index === d.index
-        )
+        ) {
             setGameBeforeLine({ page: d.page, index: d.index, moves });
+            const after: Color = moves.length % 2 ? "black" : "white";
+            if (!said && after !== turn)
+                setSelected({ ...picked, turn: after });
+        }
     };
     /** The game before the selected diagram, as read from the text, numbered */
     const [gameBeforeLine, setGameBeforeLine] = createSignal<{
@@ -694,9 +701,9 @@ const PdfReader: Component = () => {
             </div>
             <div class="reader-body" ref={body}>
                 <div class="reader-pages" ref={scroller} onScroll={onScroll}>
-                    <Show when={doc.error}>
+                    <Show when={loaded.error}>
                         <p class="notification is-danger is-light">
-                            Could not open the PDF: {String(doc.error)}
+                            Could not open the PDF: {String(loaded.error)}
                         </p>
                     </Show>
                     <Show when={doc() && aspect()}>
