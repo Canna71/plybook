@@ -1143,9 +1143,11 @@ Third round, triaged: bugs first, then requests, then research.
     move does that outlasts the answer to it; the answer to the played move that it stops
     (one that was there before the move and no longer works after the better one: "Better
     was Qh3: it stops Qxe3", "g6 … stops Qxf7#"); else its positional readings ("e5: it takes
-    a share of the centre"). Left bare in the owner's games: a5, Bd6, Rf1, for F.37c. Its
-    threats (`explainThreats` for the better move) would need one more engine search per
-    moment; not yet.
+    a share of the centre"). Left bare in the owner's games: a5, Bd6, Rf1, for F.37c. Then
+    (`feature/explain-castled`): the better move's own threat searches (`explainThreats`,
+    in the Engine section for a bad move and in the review for the open key moment), said
+    when nothing else explains it ("Better was a5: it threatens …"; tested with a made-up
+    threat, as the owner's games show none without the app's engine).
   - [~] **F.37c Compare the two futures**: material, kings, development, pawn weaknesses and
     piece values at the settled points of both lines; the largest difference as the cost
     (interpretation). New readings: queens traded when ahead in development; the centre

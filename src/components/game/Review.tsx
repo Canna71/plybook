@@ -43,7 +43,11 @@ import { explainMoveFull } from "../../models/explain";
 import { positionsBefore } from "./gamePosition";
 import { gameHistory, historyFor } from "../../models/gamehistory";
 import ExplanationEvidence from "./ExplanationEvidence";
-import { explainAlternatives, explainLines } from "../../engine/explainer";
+import {
+    explainAlternatives,
+    explainLines,
+    explainThreats,
+} from "../../engine/explainer";
 import BoardText from "./BoardText";
 import CoachWords from "./CoachWords";
 import { getAccounts } from "../../online/onlinegames";
@@ -153,6 +157,7 @@ const Review: Component = () => {
                 ? {
                       before: m.fenBefore,
                       after: data.fen,
+                      bestUci: m.bestUci,
                       // the game behind each position, so repetitions count
                       games: {
                           before: historyFor(
@@ -164,12 +169,23 @@ const Review: Component = () => {
                   }
                 : undefined;
         },
-        async ({ before, after, games }) => ({
-            before,
-            ...(await explainLines(before, after, games)),
-            // was the engine's move the only good one? Says how hard the position was
-            alternatives: await explainAlternatives(before, games.before),
-        }),
+        async ({ before, after, games, bestUci }) => {
+            const lines = await explainLines(before, after, games);
+            return {
+                before,
+                ...lines,
+                // was the engine's move the only good one? Says how hard the position was
+                alternatives: await explainAlternatives(before, games.before),
+                // what the better move threatens or stops: a reason for it (F.37b)
+                bestThreats: bestUci
+                    ? await explainThreats(
+                          before,
+                          bestUci,
+                          lines?.bestPv?.slice(1),
+                      )
+                    : undefined,
+            };
+        },
     );
 
     /** The positions a moment's explanation talks about: before and after the move. */
@@ -207,6 +223,7 @@ const Review: Component = () => {
             },
             history: positionsBefore(g, m.path.previous()),
             alternatives: lines?.alternatives,
+            bestThreats: lines?.bestThreats,
         });
         return x?.text.length ? x : undefined;
     };

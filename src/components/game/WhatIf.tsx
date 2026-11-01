@@ -115,6 +115,30 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
             ),
     );
 
+    // the same for the engine's better move, when the move was bad: its idea is a reason for it
+    // (F.37b)
+    const [bestThreats] = createResource(
+        () => {
+            const m = move();
+            const b = before();
+            const cls = verdict()?.class;
+            const bestUci = b && (evaluationAt(b.fen) ?? b.evaluation)?.ext;
+            return m &&
+                b &&
+                typeof bestUci === "string" &&
+                bestUci !== m.uci &&
+                (cls === "inaccuracy" || cls === "mistake" || cls === "blunder")
+                ? { fen: b.fen, uci: bestUci }
+                : undefined;
+        },
+        ({ fen, uci }) =>
+            explainThreats(
+                fen,
+                uci,
+                untrack(() => lineAt(fen)?.slice(1)),
+            ),
+    );
+
     // the engine's two best lines before the move: was its best the only good move?
     const [alternatives] = createResource(
         () => {
@@ -159,6 +183,7 @@ const WhatIf: Component<{ engineInfo: EngineInfo[] }> = (props) => {
             bestPv: lineAt(b.fen),
             replyPv: best()?.pv,
             threats: threats.latest,
+            bestThreats: bestThreats.latest,
             values: values.latest,
             evaluations: evaluations(),
             history: history(),

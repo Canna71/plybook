@@ -50,6 +50,10 @@ release or Windows, below.
       own") and with what.
 - [ ] **Nothing worse elsewhere**: a blunder that hangs a piece still says so with the
       material ("After Nxc5: White wins material (+3)").
+- [ ] **More readings (branch feature/explain-castled)**: in your Lichess game of 2024-10-02,
+      10…d5 says White can double Black's pawns on the b-file (Nxb6 cxb6). A better move
+      sometimes gets "it threatens …" a second after the moment opens (the threat search).
+      Seen in the dev app: 9.Re1 in the review reads as in the first item.
 
 ## Coach in the review, History, Contents (branch feature/coach-history-toc)
 

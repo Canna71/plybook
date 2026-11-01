@@ -37,6 +37,8 @@ export type ExplainInput = {
     replyPv?: string[];
     /** What the move stops and threatens (engine/threatsearch.ts), when searched */
     threats?: { stopped?: LineIdea; created?: LineIdea; prevented?: Prevented };
+    /** The same for the engine's better move, when searched (F.37b) */
+    bestThreats?: { stopped?: LineIdea; created?: LineIdea };
     /** Stockfish's piece values before and after the move, when the engine is Stockfish */
     values?: MoveValues;
     /** The engine's evaluations of the positions before and after the move, from White's side */
@@ -672,7 +674,20 @@ export function explainMoveFull(
                     ? `stops ${reply!.san}`
                     : undefined;
             if (stops) fact(`${bestMove.san} ${stops}`);
-            const done = [...bestDone, ...(stops ? [stops] : [])];
+            // its own idea, from the threat searches: what it threatens, or stops
+            const idea = input.bestThreats?.created
+                ? `threatens ${describeIdea(input.bestThreats.created)}`
+                : input.bestThreats?.stopped
+                  ? `stops ${describeIdea(input.bestThreats.stopped)}`
+                  : undefined;
+            const threat =
+                !bestDone.length && !stops && idea ? idea : undefined;
+            if (threat) fromLine(`${bestMove.san} ${threat}`);
+            const done = [
+                ...bestDone,
+                ...(stops ? [stops] : []),
+                ...(threat ? [threat] : []),
+            ];
             const readings = done.length
                 ? []
                 : futures.gain
