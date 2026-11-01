@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../chess-stuff"
+		}
+	],
+	"settings": {
+		"todo-tree.tree.showBadges": false,
+		"rust-analyzer.cargo.targetDir": true
+	}
+}
