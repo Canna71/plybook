@@ -50,8 +50,9 @@ struct Stored {
     key: Option<String>,
 }
 
-/// What the webview may know: no key.
-#[derive(Debug, Serialize, PartialEq)]
+/// What the webview may know: no key. Also the entry's summary in the secrets' index, so the
+/// status is known without reading the keychain.
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ModelStatus {
     provider: Option<Provider>,
@@ -59,8 +60,18 @@ pub struct ModelStatus {
     has_key: bool,
 }
 
+impl ModelStatus {
+    fn of(stored: &Stored) -> Self {
+        ModelStatus {
+            provider: Some(stored.provider),
+            url: stored.url.clone(),
+            has_key: stored.key.is_some(),
+        }
+    }
+}
+
 fn load(secrets: &Secrets) -> Result<Option<Stored>, String> {
-    match secrets.0.get(Secret::ModelProvider.key())? {
+    match secrets.get(Secret::ModelProvider)? {
         Some(text) => serde_json::from_str(&text)
             .map(Some)
             .map_err(|_| "The saved model settings are unreadable: set them again".to_string()),
@@ -127,14 +138,29 @@ fn configure(
     Ok(Stored { provider, url, key })
 }
 
+/// The model set up, from the secrets' index: the keychain is read only the first time, for an
+/// entry saved before the index.
+fn status(secrets: &Secrets) -> Result<ModelStatus, String> {
+    let summary = secrets.summary(Secret::ModelProvider, |text| {
+        serde_json::from_str::<Stored>(text)
+            .ok()
+            .and_then(|stored| serde_json::to_value(ModelStatus::of(&stored)).ok())
+            .unwrap_or(Value::Null)
+    })?;
+    Ok(summary
+        .and_then(|s| serde_json::from_value(s).ok())
+        .unwrap_or_default())
+}
+
 #[tauri::command]
 pub async fn model_status(secrets: State<'_, Secrets>) -> Result<ModelStatus, String> {
-    let stored = load(&secrets)?;
-    Ok(ModelStatus {
-        provider: stored.as_ref().map(|s| s.provider),
-        url: stored.as_ref().and_then(|s| s.url.clone()),
-        has_key: stored.is_some_and(|s| s.key.is_some()),
-    })
+    status(&secrets)
+}
+
+fn save(secrets: &Secrets, stored: &Stored) -> Result<(), String> {
+    let text = serde_json::to_string(stored).map_err(|e| e.to_string())?;
+    let summary = serde_json::to_value(ModelStatus::of(stored)).map_err(|e| e.to_string())?;
+    secrets.put(Secret::ModelProvider, &text, summary)
 }
 
 #[tauri::command]
@@ -145,13 +171,12 @@ pub async fn model_configure(
     key: Option<String>,
 ) -> Result<(), String> {
     let stored = configure(load(&secrets)?, provider, url, key)?;
-    let text = serde_json::to_string(&stored).map_err(|e| e.to_string())?;
-    secrets.0.set(Secret::ModelProvider.key(), &text)
+    save(&secrets, &stored)
 }
 
 #[tauri::command]
 pub async fn model_forget(secrets: State<'_, Secrets>) -> Result<(), String> {
-    secrets.0.delete(Secret::ModelProvider.key())
+    secrets.remove(Secret::ModelProvider)
 }
 
 /// Claude models that take `output_config.effort`

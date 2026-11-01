@@ -1184,6 +1184,16 @@ Third round, triaged: bugs first, then requests, then research.
   may carry a query (`/game?source=history` in History's `owns`), matched before the plain
   routes; Help (F1, the header's ?) follows the same screen. Tested.
 
+- [x] **F.44 The Keychain asks at every start of a new build** (reported 2026-11-01, with
+  the dialog: "plybook wants to use your confidential information stored in
+  com.canna71.plybook"). Unsigned builds (dev ones after each Rust change) are strangers to
+  the Keychain, and the app read it at start to say whether a model and a Lichess token are
+  set. Done (`feature/keychain-on-demand`): `Secrets` keeps an index of what is set with a
+  non-secret summary (the model's provider and endpoint) in
+  `<AppLocalData>/secrets-index.json`, so status questions never read the Keychain (only
+  once, for an entry saved before the index); values are read when used, once per run.
+  cargo-tested with a store that counts reads.
+
 ## Last
 
 - [~] **X.1 App auto-update** (moved here from O.6 by the owner, 2026-10-25). Tauri's updater

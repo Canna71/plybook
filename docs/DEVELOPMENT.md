@@ -38,7 +38,10 @@ cd src-tauri && cargo fmt --check && cargo clippy --all-targets -- -D warnings &
 Unsigned (ad-hoc) builds get a new identity on every build, so macOS forgets permissions such as
 Screen Recording (used by "Capture from screen") and asks again after each rebuild; the Keychain
 too asks again for the API tokens (Lichess, the explanation model), as "Always Allow" was given
-to the previous build only. `pnpm tauri build` makes such builds. Sign with your
+to the previous build only. `pnpm tauri build` makes such builds, and so does every
+`pnpm tauri dev` after a Rust change. Since F.44 the app reads the Keychain only when it uses a
+key (the Lichess explorer with a token, "Say it as a coach"), once per run: whether a key is
+set comes from `<AppLocalData>/secrets-index.json`, which holds no values. Sign with your
 certificate instead; list yours with `security find-identity -v -p codesigning`:
 
 ```bash
