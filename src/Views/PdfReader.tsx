@@ -66,6 +66,7 @@ import { join } from "@tauri-apps/api/path";
 import { BaseDirectory, exists, mkdir } from "@tauri-apps/plugin-fs";
 import { makeToast } from "../components/common/Toast";
 import { recordRecent } from "../storage/recent";
+import ReaderContents from "../components/reader/ReaderContents";
 import "./PdfReader.scss";
 const log = anylogger("reader");
 
@@ -668,6 +669,13 @@ const PdfReader: Component = () => {
                     >
                         ›
                     </Button>
+                    <ReaderContents
+                        doc={doc}
+                        path={path}
+                        current={current}
+                        textOf={textOf}
+                        goTo={goTo}
+                    />
                     <Button
                         class="is-small"
                         title="Zoom out"

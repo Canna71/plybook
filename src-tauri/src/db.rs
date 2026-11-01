@@ -515,16 +515,34 @@ fn history_get(conn: &Connection, id: &str) -> Result<Option<Game>, String> {
         .map_err(|e| e.to_string())
 }
 
-fn history_list(conn: &Connection) -> Result<Vec<Game>, String> {
+/// A page of played games, newest first, without their PGN (empty): a long history is listed
+/// without reading every game, and a game is read when it opens (F.35).
+fn history_list(conn: &Connection, limit: Option<u32>, offset: u32) -> Result<Vec<Game>, String> {
     let mut stmt = conn
-        .prepare("SELECT * FROM history ORDER BY date DESC, id DESC")
+        .prepare(
+            "SELECT id, '' AS pgn, white, black, white_elo, black_elo, result, date, round,
+                 time_control_initial, time_control_increment
+             FROM history ORDER BY date DESC, id DESC LIMIT ?1 OFFSET ?2",
+        )
         .map_err(|e| e.to_string())?;
+    // SQLite reads a negative limit as none
+    let limit = limit.map_or(-1, i64::from);
     let games = stmt
-        .query_map([], game_from_row)
+        .query_map(params![limit, offset], game_from_row)
         .map_err(|e| e.to_string())?
         .collect::<rusqlite::Result<Vec<_>>>()
         .map_err(|e| e.to_string());
     games
+}
+
+/// Deletes a played game; whether there was one.
+fn history_delete(conn: &Connection, id: &str) -> Result<bool, String> {
+    if !valid_history_id(id) {
+        return Err(format!("Invalid history id {id:?}"));
+    }
+    conn.execute("DELETE FROM history WHERE id = ?1", [id])
+        .map(|n| n > 0)
+        .map_err(|e| e.to_string())
 }
 
 /// Creates or replaces a played game; the play view saves after every move.
@@ -542,10 +560,20 @@ pub async fn get_history_game(db: State<'_, Database>, id: String) -> Result<Opt
     with_db(&db, |conn| history_get(conn, &id))
 }
 
-/// All played games, newest first.
+/// Played games, newest first, `limit` of them (all without) after the first `offset`; their
+/// `pgn` is empty (`get_history_game` reads it).
 #[tauri::command]
-pub async fn list_history(db: State<'_, Database>) -> Result<Vec<Game>, String> {
-    with_db(&db, history_list)
+pub async fn list_history(
+    db: State<'_, Database>,
+    limit: Option<u32>,
+    offset: Option<u32>,
+) -> Result<Vec<Game>, String> {
+    with_db(&db, |conn| history_list(conn, limit, offset.unwrap_or(0)))
+}
+
+#[tauri::command]
+pub async fn delete_history_game(db: State<'_, Database>, id: String) -> Result<bool, String> {
+    with_db(&db, |conn| history_delete(conn, &id))
 }
 
 // #endregion
@@ -620,7 +648,7 @@ mod tests {
         let finished = PGN.replace('*', "1-0");
         history_save(&conn, id, finished.clone()).unwrap();
 
-        assert_eq!(history_list(&conn).unwrap().len(), 1);
+        assert_eq!(history_list(&conn, None, 0).unwrap().len(), 1);
         let game = history_get(&conn, id).unwrap().unwrap();
         assert_eq!(game.result, "1-0");
         assert_eq!(game.pgn, finished);
@@ -638,12 +666,37 @@ mod tests {
         ] {
             history_save(&conn, id, PGN.replace("2026-10-24", date)).unwrap();
         }
-        let dates: Vec<String> = history_list(&conn)
+        let dates = |limit, offset| -> Vec<String> {
+            history_list(&conn, limit, offset)
+                .unwrap()
+                .into_iter()
+                .map(|g| g.event_date)
+                .collect()
+        };
+        assert_eq!(dates(None, 0), ["2026-10-24", "2026-10-01", "2026-09-30"]);
+        // in pages, and without the PGN
+        assert_eq!(dates(Some(2), 0), ["2026-10-24", "2026-10-01"]);
+        assert_eq!(dates(Some(2), 2), ["2026-09-30"]);
+        assert!(history_list(&conn, None, 0)
+            .unwrap()
+            .iter()
+            .all(|g| g.pgn.is_empty()));
+    }
+
+    #[test]
+    fn history_games_can_be_deleted() {
+        let conn = memory_db();
+        history_save(&conn, "a1", PGN.to_string()).unwrap();
+        history_save(&conn, "a2", PGN.to_string()).unwrap();
+        assert!(history_delete(&conn, "a1").unwrap());
+        assert!(!history_delete(&conn, "a1").unwrap());
+        assert!(history_delete(&conn, "bad id").is_err());
+        let left: Vec<_> = history_list(&conn, None, 0)
             .unwrap()
             .into_iter()
-            .map(|g| g.event_date)
+            .filter_map(|g| g.id)
             .collect();
-        assert_eq!(dates, ["2026-10-24", "2026-10-01", "2026-09-30"]);
+        assert_eq!(left, ["a2"]);
     }
 
     #[test]
@@ -732,7 +785,7 @@ mod tests {
         );
         // importing again changes nothing
         assert_eq!(import_surreal_export(&conn, &path).unwrap(), (0, 1));
-        assert_eq!(history_list(&conn).unwrap().len(), 1);
+        assert_eq!(history_list(&conn, None, 0).unwrap().len(), 1);
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

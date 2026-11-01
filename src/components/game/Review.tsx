@@ -45,6 +45,7 @@ import { gameHistory, historyFor } from "../../models/gamehistory";
 import ExplanationEvidence from "./ExplanationEvidence";
 import { explainAlternatives, explainLines } from "../../engine/explainer";
 import BoardText from "./BoardText";
+import CoachWords from "./CoachWords";
 import { getAccounts } from "../../online/onlinegames";
 import "./Review.scss";
 
@@ -433,6 +434,10 @@ const Review: Component = () => {
                                         {(x) => (
                                             <div class="moment-explanation">
                                                 <BoardText
+                                                    text={x().text.join(" ")}
+                                                    fens={() => momentFens(m)}
+                                                />
+                                                <CoachWords
                                                     text={x().text.join(" ")}
                                                     fens={() => momentFens(m)}
                                                 />

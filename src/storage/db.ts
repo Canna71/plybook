@@ -104,15 +104,25 @@ export async function pickPuzzle(folder?: string): Promise<Study | undefined> {
 
 // History
 
-export async function getHistoryGames(): Promise<Game[]> {
+/**
+ * Played games, newest first: `limit` of them (all without) after the first `offset`. Their
+ * `pgn` is empty: `getHistoryGame` reads a game's.
+ */
+export async function getHistoryGames(
+    limit?: number,
+    offset = 0,
+): Promise<Game[]> {
     try {
-        const games = (await invoke("list_history")) as Game[];
-        log.debug("getHistoryGames", games);
-        return games;
+        return await invoke<Game[]>("list_history", { limit, offset });
     } catch (e) {
         log.error("Failed to get history games", e);
         return [];
     }
+}
+
+/** Deletes a played game. */
+export async function deleteHistoryGame(id: string): Promise<void> {
+    await invoke<boolean>("delete_history_game", { id });
 }
 
 /**

@@ -119,6 +119,8 @@ export interface AppSettings {
         pages?: Record<string, number>;
         /** The notes column's width in pixels, as the divider was dragged (F.24) */
         sideWidth?: number;
+        /** The reader's own bookmarks, by Library path (written as a whole), F.38 */
+        bookmarks?: Record<string, { title: string; page: number }[]>;
     };
     library?: {
         /** The Library browser's order: by name, or modified (newest first) */
@@ -228,6 +230,7 @@ const DEFAULT: AppSettings = {
     reader: {
         places: {},
         pages: {},
+        bookmarks: {},
     },
     library: {
         sort: "name",

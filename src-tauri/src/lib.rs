@@ -67,6 +67,7 @@ pub fn run() {
             save_history_game,
             get_history_game,
             list_history,
+            delete_history_game,
             engine_list,
             engine_save_profile,
             engine_remove_profile,
