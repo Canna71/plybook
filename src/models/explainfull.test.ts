@@ -319,6 +319,35 @@ describe("explainMoveFull: lines read where they settle", () => {
         expect(text).toContain("Better was Qh3: it stops Qxe3.");
     });
 
+    it("gives the better move its threat when nothing else explains it", () => {
+        // 10...d5 again: a5's threat, as the threat search would find it (made up here)
+        const x = explainMoveFull({
+            fenBefore:
+                "r2q1rk1/ppp3p1/2nppn1p/2b1p3/4P2B/P1NP1N2/1PP2PPP/R2Q1RK1 b - - 1 10",
+            uci: "d6d5",
+            verdict: { class: "mistake", loss: 10 },
+            bestUci: "a7a5",
+            bestPv: ["a7a5", "c3e2"],
+            replyPv: ["e4d5", "e6d5"],
+            bestThreats: {
+                created: { side: "black", san: "a4", gain: 1, mates: false },
+            },
+            evaluations: {
+                before: deep({ pawns: -0.66 }),
+                after: deep({ pawns: 0.45 }),
+            },
+        })!;
+        expect(x.text.join(" ")).toContain(
+            "Better was a5: it threatens a4, winning a pawn.",
+        );
+        expect(x.evidence).toContainEqual({
+            text: "a5 threatens a4, winning a pawn",
+            basis: "line",
+            verified: true,
+            line: undefined,
+        });
+    });
+
     it("compares the two futures: the queens off against a king in the centre (9.Re1)", () => {
         const x = explainMoveFull({
             fenBefore:

@@ -26,6 +26,43 @@ describe("compareFutures", () => {
         });
     });
 
+    it("names the better move defending what the answer's line wins", () => {
+        // Black's d5 pawn: Ke8 lets Rxd5 take it, Ke6 would guard it
+        expect(
+            compareFutures(
+                "8/4k3/8/3p4/8/8/8/3RK3 b - - 0 1",
+                "e7e8",
+                ["d1d5", "e8e7"],
+                ["e7e6", "e1e2"],
+            ),
+        ).toEqual({
+            gain: "defends the pawn on d5, which White wins after Ke8 (Rxd5)",
+        });
+    });
+
+    it("names doubled pawns the answer's line leaves (10...d5 ... Nxb6 cxb6)", () => {
+        expect(
+            compareFutures(
+                "r2q1rk1/ppp3p1/2nppn1p/2b1p3/4P2B/P1NP1N2/1PP2PPP/R2Q1RK1 b - - 1 10",
+                "d6d5",
+                // the engine's answer, as in the owner's game
+                [
+                    "e4d5",
+                    "e6d5",
+                    "f1e1",
+                    "d8d7",
+                    "b2b4",
+                    "c5b6",
+                    "c3a4",
+                    "a8e8",
+                    "a4b6",
+                    "c7b6",
+                ],
+                ["a7a5", "c3e2", "d8e8", "c2c3"],
+            ).cost,
+        ).toBe("lets White double Black's pawns on the b-file (Nxb6 cxb6)");
+    });
+
     it("says nothing once the king is castled", () => {
         // 10...d5 exd5 exd5: both kings castled
         expect(

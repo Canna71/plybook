@@ -6,21 +6,32 @@
 //   them be traded, the better one keeps them on (9.Re1 Qb6, 12.e5 Qxe3 in the owner's games).
 // - A file opens with the opponent's king on it: the better line clears the pawns from the file
 //   of the king still in the centre (9.e5 dxe5 Qxe5+).
+// - The better move defends what the answer's line wins: a piece of ours taken and not taken
+//   back, the line ending ahead for them, that the better move guards once more.
+// - Doubled pawns: the answer's line doubles ours on a file, the better one does not
+//   (10…d5 … Nxb6 cxb6).
 
 import {
     Chess,
     Color,
+    makeSquare,
     opposite,
     parseUci,
+    Piece,
     Position,
+    Role,
+    Square,
     squareFile,
 } from "chessops";
+import { attacks } from "chessops/attacks";
 import { parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 
 /** Plies of a line read, extended while captures go on, as lineOutcome reads them */
 const PLIES = 6;
 const MAX_PLIES = 10;
+/** Plies read for what a line wins or does to the pawns, which may come later */
+const LONG_PLIES = 12;
 
 const SIDE = { white: "White", black: "Black" };
 const FILES = "abcdefgh";
@@ -31,23 +42,72 @@ const positionOf = (fen: string) => {
     return pos?.isOk ? pos.value : undefined;
 };
 
-/** The positions along a line from `fen`, the start first, with each move's SAN. */
-function walk(fen: string, pv: string[]) {
+type Step = {
+    pos: Position;
+    san?: string;
+    /** What the move took: its square and the piece, by the side that moved */
+    took?: { square: Square; piece: Piece; by: Color };
+};
+
+/**
+ * The positions along a line from `fen`, the start first, with each move's SAN: `plies` moves,
+ * extended while captures go on, `max` at most.
+ */
+function walk(fen: string, pv: string[], plies = PLIES, max = MAX_PLIES) {
     const pos = positionOf(fen);
     if (!pos) return [];
-    const steps: { pos: Position; san?: string }[] = [{ pos: pos.clone() }];
+    const steps: Step[] = [{ pos: pos.clone() }];
     for (const uci of pv) {
         const move = parseUci(uci);
         if (!move || !pos.isLegal(move)) break;
-        const capture = "from" in move && pos.board.has(move.to);
-        if (steps.length > PLIES && !capture) break;
+        const victim = "from" in move ? pos.board.get(move.to) : undefined;
+        if (steps.length > plies && !victim) break;
+        const by = pos.turn;
         const san = makeSan(pos, move);
         pos.play(move);
-        steps.push({ pos: pos.clone(), san });
-        if (steps.length > MAX_PLIES) break;
+        steps.push({
+            pos: pos.clone(),
+            san,
+            took: victim && { square: move.to, piece: victim, by },
+        });
+        if (steps.length > max) break;
     }
     return steps;
 }
+
+/** How many of `color`'s pieces guard `square`. */
+function defenders(pos: Position, square: Square, color: Color): number {
+    let n = 0;
+    for (const from of pos.board[color]) {
+        if (from === square) continue;
+        const piece = pos.board.get(from)!;
+        if (attacks(piece, from, pos.board.occupied).has(square)) n++;
+    }
+    return n;
+}
+
+/** Files where `color` has two pawns or more. */
+function doubledFiles(pos: Position, color: Color): Set<number> {
+    const count = new Map<number, number>();
+    for (const sq of pos.board.pieces(color, "pawn"))
+        count.set(squareFile(sq), (count.get(squareFile(sq)) ?? 0) + 1);
+    return new Set([...count].filter(([, n]) => n > 1).map(([f]) => f));
+}
+
+const VALUE: Record<Role, number> = {
+    pawn: 1,
+    knight: 3,
+    bishop: 3,
+    rook: 5,
+    queen: 9,
+    king: 0,
+};
+
+const material = (pos: Position, color: Color) => {
+    let total = 0;
+    for (const sq of pos.board[color]) total += VALUE[pos.board.get(sq)!.role];
+    return total;
+};
 
 const queens = (pos: Position, color: Color) =>
     pos.board.pieces(color, "queen").size();
@@ -142,6 +202,65 @@ export function compareFutures(
             );
             if (opened)
                 out.gain = `opens the ${FILES[file]}-file while ${SIDE[them]}'s king is still on it`;
+        }
+    }
+
+    const longPlayed = walk(
+        fenBefore,
+        [uci, ...(replyPv ?? [])],
+        LONG_PLIES,
+        LONG_PLIES,
+    );
+    const longBetter = bestPv?.length
+        ? walk(fenBefore, bestPv, LONG_PLIES, LONG_PLIES)
+        : [];
+    const playedSan = longPlayed[1]?.san;
+
+    // what the answer's line wins, and the better move defends: a piece of ours taken there,
+    // not taken back on its square, the line ending with them ahead (11…dxe4 … Bxe5, where Bd6
+    // guards e5)
+    const end = longPlayed.at(-1)?.pos;
+    const won =
+        end &&
+        material(end, them) - material(end, side) >
+            material(start, them) - material(start, side);
+    if (!out.gain && won && longBetter.length > 1) {
+        const lost = longPlayed.findIndex(
+            (s, i) =>
+                s.took?.by === them &&
+                start.board.get(s.took.square)?.role === s.took.piece.role &&
+                start.board.get(s.took.square)?.color === side &&
+                longPlayed[i + 1]?.took?.square !== s.took.square,
+        );
+        const took = longPlayed[lost]?.took;
+        const afterBest = longBetter[1].pos;
+        if (
+            took &&
+            afterBest.board.get(took.square)?.role === took.piece.role &&
+            afterBest.board.get(took.square)?.color === side &&
+            defenders(afterBest, took.square, side) >
+                defenders(start, took.square, side)
+        )
+            out.gain = `defends the ${took.piece.role} on ${makeSquare(took.square)}, which ${SIDE[them]} wins after ${playedSan} (${longPlayed[lost].san})`;
+    }
+
+    // a pawn weakness of ours the answer's line makes and the better one does not: doubled pawns
+    // (10…d5 … Nxb6 cxb6)
+    if (!out.cost && longPlayed.length > 2) {
+        const before = doubledFiles(start, side);
+        const kept = longBetter.length
+            ? doubledFiles(longBetter.at(-1)!.pos, side)
+            : new Set<number>();
+        for (let i = 2; i < longPlayed.length && !out.cost; i++) {
+            const now = doubledFiles(longPlayed[i].pos, side);
+            const file = [...now].find(
+                (f) =>
+                    !before.has(f) &&
+                    !kept.has(f) &&
+                    !doubledFiles(longPlayed[i - 1].pos, side).has(f),
+            );
+            if (file !== undefined && doubledFiles(end!, side).has(file))
+                out.cost = `lets ${SIDE[them]} double ${SIDE[side]}'s pawns on the ${FILES[file]}-file (${longPlayed[i - 1].san} ${longPlayed[i].san})`;
         }
     }
     return out;
