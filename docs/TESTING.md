@@ -36,6 +36,13 @@ release or Windows, below.
       went wrong on this screen" with Try again, and the sidebar still works. Tell me what
       the message says.
 
+## Piece values with Stockfish 19, F.45 (branch feature/explain-activity)
+
+- [ ] **They are back**: in Analysis with the engine on, step through a game of yours: now
+      and then a move says "improves the knight: Stockfish's piece values put it … higher on
+      …" (about one move in ten). The explanation still appears at once, the sentence a
+      moment later. Note any that reads wrong (a retreat called an improvement).
+
 ## Keychain only when needed, F.44 (branch feature/keychain-on-demand)
 
 - [ ] **One last time**: the first start of a build with this change asks once (it fills the

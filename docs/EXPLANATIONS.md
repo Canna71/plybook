@@ -93,7 +93,8 @@ Rules that keep it honest:
 ## Setup
 
 Nothing beyond the analysis engine: Stockfish in the Engines folder (Settings → Engines), as
-for analysis. Piece values need Stockfish 17 or later. The optional wording model is set up in
+for analysis. Piece values need Stockfish 17 or later: 17 and 18 print them, for 19 they are
+made from one evaluation per piece (F.45, `piecevalues.ts`). The optional wording model is set up in
 Settings → Explanations (P2.4b, ROADMAP.md).
 
 ## Chesserly (P2.4g, studied 2026-10-28)

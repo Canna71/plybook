@@ -13,7 +13,15 @@ import {
 } from "./engineinterfaces";
 import { searchOnce, SearchResult } from "./search";
 import { moveThreats, MoveThreats } from "./threatsearch";
-import { isEvalEnd, parsePieceValues, PieceValues } from "./piecevalues";
+import {
+    derivedValues,
+    isEvalEnd,
+    nnueWhite,
+    parsePieceValues,
+    PieceValues,
+    valuedSquares,
+    withoutPiece,
+} from "./piecevalues";
 const log = anylogger("explainer");
 
 let engine: { profileId: string; started: Promise<IChessEngine> } | undefined;
@@ -145,31 +153,49 @@ const valuesCache = new Map<string, Promise<PieceValues | undefined>>();
 /** `eval` answers in milliseconds; past this, the engine is taken not to have it */
 const EVAL_TIMEOUT = 2000;
 
+/** Stockfish's `eval` output for `fen`, up to its end (or the timeout). */
+function evalOutput(engine: IChessEngine, fen: string): Promise<string[]> {
+    return new Promise<string[]>((resolve) => {
+        const lines: string[] = [];
+        const done = () => {
+            clearTimeout(timer);
+            engine.off("line", onLine);
+            resolve(lines);
+        };
+        const onLine = (line: string) => {
+            lines.push(line);
+            if (isEvalEnd(line)) done();
+        };
+        const timer = setTimeout(done, EVAL_TIMEOUT);
+        engine.on("line", onLine);
+        engine.evaluate!(fen);
+    });
+}
+
 /**
- * Stockfish's NNUE piece values in `fen` (piecevalues.ts); undefined for other engines.
+ * Stockfish's NNUE piece values in `fen` (piecevalues.ts); undefined for other engines. Its
+ * table when it prints one (up to Stockfish 18); otherwise (19) made as it made them, from one
+ * evaluation per piece (F.45).
  */
 export function explainPieceValues(
     fen: string,
 ): Promise<PieceValues | undefined> {
-    return enqueue(valuesCache, fen, (engine) => {
+    return enqueue(valuesCache, fen, async (engine) => {
         const name = engine.getId()?.name ?? "";
-        if (!engine.evaluate || !/stockfish/i.test(name))
-            return Promise.resolve(undefined);
-        return new Promise<PieceValues | undefined>((resolve) => {
-            const lines: string[] = [];
-            const done = () => {
-                clearTimeout(timer);
-                engine.off("line", onLine);
-                resolve(parsePieceValues(lines));
-            };
-            const onLine = (line: string) => {
-                lines.push(line);
-                if (isEvalEnd(line)) done();
-            };
-            const timer = setTimeout(done, EVAL_TIMEOUT);
-            engine.on("line", onLine);
-            engine.evaluate!(fen);
-        });
+        if (!engine.evaluate || !/stockfish/i.test(name)) return undefined;
+        const lines = await evalOutput(engine, fen);
+        const table = parsePieceValues(lines);
+        const base = nnueWhite(lines);
+        if (table || base === undefined) return table;
+        const without = new Map<string, number>();
+        for (const square of valuedSquares(fen)) {
+            const other = withoutPiece(fen, square);
+            if (!other) continue;
+            // none with the side to move in check (a pin's piece taken away): left out
+            const value = nnueWhite(await evalOutput(engine, other));
+            if (value !== undefined) without.set(square, value);
+        }
+        return derivedValues(fen, base, without);
     });
 }
 
