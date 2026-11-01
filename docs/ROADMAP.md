@@ -1050,6 +1050,48 @@ Second round, in the order given; bugs first when working through it.
   tested). Checked in the dev app with the owner's text: opened and solved. No score is
   kept for it (it has no file).
 
+## Owner feedback (2026-11-01)
+
+Third round, triaged: bugs first, then requests, then research.
+
+- [ ] **F.31 [Bug] A move in an explanation is read for the wrong side.** In a review's key
+  moment ("5. Bb5 is a blunder … Only e5 kept the advantage … Better was e5"), the first e5
+  is hovered as Black's e7–e5 and the second as White's e4–e5. Cause: `boardText`
+  (`models/boardtext.ts`) reads each move after the last one found, to follow lines ("After
+  Nxf7 Qe7"), so "e5" after "Bb5" is tried as Black's reply first. Fix: continue from the
+  last move only when the moves follow each other in the text (a line), and otherwise read
+  them in the positions given; a test with this sentence.
+- [ ] **F.32 [Bug] The promotion chooser is offset from the promotion square** (seen in
+  puzzles; check Analysis, Play and the reader's notes too). `PiecesPopup` is placed in
+  `BoardArea`; probably a position computed against the wrong box (the board moved by the
+  layout, as in the chessground gotcha).
+- [ ] **F.33 [Bug] Game review: clicking a move does not go to it** (after a game against the
+  engine, maybe elsewhere); ← and → work. Check the review's moves and the move list.
+- [ ] **F.34 PDF reader: the starting-position editor fits without its own scrolling.** It sits
+  in a box with its own scroll bar inside the scrolling notes panel, so the board is never
+  wholly visible. While editing, the editor takes the height it needs and only the panel
+  scrolls.
+- [ ] **F.35 Delete games from History; a long history.** No way to delete a game yet (a
+  `delete_history_game` command and a ⋯ → Delete… that asks first). Large histories:
+  `history_list` reads every game's whole PGN at once (`SELECT *`) and History shows them
+  all. Fix: list without the PGN (players, date, result, opening), page or virtualize the
+  list, and load a game's PGN when it opens.
+- [ ] **F.36 "Say it as a coach" in the review too.** It is only under the Engine section's
+  explanation (`WhatIf.tsx`), not under a key moment's explanation in Game review, for no
+  good reason: the review has the same structured explanation to pass to the model.
+- [ ] **F.37 Plybook does not explain well enough why a move was bad (research).** The coach
+  text reads much like the plain one: by design it only rewords the structured explanation
+  (fixed system prompt, P2.4b), so it can't add understanding that isn't there. To research:
+  what a human coach says that we don't (the plan behind the move, what the opponent wanted,
+  the positional cost when no tactic decides, a comparison of the two resulting positions);
+  which of it the engine and detectors can support (REASONS.md, EXPLANATIONS.md); and whether
+  the model may add commentary from the evidence (the lines and board facts), marked as its
+  own interpretation, rather than only reword. Outcome: a short plan with examples from the
+  owner's games before any code.
+- [ ] **F.38 PDF reader: a table of contents** to jump to chapters. From the PDF's outline
+  where it has one (pdf.js `getOutline`); scanned books often have none, so perhaps the
+  user's own bookmarks per book as a fallback.
+
 ## Last
 
 - [~] **X.1 App auto-update** (moved here from O.6 by the owner, 2026-10-25). Tauri's updater
@@ -1064,3 +1106,6 @@ Second round, in the order given; bugs first when working through it.
   left** (README, Releases and updates): generate the key and put the public half in
   `tauri.conf.json`, add the secrets, make the repository public, release twice to try an
   update. Windows installers are not code-signed.
+  The owner asked (2026-11-01) whether a Mac build made on their own Mac can be shared:
+  only signed with a Developer ID and notarized (Apple Developer Program), which the release
+  workflow does on GitHub's runners, Windows included, so no Windows machine is needed.
