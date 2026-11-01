@@ -112,6 +112,22 @@ Each page costs a few model runs (64 tiles each); a framed diagram usually needs
   before a move is a chess-font piece: `runFrom` tries each piece for it, keeps each symbol to
   one piece through the line, and `agreed` takes the longest reading, stopping where equally
   long readings differ. Open problems: P4.4f in the roadmap.
+- The game before a diagram (F.11, `src/models/gamebefore.ts`): the text before it (the
+  `PAGES_BEFORE` = 3 pages before, then its page up to the diagram, `readingOrder` going column
+  by column and line by line; lines by baseline, runs that touch joined, as OCR splits "t'lJ" +
+  "f3"). An OCR text layer turns chess-font pieces into junk ("tlJf3", "i.c4", "'iVe7") and
+  digits into letters ("cS", "fl", "S d4", "1 0"), so `textMoves` reads a move only by its
+  square, capture and pawn-or-piece, and keeps only numbered moves (ply from the number, "..."
+  for Black). `gameBefore` then searches from the initial position, ply by ply, for moves from
+  the text in order that reach the diagram's board: a beam of the 1,500 positions closest to
+  the diagram (each kept at its earliest point in the text), pruned when a side has fewer
+  pieces of a kind than the diagram or a diagram pawn is out of reach (pawns don't go back).
+  The diagram decides the reading, so a wrong guess can't be offered; a transposition can
+  (another order of the book's moves to the same board). Measured on an OCR'd Gambit book
+  (Collins): eight diagrams from 6 to 26 plies, each under 0.35 s. `withGameBefore` writes the
+  notes from the start, the line, a "Diagram, p. N" comment and the `DiagramPly` header, which
+  `notesStart` reads for whose move it is and the reader for the move to show
+  (`GameManagerApi.showPly`).
 - The editor's `previewMovesFromText` (reactive: it reads the editor's game and path) shows
   what a text would add before it's added: the text below the diagram, and the selection
   ("As moves: …"), each with its own buttons.

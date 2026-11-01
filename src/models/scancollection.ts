@@ -1,10 +1,10 @@
 // Diagrams scanned from a book, saved as one PGN per diagram so each can be studied or, with a
 // solution, trained as a puzzle.
 
-import { Chess, Color, parseUci } from "chessops";
+import { Chess, Color, Move, parseUci } from "chessops";
 import { parseFen } from "chessops/fen";
-import { makePgn, parsePgn } from "chessops/pgn";
-import { makeSanAndPlay } from "chessops/san";
+import { ChildNode, makePgn, Node, parsePgn, PgnNodeData } from "chessops/pgn";
+import { makeSanAndPlay, parseSan } from "chessops/san";
 
 export type ScannedDiagram = {
     page: number;
@@ -46,16 +46,72 @@ export function bookQuote(text: string, page: number): string {
     return quote ? `${quote} (p. ${page})` : "";
 }
 
-/** A diagram's notes: whose move it is at their start, and whether they have moves yet. */
+/** The move of a diagram's notes the diagram shows, when they start with the game before it. */
+export function diagramPly(pgn: string): number | undefined {
+    const ply = /^\[DiagramPly "(\d+)"\]/m.exec(pgn);
+    return ply ? +ply[1] : undefined;
+}
+
+/**
+ * A diagram's notes: whose move it is in the diagram (at their start, or after the game before
+ * it), and whether they have moves yet.
+ */
 export function notesStart(pgn: string): { turn?: Color; moves: boolean } {
     const game = parsePgn(pgn)[0];
     if (!game) return { moves: false };
     const fen = game.headers.get("FEN");
     const setup = fen ? parseFen(fen) : undefined;
+    const ply = diagramPly(pgn);
     return {
-        turn: setup?.isOk ? setup.value.turn : undefined,
+        turn:
+            ply !== undefined
+                ? ply % 2
+                    ? "black"
+                    : "white"
+                : setup?.isOk
+                  ? setup.value.turn
+                  : undefined,
         moves: game.moves.children.length > 0,
     };
+}
+
+/**
+ * A diagram's notes starting with the game before it (F.11): `moves` from the initial position
+ * to the diagram, marked with a comment and the `DiagramPly` header, then the notes' own moves
+ * and comments. Undefined if the notes' moves don't play from there.
+ */
+export function withGameBefore(
+    pgn: string,
+    moves: Move[],
+    page: number,
+): string | undefined {
+    const game = parsePgn(pgn)[0];
+    if (!game || !moves.length) return undefined;
+    const pos = Chess.default();
+    const line: ChildNode<PgnNodeData>[] = [];
+    for (const move of moves) {
+        if (!pos.isLegal(move)) return undefined;
+        line.push(new ChildNode({ san: makeSanAndPlay(pos, move) }));
+    }
+    // the notes' main line must still play after the game before
+    const check = pos.clone();
+    for (const data of game.moves.mainline()) {
+        const move = parseSan(check, data.san);
+        if (!move) return undefined;
+        check.play(move);
+    }
+    line.forEach((node, i) => {
+        if (i > 0) line[i - 1].children = [node];
+    });
+    const last = line[line.length - 1];
+    last.data.comments = [`Diagram, p. ${page}`, ...(game.comments ?? [])];
+    last.children = game.moves.children;
+    const root = new Node<PgnNodeData>();
+    root.children = [line[0]];
+    game.headers.delete("SetUp");
+    game.headers.delete("FEN");
+    game.headers.set("DiagramPly", String(moves.length));
+    return makePgn({ headers: game.headers, comments: [], moves: root });
 }
 
 /**

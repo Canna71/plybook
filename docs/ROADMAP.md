@@ -931,10 +931,17 @@ Fixes and requests from using the app, in the order given. IDs are `F.n`.
   scans, no text layer), so there is nothing to select, find or read moves from. **Not
   planned** (owner, 2026-10-31): scanned books are the minority, and users can add a text
   layer with an external OCR tool first.
-- [ ] **F.11 Diagrams at an intermediate position.** A book's diagram often shows the game
-  after some moves the text gives before it. Read those moves from the text, check they lead
-  to the diagram's position, and keep them as the game before the diagram (see P4.4e). Needs
-  a text layer (books with text, or scans OCR'd outside the app).
+- [x] **F.11 Diagrams at an intermediate position** (`feature/f11-diagram-moves`;
+  `src/models/gamebefore.ts` with tests; owner's test book: Collins, *Understanding the Chess
+  Openings*, an OCR'd scan). A book's diagram often shows the game after moves the text gives
+  before it. The reader reads the numbered moves before the diagram (its page and the three
+  before), OCR'd pieces and all, and searches for a sequence of them, in text order, that ends
+  on the diagram's board; found, the notes offer "Game before the diagram: 1.e4 e5 …" with
+  **Start the notes with it**, which makes the notes a game from the start with the diagram's
+  move marked (comment and `DiagramPly` header) and opens them there. The diagram checks the
+  reading, so nothing wrong is offered, but the line may be a transposition of the book's
+  order. Details in SCANNING.md. Limits: a misread diagram square means no match; the text
+  must be selectable (a text layer).
 
 ## Owner feedback (2026-10-31)
 

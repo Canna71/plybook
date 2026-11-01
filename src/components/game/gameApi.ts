@@ -1,7 +1,7 @@
 // What a parent may do to the game in a game manager (GameManagerApi): add a comment, or
 // moves found in a text (the PDF reader's notes).
 
-import { Accessor, batch, Setter } from "solid-js";
+import { Accessor, batch, createEffect, on, Setter } from "solid-js";
 import { makeSanVariation } from "chessops/san";
 import { GameModel } from "../../models/GameModel";
 import { movesFromText } from "../../models/booktext";
@@ -17,6 +17,8 @@ export type GameManagerApi = {
     addMovesFromText: (text: string) => number;
     /** The moves `addMovesFromText` would add, numbered ("4.c3 Nf6"); reactive */
     previewMovesFromText: (text: string) => string | undefined;
+    /** Shows the main line's move `ply` (0: the start), once the game has loaded */
+    showPly: (ply: number) => void;
 };
 
 export function gameApi(
@@ -37,7 +39,22 @@ export function gameApi(
         return undefined;
     };
 
+    // a move to show asked for before the game loaded
+    let wanted: number | undefined;
+    createEffect(
+        on(game, (g) => {
+            if (!g || wanted === undefined) return;
+            setPath(g.pathAtMainlinePly(wanted));
+            wanted = undefined;
+        }),
+    );
+
     return {
+        showPly: (ply) => {
+            const g = game();
+            if (g) setPath(g.pathAtMainlinePly(ply));
+            else wanted = ply;
+        },
         addComment: (text) => {
             const p = path();
             const g = game();

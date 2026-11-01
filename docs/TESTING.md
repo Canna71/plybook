@@ -5,6 +5,16 @@ not been tried in the running app yet. Test in a **built** app where noted (`pnp
 the CSP and signing only apply there. Tick an item when it's confirmed, note what went wrong
 when it isn't, and remove ticked items once their roadmap entry says "confirmed by the owner".
 
+## Game before a diagram, F.11 (branch feature/f11-diagram-moves)
+
+- [ ] **Collins, Understanding the Chess Openings**: tried in the dev app on page 16 (both
+      diagrams). Try diagrams further in (the Ruy Lopez, the Sicilian, the Queen's Gambit):
+      "Game before the diagram" should show the book's line; note any diagram that shows none
+      though its line is printed before it (which page), and any line that looks wrong.
+- [ ] **Start the notes with it** on a diagram whose notes already have moves: they follow
+      the line; if they don't fit, a message says so and nothing changes.
+- [ ] A book with real text (not OCR), if you have one: same as the first item.
+
 ## Owner feedback, round 2: answers (branch feature/feedback-answers)
 
 - [ ] **Rename, F.18 (built app)**: the first start of a build moves nothing more (the dev
