@@ -12,7 +12,7 @@ const PageHeader: ParentComponent<{
     description?: JSX.Element;
 }> = (props) => {
     const location = useLocation();
-    const help = () => helpRoute(location.pathname);
+    const help = () => helpRoute(location.pathname, location.search);
     return (
         <header class="page-header">
             <div class="page-header-text">

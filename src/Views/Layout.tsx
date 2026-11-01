@@ -109,7 +109,7 @@ const Layout: ParentComponent = (props) => {
     const onHelpKey = (e: KeyboardEvent) => {
         if (e.key === "F1" || ((e.metaKey || e.ctrlKey) && e.key === "?")) {
             e.preventDefault();
-            navigate(helpRoute(location.pathname));
+            navigate(helpRoute(location.pathname, location.search));
         }
     };
     onMount(() => document.addEventListener("keydown", onHelpKey));

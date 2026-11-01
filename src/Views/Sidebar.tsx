@@ -65,7 +65,7 @@ const Sidebar: Component = () => {
     const location = useLocation();
     const nav = useNavHistory();
     const collapsed = sidebarCollapsed;
-    const active = () => activeNavItem(location.pathname)?.id;
+    const active = () => activeNavItem(location.pathname, location.search)?.id;
 
     const link = (item: NavItem) => (
         <A

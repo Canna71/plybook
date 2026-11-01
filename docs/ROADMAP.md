@@ -1136,8 +1136,10 @@ Third round, triaged: bugs first, then requests, then research.
   bookmarks per book (`reader.bookmarks`). Collins gives its 5 sections and 53 chapters;
   *My System* (images only) only bookmarks. Left: OCR gaps in titles ("Giuoco Pian o"),
   which can't be joined without a dictionary.
-- [ ] **F.43 The sidebar highlights Library for a game opened from History** (seen while
-  checking F.35; History would be right).
+- [x] **F.43 The sidebar highlights Library for a game opened from History** (seen while
+  checking F.35; History would be right). Done (`feature/coach-history-toc`): an owned route
+  may carry a query (`/game?source=history` in History's `owns`), matched before the plain
+  routes; Help (F1, the header's ?) follows the same screen. Tested.
 
 ## Last
 
