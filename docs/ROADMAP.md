@@ -1194,6 +1194,22 @@ Third round, triaged: bugs first, then requests, then research.
   once, for an entry saved before the index); values are read when used, once per run.
   cargo-tested with a store that counts reads.
 
+- [x] **F.45 [Bug] Stockfish 19 prints no piece values, so their reasons were gone** (found
+  2026-11-01 while trying piece activity for F.37c). Its `eval` no longer has the "NNUE
+  derived piece values" table, so "improves the knight: Stockfish's piece values put it …"
+  never appeared with the owner's engine. Done (`feature/explain-activity`): without the
+  table, the explainer makes the values as Stockfish did, the NNUE evaluation less the one
+  without each piece (kings and pawns left out, a position left illegal by it skipped:
+  Stockfish may hang on one), scaled to the old table's sizes (`piecevalues.ts`, tested). On
+  the Capablanca game (testdata/01.pgn): 15.Nd5 "puts it 4.3 higher on d5" (2.1 with
+  Stockfish 17's table), and 10 of 91 moves get such a sentence. About 15 evaluations per
+  position, milliseconds each.
+- [-] **F.37c, piece activity: tried, not used** (2026-11-01). Neither mobility (squares the
+  pieces reach) nor the piece values summed over a side tell the two futures apart in the
+  owner's games: at the end of the answer's line, the worse one, the mover's pieces come out
+  more active as often as not (10…d5: 35 squares against 32; values share 0.56 against
+  0.49; 9.Re1: 0.60 against 0.44). Saying it would mislead; a5 and Bd6 stay without a reason.
+
 ## Last
 
 - [~] **X.1 App auto-update** (moved here from O.6 by the owner, 2026-10-25). Tauri's updater

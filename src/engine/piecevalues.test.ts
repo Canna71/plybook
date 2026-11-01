@@ -1,5 +1,65 @@
 import { describe, expect, it } from "vitest";
-import { isEvalEnd, parsePieceValues } from "./piecevalues";
+import {
+    derivedValues,
+    isEvalEnd,
+    nnueWhite,
+    parsePieceValues,
+    valuedSquares,
+    withoutPiece,
+} from "./piecevalues";
+
+// Stockfish 19 prints no table: the values come from evaluations with and without each piece
+describe("derived piece values (F.45)", () => {
+    // its `eval` after 1.e4 (abridged)
+    const SF19 = [
+        "NNUE evaluation          -60 (side to move, internal units)",
+        "NNUE evaluation        +0.21 (white side)",
+        "Final evaluation      +0.27 (white side) [with scaled NNUE, ...]",
+    ];
+    const AFTER_E4 =
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+
+    it("reads the NNUE evaluation from White's side, and none in check", () => {
+        expect(parsePieceValues(SF19)).toBeUndefined();
+        expect(nnueWhite(SF19)).toBe(0.21);
+        expect(nnueWhite(["NNUE evaluation        -5.59 (white side)"])).toBe(
+            -5.59,
+        );
+        expect(nnueWhite(["Final evaluation: none (in check)"])).toBe(
+            undefined,
+        );
+    });
+
+    it("takes a piece off, with its castling right", () => {
+        expect(withoutPiece(AFTER_E4, "g1")).toBe(
+            "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKB1R b KQkq - 0 1",
+        );
+        expect(withoutPiece(AFTER_E4, "h1")).toBe(
+            "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBN1 b Qkq - 0 1",
+        );
+        expect(withoutPiece(AFTER_E4, "e5")).toBeUndefined();
+        // the rook shields White's king from the queen, White having just moved: taking it
+        // off would leave the side that moved in check, which is no position
+        expect(withoutPiece("4q1k1/8/8/8/8/8/4R3/4K3 b - - 0 1", "e2")).toBe(
+            undefined,
+        );
+        expect(valuedSquares(AFTER_E4)).toHaveLength(14);
+    });
+
+    it("values a piece as the evaluation it brings, on the old table's scale", () => {
+        // the knights only: 5.8 each raw, scaled so that they add up to two usual knights
+        const values = derivedValues(
+            AFTER_E4,
+            0.21,
+            new Map([
+                ["g1", -5.59],
+                ["g8", 6.01],
+            ]),
+        )!;
+        expect(values.get("g1")).toBeCloseTo(4, 5);
+        expect(values.get("g8")).toBeCloseTo(-4, 5);
+    });
+});
 
 // Stockfish 17's `eval` after 1.e4 e5 2.Nf3 Nc6 (abridged after the table)
 const OUTPUT = `
