@@ -1152,9 +1152,13 @@ Third round, triaged: bugs first, then requests, then research.
     opening with a king in it. Done in part (`feature/explain-settled`,
     `reasons/futures.ts`, tested): the queens coming off in the answer's line while the
     opponent's king is in the centre, and kept on in the better line (9.Re1, 12.e5,
-    13.exd6); a file opened on a king in the centre by the better line (17.g3's Rf1). Left:
-    positions with both kings castled (10…d5's a5, 11…dxe4's Bd6): pawn structure and piece
-    activity compared, next.
+    13.exd6); a file opened on a king in the centre by the better line (17.g3's Rf1). Then
+    (`feature/explain-castled`): the better move guarding what the answer's line wins (a
+    piece taken and not taken back, the line ending ahead), and doubled pawns the answer's
+    line leaves (10…d5: "It lets White double Black's pawns on the b-file (Nxb6 cxb6)").
+    Left: 11…dxe4's Bd6 (its line gives the e5 pawn back on f3, so nothing is said) and the
+    better moves a5 and Bd6 themselves; piece activity would need Stockfish's piece values
+    along the lines.
   - [x] **F.37d The coach sees the evidence**: the model gets the lines and facts, may say what
     they show, its moves and squares checked against them, labelled as the coach's reading.
     Done (`feature/explain-settled`): `coachBrief` (tested) sends the explanation, its

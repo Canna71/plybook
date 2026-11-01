@@ -232,7 +232,10 @@ After (c), in part (`reasons/futures.ts`): 9.Re1 "It lets Black trade queens (Qx
 Black's king is still in the centre. Better was e5: it keeps the queens on against Black's king
 in the centre."; 12.e5 and 13.exd6 the same about Qxe3; 17.g3 "Better was Rf1: it opens the
 f-file while Black's king is still on it". Still bare: a5 and Bd6, where both kings are
-castled.
+castled. Then two readings more: the better move guarding what the answer's line wins, and
+doubled pawns the answer's line leaves: 10…d5 "It lets White double Black's pawns on the
+b-file (Nxb6 cxb6)". 11…dxe4 stays without one: its line wins e5 but gives a pawn back on f3,
+so "Bd6 defends e5" would not be borne out.
 
 ## Not done (yet)
 
