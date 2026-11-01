@@ -16,7 +16,7 @@ describe("explainMove", () => {
         expect(text).toEqual([
             "Nf6 is a blunder: it gives away 47% of Black's winning chances.",
             "White answers Qxf7#, checkmate.",
-            "Better was g6: it attacks the undefended queen on h5.",
+            "Better was g6: it attacks the undefended queen on h5 and stops Qxf7#.",
         ]);
     });
 

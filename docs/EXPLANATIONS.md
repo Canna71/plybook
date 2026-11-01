@@ -222,7 +222,10 @@ OWN_NAMES=Player,canna71 pnpm eval:reasons -t "own games"`). After (a): 10…d5 
 answers exd5." and no more; 12.e5 "Black answers Qxe3. After Qxe3 Bxe3 dxe5: Black wins
 material (+1)."; 4.Nc3 no longer claims +3; 12…Ng4 "After Nxc5: White wins material (+3)".
 What is left is mostly silence where a reason is wanted (10…d5, 9.Re1, the better moves
-Qh3, Rf1, a5): (b) and (c).
+Qh3, Rf1, a5): (b) and (c). After (b), in part: "Better was Qh3: it stops Qxe3" (12.e5,
+13.exd6), "d5: it stops exd4" (4.Nc3), "Nxe4: it saves the bishop on c5 and stops Nxc5",
+"e5: it takes a share of the centre" (9.Re1); "stops" only for an answer that was there
+before the played move, so not "a5 stops exd5" after 10…d5. Still bare: a5, Bd6, Rf1.
 
 ## Not done (yet)
 

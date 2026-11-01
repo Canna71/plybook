@@ -177,6 +177,14 @@ function play(fen: string, uci: string) {
     return { san, fen: makeFen(pos.value.toSetup()) };
 }
 
+/** The position with `side` to move (no en passant): what that side could play there. */
+function withTurn(fen: string, side: Color): string {
+    const parts = fen.split(" ");
+    parts[1] = side === "white" ? "w" : "b";
+    parts[3] = "-";
+    return parts.join(" ");
+}
+
 /** Facts of `after` that were not there in `before`. */
 const newFacts = (before: Fact[], after: Fact[]) => {
     const keys = new Set(before.map((f) => f.key));
@@ -278,11 +286,14 @@ function achievements(
     after: Fact[],
     side: Color,
     told: string[] = [],
+    lasting?: Set<string>,
 ): string[] {
     const created = newFacts(before, after).filter(
         (f) =>
             f.victim === opposite(side) &&
-            !(f.kind === "hanging" && told.includes(squareOf(f))),
+            !(f.kind === "hanging" && told.includes(squareOf(f))) &&
+            // gains the answer undoes are no point (F.37a); `lasting`: the keys after it
+            (!lasting || lasting.has(f.key)),
     );
     // a forked piece is not worth a second mention as merely attacked
     const forked = new Set(created.flatMap((f) => f.targetSquares ?? []));
@@ -613,14 +624,55 @@ export function explainMoveFull(
             sentences.push(`Better was ${text}.`);
             fromLine(text, "best");
         } else {
+            // a reason for the better move whenever there is one (F.37b): what it does that
+            // outlasts the answer, the answer to the played move it rules out, or else a reading
+            // of the position
+            const answer = bestPv?.[1]
+                ? play(bestMove.fen, bestPv[1])
+                : undefined;
             const bestDone = achievements(
                 before,
                 factsFromFen(bestMove.fen),
                 side,
+                [],
+                answer
+                    ? new Set(factsFromFen(answer.fen).map((f) => f.key))
+                    : undefined,
             );
-            const why = bestDone.length ? `: it ${joinAnd(bestDone)}` : "";
-            sentences.push(`Better was ${bestMove.san}${why}.`);
             bestDone.forEach((d) => fact(`${bestMove.san} ${d}`));
+            // the answer that hurt (a capture, a check, a tactic), if it was there before the
+            // move (not one the move made possible: exd5 after d5) and the better move takes
+            // it away: it can no longer be played, or no longer takes anything
+            const answerUci = replyPv?.[0];
+            const hurt =
+                reply &&
+                answerUci &&
+                (isCaptureAt(moved.fen, answerUci) ||
+                    reply.san.includes("+") ||
+                    replyIdea?.motif);
+            const bites = (fen: string) =>
+                !!play(fen, answerUci!) &&
+                (!isCaptureAt(moved.fen, answerUci!) ||
+                    isCaptureAt(fen, answerUci!));
+            const stops =
+                hurt &&
+                bites(withTurn(input.fenBefore, opponent)) &&
+                !bites(bestMove.fen)
+                    ? `stops ${reply!.san}`
+                    : undefined;
+            if (stops) fact(`${bestMove.san} ${stops}`);
+            const done = [...bestDone, ...(stops ? [stops] : [])];
+            const readings = done.length
+                ? []
+                : positionalReasons(input.fenBefore, input.bestUci!)
+                      .filter((r) => r.good)
+                      .slice(0, 2)
+                      .map((r) => r.text);
+            interpret(readings);
+            const why = [...done, ...readings];
+            sentences.push(
+                `Better was ${bestMove.san}${why.length ? `: it ${joinAnd(why)}` : ""}.`,
+            );
             if (bestPv) result(input.fenBefore, bestPv, side, "best");
         }
     }

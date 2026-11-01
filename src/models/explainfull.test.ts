@@ -291,6 +291,8 @@ describe("explainMoveFull: lines read where they settle", () => {
         })!;
         expect(x.text.join(" ")).toContain("White answers exd5.");
         expect(x.text.join(" ")).not.toMatch(/attacks the knight/);
+        // exd5 exists only because of d5: a5 does not "stop" it (F.37b)
+        expect(x.text.join(" ")).not.toMatch(/stops exd5/);
     });
 
     it("says the material where the exchange ends (12.e5 Qxe3 Bxe3 dxe5)", () => {
@@ -313,6 +315,8 @@ describe("explainMoveFull: lines read where they settle", () => {
         expect(text).toContain(
             "After Qxe3 Bxe3 dxe5: Black wins material (+1).",
         );
+        // the queen trade was on before e5, and Qh3 takes it away (F.37b)
+        expect(text).toContain("Better was Qh3: it stops Qxe3.");
     });
 
     it("claims no material the engine's score does not bear out (4.Nc3's better d5)", () => {

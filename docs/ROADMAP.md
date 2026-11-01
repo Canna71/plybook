@@ -1138,8 +1138,14 @@ Third round, triaged: bugs first, then requests, then research.
     the mover's next move in the line; "After …: wins material" stops at the last capture
     whose balance the engine's score bears out (`lineOutcome` gives the material after each
     move). Tested with three of the owner's positions.
-  - [ ] **F.37b A reason for the better move, always**: its threats and settled line, or the
-    largest difference of F.37c.
+  - [~] **F.37b A reason for the better move, always**: its threats and settled line, or the
+    largest difference of F.37c. Done in part (`feature/explain-settled`): what the better
+    move does that outlasts the answer to it; the answer to the played move that it stops
+    (one that was there before the move and no longer works after the better one: "Better
+    was Qh3: it stops Qxe3", "g6 … stops Qxf7#"); else its positional readings ("e5: it takes
+    a share of the centre"). Left bare in the owner's games: a5, Bd6, Rf1, for F.37c. Its
+    threats (`explainThreats` for the better move) would need one more engine search per
+    moment; not yet.
   - [ ] **F.37c Compare the two futures**: material, kings, development, pawn weaknesses and
     piece values at the settled points of both lines; the largest difference as the cost
     (interpretation). New readings: queens traded when ahead in development; the centre
