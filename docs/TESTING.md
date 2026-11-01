@@ -19,6 +19,12 @@ release or Windows, below.
 - [ ] **Review after a game, F.33**: finish a game against the engine, open Game review:
       clicking a move in the moves list, a key moment or the graph goes to it. During a game,
       clicks in the moves list still do nothing.
+- [ ] **Tablebase, F.39**: in Analysis, paste an endgame, then another: the tablebase line
+      shows "Tablebase…" and then the new position's moves, never the old ones.
+- [ ] **Reader's position editor, F.34**: pick a diagram, ⋯ → Change the starting position:
+      the board and both trays show whole; only the notes panel scrolls; Accept and Cancel
+      work. (Seen in the dev app.) Analysis → ⋯ → Change the starting position still fits
+      the board column as before.
 
 ## App auto-update, X.1 (branch feature/auto-update)
 
