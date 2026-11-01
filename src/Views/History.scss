@@ -18,6 +18,41 @@
                 background-color: var(--hover-color);
             }
         }
+
+        .history-actions {
+            width: 1%;
+            text-align: right;
+        }
+
+        // shown on the row under the pointer (F.35)
+        .history-delete {
+            padding: 2px;
+            border: none;
+            background: none;
+            color: var(--rc-text-muted);
+            cursor: pointer;
+            visibility: hidden;
+
+            svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            &:hover {
+                color: var(--rc-danger);
+            }
+        }
+
+        .history-row:hover .history-delete,
+        .history-delete:focus-visible {
+            visibility: visible;
+        }
+    }
+
+    .history-more {
+        display: flex;
+        justify-content: center;
+        padding: var(--rc-space-3) 0;
     }
 }
 

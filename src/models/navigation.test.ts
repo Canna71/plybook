@@ -14,6 +14,14 @@ describe("navigation", () => {
         expect(activeNavItem("/nowhere")).toBeUndefined();
     });
 
+    it("gives a game opened from History to History (F.43)", () => {
+        expect(activeNavItem("/game", "?id=x1&source=history")?.id).toBe(
+            "history",
+        );
+        expect(activeNavItem("/game", "?source=pasted")?.id).toBe("library");
+        expect(activeNavItem("/history")?.id).toBe("history");
+    });
+
     it("has unique ids and routes, Settings last", () => {
         const items = allNavItems();
         expect(new Set(items.map((i) => i.id)).size).toBe(items.length);

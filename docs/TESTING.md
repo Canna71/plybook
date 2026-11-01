@@ -36,6 +36,19 @@ release or Windows, below.
       went wrong on this screen" with Try again, and the sidebar still works. Tell me what
       the message says.
 
+## Coach in the review, History, Contents (branch feature/coach-history-toc)
+
+- [ ] **Coach in the review, F.36**: with an explanation model set up, open a key moment of a
+      reviewed game: "Say it as a coach" under its explanation gives the reworded text; the
+      Engine section's button still works.
+- [ ] **Delete from History, F.35**: point at a game: a bin appears at the end of the row;
+      click it: it asks, Cancel keeps the game, Delete removes it (and it stays gone after
+      Refresh). Clicking the row elsewhere still opens the game.
+- [ ] **Contents, F.38**: in Collins, Contents lists the sections and chapters (Italian Game
+      on 13, Ruy Lopez on 35), the current one in colour; a click goes there. Bookmark a page,
+      close and reopen the book: the bookmark is there; × removes it. In *My System*, Contents
+      says it found none and bookmarks still work. (Seen in the dev app with Collins.)
+
 ## App auto-update, X.1 (branch feature/auto-update)
 
 Needs the one-time setup in the README (Releases and updates): the key, the secrets, a public

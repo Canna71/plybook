@@ -9,6 +9,7 @@ import {
 } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { TextItem } from "../models/booktext";
+import type { ContentsEntry } from "../models/bookcontents";
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -117,6 +118,40 @@ export async function pageTextItems(
         });
     }
     return items;
+}
+
+/**
+ * The PDF's own contents (its outline, or bookmarks), two levels deep, with the page each
+ * entry opens (F.38); empty when it has none, as scans mostly don't.
+ */
+export async function bookOutline(pdf: PdfDocument): Promise<ContentsEntry[]> {
+    const entries: ContentsEntry[] = [];
+    type Item = Awaited<ReturnType<PdfDocument["getOutline"]>>[number];
+    const walk = async (items: Item[], level: number) => {
+        for (const item of items) {
+            try {
+                const dest =
+                    typeof item.dest === "string"
+                        ? await pdf.getDestination(item.dest)
+                        : item.dest;
+                const ref = dest?.[0];
+                const page =
+                    typeof ref === "number"
+                        ? ref + 1
+                        : ref
+                          ? (await pdf.getPageIndex(ref)) + 1
+                          : undefined;
+                if (page)
+                    entries.push({ title: item.title.trim(), page, level });
+            } catch {
+                // an entry that goes nowhere (a link out of the book) is left out
+            }
+            if (level < 2 && item.items?.length)
+                await walk(item.items, level + 1);
+        }
+    };
+    await walk((await pdf.getOutline()) ?? [], 1);
+    return entries;
 }
 
 /** Height / width of a page. */

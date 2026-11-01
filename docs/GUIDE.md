@@ -76,7 +76,8 @@ Maia network) show what players of a given rating would play here.
 
 **Game review** (**Review the game**) judges every move of the main line, in about a minute for
 40 moves. You get:
-- accuracy for both players and the key moments;
+- accuracy for both players and the key moments, each explained (with **Say it as a coach**
+  when an explanation model is set up in Settings → Explanations);
 - mistakes and blunders marked in the moves, and an evaluation graph you can click;
 - **Train**, which turns each mistake into a "find the better move" puzzle.
 
@@ -148,6 +149,11 @@ In the reader:
   the notes show them as **Game before the diagram**. **Start the notes with it** makes the
   notes a game from the first move, with the diagram's move marked; they open there. It needs
   a text you can select on the page (a scan with an OCR text layer is fine).
+- **Contents** (beside the page number) lists the book's chapters and jumps to them: the PDF's
+  own contents when it has them, or else the headings found in its text by their size (a scan
+  with OCR may show them with odd gaps, "Giuoco Pian o"). It also keeps your bookmarks for the
+  book: **Bookmark page N** adds the page you are on, named as you type or after its chapter.
+  A book of images only (no text) has just your bookmarks.
 - Drag the line between the book and the notes to widen either; double-click it to go back.
 - In the notes, play the moves the book gives (select them in the text), turn text into a
   comment, or **Study this position** in Analysis.
@@ -212,7 +218,9 @@ Finished games are saved in History.
 <!-- help: history -->
 
 History lists your games against the engine, newest first. Click one to replay or analyse it.
-Games from chess.com and Lichess are in the Library instead (Library/Online).
+To delete one, point at it and click the bin at the end of its row (it asks first). A long
+history shows its newest games first; **Show more** lists older ones. Games from chess.com and
+Lichess are in the Library instead (Library/Online).
 
 ## Databases
 <!-- help: databases -->

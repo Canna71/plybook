@@ -7,7 +7,10 @@ export type NavItem = {
     /** Icon name, mapped to a component by the sidebar */
     icon: string;
     route: string;
-    /** Other routes that belong to this screen (an open game belongs to the Library) */
+    /**
+     * Other routes that belong to this screen (an open game belongs to the Library); one with
+     * a query ("/game?source=history") wins over the plain route when the location has it
+     */
     owns?: string[];
     /** Extra words the command palette matches */
     keywords?: string;
@@ -88,6 +91,8 @@ export const NAVIGATION: NavGroup[] = [
                 label: "History",
                 icon: "history",
                 route: "/history",
+                // a game opened from History (F.43)
+                owns: ["/game?source=history"],
                 keywords: "my games played",
             },
             {
@@ -151,18 +156,37 @@ export const allNavItems = (): NavItem[] => [
 ];
 
 /** The Help screen at a screen's section of the user guide (docs/GUIDE.md) */
-export const helpRoute = (pathname: string) => {
-    const id = activeNavItem(pathname)?.id;
+export const helpRoute = (pathname: string, search = "") => {
+    const id = activeNavItem(pathname, search)?.id;
     return id && id !== "help" ? `/help?section=${id}` : "/help";
 };
 
 const pathOf = (route: string) => route.split("?")[0];
 
+/** Whether an owned route with a query ("/game?source=history") matches the location. */
+const ownsWithQuery = (owned: string, pathname: string, search: string) => {
+    const [path, query] = owned.split("?");
+    if (!query || path !== pathname) return false;
+    const params = new URLSearchParams(search);
+    return [...new URLSearchParams(query)].every(
+        ([k, v]) => params.get(k) === v,
+    );
+};
+
 /** The screen a location belongs to (its own route, or one it owns). */
-export function activeNavItem(pathname: string): NavItem | undefined {
-    return allNavItems().find(
-        (item) =>
-            pathOf(item.route) === pathname ||
-            item.owns?.some((r) => r === pathname),
+export function activeNavItem(
+    pathname: string,
+    search = "",
+): NavItem | undefined {
+    const items = allNavItems();
+    return (
+        items.find((item) =>
+            item.owns?.some((r) => ownsWithQuery(r, pathname, search)),
+        ) ??
+        items.find(
+            (item) =>
+                pathOf(item.route) === pathname ||
+                item.owns?.some((r) => r === pathname),
+        )
     );
 }

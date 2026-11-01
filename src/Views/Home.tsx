@@ -74,7 +74,7 @@ const Home: Component = () => {
         }, 0),
     );
     const [games] = createResource(
-        safely(async () => (await getHistoryGames()).slice(0, 3), []),
+        safely(async () => await getHistoryGames(3), []),
     );
 
     // where the reviewed online games lose most (P1.6): read in the background
