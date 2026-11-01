@@ -18,6 +18,8 @@ type Box = { x0: number; y0: number; x1: number; y1: number };
 const CAPTION_DEPTH = 0.06;
 /** The text that follows a diagram and may give its moves: at most this far below it. */
 const FOLLOWING_DEPTH = 0.3;
+/** A side-to-move letter left of a diagram is within this share of the page from it. */
+const MARKER_DISTANCE = 0.1;
 
 const FIGURINES: Record<string, string> = {
     "♔": "K",
@@ -215,7 +217,7 @@ export function movesFromText(text: string, pos: Position): Run {
 export function textNearDiagram(
     items: TextItem[],
     box: Box,
-): { caption: string; following: string } {
+): { caption: string; following: string; marker?: Color } {
     const inColumn = (t: TextItem) => t.x1 > box.x0 && t.x0 < box.x1;
     const below = items
         .filter((t) => inColumn(t) && t.y0 >= box.y1 - 0.005)
@@ -228,8 +230,19 @@ export function textNearDiagram(
             .join(" ")
             .replace(/\s+/g, " ")
             .trim();
+    // a lone "W" or "B" beside the diagram, level with it (Gambit's books, e.g. Collins); OCR
+    // reads the B as an 8 at times, and the diagram itself has no text to mistake for it
+    const marker = items.find(
+        (t) =>
+            /^[WwBb8]$/.test(t.str.trim()) &&
+            t.x1 <= box.x0 + 0.005 &&
+            t.x0 >= box.x0 - MARKER_DISTANCE &&
+            t.y1 > box.y0 &&
+            t.y0 < box.y1,
+    );
     return {
         caption: join(below.filter((t) => t.y0 < box.y1 + CAPTION_DEPTH)),
         following: join(below.filter((t) => t.y0 < box.y1 + FOLLOWING_DEPTH)),
+        marker: marker && (/[Ww]/.test(marker.str) ? "white" : "black"),
     };
 }

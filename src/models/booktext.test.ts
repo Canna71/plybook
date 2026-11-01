@@ -122,5 +122,26 @@ describe("textNearDiagram", () => {
         );
         expect(near.caption).toBe("White to play");
         expect(near.following).toBe("White to play 4.c3 Nf6");
+        expect(near.marker).toBeUndefined();
+    });
+
+    it("reads a W or B beside the diagram (an OCR'd B may be an 8)", () => {
+        // as on Collins's page 13: a letter just left of the diagram, near its top
+        const letter = (str: string) => ({
+            str,
+            x0: 0.24,
+            y0: 0.22,
+            x1: 0.25,
+            y1: 0.235,
+        });
+        expect(textNearDiagram([letter("B")], box).marker).toBe("black");
+        expect(textNearDiagram([letter("8")], box).marker).toBe("black");
+        expect(textNearDiagram([letter("w")], box).marker).toBe("white");
+        // a letter in the text far to the left, or a word, is not one
+        expect(
+            textNearDiagram([{ ...letter("B"), x0: 0.05, x1: 0.06 }], box)
+                .marker,
+        ).toBeUndefined();
+        expect(textNearDiagram([letter("By")], box).marker).toBeUndefined();
     });
 });
