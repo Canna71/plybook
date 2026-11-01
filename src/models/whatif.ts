@@ -85,6 +85,12 @@ export type LineOutcome = {
     materialChange: number;
     /** The side checkmated at the end of the line, if any */
     mated?: Color;
+    /** How many of `sans` it takes to the last change of material (0: none changes) */
+    changeAt: number;
+    /** The material change for `side` after each move of `sans` */
+    steps: number[];
+    /** The material balance for `side` where the line starts */
+    start: number;
 };
 
 /**
@@ -101,12 +107,16 @@ export function lineOutcome(
     if (!pos) return undefined;
     const start = materialBalance(pos, side);
     const sans: string[] = [];
+    const steps: number[] = [];
+    let changeAt = 0;
     for (const uci of pv) {
         const move = parseUci(uci);
         if (!move || !pos.isLegal(move)) break;
         const capture = "from" in move && pos.board.has(move.to);
         if (sans.length >= plies && !capture) break;
         sans.push(makeSanAndPlay(pos, move));
+        steps.push(materialBalance(pos, side) - start);
+        if (steps.at(-1) !== (steps.at(-2) ?? 0)) changeAt = sans.length;
         if (sans.length >= plies + 4) break;
     }
     return {
@@ -114,6 +124,9 @@ export function lineOutcome(
         side,
         materialChange: materialBalance(pos, side) - start,
         mated: pos.isCheckmate() ? pos.turn : undefined,
+        changeAt,
+        steps,
+        start,
     };
 }
 

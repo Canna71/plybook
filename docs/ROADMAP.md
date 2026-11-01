@@ -1128,11 +1128,16 @@ Third round, triaged: bugs first, then requests, then research.
   the model may add commentary from the evidence (the lines and board facts), marked as its
   own interpretation, rather than only reword. Outcome: a short plan with examples from the
   owner's games before any code.
-  - [ ] **F.37e Measure on the owner's games**: `src/reasons/owngames.eval.ts`, the mistakes of
+  - [x] **F.37e Measure on the owner's games**: `src/reasons/owngames.eval.ts`, the mistakes of
     given games explained with their lines (the table in EXPLANATIONS.md), rerun after each
-    step. First, as the yardstick.
-  - [ ] **F.37a Settle the line before reading it**: facts and material read where the
-    exchange is over; a first-reply fact the next move undoes is dropped.
+    step. First, as the yardstick. Done (`feature/explain-settled`): `STOCKFISH=…
+    OWN_GAMES=a.pgn,b.pgn OWN_NAMES=Player,canna71 pnpm eval:reasons -t "own games"`.
+  - [x] **F.37a Settle the line before reading it**: facts and material read where the
+    exchange is over; a first-reply fact the next move undoes is dropped. Done
+    (`feature/explain-settled`): the answer's attacks and pins are named only if they outlast
+    the mover's next move in the line; "After …: wins material" stops at the last capture
+    whose balance the engine's score bears out (`lineOutcome` gives the material after each
+    move). Tested with three of the owner's positions.
   - [ ] **F.37b A reason for the better move, always**: its threats and settled line, or the
     largest difference of F.37c.
   - [ ] **F.37c Compare the two futures**: material, kings, development, pawn weaknesses and

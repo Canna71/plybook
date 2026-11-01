@@ -295,17 +295,47 @@ function achievements(
     return [...repairs, ...gains].filter((p): p is string => !!p);
 }
 
-/** "After Bxg4 Qd2: Black wins material (+9)." when a line wins material or mates. */
-function consequence(fen: string, pv: string[], side: Color) {
+/** A material balance this far beyond the engine's score is not kept. */
+const MATERIAL_SLACK = 1.5;
+
+/**
+ * "After Qxe3 Bxe3 dxe5: Black wins material (+1)." when a line wins material or mates, up to
+ * a capture (F.37a). With `score`, the engine's evaluation of the line for `side` in pawns, up
+ * to the last capture whose balance it bears out (a score above the balance is fine: more is
+ * coming). A line may end on a capture that is taken back after it (Bxg4 Be2 Bxe2: +12 where
+ * the score is +8.6, so "After Bxg4: +9"), or take a piece the engine sees lost again (4.Nc3:
+ * "+3" where it said +1.2). Without a score, up to the line's last capture.
+ */
+function consequence(fen: string, pv: string[], side: Color, score?: number) {
     const outcome = lineOutcome(fen, pv, side);
-    if (
-        !outcome?.sans.length ||
-        (!outcome.mated && outcome.materialChange === 0)
-    ) {
-        return undefined;
+    if (!outcome?.sans.length) return undefined;
+    if (outcome.mated)
+        return `After ${outcome.sans.join(" ")}: ${describeOutcome(outcome)}.`;
+    let at = outcome.changeAt;
+    if (score !== undefined) {
+        at = 0;
+        outcome.steps.forEach((material, i) => {
+            const changed = material !== (outcome.steps[i - 1] ?? 0);
+            const balance = outcome.start + material;
+            const borne =
+                material > 0
+                    ? balance <= score + MATERIAL_SLACK
+                    : balance >= score - MATERIAL_SLACK;
+            if (changed && borne) at = i + 1;
+        });
     }
-    return `After ${outcome.sans.join(" ")}: ${describeOutcome(outcome)}.`;
+    const material = at ? outcome.steps[at - 1] : 0;
+    if (!material) return undefined;
+    return `After ${outcome.sans.slice(0, at).join(" ")}: ${describeOutcome({ ...outcome, materialChange: material })}.`;
 }
+
+/** An evaluation (White's view) in pawns for `side`; none for a mate score. */
+const pawnsFor = (evaluation: Evaluation | undefined, side: Color) =>
+    evaluation && "pawns" in evaluation
+        ? side === "white"
+            ? evaluation.pawns
+            : -evaluation.pawns
+        : undefined;
 
 /** A few sentences on why a move is good or bad. Empty if the move is not legal in fenBefore. */
 export const explainMove = (input: ExplainInput): string[] =>
@@ -523,8 +553,11 @@ export function explainMoveFull(
             interpret(costs.map((r) => r.text));
         }
     }
+    // each line's score: the answer's is the position after the move, the better one's before
+    const lineScore = (line: LineLabel, who: Color) =>
+        pawnsFor(line === "reply" ? evAfter : evBefore, who);
     const result = (fen: string, pv: string[], who: Color, line: LineLabel) => {
-        const text = consequence(fen, pv, who);
+        const text = consequence(fen, pv, who, lineScore(line, who));
         if (!text) return;
         sentences.push(text);
         fromLine(text.replace(/\.$/, ""), line);
@@ -541,8 +574,15 @@ export function explainMoveFull(
             fromLine(text, "reply");
             result(moved.fen, replyPv!, opponent, "reply");
         } else {
+            // what the answer attacks or pins, as long as it lasts: a fact the mover's next move
+            // in the line undoes (taking back, a queen trade) is no point (F.37a)
+            const next = replyPv?.[1] ? play(reply.fen, replyPv[1]) : undefined;
+            const lasting = next
+                ? new Set(factsFromFen(next.fen).map((f) => f.key))
+                : undefined;
             const replyGains = newFacts(after, factsFromFen(reply.fen))
                 .filter((f) => f.victim === side)
+                .filter((f) => !lasting || lasting.has(f.key))
                 .map(threatPhrase)
                 .filter((p): p is string => !!p);
             const how = replyGains.length ? ` and ${joinAnd(replyGains)}` : "";

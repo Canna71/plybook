@@ -217,6 +217,13 @@ shown; each keeps the contract above (no claim without its evidence).
 
 Order: (e) first (cheap, and it is the yardstick), then (a), (b), (c), (d).
 
+**Done so far.** (e) is `src/reasons/owngames.eval.ts` (`STOCKFISH=… OWN_GAMES=a.pgn,b.pgn
+OWN_NAMES=Player,canna71 pnpm eval:reasons -t "own games"`). After (a): 10…d5 says "White
+answers exd5." and no more; 12.e5 "Black answers Qxe3. After Qxe3 Bxe3 dxe5: Black wins
+material (+1)."; 4.Nc3 no longer claims +3; 12…Ng4 "After Nxc5: White wins material (+3)".
+What is left is mostly silence where a reason is wanted (10…d5, 9.Re1, the better moves
+Qh3, Rf1, a5): (b) and (c).
+
 ## Not done (yet)
 
 Both ideas from the Chesserly study that explain moves are done: the only good move (P2.4h,

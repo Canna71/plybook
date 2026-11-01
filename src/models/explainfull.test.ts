@@ -272,3 +272,64 @@ describe("explainMoveFull: limits", () => {
         ).not.toMatch(note);
     });
 });
+
+// the owner's games (F.37a, docs/EXPLANATIONS.md)
+describe("explainMoveFull: lines read where they settle", () => {
+    it("names no attack that the next move takes back (10...d5 exd5 exd5)", () => {
+        const x = explainMoveFull({
+            fenBefore:
+                "r2q1rk1/ppp3p1/2nppn1p/2b1p3/4P2B/P1NP1N2/1PP2PPP/R2Q1RK1 b - - 1 10",
+            uci: "d6d5",
+            verdict: { class: "mistake", loss: 10 },
+            bestUci: "a7a5",
+            bestPv: ["a7a5", "c3e2"],
+            replyPv: ["e4d5", "e6d5", "f1e1"],
+            evaluations: {
+                before: deep({ pawns: -0.66 }),
+                after: deep({ pawns: 0.45 }),
+            },
+        })!;
+        expect(x.text.join(" ")).toContain("White answers exd5.");
+        expect(x.text.join(" ")).not.toMatch(/attacks the knight/);
+    });
+
+    it("says the material where the exchange ends (12.e5 Qxe3 Bxe3 dxe5)", () => {
+        const x = explainMoveFull({
+            fenBefore:
+                "r3kb1r/pp4pp/1qpppn2/8/4P3/2N1Q3/PPP2PPP/R1B1R1K1 w kq - 0 12",
+            uci: "e4e5",
+            verdict: { class: "mistake", loss: 12 },
+            bestUci: "e3h3",
+            bestPv: ["e3h3", "e6e5"],
+            replyPv: ["b6e3", "c1e3", "d6e5", "c3b1", "f8d6", "b1d2"],
+            evaluations: {
+                before: deep({ pawns: 1.18 }),
+                after: deep({ pawns: -0.1 }),
+            },
+        })!;
+        const text = x.text.join(" ");
+        expect(text).toContain("Black answers Qxe3.");
+        expect(text).not.toMatch(/pins the pawn/);
+        expect(text).toContain(
+            "After Qxe3 Bxe3 dxe5: Black wins material (+1).",
+        );
+    });
+
+    it("claims no material the engine's score does not bear out (4.Nc3's better d5)", () => {
+        // the line takes a knight on e4 that the engine expects back: +3 against a score of 1.2
+        const x = explainMoveFull({
+            fenBefore:
+                "r1bqkb1r/pppp1ppp/2n2n2/4p3/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 1 4",
+            uci: "b1c3",
+            verdict: { class: "mistake", loss: 11 },
+            bestUci: "d4d5",
+            bestPv: ["d4d5", "c6b8", "f3e5", "f6e4", "d1e2", "d8e7", "e2e4"],
+            replyPv: ["e5d4", "f3d4"],
+            evaluations: {
+                before: deep({ pawns: 1.22 }),
+                after: deep({ pawns: 0.02 }),
+            },
+        })!;
+        expect(x.text.join(" ")).not.toMatch(/\+3/);
+    });
+});

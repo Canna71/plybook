@@ -35,7 +35,7 @@ describe("explainMove", () => {
             "Qg4 is a blunder: it gives away 40% of White's winning chances.",
             "It leaves the queen on g4 undefended and attacked.",
             "Black answers Bxg4, winning the queen on g4, which nothing defends.",
-            "After Bxg4 f3: Black wins material (+9).",
+            "After Bxg4: Black wins material (+9).",
             "Better was exd5.",
         ]);
     });
