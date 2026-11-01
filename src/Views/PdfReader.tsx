@@ -12,8 +12,9 @@ import {
 } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useNavigate, useSearchParams } from "@solidjs/router";
-import { Color } from "chessops";
+import { Chess, Color, Move } from "chessops";
 import { parseFen } from "chessops/fen";
+import { makeSanVariation } from "chessops/san";
 import { TextItem, textNearDiagram, turnFromText } from "../models/booktext";
 import { Config } from "chessground/config";
 import anylogger from "anylogger";
@@ -48,11 +49,18 @@ import {
     collectionName,
     diagramFileName,
     diagramPgn,
+    diagramPly,
     normalPgn,
     notesStart,
     restartedNotes,
+    withGameBefore,
     withOrientation,
 } from "../models/scancollection";
+import {
+    gameBefore,
+    PAGES_BEFORE,
+    textBeforeDiagram,
+} from "../models/gamebefore";
 import GameManager, { GameManagerApi } from "../components/game/GameManager";
 import { join } from "@tauri-apps/api/path";
 import { BaseDirectory, exists, mkdir } from "@tauri-apps/plugin-fs";
@@ -513,7 +521,76 @@ const PdfReader: Component = () => {
             turnFromText(near.caption) ??
             turnFromText(near.following) ??
             d.orientation;
-        setSelected({ ...d, turn, following: near.following });
+        const picked = { ...d, turn, following: near.following };
+        setSelected(picked);
+        setGameBeforeLine(undefined);
+        // the game before the diagram, from the text before it (F.11)
+        const p = scannedPosition(d.read, turn);
+        if (!p.legal) return;
+        const pages: TextItem[][] = [];
+        for (let n = Math.max(1, d.page - PAGES_BEFORE); n < d.page; n++)
+            pages.push(await textOf(n));
+        const text = textBeforeDiagram(pages, await textOf(d.page), d.box);
+        const moves = gameBefore(text, p.fen.split(" ")[0]);
+        if (
+            moves &&
+            selected()?.page === d.page &&
+            selected()?.index === d.index
+        )
+            setGameBeforeLine({ page: d.page, index: d.index, moves });
+    };
+    /** The game before the selected diagram, as read from the text, numbered */
+    const [gameBeforeLine, setGameBeforeLine] = createSignal<{
+        page: number;
+        index: number;
+        moves: Move[];
+    }>();
+    const gameBeforeText = () => {
+        const line = gameBeforeLine();
+        const d = selected();
+        const game = notesGame();
+        if (!line || !d || line.page !== d.page || line.index !== d.index)
+            return undefined;
+        // the notes already start with it
+        if (game && diagramPly(game.pgn) !== undefined) return undefined;
+        return makeSanVariation(Chess.default(), line.moves);
+    };
+    /** The notes start with the game before the diagram, then go on with their own moves. */
+    const keepGameBefore = async () => {
+        const line = gameBeforeLine();
+        const d = selected();
+        const game = notesGame();
+        if (!line || !d || !game) return;
+        await writeNotes();
+        const saved = (await exists(game.file, {
+            baseDir: BaseDirectory.AppLocalData,
+        }))
+            ? await readDataFile(game.file)
+            : game.pgn;
+        const pgn = withGameBefore(saved, line.moves, d.page);
+        if (!pgn) {
+            makeToast(
+                "The notes' moves don't follow the game before the diagram: delete them first",
+            );
+            return;
+        }
+        try {
+            await mkdir(await notesFolder(), {
+                baseDir: BaseDirectory.AppLocalData,
+                recursive: true,
+            });
+            await writeDataFile(game.file, pgn);
+            if (!notes()?.has(baseName(game.file))) refetchNotes();
+        } catch (err) {
+            log.error("saving notes failed", err);
+            makeToast(`Could not save the notes: ${String(err)}`);
+            return;
+        }
+        // reloads the notes, now from the start, on the diagram's move
+        setSelected({
+            ...d,
+            turn: line.moves.length % 2 ? "black" : "white",
+        });
     };
     /**
      * What the notes would get from a text, numbered ("4.c3 Nf6 5.d4"): played from the move
@@ -754,10 +831,31 @@ const PdfReader: Component = () => {
                                         initalPgn={() => game.pgn}
                                         setPgn={onNotesChange}
                                         editable={() => true}
-                                        onReady={(api) => setNotesApi(api)}
+                                        onReady={(api) => {
+                                            setNotesApi(api);
+                                            // notes with the game before: on the diagram
+                                            const ply = diagramPly(game.pgn);
+                                            if (ply !== undefined)
+                                                api.showPly(ply);
+                                        }}
                                     />
                                 </div>
                             )}
+                        </Show>
+                        <Show when={notesGame() && gameBeforeText()}>
+                            <div class="reader-text-moves">
+                                <span>
+                                    Game before the diagram:{" "}
+                                    <strong>{gameBeforeText()}</strong>
+                                </span>
+                                <Button
+                                    class="is-small is-info is-light"
+                                    title="Start the notes with these moves, read from the text before the diagram; they lead to its position"
+                                    onClick={() => void keepGameBefore()}
+                                >
+                                    Start the notes with it
+                                </Button>
+                            </div>
                         </Show>
                         <Show when={notesGame() && followingLine()}>
                             <div class="reader-text-moves">

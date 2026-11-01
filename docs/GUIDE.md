@@ -144,6 +144,10 @@ In the reader:
 - Click a diagram: Plybook reads the position from the picture and opens it in the notes beside
   the page. Correct it there if needed, and say whose move it is (until you add moves, which
   start from that side).
+- When the text before a diagram gives the moves that lead to it (an opening book's main line),
+  the notes show them as **Game before the diagram**. **Start the notes with it** makes the
+  notes a game from the first move, with the diagram's move marked; they open there. It needs
+  a text you can select on the page (a scan with an OCR text layer is fine).
 - Drag the line between the book and the notes to widen either; double-click it to go back.
 - In the notes, play the moves the book gives (select them in the text), turn text into a
   comment, or **Study this position** in Analysis.

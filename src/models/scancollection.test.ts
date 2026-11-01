@@ -8,8 +8,66 @@ import {
     normalPgn,
     notesStart,
     restartedNotes,
+    withGameBefore,
     withOrientation,
 } from "./scancollection";
+import { Chess, Move } from "chessops";
+import { parseSan } from "chessops/san";
+
+/** The moves of `sans` from the initial position. */
+function movesOf(sans: string): Move[] {
+    const pos = Chess.default();
+    return sans.split(" ").map((san) => {
+        const move = parseSan(pos, san)!;
+        pos.play(move);
+        return move;
+    });
+}
+
+describe("the game before a diagram (F.11)", () => {
+    const notes = (moves: string) =>
+        [
+            '[Event "Book, page 15"]',
+            '[SetUp "1"]',
+            `[FEN "${FEN}"]`,
+            '[Orientation "white"]',
+            "",
+            `{ About this } ${moves} *`,
+        ].join("\n");
+    const line = movesOf("e4 e5 Nf3 Nc6 Bc4 Bc5");
+
+    it("starts the notes from the beginning, marking the diagram's move", () => {
+        const pgn = withGameBefore(
+            notes("4. c3 Nf6 5. d3 (5. d4 exd4) 5... d6"),
+            line,
+            15,
+        )!;
+        expect(pgn).not.toMatch(/FEN|SetUp/);
+        expect(pgn).toMatch(/\[Orientation "white"\]/);
+        expect(pgn).toMatch(/\[DiagramPly "6"\]/);
+        const game = makeGame(pgn);
+        expect(game.mainline.map((p) => p.san)).toEqual([
+            "e4",
+            "e5",
+            "Nf3",
+            "Nc6",
+            "Bc4",
+            "Bc5",
+            "c3",
+            "Nf6",
+            "d3",
+            "d6",
+        ]);
+        expect(pgn).toMatch(/Bc5 \{ Diagram, p\. 15 \} \{ About this \}/);
+        expect(pgn).toMatch(/\( 5\. d4 exd4 \)/);
+        expect(notesStart(pgn)).toEqual({ turn: "white", moves: true });
+    });
+    it("refuses when the notes' moves don't play after it", () => {
+        expect(
+            withGameBefore(notes("4. Ng5"), movesOf("e4 e5"), 15),
+        ).toBeUndefined();
+    });
+});
 
 // Black to move in the Italian: ...Nf6 is the engine's choice
 const FEN =
