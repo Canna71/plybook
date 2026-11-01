@@ -45,12 +45,15 @@ const TablebaseInfo: Component = () => {
         const f = data()?.fen;
         return f && pieceCount(f) <= MAX_PIECES ? f : undefined;
     };
-    const [result] = createResource(fen, (f) =>
+    const [answer] = createResource(fen, (f) =>
         lookup(f).then(
-            (tb) => ({ tb }),
-            (err) => ({ error: String(err) }),
+            (tb) => ({ fen: f, tb }),
+            (err) => ({ fen: f, error: String(err) }),
         ),
     );
+    // a resource keeps its last value while the next loads: never show one position's answer
+    // on another
+    const result = () => (answer()?.fen === fen() ? answer() : undefined);
 
     const play = (uci: string) => {
         const g = game();

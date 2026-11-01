@@ -106,6 +106,7 @@ const BoardArea: Component<BoardAreaProps> = (props) => {
                 // the board fits the column's width and height
                 "board-fit": props.fit,
                 "with-eval-bar": props.showEvalBar(),
+                editing: viewMode() === ViewMode.STARTING_POSITION,
             }}
         >
             <Show
@@ -133,6 +134,7 @@ const BoardArea: Component<BoardAreaProps> = (props) => {
                             <PiecesPopup
                                 chessBoardDiv={chessBoardDiv!}
                                 promotingCell={props.promotionCell}
+                                orientation={orientation}
                                 onSelected={props.onPromotionSelected}
                                 color={props.turn}
                             />

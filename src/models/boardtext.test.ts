@@ -47,6 +47,23 @@ describe("boardText", () => {
         expect(pieces).toContainEqual({ text: "d5", from: "d7", to: "d5" });
     });
 
+    it("goes on from a move only within a line", () => {
+        // 1.e4, Black to move, and after 1...e6
+        const before =
+            "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+        const after =
+            "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+        const pieces = boardText(
+            "e6 is passive. Only e5 keeps the balance. Better was e5.",
+            [before, after],
+        );
+        expect(pieces.filter((p) => "from" in p)).toEqual([
+            { text: "e6", from: "e7", to: "e6" },
+            { text: "e5", from: "e7", to: "e5" },
+            { text: "e5", from: "e7", to: "e5" },
+        ]);
+    });
+
     it("keeps checks and mates in the text", () => {
         const scholar =
             "r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 4";

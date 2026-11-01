@@ -1050,6 +1050,71 @@ Second round, in the order given; bugs first when working through it.
   tested). Checked in the dev app with the owner's text: opened and solved. No score is
   kept for it (it has no file).
 
+## Owner feedback (2026-11-01)
+
+Third round, triaged: bugs first, then requests, then research.
+
+- [x] **F.31 [Bug] A move in an explanation is read for the wrong side.** In a review's key
+  moment ("5. Bb5 is a blunder … Only e5 kept the advantage … Better was e5"), the first e5
+  is hovered as Black's e7–e5 and the second as White's e4–e5. Cause: `boardText`
+  (`models/boardtext.ts`) reads each move after the last one found, to follow lines ("After
+  Nxf7 Qe7"), so "e5" after "Bb5" is tried as Black's reply first. Fix: continue from the
+  last move only when the moves follow each other in the text (a line), and otherwise read
+  them in the positions given; a test with this sentence. Done (`feature/feedback-round-3`):
+  a move continues a line only when nothing but spaces and move numbers stand before it.
+- [x] **F.32 [Bug] The promotion chooser is offset from the promotion square** (seen in
+  puzzles). `PiecesPopup` ignored the board's orientation (a board flipped for Black put it
+  on the mirrored file and the wrong edge) and measured the container, not chessground's
+  board. Done (`feature/feedback-round-3`): placed from `cg-board`'s box and the
+  orientation, a column over the square running into the board, queen next to the square,
+  without floating-ui. Seen in the dev app: White on g8, Black on b1, flipped and not.
+- [x] **F.33 [Bug] Game review: clicking a move does not go to it** (after a game against the
+  engine); ← and → work. The move list and the review ignored clicks on the whole Play
+  screen (`playingEngine`), while the keys checked for a game in progress. Done
+  (`feature/feedback-round-3`): clicks too are off only while the game is on.
+- [x] **F.39 [Bug] The tablebase line keeps an earlier position's moves.** Seen in Analysis:
+  after pasting a new position and promoting, "About this position" still listed g8=Q, Kb1…
+  of the position pasted before. A Solid resource keeps its last value while the next one
+  loads, and the verdict was worded with the new position's side to move. Done
+  (`feature/feedback-round-3`): an answer shows only for the position it was asked for
+  ("Tablebase…" meanwhile).
+- [ ] **F.40 [Bug] A reader link to a file that can't be opened stops the app.** The PDF's
+  load error is unhandled (Solid `castError`), and after it no screen changes any more
+  (seen with a wrong path in the dev app). The reader should say it could not open the
+  book; maybe an error boundary around each screen too.
+- [ ] **F.41 Board editor: black pieces barely visible in their tray** in the dark theme
+  (black on the dark tray).
+- [ ] **F.42 [Bug?] PDF reader: side to move against the caption.** Collins p. 13, diagram 1
+  is captioned "B" (Black to move, after 3.Bc4) but the notes say White to move. Check how
+  the caption is read (F.22).
+- [x] **F.34 PDF reader: the starting-position editor fits without its own scrolling.** It sits
+  in a box with its own scroll bar inside the scrolling notes panel, so the board is never
+  wholly visible. While editing, the editor takes the height it needs and only the panel
+  scrolls. Done (`feature/feedback-round-3`): the notes' board area was kept square
+  (`aspect-ratio`) with the editor a size container scrolling inside it; while editing
+  (`editing` on `.pgnviewer-content`) the compact layout drops both. Seen in the dev app:
+  board and both trays visible together, the panel scrolls.
+- [ ] **F.35 Delete games from History; a long history.** No way to delete a game yet (a
+  `delete_history_game` command and a ⋯ → Delete… that asks first). Large histories:
+  `history_list` reads every game's whole PGN at once (`SELECT *`) and History shows them
+  all. Fix: list without the PGN (players, date, result, opening), page or virtualize the
+  list, and load a game's PGN when it opens.
+- [ ] **F.36 "Say it as a coach" in the review too.** It is only under the Engine section's
+  explanation (`WhatIf.tsx`), not under a key moment's explanation in Game review, for no
+  good reason: the review has the same structured explanation to pass to the model.
+- [ ] **F.37 Plybook does not explain well enough why a move was bad (research).** The coach
+  text reads much like the plain one: by design it only rewords the structured explanation
+  (fixed system prompt, P2.4b), so it can't add understanding that isn't there. To research:
+  what a human coach says that we don't (the plan behind the move, what the opponent wanted,
+  the positional cost when no tactic decides, a comparison of the two resulting positions);
+  which of it the engine and detectors can support (REASONS.md, EXPLANATIONS.md); and whether
+  the model may add commentary from the evidence (the lines and board facts), marked as its
+  own interpretation, rather than only reword. Outcome: a short plan with examples from the
+  owner's games before any code.
+- [ ] **F.38 PDF reader: a table of contents** to jump to chapters. From the PDF's outline
+  where it has one (pdf.js `getOutline`); scanned books often have none, so perhaps the
+  user's own bookmarks per book as a fallback.
+
 ## Last
 
 - [~] **X.1 App auto-update** (moved here from O.6 by the owner, 2026-10-25). Tauri's updater
@@ -1064,3 +1129,6 @@ Second round, in the order given; bugs first when working through it.
   left** (README, Releases and updates): generate the key and put the public half in
   `tauri.conf.json`, add the secrets, make the repository public, release twice to try an
   update. Windows installers are not code-signed.
+  The owner asked (2026-11-01) whether a Mac build made on their own Mac can be shared:
+  only signed with a Developer ID and notarized (Apple Developer Program), which the release
+  workflow does on GitHub's runners, Windows included, so no Windows machine is needed.
