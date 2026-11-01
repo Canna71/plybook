@@ -36,6 +36,15 @@ release or Windows, below.
       went wrong on this screen" with Try again, and the sidebar still works. Tell me what
       the message says.
 
+## Keychain only when needed, F.44 (branch feature/keychain-on-demand)
+
+- [ ] **One last time**: the first start of a build with this change asks once (it fills the
+      new index with what is set). Allow it.
+- [ ] **Then quiet**: restart, open Analysis, Settings → Accounts and → Explanations: no
+      Keychain dialog; both still show the token and the model as set. Opening the Explorer
+      (with the Lichess token) or "Say it as a coach" may ask once per run on an unsigned
+      build, never on a signed one after "Always Allow".
+
 ## Explanations that explain, F.37 (branch feature/explain-settled)
 
 - [ ] **Your 1-0 game in History**, Game review, key moments: 9.Re1 says Black can trade

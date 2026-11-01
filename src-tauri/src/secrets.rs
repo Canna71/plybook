@@ -3,6 +3,11 @@
 //! but never read one back: Rust attaches them to requests itself (see net.rs).
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
+use std::fs;
+use std::path::PathBuf;
+use std::sync::Mutex;
 use tauri::State;
 
 /// Keychain service name: one entry per secret under it.
@@ -81,18 +86,127 @@ impl SecretStore for Keychain {
     }
 }
 
-pub struct Secrets(pub Box<dyn SecretStore>);
+/// The secrets, read from the keychain only when a value is used, and once per run: each read
+/// may ask the user (an unsigned build is a stranger to the keychain every time it is built),
+/// so asking whether something is set must not read it. That is answered from the index, a
+/// file of what is set and its non-secret summary (the model's provider and endpoint), never a
+/// value.
+pub struct Secrets {
+    store: Box<dyn SecretStore>,
+    /// Values read this run; None: none stored
+    cache: Mutex<HashMap<&'static str, Option<String>>>,
+    index: Mutex<Index>,
+}
+
+/// What is set, by key: its summary (true when there is nothing to say), null when not set. A
+/// key missing from it is unknown (written before the index existed): read once to fill it.
+#[derive(Default)]
+struct Index {
+    path: Option<PathBuf>,
+    entries: Option<HashMap<String, Value>>,
+}
+
+impl Index {
+    fn entries(&mut self) -> &mut HashMap<String, Value> {
+        let path = self.path.clone();
+        self.entries.get_or_insert_with(|| {
+            path.and_then(|p| fs::read_to_string(p).ok())
+                .and_then(|text| serde_json::from_str(&text).ok())
+                .unwrap_or_default()
+        })
+    }
+
+    fn record(&mut self, key: &str, summary: Value) {
+        self.entries().insert(key.to_string(), summary);
+        if let (Some(path), Some(entries)) = (&self.path, &self.entries) {
+            if let Ok(text) = serde_json::to_string_pretty(entries) {
+                let _ = fs::write(path, text);
+            }
+        }
+    }
+}
 
 impl Default for Secrets {
     fn default() -> Self {
-        Secrets(Box::new(Keychain))
+        Secrets::new(Box::new(Keychain))
     }
 }
 
 impl Secrets {
-    /// For Rust code that needs the value (never sent to the webview).
+    pub fn new(store: Box<dyn SecretStore>) -> Self {
+        Secrets {
+            store,
+            cache: Mutex::new(HashMap::new()),
+            index: Mutex::new(Index::default()),
+        }
+    }
+
+    /// Where the index is kept (set up at start; without it, it lives for the run only).
+    pub fn set_index_path(&self, path: PathBuf) {
+        let mut index = self.index.lock().unwrap();
+        index.path = Some(path);
+        index.entries = None;
+    }
+
+    /// For Rust code that needs the value (never sent to the webview). The first use in a run
+    /// reads the keychain.
     pub fn get(&self, secret: Secret) -> Result<Option<String>, String> {
-        self.0.get(secret.key())
+        let key = secret.key();
+        if let Some(value) = self.cache.lock().unwrap().get(key) {
+            return Ok(value.clone());
+        }
+        let value = self.store.get(key)?;
+        self.cache.lock().unwrap().insert(key, value.clone());
+        Ok(value)
+    }
+
+    /// Stores a value, with what may be said about it without reading it (`summary`).
+    pub(crate) fn put(&self, secret: Secret, value: &str, summary: Value) -> Result<(), String> {
+        self.store.set(secret.key(), value)?;
+        self.cache
+            .lock()
+            .unwrap()
+            .insert(secret.key(), Some(value.to_string()));
+        self.index.lock().unwrap().record(secret.key(), summary);
+        Ok(())
+    }
+
+    pub(crate) fn remove(&self, secret: Secret) -> Result<(), String> {
+        self.store.delete(secret.key())?;
+        self.cache.lock().unwrap().insert(secret.key(), None);
+        self.index.lock().unwrap().record(secret.key(), Value::Null);
+        Ok(())
+    }
+
+    /// What may be said about a secret without reading it: its summary, or None when it is not
+    /// set. Only a secret the index does not know yet is read, once, and `summarize` turns its
+    /// value into the summary.
+    pub(crate) fn summary(
+        &self,
+        secret: Secret,
+        summarize: impl Fn(&str) -> Value,
+    ) -> Result<Option<Value>, String> {
+        let known = self
+            .index
+            .lock()
+            .unwrap()
+            .entries()
+            .get(secret.key())
+            .cloned();
+        let summary = match known {
+            Some(summary) => summary,
+            None => {
+                let summary = self
+                    .get(secret)?
+                    .map_or(Value::Null, |value| summarize(&value));
+                self.index
+                    .lock()
+                    .unwrap()
+                    .record(secret.key(), summary.clone());
+                summary
+            }
+        };
+        Ok((!summary.is_null()).then_some(summary))
     }
 
     fn set(&self, secret: Secret, value: &str) -> Result<(), String> {
@@ -103,12 +217,14 @@ impl Secrets {
         if value.is_empty() || value.len() > 512 || value.chars().any(char::is_whitespace) {
             return Err("That does not look like a token".to_string());
         }
-        self.0.set(secret.key(), value)
+        self.put(secret, value, Value::Bool(true))
     }
 
     fn status(&self) -> Result<SecretStatus, String> {
         Ok(SecretStatus {
-            lichess_token: self.get(Secret::LichessToken)?.is_some(),
+            lichess_token: self
+                .summary(Secret::LichessToken, |_| Value::Bool(true))?
+                .is_some(),
         })
     }
 }
@@ -131,7 +247,7 @@ pub async fn secret_set(
 
 #[tauri::command]
 pub async fn secret_delete(secrets: State<'_, Secrets>, name: Secret) -> Result<(), String> {
-    secrets.0.delete(name.key())
+    secrets.remove(name)
 }
 
 #[tauri::command]
@@ -172,9 +288,64 @@ pub(crate) mod tests {
         }
     }
 
+    /// Counts the keychain reads, which are what may ask the user.
+    #[derive(Default)]
+    struct CountingStore {
+        inner: MemoryStore,
+        reads: std::sync::Arc<std::sync::atomic::AtomicUsize>,
+    }
+
+    impl SecretStore for CountingStore {
+        fn get(&self, key: &str) -> Result<Option<String>, String> {
+            self.reads.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            self.inner.get(key)
+        }
+        fn set(&self, key: &str, value: &str) -> Result<(), String> {
+            self.inner.set(key, value)
+        }
+        fn delete(&self, key: &str) -> Result<(), String> {
+            self.inner.delete(key)
+        }
+    }
+
+    #[test]
+    fn status_reads_the_keychain_at_most_once_ever() {
+        let dir = std::env::temp_dir().join(format!("plybook-secrets-{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        let index = dir.join("secrets-index.json");
+        let _ = fs::remove_file(&index);
+
+        // a token saved before the index existed: the first status reads it, once
+        let store = CountingStore::default();
+        store.inner.set("lichess-token", "lip_old").unwrap();
+        let reads = store.reads.clone();
+        let secrets = Secrets::new(Box::new(store));
+        secrets.set_index_path(index.clone());
+        assert!(secrets.status().unwrap().lichess_token);
+        assert!(secrets.status().unwrap().lichess_token);
+        assert_eq!(reads.load(std::sync::atomic::Ordering::SeqCst), 1);
+
+        // a new run (a new build) with the index: no read at all
+        let store = CountingStore::default();
+        let reads = store.reads.clone();
+        let secrets = Secrets::new(Box::new(store));
+        secrets.set_index_path(index.clone());
+        assert!(secrets.status().unwrap().lichess_token);
+        assert_eq!(reads.load(std::sync::atomic::Ordering::SeqCst), 0);
+        // using the value reads it, once per run
+        secrets.get(Secret::LichessToken).unwrap();
+        secrets.get(Secret::LichessToken).unwrap();
+        assert_eq!(reads.load(std::sync::atomic::Ordering::SeqCst), 1);
+        // the index never holds the value
+        assert!(!fs::read_to_string(&index).unwrap().contains("lip_old"));
+        secrets.remove(Secret::LichessToken).unwrap();
+        assert!(!secrets.status().unwrap().lichess_token);
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
     #[test]
     fn stores_tokens_and_reports_only_whether_they_are_set() {
-        let secrets = Secrets(Box::new(MemoryStore::default()));
+        let secrets = Secrets::new(Box::new(MemoryStore::default()));
         assert_eq!(
             secrets.status().unwrap(),
             SecretStatus {
@@ -188,13 +359,13 @@ pub(crate) mod tests {
         );
         let status = serde_json::to_value(secrets.status().unwrap()).unwrap();
         assert_eq!(status, serde_json::json!({ "lichessToken": true }));
-        secrets.0.delete(Secret::LichessToken.key()).unwrap();
+        secrets.remove(Secret::LichessToken).unwrap();
         assert_eq!(secrets.get(Secret::LichessToken).unwrap(), None);
     }
 
     #[test]
     fn rejects_values_that_are_not_tokens() {
-        let secrets = Secrets(Box::new(MemoryStore::default()));
+        let secrets = Secrets::new(Box::new(MemoryStore::default()));
         for bad in ["", "   ", "two words"] {
             assert!(secrets.set(Secret::LichessToken, bad).is_err(), "{bad:?}");
         }
@@ -204,7 +375,7 @@ pub(crate) mod tests {
     #[test]
     fn the_model_entry_is_not_set_through_secret_set() {
         // model.rs keeps the key bound to its endpoint; a bare value would break that
-        let secrets = Secrets(Box::new(MemoryStore::default()));
+        let secrets = Secrets::new(Box::new(MemoryStore::default()));
         assert!(secrets.set(Secret::ModelProvider, "sk-anything").is_err());
         assert_eq!(secrets.get(Secret::ModelProvider).unwrap(), None);
     }

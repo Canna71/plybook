@@ -53,6 +53,11 @@ pub fn run() {
             migrate::migrate_legacy_data(app.handle());
             // the webview cannot touch the Engines folder, so it is created here
             ensure_engines_folder(app.handle())?;
+            // what is set in the keychain, so status questions do not read it (and ask)
+            if let Ok(dir) = tauri::Manager::path(app).app_local_data_dir() {
+                tauri::Manager::state::<Secrets>(app)
+                    .set_index_path(dir.join("secrets-index.json"));
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
