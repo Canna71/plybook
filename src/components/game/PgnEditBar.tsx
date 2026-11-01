@@ -8,6 +8,7 @@ import {
 } from "solid-js";
 import Button from "../common/Button";
 import { GameContext } from "./GameContext";
+import { focusNewComment } from "./Comments";
 import { updateGameFromPgnString } from "./gameInit";
 import { useFen } from "./gamePosition";
 import { StartingPositionIcon } from "../common/Icons";
@@ -146,10 +147,9 @@ const PgnEditBar: Component<PgnEditBarProps> = (props) => {
     // an empty comment opens for typing, as "Add Comment After" on a move does
     const onAddComment = () => {
         const g = game();
-        if (g)
-            setGame(
-                g.insertComment(currentPath() ?? Path.root, "", false, true),
-            );
+        if (!g) return;
+        focusNewComment(currentPath() ?? Path.root);
+        setGame(g.insertComment(currentPath() ?? Path.root, "", false, true));
     };
 
     const onEditDescription = () => {
