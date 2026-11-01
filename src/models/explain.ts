@@ -20,6 +20,7 @@ import {
 import { MoveValues, positionalReasons } from "../reasons/positional";
 import { keepsWords, keptWords, onlyMove } from "../reasons/onlymove";
 import { describeSacrifice, saidSacrifice } from "../reasons/sacrifice";
+import { compareFutures, Futures } from "../reasons/futures";
 import type { EngineInfo } from "../engine/engineinterfaces";
 
 export type ExplainInput = {
@@ -549,6 +550,11 @@ export function explainMoveFull(
 
     // the opponent's answer and where it leads
     const reply = replyPv?.[0] ? play(moved.fen, replyPv[0]) : undefined;
+    // the two futures, the answer's and the better move's, compared (F.37c)
+    const futures: Futures =
+        bad && input.bestUci !== input.uci
+            ? compareFutures(input.fenBefore, input.uci, replyPv, bestPv)
+            : {};
     // what the answer does, named: a fork, a skewer… (taking back is not a free piece)
     const capturedSquare =
         isCaptureAt(input.fenBefore, input.uci) && input.uci.slice(2, 4);
@@ -600,6 +606,11 @@ export function explainMoveFull(
             sentences.push(`${SIDE[opponent]} answers ${reply.san}${how}.`);
             replyGains.forEach((g) => fact(`${reply.san} ${g}`));
             result(moved.fen, replyPv!, opponent, "reply");
+            // what the answer's future costs against the better one's (F.37c): a reading
+            if (futures.cost) {
+                sentences.push(`It ${futures.cost}.`);
+                interpret([futures.cost]);
+            }
         }
     }
 
@@ -664,10 +675,12 @@ export function explainMoveFull(
             const done = [...bestDone, ...(stops ? [stops] : [])];
             const readings = done.length
                 ? []
-                : positionalReasons(input.fenBefore, input.bestUci!)
-                      .filter((r) => r.good)
-                      .slice(0, 2)
-                      .map((r) => r.text);
+                : futures.gain
+                  ? [futures.gain]
+                  : positionalReasons(input.fenBefore, input.bestUci!)
+                        .filter((r) => r.good)
+                        .slice(0, 2)
+                        .map((r) => r.text);
             interpret(readings);
             const why = [...done, ...readings];
             sentences.push(

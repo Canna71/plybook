@@ -1146,10 +1146,15 @@ Third round, triaged: bugs first, then requests, then research.
     a share of the centre"). Left bare in the owner's games: a5, Bd6, Rf1, for F.37c. Its
     threats (`explainThreats` for the better move) would need one more engine search per
     moment; not yet.
-  - [ ] **F.37c Compare the two futures**: material, kings, development, pawn weaknesses and
+  - [~] **F.37c Compare the two futures**: material, kings, development, pawn weaknesses and
     piece values at the settled points of both lines; the largest difference as the cost
     (interpretation). New readings: queens traded when ahead in development; the centre
-    opening with a king in it.
+    opening with a king in it. Done in part (`feature/explain-settled`,
+    `reasons/futures.ts`, tested): the queens coming off in the answer's line while the
+    opponent's king is in the centre, and kept on in the better line (9.Re1, 12.e5,
+    13.exd6); a file opened on a king in the centre by the better line (17.g3's Rf1). Left:
+    positions with both kings castled (10…d5's a5, 11…dxe4's Bd6): pawn structure and piece
+    activity compared, next.
   - [ ] **F.37d The coach sees the evidence**: the model gets the lines and facts, may say what
     they show, its moves and squares checked against them, labelled as the coach's reading.
 - [x] **F.38 PDF reader: a table of contents** to jump to chapters. From the PDF's outline

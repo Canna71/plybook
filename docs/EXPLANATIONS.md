@@ -226,6 +226,11 @@ Qh3, Rf1, a5): (b) and (c). After (b), in part: "Better was Qh3: it stops Qxe3" 
 13.exd6), "d5: it stops exd4" (4.Nc3), "Nxe4: it saves the bishop on c5 and stops Nxc5",
 "e5: it takes a share of the centre" (9.Re1); "stops" only for an answer that was there
 before the played move, so not "a5 stops exd5" after 10…d5. Still bare: a5, Bd6, Rf1.
+After (c), in part (`reasons/futures.ts`): 9.Re1 "It lets Black trade queens (Qxd4) while
+Black's king is still in the centre. Better was e5: it keeps the queens on against Black's king
+in the centre."; 12.e5 and 13.exd6 the same about Qxe3; 17.g3 "Better was Rf1: it opens the
+f-file while Black's king is still on it". Still bare: a5 and Bd6, where both kings are
+castled.
 
 ## Not done (yet)
 

@@ -319,6 +319,35 @@ describe("explainMoveFull: lines read where they settle", () => {
         expect(text).toContain("Better was Qh3: it stops Qxe3.");
     });
 
+    it("compares the two futures: the queens off against a king in the centre (9.Re1)", () => {
+        const x = explainMoveFull({
+            fenBefore:
+                "r2qkb1r/pp1b1ppp/2pp1n2/8/2BQP3/2N5/PPP2PPP/R1B2RK1 w kq - 0 9",
+            uci: "f1e1",
+            verdict: { class: "inaccuracy", loss: 7 },
+            bestUci: "e4e5",
+            bestPv: ["e4e5", "d6e5", "d4e5", "d8e7", "e5g3", "d7e6"],
+            replyPv: ["d8b6", "c1e3", "b6d4", "e3d4", "f6h5", "g2g3"],
+            evaluations: {
+                before: deep({ pawns: 1.76 }),
+                after: deep({ pawns: 0.96 }),
+            },
+        })!;
+        const text = x.text.join(" ");
+        expect(text).toContain(
+            "It lets Black trade queens (Qxd4) while Black's king is still in the centre.",
+        );
+        expect(text).toContain(
+            "Better was e5: it keeps the queens on against Black's king in the centre.",
+        );
+        // readings, not facts
+        expect(x.evidence).toContainEqual({
+            text: "keeps the queens on against Black's king in the centre",
+            basis: "interpretation",
+            verified: false,
+        });
+    });
+
     it("claims no material the engine's score does not bear out (4.Nc3's better d5)", () => {
         // the line takes a knight on e4 that the engine expects back: +3 against a score of 1.2
         const x = explainMoveFull({
