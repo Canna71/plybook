@@ -149,6 +149,74 @@ Not taken: their accuracy formula (coarser than the one Plybook has), and the cl
 "excellent" and "good" as separate labels (Lichess's thresholds, which Plybook matches on 99.8%
 of moves, P1.2).
 
+## Why the explanations don't explain enough (F.37, 2026-11-01)
+
+The owner: the coach's text reads like the plain one and does not help understand why a move
+was bad. Measured on the owner's own games: the two with real play (the History win against
+Stockfish, 1-0, and the Lichess game of 2024-10-02 as Black), every move of the owner's that
+the review calls an inaccuracy or worse, explained by `explainMoveFull` with Stockfish at depth
+18 as the review gives it its lines (the threat searches left out). The scratch script is
+described under (e) below; eight moves:
+
+| Move | What Plybook says | What happens |
+|---|---|---|
+| 12…Ng4 (−36%) | "White answers Nxc5, winning the bishop on c5, which nothing defends … Better was Nxe4: it saves the bishop" | Right, and enough. |
+| 10…d5 (−10%) | "White answers exd5 and attacks the knight on c6 with a cheaper piece. Better was a5." | …exd5 takes back at once: the attack is no point. The cost (the centre opens, White's pieces get e-file and b4 play) is not said, nor why a5. |
+| 12.e5 (−13%) | "Black answers Qxe3 and pins the pawn on f2 to its king and attacks the undefended rook on e1 … Black wins material (+1). Better was Qh3." | Qxe3 is a queen trade (Bxe3), then …dxe5 wins the pawn: the facts named are of a position that lasts one move. Qh3: no reason. |
+| 13.exd6 (−9%) | Same Qxe3 sentence; "Better was Qh3. After Qh3 d5 Qxe6+ …: White wins material (+1)" | The point is to keep the queens on and attack e6. |
+| 9.Re1 (−9%) | "Black answers Qb6 and attacks the undefended queen on d4. Better was e5: it attacks the knight on f6 with a cheaper piece." | Black's king is still in the centre and Black behind in development; e5 opens the centre now; after Re1 Qb6 the queens come off and that chance is gone. |
+| 4.Nc3 (−10%) | "Black answers exd4 and attacks the knight on c3 … After d5 Nb8 Nxe5 Nxe4 Qe2 Qe7 Qxe4: White wins material (+3)" | +3 is counted where the engine line stops, mid-exchange; the real gain is a pawn and space. |
+| 17.g3 (−16%) | "It leaves a hole on f3 … Black answers exf4 and attacks the bishop on e3 … Better was Rf1." | The trades that follow (…Rxe1+) and their result are not said. |
+| 22.gxh5+ (−5%) | "It isolates its own pawn on h4 … Black wins material (+1)" | About right. |
+
+What goes wrong, in order of how often:
+
+1. **The first reply's board facts stand for the reason.** "Attacks the knight with a cheaper
+   piece", "pins the pawn to its king": true for one move, gone after the recapture. A human
+   names what the exchange leads to.
+2. **The material is counted where the engine line stops**, mid-exchange at times (+3 for a
+   pawn).
+3. **The better move gets no reason** when it wins nothing at once (Qh3, Rf1, a5).
+4. **Costs that are not material are not looked for**: the queens coming off when ahead in
+   development, the centre opening with a king in it, a weakness that the line later wins.
+   Plybook compares evaluations and the first moves, never the two futures.
+5. **The coach model sees only the sentences**, not the lines or the facts behind them, and may
+   only reword them (P2.4b's rule). It cannot add what isn't there, as the owner noticed.
+
+### Plan
+
+Each step is measured on the owner's games (and the puzzle set, for regressions) before it is
+shown; each keeps the contract above (no claim without its evidence).
+
+- **(a) Settle the line before reading it.** Play the reply line on until the exchange is over
+  (no capture or check pending, the captured material recaptured), and read the facts and the
+  material there: "After the queens come off (Qxe3 Bxe3), dxe5 wins the pawn". A board fact of
+  the first reply that the next move undoes (a recapture, the attacked piece taking back) is
+  dropped. Fixes 1 and 2; uses `lineOutcome` and `legalLine`.
+- **(b) A reason for the better move, always.** Search the better move as the played one is
+  searched (threats it makes, `explainThreats`; its settled line, from (a)); failing a
+  tactic, the largest difference in (c). "Better was Qh3: it keeps the queens on and attacks
+  e6."
+- **(c) Compare the two futures.** At the settled points of the reply line and the better
+  line, compare: material, the kings (castled or not, open files and pawns in front, pieces
+  near), development, pawn weaknesses (`positional.ts`), and Stockfish's piece values. Say the
+  largest difference as the cost, marked as interpretation: "After Re1 the queens come off
+  while Black's king is still in the centre: White's lead in development counts for less."
+  New readings: queens traded when ahead in development; the centre opening with a king in
+  it.
+- **(d) Let the coach see the evidence.** Send the model the evidence (the settled lines in
+  SAN, the facts, the comparison of (c)), not only the sentences, and let it say what the
+  evidence shows in a coach's words; keep the check that every move and square it names is in
+  the evidence, and label its text as the coach's reading. The model then explains rather than
+  rewords; P2.4b's rule changes from "only reword" to "only from the evidence".
+- **(e) Measure on the owner's games.** The scratch script (the owner's games, Stockfish, each
+  mistake's explanation and lines) becomes `src/reasons/owngames.eval.ts` (`pnpm
+  eval:reasons`, with the games' paths): the table above, rerun after each step, read by the
+  owner. A 👍/👎 under an explanation in the app, kept locally, would add verdicts on more
+  positions.
+
+Order: (e) first (cheap, and it is the yardstick), then (a), (b), (c), (d).
+
 ## Not done (yet)
 
 Both ideas from the Chesserly study that explain moves are done: the only good move (P2.4h,

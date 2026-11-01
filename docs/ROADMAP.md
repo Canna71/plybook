@@ -1116,7 +1116,10 @@ Third round, triaged: bugs first, then requests, then research.
   explanation (`WhatIf.tsx`), not under a key moment's explanation in Game review, for no
   good reason: the review has the same structured explanation to pass to the model. Done
   (`feature/coach-history-toc`): the button and its checks are `CoachWords.tsx`, used by both.
-- [ ] **F.37 Plybook does not explain well enough why a move was bad (research).** The coach
+- [x] **F.37 Plybook does not explain well enough why a move was bad (research).** Done
+  2026-11-01: EXPLANATIONS.md, "Why the explanations don't explain enough", with the owner's
+  eight mistakes and what Plybook says about each, the five causes, and the plan (a)–(e),
+  which are F.37a–e below. Research notes: The coach
   text reads much like the plain one: by design it only rewords the structured explanation
   (fixed system prompt, P2.4b), so it can't add understanding that isn't there. To research:
   what a human coach says that we don't (the plan behind the move, what the opponent wanted,
@@ -1125,6 +1128,19 @@ Third round, triaged: bugs first, then requests, then research.
   the model may add commentary from the evidence (the lines and board facts), marked as its
   own interpretation, rather than only reword. Outcome: a short plan with examples from the
   owner's games before any code.
+  - [ ] **F.37e Measure on the owner's games**: `src/reasons/owngames.eval.ts`, the mistakes of
+    given games explained with their lines (the table in EXPLANATIONS.md), rerun after each
+    step. First, as the yardstick.
+  - [ ] **F.37a Settle the line before reading it**: facts and material read where the
+    exchange is over; a first-reply fact the next move undoes is dropped.
+  - [ ] **F.37b A reason for the better move, always**: its threats and settled line, or the
+    largest difference of F.37c.
+  - [ ] **F.37c Compare the two futures**: material, kings, development, pawn weaknesses and
+    piece values at the settled points of both lines; the largest difference as the cost
+    (interpretation). New readings: queens traded when ahead in development; the centre
+    opening with a king in it.
+  - [ ] **F.37d The coach sees the evidence**: the model gets the lines and facts, may say what
+    they show, its moves and squares checked against them, labelled as the coach's reading.
 - [x] **F.38 PDF reader: a table of contents** to jump to chapters. From the PDF's outline
   where it has one (pdf.js `getOutline`); scanned books often have none, so perhaps the
   user's own bookmarks per book as a fallback. Done (`feature/coach-history-toc`): neither
