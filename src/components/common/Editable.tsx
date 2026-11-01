@@ -1,4 +1,11 @@
-import { Accessor, Component, createEffect, createSignal } from "solid-js";
+import {
+    Accessor,
+    Component,
+    createEffect,
+    createSignal,
+    onCleanup,
+    onMount,
+} from "solid-js";
 import "./Editable.scss";
 import { selectAll } from "./editing";
 
@@ -38,6 +45,24 @@ const Editable: Component<EditableProps> = (props) => {
             ref!.blur();
         }
     };
+
+    // a press anywhere else ends the editing (and saves): WebKit leaves the focus where it is
+    // on a click outside that lands on nothing focusable, and the board cancels its presses
+    const onPressOutside = (e: PointerEvent) => {
+        const el = ref as HTMLSpanElement | null;
+        if (
+            el &&
+            document.activeElement === el &&
+            !el.contains(e.target as Node)
+        )
+            el.blur();
+    };
+    onMount(() => {
+        document.addEventListener("pointerdown", onPressOutside, true);
+        onCleanup(() =>
+            document.removeEventListener("pointerdown", onPressOutside, true),
+        );
+    });
 
     createEffect(() => {
         if (props.editable() && props.focus) {

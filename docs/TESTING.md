@@ -36,6 +36,14 @@ release or Windows, below.
       went wrong on this screen" with Try again, and the sidebar still works. Tell me what
       the message says.
 
+## Title editing, F.47 (branch feature/title-blur)
+
+- [ ] **A click outside ends it**: in a Library game, click the title, change it, then click
+      the board, the moves list or empty space: the field loses its frame and the new name
+      is saved (the breadcrumb and the Library show it). Escape still restores the old
+      name; a click inside the title still places the caret. Renaming in a Library folder
+      and the players' names in the board editor behave the same.
+
 ## Pasted lesson hang, F.46 (branch feature/paste-hang)
 
 - [ ] **The lesson opens**: paste the Tarrasch lesson's JSON again: it opens in Analysis

@@ -1217,6 +1217,11 @@ Third round, triaged: bugs first, then requests, then research.
   (`feature/paste-hang`): only the comment just added takes the focus (`focusNewComment`
   in `Comments.tsx`, from "Add a comment" in the menu and on a move), and a blur that
   changed nothing saves nothing. Seen in the dev app: the lesson opens, its arrows show.
+- [x] **F.47 [Bug] A game's title stayed in editing after a click outside** (owner,
+  2026-11-01). It saves when it loses the focus, but WebKit keeps the focus on a click that
+  lands on nothing focusable, and the board cancels its presses. Done
+  (`feature/title-blur`): `Editable` (the title, a Library entry's name, the players in the
+  board editor) ends the editing on any press outside it.
 
 ## Last
 
