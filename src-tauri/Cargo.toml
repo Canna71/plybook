@@ -1,9 +1,12 @@
 [package]
-name = "rechess"
+name = "plybook"
 version = "0.1.0"
-description = "A Tauri App"
+description = "Plybook, a chess study app"
 authors = ["you"]
 edition = "2021"
+license = "GPL-3.0-or-later"
+# pgn-reader 0.29 / shakmaty 0.30 need it
+rust-version = "1.97"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -11,7 +14,7 @@ edition = "2021"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "rechess_lib"
+name = "plybook_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -23,14 +26,24 @@ tauri-plugin-shell = "2.2.0"
 tauri-plugin-fs = { version = "2.2.0" }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "^1.0.136"
-surrealdb = { version = "2.1.4", features = ["kv-rocksdb"] }
-tokio = { version = "^1.43.0", features = ["macros", "rt-multi-thread"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
 pgnparse = "0.1.15"
+pgn-reader = "0.29"
+shakmaty = "0.30"
+zstd = "0.13"
+# piece images embedded in installed sets' stylesheets (pieces.rs)
+base64 = "0.22"
 tauri-plugin-process = "2.2.0"
 tauri-plugin-dialog = "2"
 tauri-plugin-clipboard-manager = "2.2.0"
 rand = "0.8.5"
 open = "5.3.0"
+reqwest = { version = "0.12.8", default-features = false, features = ["rustls-tls"] }
+# 3.x: the 4.x line is a new store-based API
+keyring = { version = "3.6", features = ["apple-native", "windows-native"] }
+zip = { version = "2.2", default-features = false, features = ["deflate"] }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
 tauri-plugin-window-state = "2"

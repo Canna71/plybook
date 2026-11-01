@@ -1,0 +1,179 @@
+// the app's sidebar (Sidebar.tsx)
+.app-sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--rc-space-2);
+    gap: var(--rc-space-2);
+    background-color: var(--rc-surface);
+    font-size: var(--rc-text-sm);
+
+    .nav-groups {
+        flex: 1;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--rc-space-3);
+    }
+
+    .nav-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .nav-group-label {
+        padding: 0 var(--rc-space-2) var(--rc-space-1);
+        font-size: var(--rc-text-xs);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--rc-text-muted);
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: var(--rc-space-2);
+        padding: 5px var(--rc-space-2);
+        border-radius: var(--rc-radius);
+        color: var(--rc-text);
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+        white-space: nowrap;
+        font: inherit;
+
+        svg {
+            width: 18px;
+            height: 18px;
+            flex: none;
+            color: var(--rc-text-muted);
+        }
+
+        &:hover {
+            background-color: var(--rc-surface-2);
+            color: var(--rc-text-strong);
+        }
+
+        &.is-active {
+            background-color: var(--rc-surface-2);
+            color: var(--rc-text-strong);
+            font-weight: 600;
+            box-shadow: inset 3px 0 0 var(--rc-accent);
+
+            svg {
+                color: var(--rc-accent);
+            }
+        }
+    }
+
+    .nav-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    // the app's mark and name at the top (F.7); a link to Today
+    // the name, and back / forward (F.25) at its right
+    .nav-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .nav-history {
+        display: flex;
+        gap: 2px;
+
+        button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            border: 0;
+            border-radius: var(--rc-radius-sm, 4px);
+            background: transparent;
+            color: var(--rc-text-muted);
+            cursor: pointer;
+
+            svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            &:hover:not(:disabled) {
+                background: var(--rc-surface-2);
+                color: var(--rc-text-strong);
+            }
+
+            &:disabled {
+                opacity: 0.35;
+                cursor: default;
+            }
+        }
+    }
+
+    .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: var(--rc-space-2);
+        padding: var(--rc-space-1) var(--rc-space-1) var(--rc-space-1);
+        color: var(--rc-text-strong);
+        font-size: var(--rc-text-md);
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+    }
+
+    // the command palette's entry, like a search field
+    .nav-search {
+        border: 1px solid var(--rc-border);
+        background-color: var(--rc-bg);
+        color: var(--rc-text-muted);
+
+        kbd {
+            margin-left: auto;
+            font-family: inherit;
+            font-size: var(--rc-text-xs);
+            color: var(--rc-text-muted);
+        }
+    }
+
+    .nav-footer {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        border-top: 1px solid var(--rc-border);
+        padding-top: var(--rc-space-2);
+    }
+
+    // icons only
+    &.collapsed {
+        align-items: center;
+
+        .nav-label,
+        .nav-group-label,
+        .nav-history {
+            display: none;
+        }
+
+        .nav-group + .nav-group {
+            border-top: 1px solid var(--rc-border);
+            padding-top: var(--rc-space-2);
+        }
+
+        .nav-item {
+            justify-content: center;
+            padding: 6px;
+        }
+
+        .nav-search {
+            border: none;
+            background: none;
+        }
+    }
+}

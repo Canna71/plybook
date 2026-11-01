@@ -1,5 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import anylogger from "anylogger";
+import { historyId } from "../models/history";
+import { makeGame } from "../models/pgn";
 const log = anylogger("db");
 
 export type Puzzle = {
@@ -28,41 +30,9 @@ export type Study = {
     created_at: string;
 };
 
-export type Id =
-    | { String: string }
-    | { Number: number }
-    | { Uuid: string }
-    | { Array: any[] }
-    | { Object: Record<string, any> }
-    | { Generate: "Rand" | "Ulid" | "Uuid" }
-    | { Range: { start: Id | null; end: Id | null } };
-
-// You could add this helper function to your db.ts file
-export function getIdValue(id: Id | undefined): string | undefined {
-    if (!id) return undefined;
-
-    if ("Number" in id) return id.Number.toString();
-    if ("String" in id) return id.String;
-    if ("Uuid" in id) return id.Uuid;
-    if ("Array" in id) return JSON.stringify(id.Array);
-    if ("Object" in id) return JSON.stringify(id.Object);
-    if ("Generate" in id) return `${id.Generate}()`;
-    if ("Range" in id) {
-        const start = id.Range.start ? getIdValue(id.Range.start) : "*";
-        const end = id.Range.end ? getIdValue(id.Range.end) : "*";
-        return `${start}..${end}`;
-    }
-
-    return undefined;
-}
-
-export type RecordId = {
-    id: Id;
-    tb: string;
-};
-
+// Mirrors Game in src-tauri/src/db.rs
 export type Game = {
-    id?: RecordId;
+    id?: string;
     pgn: string;
     timeControlInitial: number;
     timeControlIncrement: number;
@@ -75,16 +45,6 @@ export type Game = {
     round: number;
 };
 
-export async function upsertStudy(study: Study): Promise<Study> {
-    return await invoke("upsert_study", {
-        study,
-    });
-}
-
-export async function listStudies(): Promise<Study[]> {
-    return await invoke("list_studies");
-}
-
 export async function listPuzzles(): Promise<Study[]> {
     return await invoke("list_puzzles");
 }
@@ -93,16 +53,7 @@ export async function initDB() {
     try {
         await invoke("init_db");
     } catch (error) {
-        if (
-            (error as string).includes(
-                "The process cannot access the file because it is being used by another process",
-            ) ||
-            (error as string).includes("lock hold by current process")
-        ) {
-            log.debug("DB already initialized");
-        } else {
-            log.warn("initDB", error);
-        }
+        log.error("initDB", error);
     }
 }
 
@@ -146,12 +97,9 @@ export async function createPuzzle(studyId: string, baseWeight?: number) {
     });
 }
 
-export async function pickPuzzle(): Promise<Study> {
-    return await invoke("pick_puzzle");
-}
-
-export async function updateCachedWeights() {
-    return await invoke("update_cached_weights");
+/** A weighted random puzzle, optionally only from one Library folder; undefined if none. */
+export async function pickPuzzle(folder?: string): Promise<Study | undefined> {
+    return (await invoke<Study | null>("pick_puzzle", { folder })) ?? undefined;
 }
 
 // History
@@ -162,21 +110,28 @@ export async function getHistoryGames(): Promise<Game[]> {
         log.debug("getHistoryGames", games);
         return games;
     } catch (e) {
-        console.error("Failed to get history games", e);
+        log.error("Failed to get history games", e);
         return [];
     }
 }
 
-(window as any).getHistoryGames = getHistoryGames;
-
-export async function addToHistory(pgn: string): Promise<Game | undefined> {
+/**
+ * Saves a played game, by default under its Timestamp id (older records have random ids).
+ * Games without an id or without moves are skipped.
+ */
+export async function saveHistoryGame(
+    pgn: string,
+    id = historyId(pgn),
+): Promise<Game | undefined> {
+    if (!id || makeGame(pgn).mainline.length === 0) return undefined;
     try {
-        const game = (await invoke("add_to_history", { pgn })) as Game;
-        return game;
+        return await invoke<Game>("save_history_game", { id, pgn });
     } catch (e) {
-        console.error("Failed to add game to history", e);
+        log.error("Failed to save game to history", e);
         return undefined;
     }
 }
 
-setTimeout(initDB, 10);
+export async function getHistoryGame(id: string): Promise<Game | undefined> {
+    return (await invoke<Game | null>("get_history_game", { id })) ?? undefined;
+}

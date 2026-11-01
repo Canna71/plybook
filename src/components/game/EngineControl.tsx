@@ -1,17 +1,22 @@
 import {
     Accessor,
     batch,
+    createResource,
     createSignal,
+    For,
     Setter,
     Show,
     Signal,
     useContext,
 } from "solid-js";
 import { GameContext, ReviewProgress } from "./GameContext";
+import Progress from "../common/Progress";
+import { useNavigate } from "@solidjs/router";
 
 import "./EngineControl.scss";
 import {
-    IconCpu,
+    IconAlertTriangle,
+    IconDatabaseSearch,
     IconFlag,
     IconPlayerPlayFilled,
     IconSettingsFilled,
@@ -21,11 +26,14 @@ import { ViewMode } from "./PgnEditBar";
 import Select from "../common/Select";
 import { Color } from "chessops";
 import Button from "../common/Button";
-import { makeGame } from "../../models/pgn";
+import { makeGame, Path } from "../../models/pgn";
+import { nullMoveFen } from "../../models/threat";
 import { getSettingValue, setSettingValue } from "../../models/settings";
 import Modal from "../common/Modal";
 import { StartingPositionIcon } from "../common/Icons";
 import { activeProfile } from "../../engine/engineprofiles";
+import { TUTOR_SETTING } from "./useTutor";
+import { ENGINE_BOOK_SETTING, listBooks } from "../../storage/books";
 
 const EngineControl = () => {
     const {
@@ -42,7 +50,27 @@ const EngineControl = () => {
         isReviewing,
         reviewProgress,
         onGameFinished,
+        threatOnSignal: [threatOn, setThreatOn],
+        currentPathSignal: [currentPath],
     } = useContext(GameContext)!;
+    const [engineAnalysisOn, setEngineAnalysisOn] = engineAnalysisOnSignal;
+
+    // passing the move is impossible in check
+    const threatPossible = () => {
+        const fen = game()?.dataAt(currentPath() ?? Path.root)?.fen;
+        return !!fen && !!nullMoveFen(fen);
+    };
+    const navigate = useNavigate();
+    const findInDatabases = () => {
+        const fen = game()?.dataAt(currentPath() ?? Path.root)?.fen;
+        if (fen) navigate(`/databases?fen=${encodeURIComponent(fen)}`);
+    };
+
+    const toggleThreat = () => {
+        const on = !threatOn();
+        setThreatOn(on);
+        if (on && !engineAnalysisOn()) setEngineAnalysisOn(true);
+    };
 
     const [internalColor, setInternalColor] = createSignal<Color | "random">(
         engineColor() || "random",
@@ -52,7 +80,11 @@ const EngineControl = () => {
         [_settingsModalVisible, setSettingsModalVisible] = settingsModalSignal;
 
     const playSettingsModal = createSignal(false),
-        [_playSettingsVisible, setPlaySettingsVisible] = playSettingsModal;
+        [playSettingsVisible, setPlaySettingsVisible] = playSettingsModal;
+    // read when the playing settings open, so books added meanwhile show up
+    const [books] = createResource(playSettingsVisible, (open) =>
+        open ? listBooks() : [],
+    );
 
     const canEnableEngine = () => {
         return (
@@ -70,7 +102,7 @@ const EngineControl = () => {
         return [
             {
                 value: "random",
-                label: "random",
+                label: "Either colour",
             },
             {
                 value: "white",
@@ -114,12 +146,19 @@ const EngineControl = () => {
                 const playerColor = c === "white" ? "Black" : "White";
 
                 const profile = activeProfile();
-                const engineElo = getSettingValue("engine.playing.elo", 1000)!;
+                // with the tutor on, the tutor plays (at the player's level), not the engine
+                const tutor = !!getSettingValue(TUTOR_SETTING, false);
+                const engineElo = tutor
+                    ? getSettingValue("tutor.elo", 1200)!
+                    : getSettingValue("engine.playing.elo", 1000)!;
                 const currentDate = new Date().toISOString();
                 const headers = new Map([
-                    [engineColorTitleCase, profile?.name ?? "Engine"],
+                    [
+                        engineColorTitleCase,
+                        tutor ? "Tutor" : (profile?.name ?? "Engine"),
+                    ],
                     // the Elo setting only means something to engines that limit their strength
-                    ...(profile?.limitStrength !== false
+                    ...(tutor || profile?.limitStrength !== false
                         ? [
                               [
                                   engineColorTitleCase + "Elo",
@@ -153,10 +192,10 @@ const EngineControl = () => {
                 <div class="engine-control-row">
                     <Show when={canEnableEngine() && !isReviewing()}>
                         <div
-                            title="Enable Engine Analysis"
+                            title="Engine analysis on/off (L)"
                             class="is-flex is-flex-direction-row"
                         >
-                            <IconCpu />
+                            <span class="engine-label">Engine</span>
                             <ToggleSwitch
                                 toggleSignal={engineAnalysisOnSignal}
                             />
@@ -166,6 +205,24 @@ const EngineControl = () => {
                             >
                                 <IconSettingsFilled />
                             </Button>
+                            <Button
+                                class={threatOn() ? "is-danger" : ""}
+                                onClick={toggleThreat}
+                                disabled={!threatPossible()}
+                                title={
+                                    threatPossible()
+                                        ? "Show the threat: what the opponent would play if it were their move"
+                                        : "No threat analysis in check"
+                                }
+                            >
+                                <IconAlertTriangle />
+                            </Button>
+                            <Button
+                                onClick={findInDatabases}
+                                title="Find this position in your game databases"
+                            >
+                                <IconDatabaseSearch />
+                            </Button>
                         </div>
                     </Show>
                     <Show when={isReviewing()}>
@@ -174,32 +231,34 @@ const EngineControl = () => {
                         />
                     </Show>
                     <Show when={playingEngine()}>
-                        <div title="Engine Color">
-                            <IconCpu />
-                            <Select
-                                selectedValue={internalColor}
-                                setSelectedValue={
-                                    setInternalColor as Setter<string>
-                                }
-                                options={engineColors}
-                            />
-                        </div>
+                        <Show when={!isPlayingOn()}>
+                            <div title="The colour the engine plays">
+                                <span class="engine-label">Engine plays</span>
+                                <Select
+                                    selectedValue={internalColor}
+                                    setSelectedValue={
+                                        setInternalColor as Setter<string>
+                                    }
+                                    options={engineColors}
+                                />
+                            </div>
+                            <Button class="is-primary" onClick={toggleGame}>
+                                <IconPlayerPlayFilled />
+                                New game
+                            </Button>
+                        </Show>
+                        <Show when={isPlayingOn()}>
+                            <Button onClick={toggleGame}>
+                                <IconFlag />
+                                Resign
+                            </Button>
+                        </Show>
                         <Button
                             onClick={() => setPlaySettingsVisible(true)}
-                            title="Playing Settings"
+                            title="Playing settings: strength, opening book, time per move"
                         >
                             <IconSettingsFilled />
                         </Button>
-                        <Show when={isPlayingOn()}>
-                            <Button onClick={toggleGame} title="Resign">
-                                <IconFlag />
-                            </Button>
-                        </Show>
-                        <Show when={!isPlayingOn()}>
-                            <Button onClick={toggleGame} title="New Game">
-                                <IconPlayerPlayFilled />
-                            </Button>
-                        </Show>
                         <Show when={viewMode() === ViewMode.MOVES}>
                             <Button
                                 onClick={() =>
@@ -240,6 +299,30 @@ const EngineControl = () => {
                     </div>
                     <div class="engine-control-row">
                         Time: <MoveTime />
+                    </div>
+                    <div
+                        class="engine-control-row"
+                        title="While the position is in the book, the engine plays a book move (weighted at random)"
+                    >
+                        Opening book:{" "}
+                        <div class="select is-small">
+                            <select
+                                value={getSettingValue(ENGINE_BOOK_SETTING, "")}
+                                onChange={(e) =>
+                                    setSettingValue(
+                                        ENGINE_BOOK_SETTING,
+                                        e.currentTarget.value,
+                                    )
+                                }
+                            >
+                                <option value="">None</option>
+                                <For each={books()}>
+                                    {(name) => (
+                                        <option value={name}>{name}</option>
+                                    )}
+                                </For>
+                            </select>
+                        </div>
                     </div>
                     <div class="engine-control-row">
                         Threads: <Threads />
@@ -480,11 +563,10 @@ const ReviewProgressIndicator = ({
     return (
         <div class="review-progress">
             Reviewing...
-            <progress
-                id="file"
+            <Progress
                 max={reviewProgress()?.total}
                 value={reviewProgress()?.current}
-            ></progress>
+            />
         </div>
     );
 };

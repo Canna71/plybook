@@ -2,5 +2,34 @@
     display: flex;
     align-items: center;
     flex-direction: row;
+    gap: var(--rc-space-1);
     padding: 4px;
+    min-width: 0;
+
+    // the name reads as text; it looks like a field only on hover and while typing (F.6)
+    .editable-text {
+        min-width: 0;
+        max-width: 20em;
+        text-overflow: ellipsis;
+
+        &[contenteditable="true"]:not(:focus) {
+            min-width: 0;
+            border-color: transparent;
+            background-color: transparent;
+            cursor: text;
+
+            &:hover {
+                border-color: var(--rc-border);
+            }
+        }
+
+        &[contenteditable="true"]:focus {
+            min-width: 10em;
+        }
+    }
+
+    // the material won stays on one line beside the name, which gives way first (F.8)
+    .chess-material {
+        flex-shrink: 0;
+    }
 }

@@ -1,0 +1,67 @@
+// The drawing bar under the board (DrawBar.tsx, U.2)
+.draw-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--rc-space-1);
+    // in the bottom player's row, after the name
+    margin-left: auto;
+
+    button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border: 1px solid transparent;
+        border-radius: var(--rc-radius);
+        background: none;
+        color: var(--rc-text-muted);
+        cursor: pointer;
+
+        &:hover {
+            background-color: var(--rc-surface-2);
+        }
+
+        svg {
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    .draw-pen.active {
+        color: var(--rc-accent);
+        border-color: var(--rc-accent);
+    }
+
+    // the swatches show the arrows' own colours (boardShapes.ts drawBrushes)
+    .draw-colour {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid var(--rc-border);
+
+        &.green {
+            background-color: green;
+        }
+        &.red {
+            background-color: red;
+        }
+        &.blue {
+            background-color: blue;
+        }
+        &.yellow {
+            background-color: yellow;
+        }
+
+        &.active {
+            border-color: var(--rc-accent);
+            box-shadow: 0 0 0 2px var(--rc-accent);
+        }
+    }
+}
+
+// in pen mode the board draws instead of moving pieces
+.chessboard.pen-mode cg-board {
+    cursor: crosshair;
+}

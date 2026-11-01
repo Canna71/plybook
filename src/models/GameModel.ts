@@ -158,7 +158,7 @@ export class GameModel {
         return makeGameInternal(this.game);
     }
 
-    private getPosition(path: Path) {
+    getPosition(path: Path) {
         const data = this.dataAt(path);
         const fen = data?.fen;
         const setup = parseFen(fen!).unwrap();
@@ -201,7 +201,13 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
-    insertComment(path: Path, comment: string, before: boolean = false) {
+    /** `atEnd` puts the comment after the ones already there (else first). */
+    insertComment(
+        path: Path,
+        comment: string,
+        before: boolean = false,
+        atEnd: boolean = false,
+    ) {
         let isStarting = false;
         const originalPath = path;
         if (before) path = path.previous();
@@ -227,7 +233,7 @@ export class GameModel {
         if (isChildNode(pgnNode) && isChildNode(node)) {
             const comments =
                 node.data[field].filter((t) => t !== EMPTY_COMMENT) || [];
-            if (before) {
+            if (before || atEnd) {
                 comments.push(comment);
             } else {
                 comments.splice(0, 0, comment);
@@ -241,7 +247,7 @@ export class GameModel {
             // pgnNode.data.comments = this.insertCommentInternal(node.data.comments, comment, shapes);
         } else {
             const comments = this.game.comments || [];
-            if (before) {
+            if (before || atEnd) {
                 comments.push(comment);
             } else {
                 comments.splice(0, 0, comment);
@@ -354,7 +360,9 @@ export class GameModel {
     private toCommentShapes(shapes: DrawShape[]): CommentShape[] {
         return shapes.map((s) => {
             const from = parseSquare(s.orig)!;
-            const to = s.dest && parseSquare(s.dest)!;
+            // a circle is a shape to its own square in PGN ([%csl]); without a dest chessops
+            // took it for an arrow to a1 (square 0)
+            const to = s.dest ? parseSquare(s.dest)! : from;
             const color = s.brush! as CommentShapeColor;
             return { from, to, color } as CommentShape;
         });
@@ -403,6 +411,19 @@ export class GameModel {
         return this.getNewGameModel();
     }
 
+    /** The time left after the move at `path` (PGN `[%clk]`), in seconds. */
+    public updateClock(path: Path, seconds: number): GameModel {
+        const pgnNode = this.findPgnNode(path);
+        if (!pgnNode || !isChildNode(pgnNode)) return this;
+        const comments = (pgnNode.data.comments ?? []).map(parseComment2);
+        if (!comments.length) comments.push({ text: "", shapes: [] });
+        comments[0].clock = seconds;
+        // a comment with no text is kept as a placeholder, as for shapes and evaluations
+        comments[0].text = comments[0].text || EMPTY_COMMENT;
+        pgnNode.data.comments = comments.map((c) => makeComment2(c));
+        return this.getNewGameModel();
+    }
+
     public updateEvaluation(path: Path, evaluation: Evaluation): GameModel {
         const pgnNode = this.findPgnNode(path);
         const node = nodeAtPathFrom(this.moves, path);
@@ -431,10 +452,12 @@ export class GameModel {
     }
 
     public withStartingPosition(fen: string) {
+        // the PGN tag is "SetUp"; older versions wrote a second "Setup" next to it
+        this.game.headers.delete("Setup");
         const newGame = this.updateHeaders(
             new Map([
                 ["FEN", fen || ""],
-                ["Setup", "1"],
+                ["SetUp", "1"],
             ]),
         );
         return newGame;

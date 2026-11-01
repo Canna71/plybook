@@ -1,0 +1,39 @@
+.scan_view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0 16px 16px;
+    overflow: hidden;
+
+    // "Choose an image…" as a header button: the file input fills it, invisibly
+    .file-button {
+        position: relative;
+        overflow: hidden;
+
+        .file-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+    }
+
+    .notification {
+        margin-bottom: var(--rc-space-2);
+    }
+
+    .scan-editor {
+        flex: 1;
+        min-height: 0;
+    }
+
+    // the scanned picture, in the editor's panel, the panel's width
+    .scan-image {
+        flex-basis: 100%;
+        max-width: 100%;
+        max-height: 30vh;
+        object-fit: contain;
+        border: 1px solid var(--rc-border);
+        border-radius: var(--rc-radius-small);
+    }
+}

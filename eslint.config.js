@@ -7,6 +7,10 @@ export default tseslint.config(
     {
         ignores: [
             "dist/",
+            // agent worktrees carry their own node_modules and dist
+            ".claude/",
+            // local Python virtualenvs
+            "**/site-packages/",
             "src-tauri/",
             "public/",
             "tools/",

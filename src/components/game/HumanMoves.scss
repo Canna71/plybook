@@ -1,0 +1,17 @@
+.human-moves {
+    padding: 0 0.5em 0.4em;
+    font-size: 0.9em;
+
+    .human-move {
+        font-weight: bold;
+    }
+
+    .human-trap {
+        color: hsl(348, 86%, 61%);
+        font-weight: bold;
+    }
+
+    .human-note {
+        opacity: 0.85;
+    }
+}

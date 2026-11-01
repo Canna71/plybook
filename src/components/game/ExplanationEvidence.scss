@@ -1,0 +1,33 @@
+// What an explanation rests on (ExplanationEvidence.tsx), folded away
+.explanation-evidence {
+    margin-top: 0.4em;
+    font-size: 0.85em;
+
+    summary {
+        cursor: pointer;
+        color: var(--rc-text-muted);
+    }
+
+    .explanation-evidence-body {
+        padding: 0.3em 0 0 0.8em;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2em;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 1em;
+        list-style: disc;
+    }
+
+    // interpretations are readings of the position, not facts
+    .inferred {
+        font-style: italic;
+        color: var(--rc-text-muted);
+    }
+
+    .explanation-limit {
+        color: var(--rc-text-muted);
+    }
+}

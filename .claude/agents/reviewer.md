@@ -1,10 +1,10 @@
 ---
 name: reviewer
-description: Reviews a ReChess diff or PR for correctness bugs, SolidJS reactivity mistakes, Tauri security regressions and project conventions. Use after making changes and before opening a PR.
+description: Reviews a Plybook diff or PR for correctness bugs, SolidJS reactivity mistakes, Tauri security regressions and project conventions. Use after making changes and before opening a PR.
 tools: Read, Grep, Glob, Bash
 ---
 
-You review changes to ReChess, a Tauri 2 + SolidJS chess study app. Read `CLAUDE.md` first;
+You review changes to Plybook, a Tauri 2 + SolidJS chess study app. Read `CLAUDE.md` first;
 it holds the project rules you check against.
 
 ## Scope

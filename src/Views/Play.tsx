@@ -1,28 +1,41 @@
-import { createEffect, createSignal } from "solid-js";
-
-// import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
+import { createEffect, createSignal, For, on, Show } from "solid-js";
 import GameManager from "../components/game/GameManager";
 import { useSearchParams } from "@solidjs/router";
-import anylogger from "anylogger";
-import { addToHistory } from "../storage/db";
-const log = anylogger("play");
+import { saveHistoryGame } from "../storage/db";
+import { getSettingValue, setSettingValue } from "../models/settings";
+import { TIME_CONTROLS } from "../models/clock";
+import { TIME_CONTROL_SETTING } from "../components/game/useGameClock";
+import { levelFromPuzzles, TUTOR_SETTING } from "../components/game/useTutor";
+
+/** Ratings to play the tutor at: yours, roughly */
+const TUTOR_LEVELS = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200];
+const CHATTINESS = [
+    { value: "quiet", label: "Only blunders" },
+    { value: "normal", label: "Mistakes" },
+    { value: "chatty", label: "Every slip" },
+];
 
 const PlayView = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
     const [newPgn, setNewPgn] = createSignal<string | undefined>(undefined);
+    const [timeControl, setTimeControl] = createSignal(
+        getSettingValue(TIME_CONTROL_SETTING, ""),
+    );
+    const tutorOn = () => getSettingValue(TUTOR_SETTING, false);
+    const tutorAuto = () => getSettingValue("tutor.auto", true);
+    const tutorElo = () => getSettingValue("tutor.elo", 1200);
 
-    createEffect(async () => {
-        // TODO: start from searchParams.fen when provided
+    // with the tutor on an automatic level, start from the puzzle rating until a game sets it
+    createEffect(() => {
+        if (tutorOn() && tutorAuto()) void levelFromPuzzles();
     });
 
-    const save = async () => {
-        log.debug("onSave", newPgn());
-        const pgn = newPgn();
-        if (typeof pgn !== "string") {
-            return;
-        }
-        await addToHistory(pgn);
-    };
+    // Saved after every move, so History has the game even if it is left unfinished
+    createEffect(
+        on(newPgn, (pgn) => {
+            if (pgn) saveHistoryGame(pgn);
+        }),
+    );
 
     const initialFen = () => {
         if (typeof searchParams.fen === "string") {
@@ -34,13 +47,113 @@ const PlayView = () => {
     return (
         <>
             <nav class="game-header buttons buttons-bar" role="navigation">
-                TODO: | Time Control | Save Game | Draw
+                <label
+                    class="play-tutor checkbox"
+                    title="The tutor plays at your level, warns you of threats and asks before you keep a mistake"
+                >
+                    <input
+                        type="checkbox"
+                        checked={tutorOn()}
+                        onChange={(e) =>
+                            void setSettingValue(
+                                TUTOR_SETTING,
+                                e.currentTarget.checked,
+                            )
+                        }
+                    />{" "}
+                    Tutor
+                </label>
+                <Show
+                    when={tutorOn()}
+                    fallback={
+                        <label
+                            class="play-time-control"
+                            title="Clocks for the next game (minutes + seconds added per move); the engine plays on its clock"
+                        >
+                            Time control{" "}
+                            <span class="select is-small">
+                                <select
+                                    value={timeControl()}
+                                    onChange={(e) => {
+                                        setTimeControl(e.currentTarget.value);
+                                        void setSettingValue(
+                                            TIME_CONTROL_SETTING,
+                                            e.currentTarget.value,
+                                        );
+                                    }}
+                                >
+                                    <For each={TIME_CONTROLS}>
+                                        {(tc) => (
+                                            <option value={tc}>
+                                                {tc || "No clock"}
+                                            </option>
+                                        )}
+                                    </For>
+                                </select>
+                            </span>
+                        </label>
+                    }
+                >
+                    <label title="Your rating, roughly: the tutor plays and coaches at it. Automatic: it goes up after a win and down after a lost game full of mistakes">
+                        Your level{" "}
+                        <span class="select is-small">
+                            <select
+                                value={tutorAuto() ? "auto" : tutorElo()}
+                                onChange={(e) => {
+                                    const value = e.currentTarget.value;
+                                    void setSettingValue(
+                                        "tutor.auto",
+                                        value === "auto",
+                                    );
+                                    if (value !== "auto")
+                                        void setSettingValue(
+                                            "tutor.elo",
+                                            +value,
+                                        );
+                                }}
+                            >
+                                <option value="auto">
+                                    Automatic ({tutorElo()})
+                                </option>
+                                <For each={TUTOR_LEVELS}>
+                                    {(elo) => (
+                                        <option value={elo}>{elo}</option>
+                                    )}
+                                </For>
+                            </select>
+                        </span>
+                    </label>
+                    <label title="Which of your moves the tutor asks about">
+                        Asks about{" "}
+                        <span class="select is-small">
+                            <select
+                                value={getSettingValue(
+                                    "tutor.chattiness",
+                                    "normal",
+                                )}
+                                onChange={(e) =>
+                                    void setSettingValue(
+                                        "tutor.chattiness",
+                                        e.currentTarget.value,
+                                    )
+                                }
+                            >
+                                <For each={CHATTINESS}>
+                                    {(c) => (
+                                        <option value={c.value}>
+                                            {c.label}
+                                        </option>
+                                    )}
+                                </For>
+                            </select>
+                        </span>
+                    </label>
+                </Show>
             </nav>
             <GameManager
                 initialFen={initialFen()}
                 playingEngine={true}
                 setPgn={setNewPgn}
-                onGameFinished={save}
             />
         </>
     );

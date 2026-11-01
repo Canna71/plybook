@@ -1,12 +1,21 @@
-import { batch, createMemo, createSignal, For, useContext } from "solid-js";
+import {
+    batch,
+    createMemo,
+    createSignal,
+    For,
+    Show,
+    useContext,
+} from "solid-js";
 import { EngineInfo } from "../../engine/engineinterfaces";
 import "./EngineInfoViewer.scss"; // Create and import your custom styles
 import { GameContext } from "./GameContext";
 import { Path, PlyData, sanToFan } from "../../models/pgn";
-import { GameModel } from "../../models/GameModel";
-import { toColor, useFenTooltip } from "../common/utils";
+import { toColor } from "../../models/chessutil";
+import { useFenTooltip } from "./useTooltip";
 import { makeUci, parseUci, Position } from "chessops";
-import { makeFen } from "chessops/fen";
+import { makeFen, parseFen } from "chessops/fen";
+import { Chess } from "chessops";
+import { describeThreat } from "../../models/threat";
 import { makeSanAndPlay } from "chessops/san";
 import { scalachessCharPair } from "chessops/compat";
 import { IconChevronRight } from "@tabler/icons-solidjs";
@@ -17,14 +26,27 @@ type EngineInfoViewerProps = {
     engineInfo: EngineInfo[];
 };
 
-function makeLine(info: EngineInfo, path: Path, game: GameModel) {
-    const data = game.dataAt(path);
-    const pos = data?.pos.clone();
-    const pvMoves = info.pv || [];
+/** The line from `fen`, the position the engine searched; it stops at a move that does not fit
+ * (an info that arrived for the previous position). */
+function makeLine(info: EngineInfo, path: Path, fen: string) {
+    const setup = parseFen(fen);
+    const start = setup.isOk ? Chess.fromSetup(setup.value) : undefined;
+    if (!start || start.isErr) return [];
+    const pos = start.value;
+    const pvMoves = takeWhile(
+        info.pv || [],
+        (() => {
+            const check = pos.clone();
+            return (uci: string) => {
+                const move = parseUci(uci);
+                if (!move || !check.isLegal(move)) return false;
+                check.play(move);
+                return true;
+            };
+        })(),
+    );
     const line = pvMoves.reduce(
         ([prevPos, path, list], currentMove) => {
-            // const move = parseSan(pos as Position, currentMove)!;
-            // if(!prevPos) return undefined;
             const pos = prevPos.clone();
             const move = parseUci(currentMove)!;
             const moveId = scalachessCharPair(move);
@@ -101,18 +123,23 @@ type EngineInfoLineProps = {
     info: EngineInfo;
 };
 
-const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
+const EngineInfoLine = (props: EngineInfoLineProps) => {
     const {
         currentPathSignal: [currentPath, setCurrentPath],
         gameSignal: [game, setGame],
+        analyzedFen,
     } = useContext(GameContext)!;
     const [isExpanded, setIsExpanded] = createSignal(false);
 
-    const line = createMemo(() => {
-        return makeLine(info, currentPath()!, game()!);
-    });
+    const line = createMemo(() =>
+        makeLine(props.info, currentPath()!, analyzedFen()),
+    );
+    // threat lines start from another position: they cannot be played on the board
+    const playable = () =>
+        sameFen(game()?.dataAt(currentPath()!)?.fen, analyzedFen());
 
     const onMoveClicked = (move: PlyData) => {
+        if (!playable()) return;
         const l = line();
         // gets the moves in l until and included move using es-toolkit
         const moves = [...takeWhile(l, (m) => m !== move), move];
@@ -133,10 +160,10 @@ const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
     });
 
     const scoreString = () => {
-        if (info.score?.type === "cp") {
-            return `${info.score.value / 100}`;
+        if (props.info.score?.type === "cp") {
+            return `${props.info.score.value / 100}`;
         } else {
-            return `#${info.score?.value}`;
+            return `#${props.info.score?.value}`;
         }
     };
 
@@ -164,9 +191,31 @@ const EngineInfoLine = ({ info }: EngineInfoLineProps) => {
     );
 };
 
+/** FENs without the move counters, which a null move changes. */
+const sameFen = (a?: string, b?: string) =>
+    !!a &&
+    !!b &&
+    a.split(" ").slice(0, 4).join(" ") === b.split(" ").slice(0, 4).join(" ");
+
 const EngineInfoViewer = (props: EngineInfoViewerProps) => {
+    const { threatFen } = useContext(GameContext)!;
+    const threat = () => {
+        const fen = threatFen();
+        const best = props.engineInfo[0];
+        return fen && best
+            ? describeThreat(fen, best.pv, best.score)
+            : undefined;
+    };
     return (
-        <div class="engine-info-viewer">
+        <div
+            class="engine-info-viewer"
+            classList={{ "is-threat": !!threatFen() }}
+        >
+            <Show when={threatFen()}>
+                <div class="engine-info-threat">
+                    {threat()?.text ?? "Looking for threats…"}
+                </div>
+            </Show>
             <For each={props.engineInfo}>
                 {(info) => <EngineInfoLine info={info} />}
             </For>

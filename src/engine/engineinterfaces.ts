@@ -6,7 +6,19 @@ export interface AnalysisOptions {
     threads?: number;
     /** Fixed number of nodes; with 1 an Lc0/Maia net plays its raw first choice */
     nodes?: number;
+    /** Only search these moves (UCI) */
+    searchmoves?: string[];
+    /** A game with clocks: the engine manages its own time (instead of depth and movetime) */
+    clock?: { wtime: number; btime: number; winc: number; binc: number };
+    /**
+     * The game that led to the position: searched as `position fen <start> moves …`, so the
+     * engine counts repetitions (models/gamehistory.ts). Must lead to the position searched.
+     */
+    history?: PositionHistory;
 }
+
+/** A game's start position and its moves (UCI) up to a position */
+export type PositionHistory = { start: string; moves: string[] };
 
 // Types for the parsed information
 export type Score = {
@@ -46,6 +58,11 @@ export interface IChessEngine extends IEngineEventEmitter {
     quit(): void;
     newGame(): void;
     setOption(name: string, value: any): void;
+    /**
+     * Stockfish's `eval` of a position: its output arrives as "line" events (not UCI; other
+     * engines ignore or reject it)
+     */
+    evaluate?(fen: string): void;
     getElos?(): [{ level: number; elo: number }];
     getId(): EngineId | undefined;
     getOptions(): EngineOptions | undefined;

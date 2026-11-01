@@ -1,6 +1,6 @@
 import { Accessor, Component, createEffect, createSignal } from "solid-js";
 import "./Editable.scss";
-import { selectAll } from "./utils";
+import { selectAll } from "./editing";
 
 export type EditableProps = {
     initialValue: string;
@@ -11,6 +11,13 @@ export type EditableProps = {
 
 const Editable: Component<EditableProps> = (props) => {
     const [value, setValue] = createSignal(props.initialValue);
+    // saved only when changed: a click in and out leaves the game unmodified
+    let saved = props.initialValue;
+    const save = () => {
+        if (value() === saved) return;
+        saved = value();
+        props.onSave?.(saved);
+    };
     // eslint-disable-next-line prefer-const -- assigned by Solid via ref={...}
     let ref: HTMLSpanElement | null = null;
 
@@ -23,6 +30,12 @@ const Editable: Component<EditableProps> = (props) => {
         if (e.key === "Enter") {
             e.preventDefault();
             (e.target as HTMLElement).blur();
+        } else if (e.key === "Escape") {
+            // keep the name it had
+            e.preventDefault();
+            setValue(saved);
+            ref!.textContent = saved;
+            ref!.blur();
         }
     };
 
@@ -44,9 +57,10 @@ const Editable: Component<EditableProps> = (props) => {
             ref={ref!}
             class="editable-text"
             contentEditable={props.editable()}
+            role={props.editable() ? "textbox" : undefined}
             onInput={handleInput}
             onKeyDown={handleKeyDown}
-            onBlur={() => props.onSave?.(value())}
+            onBlur={save}
             style={{ "white-space": "nowrap", "overflow-x": "auto" }}
         >
             {props.initialValue}

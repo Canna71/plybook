@@ -1,0 +1,163 @@
+import {
+    Component,
+    createEffect,
+    createSignal,
+    For,
+    onCleanup,
+    onMount,
+    Show,
+} from "solid-js";
+import { useNavigate } from "@solidjs/router";
+import anylogger from "anylogger";
+import BoardEditor from "../components/boardeditor/BoardEditor";
+import Button from "../components/common/Button";
+import { pendingScan, setPendingScan } from "../paste/pending";
+import { scanImage, warmUpScanner } from "../scan/recognizer";
+import { captureScreenRegion } from "../scan/capture";
+import PageHeader from "../components/shell/PageHeader";
+import "./ScanView.scss";
+const log = anylogger("scan");
+
+/**
+ * Screenshot or diagram → position: paste an image (anywhere in the app) or choose one, check
+ * the recognized position in the editor, then analyse it, play it or look it up.
+ */
+const ScanView: Component = () => {
+    const navigate = useNavigate();
+    const [fen, setFen] = createSignal<string>();
+    const [imageUrl, setImageUrl] = createSignal<string>();
+    const [scanning, setScanning] = createSignal(false);
+    const [warnings, setWarnings] = createSignal<string[]>([]);
+    const [notFound, setNotFound] = createSignal(false);
+
+    onMount(warmUpScanner);
+    onCleanup(() => {
+        const url = imageUrl();
+        if (url) URL.revokeObjectURL(url);
+    });
+
+    const scan = async (image: Blob) => {
+        const old = imageUrl();
+        if (old) URL.revokeObjectURL(old);
+        setImageUrl(URL.createObjectURL(image));
+        setScanning(true);
+        setNotFound(false);
+        setWarnings([]);
+        try {
+            const position = await scanImage(image);
+            if (!position) {
+                setNotFound(true);
+                return;
+            }
+            setFen(position.fen);
+            setWarnings(position.warnings);
+        } catch (err) {
+            log.error("scan failed", err);
+            setWarnings([`Could not read the image: ${String(err)}`]);
+        } finally {
+            setScanning(false);
+        }
+    };
+
+    // images pasted elsewhere in the app arrive here
+    createEffect(() => {
+        const image = pendingScan();
+        if (image) {
+            setPendingScan(undefined);
+            scan(image);
+        }
+    });
+
+    const fromScreen = async () => {
+        try {
+            const image = await captureScreenRegion();
+            if (image) scan(image);
+        } catch (err) {
+            setWarnings([String(err)]);
+        }
+    };
+
+    const onFile = (e: Event) => {
+        const file = (e.currentTarget as HTMLInputElement).files?.[0];
+        if (file) scan(file);
+    };
+
+    const open = (route: string) => {
+        const current = fen();
+        if (current) navigate(`${route}?fen=${encodeURIComponent(current)}`);
+    };
+
+    return (
+        <div class="scan_view">
+            <PageHeader
+                title="Scan a position"
+                description="Capture a board from the screen (any app or website), paste a screenshot or a book diagram (⌘V) anywhere in Plybook, or choose an image. Everything is read on this computer."
+            >
+                <Button
+                    class="is-primary"
+                    title="Plybook hides: drag a rectangle around the board, Esc to cancel"
+                    onClick={fromScreen}
+                >
+                    Capture from screen
+                </Button>
+                <label class="button file-button">
+                    <input
+                        class="file-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={onFile}
+                    />
+                    Choose an image…
+                </label>
+                <Button
+                    title="Every diagram of a PDF or of page images, saved as a collection"
+                    onClick={() => navigate("/scan-book")}
+                >
+                    Scan a whole book…
+                </Button>
+            </PageHeader>
+            <Show when={scanning()}>
+                <progress class="progress is-small is-primary" />
+            </Show>
+            <Show when={notFound()}>
+                <p class="notification is-warning is-light">
+                    No chessboard found in this image. Crop it closer to the
+                    board, or set the position up in the editor.
+                </p>
+            </Show>
+            <For each={warnings()}>
+                {(w) => <p class="notification is-warning is-light">{w}</p>}
+            </For>
+            <div class="scan-editor">
+                <BoardEditor fen={fen} setFen={setFen}>
+                    {/* the picture next to the board, to compare square by square */}
+                    <Show when={imageUrl()}>
+                        <img
+                            class="scan-image"
+                            src={imageUrl()}
+                            alt="Scanned image"
+                        />
+                    </Show>
+                    <Button
+                        class="is-primary"
+                        disabled={!fen()}
+                        onClick={() => open("/analysis")}
+                    >
+                        Analyze
+                    </Button>
+                    <Button disabled={!fen()} onClick={() => open("/play")}>
+                        Play from here
+                    </Button>
+                    <Button
+                        disabled={!fen()}
+                        onClick={() => open("/databases")}
+                    >
+                        Find in databases
+                    </Button>
+                </BoardEditor>
+            </div>
+        </div>
+    );
+};
+
+export default ScanView;

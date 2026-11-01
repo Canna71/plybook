@@ -3,6 +3,7 @@ import { GameModel } from "../../models/GameModel";
 import { Path, PlyData } from "../../models/pgn";
 import { ViewMode } from "./PgnEditBar";
 import { Color } from "chessops";
+import { Evaluation } from "chessops/pgn";
 
 export enum HintType {
     None,
@@ -35,6 +36,16 @@ export interface GameContextType {
     isReviewing: Accessor<boolean>;
     startReview: () => void;
     reviewProgress: Accessor<ReviewProgress>;
+    /** Threat mode: the engine searches the position with the other side to move */
+    threatOnSignal: Signal<boolean>;
+    /** The null-move position while threat mode is active */
+    threatFen: Accessor<string | undefined>;
+    /** The position the engine lines belong to */
+    analyzedFen: Accessor<string>;
+    /** The engine's evaluation (with its best move in `ext`) of a position analysed earlier */
+    evaluationAt: (fen: string) => (Evaluation & { ext?: string }) | undefined;
+    /** The engine's main line (UCI) in a position analysed earlier */
+    lineAt: (fen: string) => string[] | undefined;
     onGameFinished?: () => void;
 }
 

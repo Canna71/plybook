@@ -1,0 +1,45 @@
+.databases_view {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 16px 16px;
+    gap: 8px;
+
+    .buttons-bar {
+        display: flex;
+        gap: 5px;
+    }
+
+    .import-progress .progress {
+        margin-bottom: 4px;
+    }
+
+    .databases-table {
+        margin-bottom: 0;
+
+        .source {
+            word-break: break-all;
+            opacity: 0.7;
+            font-size: 0.85em;
+        }
+    }
+
+    .search-form {
+        .eco {
+            width: 8em;
+        }
+
+        .elo {
+            width: 7em;
+        }
+    }
+
+    .table-container {
+        flex: 1;
+        overflow: auto;
+    }
+
+    .games-table .game-row {
+        cursor: pointer;
+    }
+}

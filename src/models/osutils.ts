@@ -16,4 +16,9 @@ function isMacOS(): boolean {
     return navigator.appVersion.includes("Mac");
 }
 
-export { isLinux, isWindows, isMacOS };
+/** What the system's file browser is called, for "Show in …" */
+function fileBrowserName(): string {
+    return isWindows() ? "Explorer" : isMacOS() ? "Finder" : "Files";
+}
+
+export { isLinux, isWindows, isMacOS, fileBrowserName };

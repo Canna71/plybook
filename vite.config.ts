@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
 import solidSvg from "vite-plugin-solid-svg";
+import { devLog } from "./tools/vite-devlog";
 // import httpHeaders from 'vite-plugin-http-headers';
 
 // @ts-expect-error process is a nodejs global
@@ -8,7 +9,7 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-    plugins: [solid(), solidSvg()],
+    plugins: [solid(), solidSvg(), devLog()],
     optimizeDeps: {
         esbuildOptions: {
             target: "esnext",
@@ -17,6 +18,15 @@ export default defineConfig(async () => ({
     },
     build: {
         target: "esnext",
+        // sounds stay files: Vite would inline the small ones (moves, captures) as data: URLs,
+        // which the CSP blocks for media, so a built app was silent on most moves (F.16)
+        assetsInlineLimit: (file: string) =>
+            file.endsWith(".mp3") ? false : undefined,
+    },
+    // the page-scan worker (src/scan/scanworker.ts) is a module worker that loads the ONNX
+    // runtime on demand, which needs ES output
+    worker: {
+        format: "es" as const,
     },
     // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
     //

@@ -3,7 +3,8 @@ import { Router, Route } from "@solidjs/router";
 import Home from "./Views/Home";
 import Layout from "./Views/Layout";
 import BoardEditorView from "./Views/BoardEditorView";
-import DBTest from "./Views/DBTest";
+import Sites from "./Views/Sites";
+import Help from "./Views/Help";
 import GameView from "./Views/GameView";
 import { useThemes } from "./theming/thememanager";
 import Play from "./Views/Play";
@@ -16,16 +17,16 @@ import Puzzles from "./Views/Puzzles";
 import LibraryFolder from "./Views/LibraryFolder";
 import History from "./Views/History";
 import Settings from "./Views/Settings";
+import GuessTheMove from "./Views/GuessTheMove";
+import Databases from "./Views/Databases";
+import ScanView from "./Views/ScanView";
+import BookScanView from "./Views/BookScanView";
+import PdfReader from "./Views/PdfReader";
+import Books from "./Views/Books";
+import Repertoires from "./Views/Repertoires";
+import RepertoireTrainer from "./Views/RepertoireTrainer";
 
 function App() {
-    // const [greetMsg, setGreetMsg] = createSignal("");
-    // const [name, setName] = createSignal("");
-
-    // async function greet() {
-    //   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    //   setGreetMsg(await invoke("greet", { name: name() }));
-    // }
-
     // dynamically load css in assets folder
     useThemes();
 
@@ -41,11 +42,20 @@ function App() {
                     info={{ engine: false }}
                 />
                 <Route path="/boardeditor" component={BoardEditorView} />
-                <Route path="/db" component={DBTest} />
+                <Route path="/sites" component={Sites} />
+                <Route path="/help" component={Help} />
                 <Route path="/play" component={Play} />
                 <Route path="/library" component={LibraryFolder} />
                 <Route path="/history" component={History} />
                 <Route path="/settings" component={Settings} />
+                <Route path="/guess" component={GuessTheMove} />
+                <Route path="/databases" component={Databases} />
+                <Route path="/scan" component={ScanView} />
+                <Route path="/scan-book" component={BookScanView} />
+                <Route path="/reader" component={PdfReader} />
+                <Route path="/books" component={Books} />
+                <Route path="/repertoires" component={Repertoires} />
+                <Route path="/repertoire" component={RepertoireTrainer} />
 
                 <Route
                     path="/analysis"

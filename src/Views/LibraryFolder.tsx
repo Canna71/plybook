@@ -1,176 +1,519 @@
-import { useSearchParams } from "@solidjs/router";
-import {
-    createNewDataFile,
-    deleteDataFileOrFolder,
-    getDefaultStudyContent,
-    listAppData,
-    NameWithoutExtension,
-    renameOrCreateDataFile,
-} from "../storage/fs";
+// The Library as a browser (UX overhaul, step 7a): a folder's folders, games and books with
+// their dates, a search across the whole Library, and files added by import or by dropping
+// them on the window (copied by Rust, src-tauri/src/library.rs).
+
+import { useNavigate, useSearchParams } from "@solidjs/router";
 import {
     batch,
     createEffect,
+    createMemo,
     createResource,
+    createSignal,
     For,
+    on,
+    onCleanup,
+    onMount,
     Show,
     useContext,
 } from "solid-js";
 import { sep } from "@tauri-apps/api/path";
+import { ask } from "@tauri-apps/plugin-dialog";
+import { getCurrentWebview } from "@tauri-apps/api/webview";
+import {
+    IconBook,
+    IconChess,
+    IconDots,
+    IconFileImport,
+    IconFolder,
+    IconFolderOpen,
+    IconFolderPlus,
+    IconPlus,
+    IconSearch,
+} from "@tabler/icons-solidjs";
+import anylogger from "anylogger";
 import Button from "../components/common/Button";
+import { fileBrowserName } from "../models/osutils";
+import {
+    createNewDataFile,
+    createNewDataFolder,
+    deleteDataFileOrFolder,
+    getDefaultStudyContent,
+    moveDataFile,
+    openDataPath,
+    renameDataFile,
+} from "../storage/fs";
+import {
+    importDropped,
+    LIBRARY_ROOT,
+    listAllFiles,
+    listFolder,
+    withInfo,
+} from "../storage/library";
+import { forgetRecent, recentFiles } from "../storage/recent";
+import {
+    displayName,
+    folderLabel,
+    folderOf,
+    formatSize,
+    KIND_LABEL,
+    LibraryEntry,
+    matchesQuery,
+    moveTargets,
+    renamedName,
+    SortKey,
+    sortEntries,
+} from "../models/library";
+import { ago } from "../models/today";
+import { getSettingValue, setSettingValue } from "../models/settings";
 import { ContentContext } from "../components/common/ContentContext";
 import Editable from "../components/common/Editable";
-import {
-    IconCircleXFilled,
-    IconEdit,
-    IconPlus,
-    IconRefresh,
-} from "@tabler/icons-solidjs";
-
-import "./LibraryFolder.scss";
+import Menu, { MenuItem } from "../components/common/Menu";
+import { pickFolder } from "../components/common/FolderPicker";
 import BreadCrumb from "../components/common/BreadCrumb";
+import PageHeader from "../components/shell/PageHeader";
+import { makeErrorToast, makeToast } from "../components/common/Toast";
+import "./LibraryFolder.scss";
+const log = anylogger("library");
+
+const SORT_SETTING = "library.sort";
+const MAX_RESULTS = 200;
+
+const KIND_ICON = {
+    folder: IconFolder,
+    games: IconChess,
+    book: IconBook,
+};
+
+/** Where a Library entry opens: folders here, games in the editor, books in the reader. */
+export const openLink = (entry: LibraryEntry) =>
+    entry.kind === "folder"
+        ? `/library?path=${encodeURIComponent(entry.path)}`
+        : entry.kind === "book"
+          ? `/reader?path=${encodeURIComponent(entry.path)}`
+          : `/game?path=${encodeURIComponent(entry.path)}&source=library`;
 
 const LibraryFolder = () => {
     const [searchParams] = useSearchParams();
-    const { renaming, setRenaming } = useContext(ContentContext)!;
+    const navigate = useNavigate();
+    const { renaming, setRenaming, refresh } = useContext(ContentContext)!;
 
-    const folderPath = () => {
-        if (typeof searchParams.path === "string") {
-            return searchParams.path;
-        }
-        return undefined;
-    };
+    const folder = () =>
+        typeof searchParams.path === "string"
+            ? searchParams.path
+            : LIBRARY_ROOT;
+    const isRoot = () => folder() === LIBRARY_ROOT;
+    const title = () => folder().split(sep()).pop() ?? LIBRARY_ROOT;
 
-    const fetchFiles = async (path: string) => {
-        const ret = await listAppData(path);
-        const arr = ret.filter((de) => de.isFile && de.name.endsWith(".pgn"));
-        return arr;
-    };
+    const [entries, { refetch }] = createResource(folder, listFolder);
+    const sort = (): SortKey => getSettingValue(SORT_SETTING, "name");
+    const sorted = createMemo(() => sortEntries(entries() ?? [], sort()));
 
-    const [files, { refetch }] = createResource(folderPath, fetchFiles);
+    // search covers the whole Library, listed once a search starts
+    const [query, setQuery] = createSignal("");
+    // opening a folder (a result's, or the breadcrumb's) ends the search
+    createEffect(on(folder, () => setQuery(""), { defer: true }));
+    const [allFiles, { refetch: refetchAll }] = createResource(
+        () => query().trim() !== "",
+        (searching) => (searching ? listAllFiles() : Promise.resolve([])),
+    );
+    const matches = createMemo(() =>
+        (allFiles() ?? [])
+            .filter((f) => matchesQuery(f.name, query()))
+            .slice(0, MAX_RESULTS),
+    );
+    // dates and sizes only for what matched
+    const [matchInfo] = createResource(matches, withInfo);
+    const results = () => sortEntries(matchInfo.latest ?? matches(), sort());
+    const searching = () => query().trim() !== "";
 
-    const getFullPath = (name: string) => {
-        const fullPath = `${folderPath()}${sep()}${name}`;
-        return fullPath;
-    };
+    const opened = createMemo(
+        () => new Map(recentFiles().map((f) => [f.path, f.at])),
+    );
 
-    createEffect(() => {
+    /** After any change: this listing, the search and the sidebar's tree. */
+    const changed = () => {
         refetch();
-    });
-
-    const onRename = (name: string) => {
-        setRenaming(getFullPath(name));
+        if (searching()) refetchAll();
+        refresh();
     };
 
-    const isRenaming = (name: string) => {
-        return renaming() === getFullPath(name);
-    };
-
-    const onRenamed = async (newName: string) => {
-        // await renameOrCreateDataFile(renaming(), newName);
-        await renameOrCreateDataFile(renaming(), newName);
-        batch(() => {
-            setRenaming(undefined);
-            refetch();
-        });
-    };
-
-    const onDelete = async (name: string) => {
-        await deleteDataFileOrFolder(getFullPath(name));
-        refetch();
-    };
-
+    // #region actions
     const newStudy = async () => {
-        const newPath = await createNewDataFile(
-            folderPath()!,
+        const path = await createNewDataFile(
+            folder(),
             "Untitled.pgn",
             getDefaultStudyContent(),
         );
         batch(() => {
-            // setExpandedNodes(new Set(expandedNodes()).add(node.id));
-            refetch();
-            setRenaming(newPath);
+            changed();
+            setRenaming(path);
         });
-        // setTimeout(()=>setRenaming(newPath),100);
+    };
+
+    const newFolder = async () => {
+        const path = await createNewDataFolder(folder(), "New folder");
+        batch(() => {
+            changed();
+            setRenaming(path);
+        });
+    };
+
+    // files chosen in the picker are read by the webview and written into this folder
+    const importFiles = async (e: Event) => {
+        const input = e.currentTarget as HTMLInputElement;
+        const files = [...(input.files ?? [])];
+        input.value = "";
+        for (const file of files) {
+            await createNewDataFile(
+                folder(),
+                file.name,
+                new Uint8Array(await file.arrayBuffer()),
+            );
+        }
+        if (files.length) {
+            makeToast(
+                files.length === 1
+                    ? `Added ${file(files[0].name)}`
+                    : `Added ${files.length} files`,
+            );
+            changed();
+        }
+    };
+    const file = (name: string) => `“${name}”`;
+
+    const onRenamed = async (entry: LibraryEntry, newName: string) => {
+        try {
+            const path = await renameDataFile(
+                entry.path,
+                renamedName(entry, newName),
+            );
+            if (path !== entry.path) forgetRecent(entry.path);
+        } catch (e) {
+            makeErrorToast(`Could not rename: ${e}`);
+        }
+        batch(() => {
+            setRenaming(undefined);
+            changed();
+        });
+    };
+
+    const onDelete = async (entry: LibraryEntry) => {
+        const yes = await ask(
+            entry.kind === "folder"
+                ? `Delete the folder ${file(entry.name)} and everything in it?`
+                : `Delete ${file(entry.name)}?`,
+            { title: "Delete", kind: "warning", okLabel: "Delete" },
+        );
+        if (!yes) return;
+        await deleteDataFileOrFolder(entry.path);
+        forgetRecent(entry.path);
+        changed();
+    };
+
+    const onMove = async (entry: LibraryEntry) => {
+        const to = await pickFolder({
+            title: `Move ${file(displayName(entry))} to`,
+            action: "Move",
+            filter: (folders) => moveTargets(entry.path, folders, sep()),
+        });
+        if (!to) return;
+        try {
+            await moveDataFile(entry.path, to);
+            forgetRecent(entry.path);
+            makeToast(`Moved to ${folderLabel(to, sep())}`);
+        } catch (e) {
+            makeErrorToast(`Could not move: ${e}`);
+        }
+        changed();
+    };
+
+    const showInFinder = (path: string) =>
+        openDataPath(path).catch((e) => {
+            log.error(e);
+            makeErrorToast(String(e));
+        });
+
+    const rowMenu = (entry: LibraryEntry): MenuItem[] => [
+        { label: "Open", onClick: () => navigate(openLink(entry)) },
+        { label: "Rename", onClick: () => setRenaming(entry.path) },
+        { label: "Move to…", onClick: () => onMove(entry) },
+        ...(entry.kind === "folder"
+            ? [
+                  {
+                      label: `Show in ${fileBrowserName()}`,
+                      onClick: () => showInFinder(entry.path),
+                  },
+              ]
+            : []),
+        "separator",
+        { label: "Delete…", onClick: () => onDelete(entry) },
+    ];
+    // #endregion
+
+    // #region drop files from the Finder
+    const [dropping, setDropping] = createSignal(false);
+    onMount(() => {
+        let unlisten: (() => void) | undefined;
+        let gone = false;
+        getCurrentWebview()
+            .onDragDropEvent(async (event) => {
+                const type = event.payload.type;
+                if (type === "enter" || type === "over") setDropping(true);
+                else if (type === "leave") setDropping(false);
+                else if (type === "drop") {
+                    setDropping(false);
+                    try {
+                        const r = await importDropped(folder());
+                        if (r.imported.length)
+                            makeToast(
+                                r.imported.length === 1
+                                    ? `Added ${file(r.imported[0].split(sep()).pop()!)}`
+                                    : `Added ${r.imported.length} files`,
+                            );
+                        if (r.skipped.length)
+                            makeToast(
+                                `Only PGN and PDF files can be added: skipped ${r.skipped.join(", ")}`,
+                            );
+                        changed();
+                    } catch (e) {
+                        makeErrorToast(String(e));
+                    }
+                }
+            })
+            .then((fn) => (gone ? fn() : (unlisten = fn)))
+            .catch((e) => log.warn("no drag and drop", e));
+        onCleanup(() => {
+            gone = true;
+            unlisten?.();
+        });
+    });
+    // #endregion
+
+    const setSort = (key: SortKey) => void setSettingValue(SORT_SETTING, key);
+
+    const Row = (props: { entry: LibraryEntry; showFolder?: boolean }) => {
+        const Icon = KIND_ICON[props.entry.kind];
+        const isRenaming = () => renaming() === props.entry.path;
+        const lastOpened = () => opened().get(props.entry.path);
+        return (
+            <tr>
+                <td class="library-name">
+                    <span class={`library-icon ${props.entry.kind}`}>
+                        <Icon />
+                    </span>
+                    <Show
+                        when={!isRenaming()}
+                        fallback={
+                            <Editable
+                                initialValue={displayName(props.entry)}
+                                editable={() => true}
+                                onSave={(name) => onRenamed(props.entry, name)}
+                                focus={true}
+                            />
+                        }
+                    >
+                        <a href={openLink(props.entry)}>
+                            {displayName(props.entry)}
+                            <Show
+                                when={
+                                    props.showFolder &&
+                                    folderOf(props.entry.path, sep())
+                                }
+                            >
+                                <span class="library-where">
+                                    {folderOf(props.entry.path, sep())}
+                                </span>
+                            </Show>
+                        </a>
+                    </Show>
+                </td>
+                <td class="library-kind">{KIND_LABEL[props.entry.kind]}</td>
+                <td class="library-date">
+                    {props.entry.modified
+                        ? ago(props.entry.modified, Date.now())
+                        : ""}
+                </td>
+                <td class="library-date">
+                    {lastOpened() ? ago(lastOpened()!, Date.now()) : ""}
+                </td>
+                <td class="library-size">
+                    {props.entry.size !== undefined
+                        ? formatSize(props.entry.size)
+                        : ""}
+                </td>
+                <td class="library-actions">
+                    <Menu
+                        items={rowMenu(props.entry)}
+                        title="More"
+                        iconOnly
+                        alignRight
+                    >
+                        <IconDots />
+                    </Menu>
+                </td>
+            </tr>
+        );
     };
 
     return (
-        <div class="library-folder">
-            <div class="buttons-bar">
-                <Button class="is-primary is-outlined" onClick={refetch}>
-                    <IconRefresh />
-                </Button>
-                <Button class="is-primary is-outlined" onClick={newStudy}>
+        <div class="library-folder" classList={{ dropping: dropping() }}>
+            <PageHeader
+                title={isRoot() ? "Library" : title()}
+                description={
+                    isRoot() ? (
+                        "Your games, studies and PDF books. Drop PGN or PDF files here to add them."
+                    ) : (
+                        <BreadCrumb path={folder} />
+                    )
+                }
+            >
+                <div class="control has-icons-left library-search">
+                    <input
+                        class="input"
+                        type="search"
+                        placeholder="Search the Library"
+                        value={query()}
+                        onInput={(e) => setQuery(e.currentTarget.value)}
+                        onKeyDown={(e) => e.key === "Escape" && setQuery("")}
+                    />
+                    <span class="icon is-left">
+                        <IconSearch />
+                    </span>
+                </div>
+                <Menu
+                    title="New"
+                    alignRight
+                    items={[
+                        {
+                            label: "New study",
+                            icon: <IconPlus />,
+                            onClick: newStudy,
+                        },
+                        {
+                            label: "New folder",
+                            icon: <IconFolderPlus />,
+                            onClick: newFolder,
+                        },
+                    ]}
+                >
                     <IconPlus />
-                    New Study
+                    New
+                </Menu>
+                <label
+                    class="button is-primary"
+                    title="Copy PGN or PDF files into this folder"
+                >
+                    <input
+                        type="file"
+                        accept=".pgn,.pdf,application/pdf"
+                        multiple
+                        hidden
+                        onChange={importFiles}
+                    />
+                    <IconFileImport />
+                    Import…
+                </label>
+                {/* F.15: the folder itself, on the computer */}
+                <Button
+                    title={`Open this folder in ${fileBrowserName()}`}
+                    onClick={() => showInFinder(folder())}
+                >
+                    <IconFolderOpen />
+                    Show in {fileBrowserName()}
                 </Button>
-            </div>
+                <Menu
+                    title="More"
+                    iconOnly
+                    alignRight
+                    items={[{ label: "Refresh", onClick: changed }]}
+                >
+                    <IconDots />
+                </Menu>
+            </PageHeader>
 
-            <BreadCrumb path={folderPath} />
-
-            <div class="table-container">
-                <table class="table files_table is-hoverable is-fullwidth">
-                    <colgroup>
-                        <col width={"99%"} />
-                    </colgroup>
+            <div class="library-list">
+                <table class="table is-hoverable is-fullwidth">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th></th>
+                            <th>
+                                <button
+                                    class="library-sort"
+                                    classList={{ active: sort() === "name" }}
+                                    onClick={() => setSort("name")}
+                                >
+                                    Name
+                                </button>
+                            </th>
+                            <th>Kind</th>
+                            <th>
+                                <button
+                                    class="library-sort"
+                                    classList={{
+                                        active: sort() === "modified",
+                                    }}
+                                    onClick={() => setSort("modified")}
+                                    title="Newest first"
+                                >
+                                    Modified
+                                </button>
+                            </th>
+                            <th>Opened</th>
+                            <th>Size</th>
+                            <th />
                         </tr>
                     </thead>
                     <tbody>
-                        <For
-                            each={files()}
+                        <Show
+                            when={!searching()}
                             fallback={
-                                <tr>
-                                    <td>No Items</td>
-                                </tr>
+                                <For
+                                    each={results()}
+                                    fallback={
+                                        <tr>
+                                            <td colspan="6" class="rc-empty">
+                                                {allFiles.loading
+                                                    ? "Searching…"
+                                                    : `Nothing in the Library matches “${query().trim()}”.`}
+                                            </td>
+                                        </tr>
+                                    }
+                                >
+                                    {(entry) => (
+                                        <Row entry={entry} showFolder />
+                                    )}
+                                </For>
                             }
                         >
-                            {(file) => (
-                                <tr class=" ">
-                                    <td>
-                                        <Show when={!isRenaming(file.name)}>
-                                            <a
-                                                href={`/game?path=${encodeURIComponent(getFullPath(file.name))}&source=library`}
-                                            >
-                                                {NameWithoutExtension(
-                                                    file.name,
-                                                )}
-                                            </a>
-                                        </Show>
-                                        <Show when={isRenaming(file.name)}>
-                                            <Editable
-                                                initialValue={NameWithoutExtension(
-                                                    file.name,
-                                                )}
-                                                editable={() => true}
-                                                onSave={onRenamed}
-                                                focus={true}
-                                            />
-                                        </Show>
-                                    </td>
-                                    <td>
-                                        <Button
-                                            title="Rename"
-                                            onClick={() => onRename(file.name)}
-                                        >
-                                            <IconEdit />
-                                        </Button>
-                                        <Button
-                                            class=""
-                                            title="Delete"
-                                            onClick={() => onDelete(file.name)}
-                                        >
-                                            <IconCircleXFilled />
-                                        </Button>
-                                    </td>
-                                </tr>
-                            )}
-                        </For>
+                            <For
+                                each={sorted()}
+                                fallback={
+                                    <tr>
+                                        <td colspan="6" class="rc-empty">
+                                            <Show when={!entries.loading}>
+                                                <strong>
+                                                    This folder is empty
+                                                </strong>
+                                                Create a study or a folder,
+                                                import PGN or PDF files, or drop
+                                                them here.
+                                            </Show>
+                                        </td>
+                                    </tr>
+                                }
+                            >
+                                {(entry) => <Row entry={entry} />}
+                            </For>
+                        </Show>
                     </tbody>
                 </table>
             </div>
+
+            <Show when={dropping()}>
+                <div class="library-drop">
+                    <IconFileImport />
+                    Drop PGN or PDF files to add them to “{title()}”
+                </div>
+            </Show>
         </div>
     );
 };

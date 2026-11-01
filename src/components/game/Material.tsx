@@ -9,7 +9,7 @@ import {
     roleToChar,
 } from "chessops";
 import { Accessor, Component, createMemo, JSXElement } from "solid-js";
-import { getFigurine } from "../common/utils";
+import { getFigurine } from "../common/figurines";
 import { getMaterial } from "../../models/pgn";
 import "./Material.scss";
 type MaterialProps = {

@@ -1,0 +1,41 @@
+.guess_view {
+    display: flex;
+    gap: 16px;
+    height: 100%;
+    padding: 16px;
+    overflow: auto;
+
+    .guess-board {
+        flex: 0 0 auto;
+        width: min(calc(100vh - 64px), 60%);
+        // not stretched to the row's height: the board stays square
+        align-self: flex-start;
+        aspect-ratio: 1;
+    }
+
+    .guess-panel {
+        flex: 1;
+        min-width: 260px;
+        max-width: 440px;
+
+        .tags {
+            min-height: 2em;
+        }
+
+        .guess-intro {
+            margin-bottom: var(--rc-space-3);
+            font-size: var(--rc-text-sm);
+            color: var(--rc-text-muted);
+
+            summary {
+                cursor: pointer;
+                color: var(--rc-text-strong);
+                font-weight: 600;
+            }
+
+            p {
+                margin-top: var(--rc-space-1);
+            }
+        }
+    }
+}

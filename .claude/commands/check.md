@@ -3,7 +3,7 @@ description: Run every local check (typecheck, lint, build, and Rust checks when
 allowed-tools: Bash(pnpm typecheck:*), Bash(pnpm lint:*), Bash(pnpm build:*), Bash(cargo check:*), Bash(cargo clippy:*), Bash(cargo fmt:*), Bash(git diff:*), Bash(git status:*), Bash(git fetch:*)
 ---
 
-Run the ReChess checks and report the results.
+Run the Plybook checks and report the results.
 
 1. `pnpm typecheck`
 2. `pnpm lint`

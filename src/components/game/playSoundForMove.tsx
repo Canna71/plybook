@@ -1,4 +1,4 @@
-import { NormalMove, squareRank } from "chessops";
+import { NormalMove, squareFile } from "chessops";
 import { GameModel } from "../../models/GameModel";
 import { Initial, PlyData, Path, isPlyData } from "../../models/pgn";
 import { PlayAudioForMove } from "../audio";
@@ -18,11 +18,19 @@ export function playSoundForMove(
         const lastMove = ply.move as NormalMove;
         const previous = path.previous();
         const previousPly = game.dataAt(previous);
-        const role = pos.board.get(lastMove.to)?.role;
+        // chessops castles as the king taking its rook: the king then stands elsewhere, so ask
+        // the position before (comparing ranks, as before, never matched)
+        const before = previousPly?.pos.board;
         const isCastling =
-            role === "king" &&
-            Math.abs(squareRank(lastMove.to) - squareRank(lastMove.from)) === 2;
-        const isCapture = previousPly?.pos.board.has(lastMove.to) || false;
+            before?.get(lastMove.from)?.role === "king" &&
+            Math.abs(squareFile(lastMove.to) - squareFile(lastMove.from)) >= 2;
+        // not the castling rook, which is the mover's own; en passant lands on an empty square
+        const mover = before?.get(lastMove.from);
+        const isCapture =
+            (!!before?.has(lastMove.to) &&
+                before.get(lastMove.to)?.color !== mover?.color) ||
+            (mover?.role === "pawn" &&
+                squareFile(lastMove.to) !== squareFile(lastMove.from));
         const flags = {
             isCapture,
             isCheck,

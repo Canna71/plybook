@@ -1,10 +1,10 @@
 ---
 name: tauri-rust
-description: Maintains the ReChess Rust/Tauri backend in src-tauri (commands, SurrealDB, engine processes, capabilities, tauri.conf.json, packaging for macOS and Windows). Use for any change under src-tauri/ or to the frontend-backend invoke contract.
+description: Maintains the Plybook Rust/Tauri backend in src-tauri (commands, SurrealDB, engine processes, capabilities, tauri.conf.json, packaging for macOS and Windows). Use for any change under src-tauri/ or to the frontend-backend invoke contract.
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 
-You maintain the Rust side of ReChess. Read `CLAUDE.md` first.
+You maintain the Rust side of Plybook. Read `CLAUDE.md` first.
 
 ## Layout
 
@@ -15,9 +15,10 @@ You maintain the Rust side of ReChess. Read `CLAUDE.md` first.
   `<AppLocalData>/db`.
 - `engine.rs`: spawns UCI engines from `<AppLocalData>/Engines` only, streams stdout/stderr to the
   webview over a `tauri::ipc::Channel<EngineEvent>`, and kills them on request.
-- `migrate.rs`: moves data from the folders of the old `rechess` identifier.
+- `migrate.rs`: moves data from the folders of the older identifiers (`com.canna71.rechess`,
+  `rechess`) and renames `rechess.sqlite` to `plybook.sqlite`.
 - `capabilities/*.json`: webview permissions. `tauri.conf.json`: identifier
-  `com.canna71.rechess`, CSP, asset protocol scope, bundle settings.
+  `com.canna71.plybook`, CSP, asset protocol scope, bundle settings.
 
 ## Rules
 

@@ -1,0 +1,81 @@
+// Chess sites (Sites.tsx)
+.sites_view {
+    padding: 0 16px 16px;
+    height: 100%;
+    overflow: auto;
+
+    .site-list {
+        list-style: none;
+        margin: 0 0 var(--rc-space-5);
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: var(--rc-space-3);
+    }
+
+    .site-card {
+        position: relative;
+        display: flex;
+    }
+
+    .site-open {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--rc-space-1);
+        padding: var(--rc-space-3) var(--rc-space-4);
+        text-align: left;
+        background-color: var(--rc-surface);
+        border: 1px solid var(--rc-border);
+        border-radius: var(--bulma-radius-large);
+        color: var(--rc-text);
+        cursor: pointer;
+
+        &:hover {
+            border-color: var(--rc-accent);
+        }
+    }
+
+    .site-label {
+        font-weight: 600;
+        color: var(--rc-text-strong);
+    }
+
+    .site-url,
+    .site-note {
+        font-size: var(--rc-text-sm);
+        color: var(--rc-text-muted);
+    }
+
+    .site-remove {
+        position: absolute;
+        top: var(--rc-space-2);
+        right: var(--rc-space-2);
+        padding: 2px;
+        border: none;
+        background: none;
+        color: var(--rc-text-muted);
+        cursor: pointer;
+
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        &:hover {
+            color: var(--rc-danger);
+        }
+    }
+
+    .site-add {
+        display: flex;
+        gap: var(--rc-space-2);
+        max-width: 640px;
+        margin-bottom: var(--rc-space-2);
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
+}

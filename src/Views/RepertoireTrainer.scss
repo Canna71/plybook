@@ -1,0 +1,26 @@
+.repertoire_view {
+    display: flex;
+    gap: 16px;
+    height: 100%;
+    padding: 16px;
+    overflow: auto;
+
+    .repertoire-board {
+        flex: 0 0 auto;
+        width: min(60%, calc(100vh - 64px));
+        // not stretched to the row's height: the board stays square
+        align-self: flex-start;
+        aspect-ratio: 1;
+    }
+
+    .repertoire-panel {
+        flex: 1;
+        min-width: 240px;
+        max-width: 440px;
+
+        .repertoire-line {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+    }
+}

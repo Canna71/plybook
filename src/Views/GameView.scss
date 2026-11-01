@@ -1,7 +1,8 @@
 .game-header {
     display: flex;
-    justify-content: space-between;
     justify-content: right;
+    align-items: center;
+    gap: var(--rc-space-4);
     // padding: 8px;
     border-bottom: 1px solid var(--bulma-border);
     margin-bottom: 8px;
@@ -12,6 +13,33 @@
 
     .game-name {
         flex: 1;
+    }
 
+    // a label with its control (Play: Tutor, Time control, Your level): centred on one line,
+    // without the margin Bulma's .buttons gives its children (F.26)
+    > label,
+    > label .select {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--rc-space-1);
+        margin-bottom: 0;
+    }
+
+    > label + label {
+        margin-left: var(--rc-space-3);
+    }
+
+    // a labelled setting of the file (repertoire, puzzle priority)
+    .header-field {
+        display: flex;
+        align-items: center;
+        gap: var(--rc-space-1);
+    }
+
+    .header-field-label {
+        font-size: var(--rc-text-xs);
+        color: var(--rc-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
 }

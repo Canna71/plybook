@@ -1,7 +1,24 @@
 .editable-text {
     border: 1px solid transparent;
+    border-radius: var(--rc-radius-small);
     padding: 4px;
     outline: none;
     white-space: nowrap;
     overflow: hidden;
+
+    // while renaming, it looks like the field it is
+    &[contenteditable="true"] {
+        display: inline-block;
+        min-width: min(20em, 100%);
+        vertical-align: middle;
+        border-color: var(--rc-border-strong);
+        background-color: var(--rc-surface);
+        color: var(--rc-text-strong);
+    }
+
+    &[contenteditable="true"]:focus {
+        border-color: var(--rc-focus);
+        box-shadow: 0 0 0 2px
+            color-mix(in srgb, var(--rc-focus) 30%, transparent);
+    }
 }

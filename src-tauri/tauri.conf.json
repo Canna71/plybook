@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "rechess",
-  "version": "0.1.0",
-  "identifier": "com.canna71.rechess",
+  "productName": "Plybook",
+  "version": "../package.json",
+  "identifier": "com.canna71.plybook",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,13 +12,14 @@
   "app": {
     "windows": [
       {
-        "title": "rechess",
+        "title": "Plybook",
         "width": 800,
         "height": 600
       }
     ],
     "security": {
-      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost",
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost blob: data:; style-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost asset: http://asset.localhost; script-src 'self' 'wasm-unsafe-eval'; font-src 'self' data:; frame-src https://www.youtube-nocookie.com",
+      "dangerousDisableAssetCspModification": ["style-src"],
       "assetProtocol": {
         "enable": true,
         "scope": ["$APPCONFIG/**", "$APPDATA/**"]
@@ -39,7 +40,15 @@
       "testdata/*"
     ],
     "externalBin": [
-      
+
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": [
+        "https://github.com/Canna71/rechess/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

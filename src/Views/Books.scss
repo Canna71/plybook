@@ -1,0 +1,104 @@
+// Books (Books.tsx)
+.books_view {
+    height: 100%;
+    overflow: auto;
+    padding: 0 var(--rc-space-4) var(--rc-space-6);
+
+    .books-shelf {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: var(--rc-space-3);
+        margin-top: var(--rc-space-2);
+    }
+
+    .book-card {
+        display: flex;
+        gap: var(--rc-space-3);
+        padding: var(--rc-space-3);
+        background-color: var(--rc-surface);
+        border: 1px solid var(--rc-border);
+        border-radius: var(--bulma-radius-large);
+        color: var(--rc-text);
+        transition: border-color 0.12s;
+
+        &:hover {
+            border-color: var(--rc-border-strong);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--rc-focus);
+            outline-offset: 2px;
+        }
+    }
+
+    // a book spine: a tall block in the accent colour
+    .book-cover {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 64px;
+        border-radius: var(--rc-radius-small);
+        background-color: hsla(
+            var(--bulma-primary-h),
+            var(--bulma-primary-s),
+            var(--bulma-primary-l),
+            0.15
+        );
+        color: var(--rc-accent);
+
+        svg {
+            width: 24px;
+            height: 24px;
+        }
+    }
+
+    .book-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    .book-title {
+        font-weight: 600;
+        color: var(--rc-text-strong);
+        line-height: 1.3;
+    }
+
+    .book-muted {
+        font-size: var(--rc-text-sm);
+        color: var(--rc-text-muted);
+    }
+
+    .book-diagrams {
+        font-size: var(--rc-text-sm);
+        color: var(--rc-link);
+        align-self: flex-start;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .books-section {
+        margin: var(--rc-space-5) 0 var(--rc-space-2);
+        font-size: var(--rc-text-xs);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--rc-text-muted);
+    }
+
+    .books-collections li {
+        display: flex;
+        gap: var(--rc-space-3);
+        align-items: baseline;
+        padding: var(--rc-space-1) 0;
+    }
+
+    .books-empty-action {
+        margin-top: var(--rc-space-3);
+    }
+}

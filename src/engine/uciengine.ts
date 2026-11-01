@@ -47,7 +47,13 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
         options: AnalysisOptions,
     ): void {
         this.uciInterface.sendCommand("stop");
-        if (typeof fenOrMoves === "string") {
+        const history = options.history;
+        if (typeof fenOrMoves === "string" && history?.moves.length) {
+            // the game, so repetitions count
+            this.uciInterface.sendCommand(
+                `position fen ${history.start} moves ${history.moves.join(" ")}`,
+            );
+        } else if (typeof fenOrMoves === "string") {
             this.uciInterface.sendCommand(`position fen ${fenOrMoves}`);
         } else {
             this.uciInterface.sendCommand(
@@ -57,13 +63,20 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
         // TODO: put in settings or somewhere else
         this.setOption("Threads", options.threads || 1);
         let goCommand = "go";
+        const clock = options.clock;
         if (options.nodes) {
             goCommand += ` nodes ${options.nodes}`;
+        } else if (clock) {
+            goCommand += ` wtime ${clock.wtime} btime ${clock.btime} winc ${clock.winc} binc ${clock.binc}`;
         } else if (options.depth) goCommand += ` depth ${options.depth}`;
-        if (!options.nodes && options.movetime)
+        if (!options.nodes && !clock && options.movetime)
             goCommand += ` movetime ${options.movetime}`;
         if (options.multipv) {
             this.setOption("MultiPV", options.multipv);
+        }
+        // last: searchmoves takes every move that follows it
+        if (options.searchmoves?.length) {
+            goCommand += ` searchmoves ${options.searchmoves.join(" ")}`;
         }
         // wait 10 ms
         setTimeout(() => {
@@ -72,6 +85,10 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
     }
     stop(): void {
         this.uciInterface.sendCommand("stop");
+    }
+    evaluate(fen: string): void {
+        this.uciInterface.sendCommand(`position fen ${fen}`);
+        this.uciInterface.sendCommand("eval");
     }
     quit(): void {
         this.uciInterface.sendCommand("quit");
@@ -123,6 +140,8 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
 
     private processEngineOutput(line: string): void {
         log.debug(line);
+        // every line, for output that is not UCI (Stockfish's `eval` table)
+        this.emit("line", line);
         const tokens = line.trim().split(" ");
 
         switch (tokens[0]) {
@@ -141,6 +160,14 @@ export class UCIEngine implements IChessEngine, IEngineEventEmitter {
             }
 
             case "info": {
+                if (tokens[1] === "string") {
+                    // free text: Lc0 move stats, engine messages
+                    this.emit(
+                        "string",
+                        line.trim().slice("info string ".length),
+                    );
+                    break;
+                }
                 const info = this.parseInfoMessage(tokens.slice(1));
                 if (info) {
                     this.emit("info", info);

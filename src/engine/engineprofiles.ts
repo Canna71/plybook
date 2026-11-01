@@ -1,6 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { createResource } from "solid-js";
 import { getSettingValue, setSettingValue } from "../models/settings";
+import { ExecutableUCIInterface } from "./executableuci";
+import { UCIEngine } from "./uciengine";
 
 // Mirrors EngineProfile in src-tauri/src/engine.rs
 export type UciOption = { name: string; value: string };
@@ -34,7 +36,7 @@ export { profiles, refetchProfiles };
 /** The profile selected in the settings, or the first one that can run. */
 export function activeProfile(): EngineProfile | undefined {
     const all = profiles();
-    const wanted = getSettingValue<string>("engine.lastUsed", "");
+    const wanted = getSettingValue("engine.lastUsed", "");
     return (
         all.find((p) => p.id === wanted && !p.missing) ??
         all.find((p) => !p.missing)
@@ -92,4 +94,45 @@ export function newProfileId() {
 /** Values of UCI options may refer to the Engines folder as {engines}. */
 export function expandEnginesFolder(value: string, enginesFolder: string) {
     return value.split(ENGINES_PLACEHOLDER).join(enginesFolder);
+}
+
+/** Starts a profile's engine and applies its UCI options; rejects if it fails to start. */
+export async function startEngine(profile: EngineProfile): Promise<UCIEngine> {
+    const engine = new UCIEngine(
+        new ExecutableUCIInterface(profile.id, profile.name),
+    );
+    await engine.init();
+    const enginesFolder = await getEnginesFolder();
+    for (const option of profile.options) {
+        engine.setOption(
+            option.name,
+            expandEnginesFolder(option.value, enginesFolder),
+        );
+    }
+    return engine;
+}
+
+/** "off" disables the human-move hints; empty picks the first Maia-style profile. */
+export const HUMAN_SETTING = "engine.human";
+
+/** The Maia-style (one node) profile that shows what humans would play, if any. */
+export function humanProfile(): EngineProfile | undefined {
+    const wanted = getSettingValue(HUMAN_SETTING, "");
+    if (wanted === "off") return undefined;
+    const candidates = profiles().filter((p) => p.singleNode && !p.missing);
+    return candidates.find((p) => p.id === wanted) ?? candidates[0];
+}
+
+/** The engine for analysis, review and training: a profile id, or "" for automatic. */
+export const ANALYSIS_ENGINE_SETTING = "engine.analysisProfile";
+
+/**
+ * The full-strength engine that analyses, reviews and explains: the one chosen in Settings,
+ * else the first full-strength one. The engine selected to play against (`activeProfile`)
+ * plays only; a Maia-style (human-like) engine never analyses.
+ */
+export function analysisProfile(): EngineProfile | undefined {
+    const strong = profiles().filter((p) => !p.singleNode && !p.missing);
+    const wanted = getSettingValue(ANALYSIS_ENGINE_SETTING, "");
+    return strong.find((p) => p.id === wanted) ?? strong[0];
 }

@@ -7,15 +7,16 @@ import {
     Setter,
     Show,
 } from "solid-js";
-import { save } from "@tauri-apps/plugin-dialog";
+import { pickFolder } from "../components/common/FolderPicker";
 // import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import GameManager from "../components/game/GameManager";
 import {
     baseName,
+    createNewDataFile,
     getDefaultStudyContent,
     NameWithoutExtension,
     readDataFile,
-    renameOrCreateDataFile,
+    renameDataFile,
     writeDataFile,
 } from "../storage/fs";
 import { useLocation, useNavigate, useSearchParams } from "@solidjs/router";
@@ -27,18 +28,42 @@ import { message } from "@tauri-apps/plugin-dialog";
 import {
     createPuzzle,
     deletePuzzle,
+    getHistoryGame,
     getStudy,
     pickPuzzle,
+    saveHistoryGame,
     updateBaseWeight,
     updatePerformanceScore,
 } from "../storage/db";
+import { historyTitle } from "../models/history";
+import { mistakesFolder } from "../storage/mistakes";
+import { makeErrorToast, makeToast } from "../components/common/Toast";
+import { renamedName } from "../models/library";
+import {
+    getLichessPuzzle,
+    pickNextLichessPuzzle,
+    recordPuzzleAttempt,
+} from "../storage/lichesspuzzles";
+import { lichessPuzzlePgn } from "../models/lichesspuzzle";
 import { calculatePerformanceScore } from "../models/puzzles";
 import Select, { Option } from "../components/common/Select";
 import Button from "../components/common/Button";
 import BreadCrumb from "../components/common/BreadCrumb";
-import { sep } from "@tauri-apps/api/path";
+import { join, sep } from "@tauri-apps/api/path";
+import { BaseDirectory, mkdir } from "@tauri-apps/plugin-fs";
+import { getDatabaseGame } from "../storage/gamedb";
+import { makeGame } from "../models/pgn";
+import { pendingPgn, setPendingPgn } from "../paste/pending";
+import { listRepertoires, setRepertoire } from "../storage/repertoire";
+import { Color } from "chessops";
+import { forgetRecent, recordRecent } from "../storage/recent";
 import anylogger from "anylogger";
 const log = anylogger("gameview");
+
+/** The folder the last game without a file was saved in, offered first next time */
+let lastSaveFolder: string | undefined;
+/** Unsaved edits of a game renamed from its title, kept when it reopens at its new path */
+let renamedEdits: { path: string; pgn: string } | undefined;
 
 const GameView = () => {
     const [originalPgn, setOriginalPgn] = createSignal<string | undefined>(
@@ -51,12 +76,48 @@ const GameView = () => {
     const { refresh } = useContentContext();
     const navigate = useNavigate();
 
+    /** A game played against the engine, opened from History */
+    const historyId = () =>
+        searchParams.source === "history" && typeof searchParams.id === "string"
+            ? searchParams.id
+            : undefined;
+    const [historyName, setHistoryName] = createSignal<string>();
+    /** A puzzle from the Lichess puzzle database */
+    const lichessPuzzleId = () =>
+        searchParams.source === "lichess" && typeof searchParams.id === "string"
+            ? searchParams.id
+            : undefined;
+    // only the first try at a puzzle counts, as on Lichess
+    let recordedPuzzle: string | undefined;
+    // the last rating seen, to show its change after the next puzzle
+    let puzzleRating: number | undefined;
+    /** Shown in the training frame once a puzzle ends: the rating change */
+    const [puzzleNote, setPuzzleNote] = createSignal<string>();
+
+    /** A game from an imported database (read-only: Save copies it to the Library) */
+    const databaseGameId = () =>
+        searchParams.source === "database" &&
+        typeof searchParams.id === "string"
+            ? Number(searchParams.id)
+            : undefined;
+
+    /** Games pasted as text or fetched from a pasted Lichess link */
+    const isPasted = () => searchParams.source === "pasted";
+
+    /** Games that do not live in a file: Save copies them into this Library folder */
+    const libraryCopyFolder = () =>
+        databaseGameId() !== undefined
+            ? "From databases"
+            : isPasted()
+              ? "Pasted"
+              : undefined;
+
     const displayedName = () => {
         const path = searchParams.path;
         if (path && typeof path === "string") {
             return NameWithoutExtension(baseName(path));
         }
-        return "Untitled";
+        return historyName() ?? "Untitled";
     };
 
     const filePath = () => {
@@ -73,6 +134,24 @@ const GameView = () => {
         }
     };
 
+    // #region repertoire
+    const [repertoire, { refetch: refetchRepertoire }] = createResource(
+        filePath,
+        async (path) =>
+            (await listRepertoires()).find((r) => r.filePath === path) ?? null,
+    );
+    const repertoireOptions = () =>
+        [
+            { value: "", label: "No" },
+            { value: "white", label: "For White" },
+            { value: "black", label: "For Black" },
+        ] as Option[];
+    const onChangeRepertoire = async (value: string) => {
+        await setRepertoire(filePath()!, (value || undefined) as Color);
+        refetchRepertoire();
+    };
+    // #endregion
+
     const fetchStudy = async (path: string) => {
         const studyId = path;
         try {
@@ -86,13 +165,87 @@ const GameView = () => {
     createEffect(async () => {
         // onRefresh();
         let pgnText = getDefaultStudyContent();
-        if (typeof searchParams.path === "string") {
+        // a position from elsewhere (a scan, the editor): start the analysis from it
+        if (typeof searchParams.fen === "string") {
+            const fen = searchParams.fen.replace(/["\\]/g, "");
+            pgnText = `[SetUp "1"]\n[FEN "${fen}"]\n\n*\n`;
+        }
+        // tracked: pasting again while here opens the new games
+        const pasted = isPasted() ? pendingPgn() : undefined;
+        if (pasted) {
+            pgnText = pasted;
+            const first = makeGame(pasted);
+            setHistoryName(
+                historyTitle(
+                    first.players.white.name,
+                    first.players.black.name,
+                ),
+            );
+        }
+        const id = historyId();
+        const dbId = databaseGameId();
+        const lichessId = lichessPuzzleId();
+        const edits = renamedEdits;
+        renamedEdits = undefined;
+        let original: string | undefined;
+        if (lichessId) {
+            try {
+                const puzzle = await getLichessPuzzle(lichessId);
+                pgnText = lichessPuzzlePgn(puzzle) ?? pgnText;
+                setHistoryName(
+                    `Lichess puzzle ${puzzle.id} (${puzzle.rating})`,
+                );
+            } catch (e) {
+                message("Error reading the puzzle: \n" + String(e), {
+                    title: "Plybook",
+                    kind: "error",
+                });
+                log.error(e);
+            }
+        } else if (dbId !== undefined) {
+            try {
+                pgnText = await getDatabaseGame(dbId);
+                const game = makeGame(pgnText);
+                setHistoryName(
+                    historyTitle(
+                        game.players.white.name,
+                        game.players.black.name,
+                    ),
+                );
+            } catch (e) {
+                message("Error reading game from database: \n" + String(e), {
+                    title: "Plybook",
+                    kind: "error",
+                });
+                log.error(e);
+            }
+        } else if (id) {
+            try {
+                const game = await getHistoryGame(id);
+                if (!game) throw new Error(`Game ${id} not found in history`);
+                pgnText = game.pgn;
+                setHistoryName(historyTitle(game.whiteName, game.blackName));
+            } catch (e) {
+                message("Error reading game from history: \n" + String(e), {
+                    title: "Plybook",
+                    kind: "error",
+                });
+                log.error(e);
+            }
+        } else if (typeof searchParams.path === "string") {
             try {
                 pgnText = await readDataFile(searchParams.path);
+                if (edits?.path === searchParams.path) {
+                    original = pgnText;
+                    pgnText = edits.pgn;
+                }
+                // for Today's "Continue" (a puzzle isn't something to continue)
+                if (location.pathname !== "/puzzle")
+                    recordRecent(searchParams.path, "game");
             } catch (e) {
                 // Shows message
                 message("Error reading file: \n" + searchParams.path, {
-                    title: "Re:Chess",
+                    title: "Plybook",
                     kind: "error",
                 });
                 log.error(e);
@@ -101,8 +254,9 @@ const GameView = () => {
         batch(() => {
             setNewPgn(pgnText); // this is to avoid detecting changes on the new pgn
             setOriginalPgn(pgnText);
+            setPuzzleNote(undefined);
         });
-        setModified(false);
+        setModified(original !== undefined && original !== pgnText);
     });
 
     const memoNewPgn = createMemo(newPgn, undefined, {
@@ -128,38 +282,72 @@ const GameView = () => {
         return !isPuzzleMode(); // TODO: Check if the source is writable
     };
 
-    const canSave = () => modified();
+    const canSave = () => modified() || libraryCopyFolder() !== undefined;
 
     const onSave = async () => {
         const pgnText = newPgn();
         if (pgnText) {
-            if (typeof searchParams.path === "string") {
+            const copyFolder = libraryCopyFolder();
+            const hasFile =
+                !!historyId() || typeof searchParams.path === "string";
+            if (copyFolder || !hasFile) {
+                // into a Library folder the user picks (F.3), where it can be annotated
+                const folder = await pickFolder({
+                    title: "Save in the Library",
+                    action: "Save",
+                    initial:
+                        lastSaveFolder ??
+                        (copyFolder
+                            ? await join("Library", copyFolder)
+                            : "Library"),
+                });
+                if (!folder) return;
+                lastSaveFolder = folder;
+                await mkdir(folder, {
+                    baseDir: BaseDirectory.AppLocalData,
+                    recursive: true,
+                });
+                const path = await createNewDataFile(
+                    folder,
+                    `${displayedName().replace(/[\\/:*?"<>|]/g, "-")}.pgn`,
+                    pgnText,
+                );
+                refresh();
+                navigate(`/game?path=${encodeURIComponent(path)}`);
+            } else if (historyId()) {
+                if (await saveHistoryGame(pgnText, historyId()))
+                    setModified(false);
+            } else if (typeof searchParams.path === "string") {
                 await writeDataFile(searchParams.path, pgnText);
-                // await writeDataFile("test.pgn", pgnText);
                 setModified(false);
                 refresh();
-            } else {
-                const path = await save({
-                    filters: [
-                        {
-                            name: "PGN File",
-                            extensions: ["pgn"],
-                        },
-                    ],
-                });
-                path && (await writeDataFile(path, pgnText));
-                path && setModified(false);
             }
         }
     };
 
+    /** The title renames the file (F.13); unsaved edits stay unsaved, at the new path */
     const onRename = async (text: string) => {
-        await renameOrCreateDataFile(
-            filePath(),
-            text,
-            newPgn() || getDefaultStudyContent(),
-        );
-        refresh();
+        const path = filePath();
+        if (!path) return;
+        try {
+            const renamed = await renameDataFile(
+                path,
+                renamedName({ name: baseName(path), kind: "games" }, text),
+            );
+            if (renamed === path) return;
+            forgetRecent(path);
+            const pgn = newPgn();
+            if (modified() && pgn) renamedEdits = { path: renamed, pgn };
+            refresh();
+            navigate(
+                `${location.pathname}?path=${encodeURIComponent(renamed)}`,
+                {
+                    replace: true,
+                },
+            );
+        } catch (e) {
+            makeErrorToast(`Could not rename: ${e}`);
+        }
     };
 
     const onPuzzleFinished = async (
@@ -167,6 +355,25 @@ const GameView = () => {
         hintUsed: number,
         retries: number,
     ) => {
+        const lichessId = lichessPuzzleId();
+        if (lichessId) {
+            if (recordedPuzzle === lichessId) return;
+            recordedPuzzle = lichessId;
+            const firstTry = solved && hintUsed === 0 && retries === 0;
+            const before = puzzleRating;
+            const rating = Math.round(
+                await recordPuzzleAttempt(lichessId, firstTry),
+            );
+            puzzleRating = rating;
+            const change =
+                before !== undefined && rating !== before
+                    ? ` (${rating > before ? "+" : ""}${rating - before})`
+                    : "";
+            setPuzzleNote(
+                `${firstTry ? "Solved on the first try." : "Counted as missed: the first try is what counts."} Your puzzle rating: ${rating}${change}`,
+            );
+            return;
+        }
         // puzzle solved
         const score = calculatePerformanceScore(
             solved, // solved
@@ -175,7 +382,9 @@ const GameView = () => {
             0, // expected time
             0, // time taken
         );
-        updatePerformanceScore(filePath()!, score);
+        // a puzzle without a file (chess.com's daily, F.30) has no score to keep
+        const path = filePath();
+        if (path) updatePerformanceScore(path, score);
     };
 
     const puzzlePriorities = () => {
@@ -208,7 +417,23 @@ const GameView = () => {
     };
 
     const onNextPuzzle = async () => {
-        const puzzle = await pickPuzzle();
+        if (lichessPuzzleId()) {
+            const next = await pickNextLichessPuzzle();
+            if (!next) {
+                makeToast("No new puzzle of this theme near your rating");
+                return;
+            }
+            navigate(`/puzzle?source=lichess&id=${next.id}`, { replace: true });
+            return;
+        }
+        // training mistakes from reviewed games stays within them
+        const mistakes = await mistakesFolder();
+        const inMistakes = filePath()?.startsWith(mistakes + sep());
+        const puzzle = await pickPuzzle(inMistakes ? mistakes : undefined);
+        if (!puzzle) {
+            makeToast("No more puzzles");
+            return;
+        }
         navigate(`/puzzle?path=${encodeURIComponent(puzzle.file_path)}`, {
             replace: true,
         });
@@ -220,53 +445,101 @@ const GameView = () => {
                 <div class="game-name">
                     <BreadCrumb path={folderPath} />
                     <Editable
-                        editable={() => false}
+                        editable={() => !!filePath() && !isPuzzleMode()}
                         initialValue={displayedName() || ""}
                         onSave={onRename}
                     ></Editable>
                 </div>
 
                 <Show when={isEditable() || isPuzzleMode()}>
-                    <Show when={isPuzzleMode()}>
+                    <Show when={filePath() && !isPuzzleMode()}>
                         <div class="navbar-item">
                             <Button
                                 class="is-primary is-outlined"
-                                onClick={onNextPuzzle}
+                                title="Name your candidate moves at each turn, then compare with the game and the engine"
+                                onClick={() =>
+                                    navigate(
+                                        `/guess?path=${encodeURIComponent(filePath()!)}`,
+                                    )
+                                }
                             >
-                                Next Puzzle
+                                Guess the move
                             </Button>
                         </div>
                     </Show>
+                    <Show when={filePath() && !isPuzzleMode()}>
+                        <div class="navbar-item header-field">
+                            <span class="header-field-label">Repertoire</span>
+                            <Select
+                                title="Drill this file's lines with spaced repetition"
+                                options={repertoireOptions}
+                                selectedValue={() => repertoire()?.side ?? ""}
+                                setSelectedValue={onChangeRepertoire}
+                            />
+                        </div>
+                        <Show when={repertoire()}>
+                            <div class="navbar-item">
+                                <Button
+                                    class="is-primary is-outlined"
+                                    onClick={() =>
+                                        navigate(
+                                            `/repertoire?path=${encodeURIComponent(filePath()!)}`,
+                                        )
+                                    }
+                                >
+                                    Train
+                                </Button>
+                            </div>
+                        </Show>
+                    </Show>
+                    <Show when={filePath()}>
+                        <div class="navbar-item header-field">
+                            <span class="header-field-label">Puzzle</span>
+                            <Select
+                                title="How often this file comes up as a puzzle"
+                                options={puzzlePriorities}
+                                selectedValue={puzzlePriority}
+                                setSelectedValue={
+                                    onChangePuzzlePriority as Setter<string>
+                                }
+                            />
+                        </div>
+                    </Show>
 
-                    <div class="navbar-item">
-                        <Select
-                            title={"Puzzle Priority"}
-                            options={puzzlePriorities}
-                            selectedValue={puzzlePriority}
-                            setSelectedValue={
-                                onChangePuzzlePriority as Setter<string>
-                            }
-                        />
-                    </div>
-
-                    <div class="navbar-item">
-                        <button
-                            disabled={!canSave()}
-                            class="button is-primary"
-                            onClick={onSave}
-                        >
-                            <IconDeviceFloppy />
-                            Save
-                        </button>
-                    </div>
+                    <Show when={!lichessPuzzleId()}>
+                        <div class="navbar-item">
+                            <button
+                                disabled={!canSave()}
+                                class="button is-primary"
+                                onClick={onSave}
+                            >
+                                <IconDeviceFloppy />
+                                Save
+                            </button>
+                        </div>
+                    </Show>
                 </Show>
             </nav>
             <GameManager
                 initalPgn={originalPgn}
+                initialGameIndex={
+                    typeof searchParams.game === "string"
+                        ? Math.max(0, +searchParams.game || 0)
+                        : undefined
+                }
                 setPgn={setNewPgn}
                 onPuzzleFinished={isPuzzleMode() ? onPuzzleFinished : undefined}
                 editable={isEditable}
                 defaultEngineAnalysisOn={isEngineAnalysisOn()}
+                puzzleTitle={() =>
+                    lichessPuzzleId() ? "Lichess puzzle" : displayedName()
+                }
+                puzzleNote={puzzleNote}
+                onNextPuzzle={onNextPuzzle}
+                onAnalyzePuzzle={() => {
+                    setPendingPgn(newPgn() ?? originalPgn() ?? "");
+                    navigate("/analysis?source=pasted");
+                }}
             />
         </>
     );

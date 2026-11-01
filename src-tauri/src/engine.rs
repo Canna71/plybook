@@ -45,7 +45,10 @@ pub enum EngineEvent {
     },
 }
 
-fn app_local_dir<R: Runtime>(app: &AppHandle<R>, folder: &str) -> Result<PathBuf, String> {
+pub(crate) fn app_local_dir<R: Runtime>(
+    app: &AppHandle<R>,
+    folder: &str,
+) -> Result<PathBuf, String> {
     app.path()
         .app_local_data_dir()
         .map(|dir| dir.join(folder))
@@ -53,7 +56,7 @@ fn app_local_dir<R: Runtime>(app: &AppHandle<R>, folder: &str) -> Result<PathBuf
 }
 
 /// Resolves `relative` inside `root`, rejecting anything that escapes it (`..`, symlinks).
-fn resolve_inside(root: &Path, relative: &str) -> Result<PathBuf, String> {
+pub(crate) fn resolve_inside(root: &Path, relative: &str) -> Result<PathBuf, String> {
     let root = root.canonicalize().map_err(|e| e.to_string())?;
     let path = root
         .join(relative)
@@ -74,8 +77,12 @@ fn ensure_executable(path: &Path) -> Result<(), String> {
         .permissions();
     if perms.mode() & 0o111 == 0 {
         perms.set_mode(perms.mode() | 0o755);
-        std::fs::set_permissions(path, perms)
-            .map_err(|e| format!("{} is not executable and cannot be made so: {e}", path.display()))?;
+        std::fs::set_permissions(path, perms).map_err(|e| {
+            format!(
+                "{} is not executable and cannot be made so: {e}",
+                path.display()
+            )
+        })?;
     }
     Ok(())
 }
@@ -239,7 +246,11 @@ pub fn engine_save_profile<R: Runtime>(
         // the path must come from the file dialog: picked in this session or already saved
         // (a profile may be a copy of another one, e.g. Lc0 with a different net)
         let picked = approved.0.lock().unwrap().contains(&profile.path);
-        if !picked && !profiles.iter().any(|p| p.external && p.path == profile.path) {
+        if !picked
+            && !profiles
+                .iter()
+                .any(|p| p.external && p.path == profile.path)
+        {
             return Err(
                 "an engine outside the Engines folder can only be added with the file picker"
                     .to_string(),
@@ -416,7 +427,11 @@ pub fn engine_spawn<R: Runtime>(
                 CommandEvent::Stderr(bytes) => EngineEvent::Stderr(text(bytes)),
                 CommandEvent::Error(err) => EngineEvent::Error(err),
                 CommandEvent::Terminated(payload) => {
-                    app.state::<EngineProcesses>().0.lock().unwrap().remove(&pid);
+                    app.state::<EngineProcesses>()
+                        .0
+                        .lock()
+                        .unwrap()
+                        .remove(&pid);
                     EngineEvent::Terminated {
                         code: payload.code,
                         signal: payload.signal,

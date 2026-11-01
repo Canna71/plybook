@@ -1,0 +1,252 @@
+.reader_view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .reader-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-bottom: 1px solid rgba(127, 127, 127, 0.3);
+        flex-wrap: wrap;
+
+        .reader-title {
+            margin-right: auto;
+        }
+
+        .page-input {
+            width: 5em;
+        }
+    }
+
+    .reader-body {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+    }
+
+    .reader-pages {
+        flex: 1;
+        overflow: auto;
+        padding: 16px;
+        background: rgba(127, 127, 127, 0.15);
+
+        .reader-page {
+            position: relative;
+            margin: 0 auto 16px;
+            background: white;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+
+            .reader-canvas {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            // pdf.js text layer (after web/pdf_viewer.css): invisible text, selectable
+            .textLayer {
+                --scale-round-x: 1px;
+                --scale-round-y: 1px;
+                --min-font-size: 1;
+                --text-scale-factor: calc(
+                    var(--total-scale-factor) * var(--min-font-size)
+                );
+                --min-font-size-inv: calc(1 / var(--min-font-size));
+                position: absolute;
+                inset: 0;
+                overflow: clip;
+                line-height: 1;
+                text-align: initial;
+                letter-spacing: normal;
+                word-spacing: normal;
+                text-size-adjust: none;
+                forced-color-adjust: none;
+                transform-origin: 0 0;
+                z-index: 0;
+                // App.scss turns selection off everywhere; WebKit reads the prefixed property
+                -webkit-user-select: text;
+                user-select: text;
+
+                :is(span, br) {
+                    color: transparent;
+                    position: absolute;
+                    white-space: pre;
+                    cursor: text;
+                    transform-origin: 0% 0%;
+                    -webkit-user-select: text;
+                    user-select: text;
+                }
+
+                > :not(.markedContent),
+                .markedContent span:not(.markedContent) {
+                    z-index: 1;
+                    --font-height: 0;
+                    font-size: calc(
+                        var(--text-scale-factor) * var(--font-height)
+                    );
+                    --scale-x: 1;
+                    --rotate: 0deg;
+                    transform: rotate(var(--rotate)) scaleX(var(--scale-x))
+                        scale(var(--min-font-size-inv));
+                }
+
+                .markedContent {
+                    display: contents;
+                }
+
+                ::selection {
+                    background: hsla(217, 71%, 53%, 0.3);
+                    color: transparent;
+                }
+
+                br::selection {
+                    background: transparent;
+                }
+
+                .endOfContent {
+                    display: block;
+                    position: absolute;
+                    inset: 100% 0 0;
+                    z-index: 0;
+                    cursor: default;
+                    -webkit-user-select: none;
+                    user-select: none;
+                }
+
+                &.selecting .endOfContent {
+                    top: 0;
+                }
+            }
+
+            .reader-diagram {
+                z-index: 2;
+                position: absolute;
+                border: 2px solid hsla(171, 100%, 41%, 0.8);
+                border-radius: 3px;
+                background: transparent;
+                cursor: pointer;
+                padding: 0;
+
+                &:hover {
+                    background: hsla(171, 100%, 41%, 0.15);
+                }
+
+                // a corner mark: this diagram has notes
+                &.has-notes::after {
+                    content: "";
+                    position: absolute;
+                    top: -2px;
+                    right: -2px;
+                    border-style: solid;
+                    border-width: 0 14px 14px 0;
+                    border-color: transparent hsl(204, 86%, 53%) transparent
+                        transparent;
+                }
+
+                &.unsure {
+                    border-color: hsla(36, 100%, 50%, 0.8);
+                    border-style: dashed;
+                }
+            }
+        }
+    }
+
+    // dragged to size the notes column (F.24); the line shows on hover and while dragging
+    .reader-divider {
+        flex: 0 0 6px;
+        cursor: ew-resize;
+        touch-action: none;
+        border-left: 1px solid var(--rc-border);
+        transition: background 0.15s;
+
+        &:hover,
+        &:active {
+            background: var(--rc-accent);
+        }
+    }
+
+    .reader-side {
+        // wide enough for the notes' board and moves beside the page; the divider sets
+        // flex-basis once dragged
+        flex: 0 0 clamp(340px, 40%, 600px);
+        min-width: 0;
+        padding: 12px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .reader-board {
+            width: 100%;
+            aspect-ratio: 1;
+        }
+
+        .reader-notes-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            strong {
+                margin-right: auto;
+            }
+        }
+
+        .reader-notes {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reader-hint,
+        .reader-matches {
+            font-size: 0.9em;
+            opacity: 0.85;
+        }
+
+        .reader-matches a {
+            cursor: pointer;
+        }
+
+        .reader-text-moves {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+
+            span {
+                flex: 1;
+            }
+        }
+
+        .reader-selection {
+            border: 1px solid rgba(127, 127, 127, 0.3);
+            border-radius: 4px;
+            padding: 6px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .reader-selection-moves {
+                font-size: 0.9em;
+            }
+
+            .buttons {
+                margin-bottom: 0;
+            }
+        }
+
+        .reader-quote {
+            font-size: 0.85em;
+            font-style: italic;
+            opacity: 0.8;
+            max-height: 8em;
+            overflow: auto;
+        }
+
+        .reader-warning {
+            font-size: 0.85em;
+            color: hsl(36, 100%, 45%);
+        }
+    }
+}

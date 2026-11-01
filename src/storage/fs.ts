@@ -60,14 +60,21 @@ export async function writeConfigFile<T>(subPath: string, data: T) {
     });
 }
 
-export async function writeDataFile(subPath: string, data: string) {
-    // return writeTextFile(subPath, data, {
-    //     baseDir: BaseDirectory.AppLocalData
-    // });
-    return writeFile(subPath, new TextEncoder().encode(data), {
+/** Writes text, or bytes as they are (a PDF, say). */
+export async function writeDataFile(
+    subPath: string,
+    data: string | Uint8Array,
+) {
+    const bytes =
+        typeof data === "string" ? new TextEncoder().encode(data) : data;
+    return writeFile(subPath, bytes, {
         baseDir: BaseDirectory.AppLocalData,
     });
 }
+
+/** The bytes of a file in the app's data folder. */
+export const readDataBytes = (subPath: string) =>
+    readFile(subPath, { baseDir: BaseDirectory.AppLocalData });
 
 async function ensureFolderExists(folderPath: string): Promise<void> {
     try {
@@ -115,37 +122,31 @@ export async function listAppData(path: string) {
     });
 }
 
-export async function renameOrCreateDataFile(
-    oldName: string | undefined,
-    newName: string,
-    content?: string,
-) {
-    const path = basePath(oldName || newName);
-    const oldExt = oldName ? fileOrFolderExtension(oldName) : "";
-    const newExt = fileOrFolderExtension(newName);
-    if (oldExt && !newExt) {
-        newName = `${newName}.${oldExt}`;
-    }
-    const newFullPath = `${path}${sep()}${newName}`;
+/** Renames a file or folder in its folder to `newName` (the whole name, see `renamedName`); never
+ * over another one. The new path. */
+export async function renameDataFile(path: string, newName: string) {
+    if (!newName || newName.startsWith(".")) throw new Error("No name given");
+    const newPath = `${basePath(path)}${sep()}${newName}`;
+    if (newPath === path) return path;
+    // a different case of the same name is the same file on macOS and Windows
     if (
-        oldName &&
-        (await exists(oldName, { baseDir: BaseDirectory.AppLocalData }))
+        newPath.toLowerCase() !== path.toLowerCase() &&
+        (await exists(newPath, { baseDir: BaseDirectory.AppLocalData }))
     ) {
-        await rename(oldName, newFullPath, {
-            oldPathBaseDir: BaseDirectory.AppLocalData,
-            newPathBaseDir: BaseDirectory.AppLocalData,
-        });
-    } else {
-        await writeDataFile(newFullPath, content || "");
-        return newFullPath;
+        throw new Error(`“${newName}” already exists`);
     }
+    await rename(path, newPath, {
+        oldPathBaseDir: BaseDirectory.AppLocalData,
+        newPathBaseDir: BaseDirectory.AppLocalData,
+    });
+    return newPath;
 }
 
 // create a new file with a tentative name, appending progressive numbers if the file already exists
 export async function createNewDataFile(
     folder: string,
     name: string,
-    content: string,
+    content: string | Uint8Array,
 ) {
     let newName = name;
     let i = 1;
@@ -161,6 +162,27 @@ export async function createNewDataFile(
     }
 
     await writeDataFile(fullPath, content);
+    return fullPath;
+}
+
+/** Moves a file or folder into another Library folder, as "name (1)" if the name is taken
+ * there; nothing is overwritten. The new path. */
+export async function moveDataFile(path: string, folder: string) {
+    const name = baseName(path);
+    let newName = name;
+    let i = 1;
+    let fullPath = "";
+    while (
+        ((fullPath = await join(folder, newName)),
+        await exists(fullPath, { baseDir: BaseDirectory.AppLocalData }))
+    ) {
+        newName = createIncrementedName(name, newName, i);
+        i++;
+    }
+    await rename(path, fullPath, {
+        oldPathBaseDir: BaseDirectory.AppLocalData,
+        newPathBaseDir: BaseDirectory.AppLocalData,
+    });
     return fullPath;
 }
 
@@ -230,41 +252,10 @@ export function basePath(name: string) {
     return name.split(sep()).slice(0, -1).join(sep());
 }
 
-export function fileOrFolderExtension(name: string) {
-    const base = baseName(name);
-    const dotIndex = base.lastIndexOf(".");
-    return dotIndex !== -1 ? base.substring(dotIndex + 1) : "";
-}
-
 export function getDefaultStudyContent() {
     return "[]";
 }
 
 export async function openDataPath(path: string) {
     return invoke("open_library_path", { path });
-}
-
-export async function saveGameToHistory(pgn: string) {
-    const historyPath = await join(await appLocalDataDir(), HISTORY_FOLDER);
-    // read the timestamp from the pgn tag  [Timestamp "2021.09.01 12:00:00"]
-
-    const timestamp =
-        pgn.match(/\[Timestamp "([^"]+)"\]/)?.[1] ||
-        new Date().toISOString().replace(/T/, " ").replace(/\..+/, "");
-
-    log.debug("saveGameToHistory", timestamp);
-
-    // create a new file with the timestamp as name and the path as yyyy/MM/dd
-    const date = timestamp.split("T")[0];
-    const [year, month, day] = date.split("-");
-    const yearFolder = await join(historyPath, year);
-    await ensureFolderExists(yearFolder);
-
-    const monthFolder = await join(yearFolder, month);
-    await ensureFolderExists(monthFolder);
-
-    const dayFolder = await join(monthFolder, day);
-    await ensureFolderExists(dayFolder);
-
-    return createNewDataFile(dayFolder, `${timestamp}.pgn`, pgn);
 }

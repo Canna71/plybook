@@ -1,21 +1,26 @@
 {
-  "name": "rechess",
+  "name": "plybook",
   "version": "0.1.0",
   "description": "",
   "type": "module",
   "scripts": {
-    "start": "vite",
-    "dev": "vite",
-    "build": "vite build",
+    "start": "node tools/copy-pdfjs-assets.mjs && vite",
+    "dev": "node tools/copy-pdfjs-assets.mjs && vite",
+    "build": "node tools/copy-pdfjs-assets.mjs && vite build",
     "serve": "vite preview",
     "tauri": "tauri",
+    "build:mac": "test -n \"$APPLE_SIGNING_IDENTITY\" || { echo 'Set APPLE_SIGNING_IDENTITY (security find-identity -v -p codesigning), see README'; exit 1; } && tauri build --bundles app",
+    "bump": "node tools/bump-version.mjs",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run",
+    "eval:reasons": "vitest run --config vitest.eval.config.ts"
   },
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "dependencies": {
     "@floating-ui/dom": "^1.6.12",
     "@neodrag/solid": "^2.2.0",
+    "@scoriiu/fenshot": "0.1.5",
     "@solidjs/router": "^0.15.2",
     "@tabler/icons-solidjs": "^3.23.0",
     "@tauri-apps/api": "^2",
@@ -23,6 +28,7 @@
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "@tauri-apps/plugin-fs": "^2.0.0",
     "@tauri-apps/plugin-process": "^2.2.0",
+    "@tauri-apps/plugin-updater": "^2.14.0",
     "@tauri-apps/plugin-window-state": "^2.2.0",
     "animate.css": "^4.1.1",
     "anylogger": "^1.0.11",
@@ -31,7 +37,10 @@
     "chessops": "^0.14.1",
     "dompurify": "3.2.4",
     "es-toolkit": "^1.27.0",
+    "gifenc": "1.0.3",
     "loadcss": "^0.0.2",
+    "onnxruntime-web": "1.26.0",
+    "pdfjs-dist": "6.4.299",
     "showdown": "^2.1.0",
     "solid-collapse": "^1.1.0",
     "solid-contextmenu": "^0.0.2",
@@ -45,16 +54,19 @@
   "devDependencies": {
     "@eslint/js": "9.17.0",
     "@tauri-apps/cli": "^2",
+    "@types/pngjs": "6.0.5",
     "@types/showdown": "^2.0.6",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "globals": "^15.14.0",
+    "pngjs": "7.0.0",
     "prettier": "3.4.2",
     "sass": "^1.80.3",
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.18.2",
     "vite": "^5.3.1",
-    "vite-plugin-solid": "^2.8.0"
+    "vite-plugin-solid": "^2.8.0",
+    "vitest": "2.1.9"
   }
 }

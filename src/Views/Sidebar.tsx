@@ -1,68 +1,155 @@
-import FileBrowser, {
-    FileBrowserFile,
-} from "../components/sidebar/FileBrowser";
-import { useNavigate } from "@solidjs/router";
+// The app's sidebar (UX overhaul, step 2): screens grouped by purpose (models/navigation.ts),
+// the current one highlighted, a search entry for the command palette, and a toggle that
+// collapses everything to icons. (Files are in the Library screen since step 7.)
 
-const Sidebar = () => {
-    // const [selectedFile, setSelectedFile] = createSignal<FileBrowserFile | undefined>(undefined);
+import { Component, For, JSX, Show } from "solid-js";
+import { A, useLocation } from "@solidjs/router";
+import {
+    IconArrowLeft,
+    IconArrowRight,
+    IconBooks,
+    IconChessKnight,
+    IconDatabase,
+    IconFolders,
+    IconHelp,
+    IconHistory,
+    IconHome,
+    IconLayoutBoard,
+    IconWorld,
+    IconLayoutSidebarLeftCollapse,
+    IconLayoutSidebarLeftExpand,
+    IconPuzzle,
+    IconRoute,
+    IconScan,
+    IconSearch,
+    IconSettings,
+    IconSwords,
+} from "@tabler/icons-solidjs";
+import {
+    activeNavItem,
+    HELP_ITEM,
+    NAVIGATION,
+    NavItem,
+    SETTINGS_ITEM,
+} from "../models/navigation";
+import { getSettingValue, setSettingValue } from "../models/settings";
+import { openCommandPalette } from "../components/shell/CommandPalette";
+import { useNavHistory } from "../components/shell/navHistory";
+import Logo from "../components/shell/Logo";
+import "./Sidebar.scss";
 
-    const navigate = useNavigate();
+const ICONS: Record<string, () => JSX.Element> = {
+    home: () => <IconHome />,
+    analysis: () => <IconChessKnight />,
+    library: () => <IconFolders />,
+    book: () => <IconBooks />,
+    repertoire: () => <IconRoute />,
+    puzzle: () => <IconPuzzle />,
+    play: () => <IconSwords />,
+    history: () => <IconHistory />,
+    database: () => <IconDatabase />,
+    scan: () => <IconScan />,
+    editor: () => <IconLayoutBoard />,
+    sites: () => <IconWorld />,
+    help: () => <IconHelp />,
+    settings: () => <IconSettings />,
+};
 
-    const onNodeClick = (file: FileBrowserFile) => {
-        if (file && !file.isDirectory) {
-            if (file.name.endsWith(".pgn")) {
-                navigate(
-                    `/game?path=${encodeURIComponent(file.path)}&source=library`,
-                );
-            }
-        }
-        if (file && file.isDirectory) {
-            navigate(`/library?path=${encodeURIComponent(file.path)}`);
-        }
-    };
+const COLLAPSED = "layout.sidebarCollapsed";
+
+export const sidebarCollapsed = () => getSettingValue(COLLAPSED, false);
+
+const isMac = navigator.platform.toUpperCase().includes("MAC");
+
+const Sidebar: Component = () => {
+    const location = useLocation();
+    const nav = useNavHistory();
+    const collapsed = sidebarCollapsed;
+    const active = () => activeNavItem(location.pathname)?.id;
+
+    const link = (item: NavItem) => (
+        <A
+            href={item.route}
+            class="nav-item"
+            classList={{ "is-active": active() === item.id }}
+            title={collapsed() ? item.label : undefined}
+        >
+            {ICONS[item.icon]?.()}
+            <span class="nav-label">{item.label}</span>
+        </A>
+    );
 
     return (
-        <>
-            <aside class="menu">
-                <ul class="menu-list">
-                    <li>
-                        <a href="/">Home</a>
-                    </li>
-                    {/* <li><a href="/boardeditor">Board Editor</a></li> */}
-                    {/* <li><a href="/game">Pgn Edit</a></li> */}
-                    <li>
-                        <a href="/play">Play Engine</a>
-                    </li>
-                    <li>
-                        <a href="/puzzles">Puzzles</a>
-                    </li>
-                    <li>
-                        <a href="/history">History</a>
-                    </li>
-                    {/* <li><a href="/puzzle?path=/Users/gcannata/Library/Application Support/rechess/Library/pgn/Four Pieces.pgn">Puzzle</a></li> */}
-                    {/* <li><a href="/analysis">Analysis</a></li> */}
-                    <li>
-                        <a href="/settings">Settings</a>
-                    </li>
-                    <li>
-                        <a href="/db">DB Test</a>
-                    </li>
-                </ul>
-                <p class="menu-label">Library</p>
-                <ul class="menu-list"></ul>
-            </aside>
+        <nav class="app-sidebar" classList={{ collapsed: collapsed() }}>
+            <div class="nav-top">
+                <A href="/" class="nav-brand" title="Plybook">
+                    <Logo />
+                    <span class="nav-label">Plybook</span>
+                </A>
+                {/* F.25: back and forward between the places visited */}
+                <span class="nav-history">
+                    <button
+                        title={`Back (${nav.keys.back})`}
+                        disabled={!nav.canBack()}
+                        onClick={nav.back}
+                    >
+                        <IconArrowLeft />
+                    </button>
+                    <button
+                        title={`Forward (${nav.keys.forward})`}
+                        disabled={!nav.canForward()}
+                        onClick={nav.forward}
+                    >
+                        <IconArrowRight />
+                    </button>
+                </span>
+            </div>
+            <button
+                class="nav-item nav-search"
+                title={`Go to… (${isMac ? "⌘" : "Ctrl+"}K)`}
+                onClick={openCommandPalette}
+            >
+                <IconSearch />
+                <span class="nav-label">Go to…</span>
+                <kbd class="nav-label">{isMac ? "⌘K" : "Ctrl K"}</kbd>
+            </button>
 
-            <aside>
-                <FileBrowser
-                    onNodeClick={onNodeClick}
-                    rootFolder={{
-                        path: `Library`,
-                        name: "Library",
-                        isDirectory: true,
-                    }}
-                ></FileBrowser>
-            </aside>
-        </>
+            <div class="nav-groups">
+                <For each={NAVIGATION}>
+                    {(group) => (
+                        <div class="nav-group">
+                            <Show when={group.label}>
+                                <div class="nav-group-label">{group.label}</div>
+                            </Show>
+                            <For each={group.items}>{link}</For>
+                        </div>
+                    )}
+                </For>
+            </div>
+
+            <div class="nav-footer">
+                {link(HELP_ITEM)}
+                {link(SETTINGS_ITEM)}
+                <button
+                    class="nav-item"
+                    title={
+                        collapsed()
+                            ? "Expand the sidebar"
+                            : "Collapse the sidebar"
+                    }
+                    onClick={() =>
+                        void setSettingValue(COLLAPSED, !collapsed())
+                    }
+                >
+                    {collapsed() ? (
+                        <IconLayoutSidebarLeftExpand />
+                    ) : (
+                        <IconLayoutSidebarLeftCollapse />
+                    )}
+                    <span class="nav-label">Collapse</span>
+                </button>
+            </div>
+        </nav>
     );
 };
 

@@ -8,10 +8,10 @@
     overflow: hidden;
 
     .sidebar {
-        padding: 8px;
-        overflow: auto;
-        min-width: 100px;
+        overflow: hidden;
+        min-width: 52px;
         max-width: 500px;
+        border-right: 1px solid var(--rc-border);
     }
 
     .main-content {
