@@ -36,6 +36,18 @@ release or Windows, below.
       went wrong on this screen" with Try again, and the sidebar still works. Tell me what
       the message says.
 
+## Pasted lesson hang, F.46 (branch feature/paste-hang)
+
+- [ ] **The lesson opens**: paste the Tarrasch lesson's JSON again: it opens in Analysis
+      facing Black, and 11.Qxc6+ shows its arrows to e8 and a8. (Seen in the dev app.)
+- [ ] **Adding a comment still opens it for typing**: on a move, ⋯ → "Add a comment to
+      this move", and right-click a move → add a comment after (and before): the new box has
+      the caret, typing goes there, clicking away keeps the text. Also on a move that
+      already has arrows only (11.Qxc6+ in the lesson). Couldn't be checked with the dev
+      driver.
+- [ ] **Arrow keys after opening it**: with the lesson open, ← and → step through the moves
+      (no comment box holds the focus).
+
 ## Piece values with Stockfish 19, F.45 (branch feature/explain-activity)
 
 - [ ] **They are back**: in Analysis with the engine on, step through a game of yours: now

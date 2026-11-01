@@ -11,6 +11,7 @@ import { useContextMenu } from "../common/contextmenu";
 import { Dynamic } from "solid-js/web";
 import { range } from "es-toolkit";
 import { GameContext } from "./GameContext";
+import { focusNewComment } from "./Comments";
 import { useFenTooltip } from "./useTooltip";
 import { PlyFan } from "../common/PlyFan";
 import { Path } from "../../models/pgn";
@@ -467,6 +468,7 @@ export const Ply: Component<PlyProps> = ({ line, color, tooltipEnabled }) => {
 
     const onAddComment = (before: boolean) => {
         const ng = game()?.insertComment(plyData!.path, "", before);
+        focusNewComment(plyData!.path);
         setGame(ng);
     };
 

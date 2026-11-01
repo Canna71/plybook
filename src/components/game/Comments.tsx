@@ -25,6 +25,20 @@ const squareSubst = `<span class="square" data-square="$1">$1</span>`;
 export const moveRegex = /(\d+\.+\s*)([a-h][1-8][+#]?)/g;
 const moveSubst = `<span class="move" data-move="$2">$&</span>`;
 
+/**
+ * Where a comment was just added, empty, for typing ("Add a comment"): that box takes the
+ * focus. Not every empty one: a comment of arrows or circles alone shows empty too, and
+ * several taking the focus in turn, each blur saving the game, hung the app (F.46). Kept for a
+ * moment, as the moves list is made again more than once after an edit (the game, then its PGN).
+ */
+let newComment: Path | undefined;
+let newCommentTimer: ReturnType<typeof setTimeout> | undefined;
+export function focusNewComment(path: Path) {
+    newComment = path;
+    clearTimeout(newCommentTimer);
+    newCommentTimer = setTimeout(() => (newComment = undefined), 1000);
+}
+
 export type CommentsViewProps = {
     comments: Accessor<string>;
     path: Path;
@@ -99,6 +113,7 @@ export const CommentsView: Component<CommentsViewProps> = ({
     const onBlur = (e: Event) => {
         const target = e.target as HTMLElement;
         const text = target.textContent || "";
+        if (text === (comments() || "")) return;
         const ng = game()?.updateComment(path, index, text, starting);
         setGame(ng);
     };
@@ -111,11 +126,13 @@ export const CommentsView: Component<CommentsViewProps> = ({
         }
     };
 
-    // focuses the element if it's empty and editable
+    // the comment just added, empty and editable, opens for typing; "before" a move puts it
+    // with the move before
     createEffect(() => {
-        if (editable() && !comments()) {
-            ref?.focus();
-        }
+        if (!editable() || comments() || !newComment) return;
+        if (!path.equals(newComment) && !path.equals(newComment.previous()))
+            return;
+        ref?.focus();
     });
 
     const onDelete = () => {

@@ -1209,6 +1209,14 @@ Third round, triaged: bugs first, then requests, then research.
   owner's games: at the end of the answer's line, the worse one, the mover's pieces come out
   more active as often as not (10…d5: 35 squares against 32; values share 0.56 against
   0.49; 9.Re1: 0.60 against 0.44). Saying it would mislead; a5 and Bd6 stay without a reason.
+- [x] **F.46 [Bug] Pasting a Chessable lesson hung the app** (owner, 2026-11-01: NN – Tarrasch,
+  Munich 1932, nothing in the log). The conversion was fine (3 ms); the moves list was not.
+  A comment of arrows or circles alone shows as an empty comment, and every empty comment
+  took the focus, to open a new one for typing: with several, each took it from the last,
+  whose blur saved the game, which drew the list again, for ever. Done
+  (`feature/paste-hang`): only the comment just added takes the focus (`focusNewComment`
+  in `Comments.tsx`, from "Add a comment" in the menu and on a move), and a blur that
+  changed nothing saves nothing. Seen in the dev app: the lesson opens, its arrows show.
 
 ## Last
 
