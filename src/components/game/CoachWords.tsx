@@ -4,14 +4,15 @@
 
 import { Accessor, Component, createSignal, Show } from "solid-js";
 import { modelStatus, rephrase } from "../../storage/model";
-import { rewordingProblems } from "../../models/coach";
+import { coachBrief, rewordingProblems } from "../../models/coach";
+import type { MoveExplanation } from "../../models/explain";
 import { makeErrorToast } from "../common/Toast";
 import BoardText from "./BoardText";
 import "./CoachWords.scss";
 
 const CoachWords: Component<{
-    /** The computed explanation */
-    text: string;
+    /** The computed explanation, with its evidence */
+    explanation: MoveExplanation;
     /** The positions it talks about, for BoardText */
     fens: Accessor<string[]>;
 }> = (props) => {
@@ -20,12 +21,14 @@ const CoachWords: Component<{
         text: string;
     }>();
     const [coaching, setCoaching] = createSignal(false);
+    // the model gets the evidence too (F.37d), and is checked against all of it
+    const brief = () => coachBrief(props.explanation);
     const coach = async () => {
-        const from = props.text;
+        const from = brief();
         setCoaching(true);
         try {
             const text = await rephrase(from);
-            // moves, squares or claims the explanation does not make: the computed text stays
+            // moves, squares or claims the evidence does not have: the computed text stays
             const added = rewordingProblems(from, text);
             if (added.length) {
                 makeErrorToast(
@@ -42,11 +45,11 @@ const CoachWords: Component<{
     };
     const coachText = () => {
         const c = coached();
-        return c && c.from === props.text ? c.text : undefined;
+        return c && c.from === brief() ? c.text : undefined;
     };
 
     return (
-        <Show when={modelStatus()?.provider && props.text}>
+        <Show when={modelStatus()?.provider && props.explanation.text.length}>
             <Show
                 when={coachText()}
                 fallback={
@@ -61,6 +64,9 @@ const CoachWords: Component<{
             >
                 {(text) => (
                     <div class="coach-words">
+                        <span class="coach-words-label">
+                            The coach's reading
+                        </span>
                         <BoardText text={text()} fens={props.fens} />
                     </div>
                 )}

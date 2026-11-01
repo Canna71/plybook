@@ -1155,8 +1155,13 @@ Third round, triaged: bugs first, then requests, then research.
     13.exd6); a file opened on a king in the centre by the better line (17.g3's Rf1). Left:
     positions with both kings castled (10…d5's a5, 11…dxe4's Bd6): pawn structure and piece
     activity compared, next.
-  - [ ] **F.37d The coach sees the evidence**: the model gets the lines and facts, may say what
+  - [x] **F.37d The coach sees the evidence**: the model gets the lines and facts, may say what
     they show, its moves and squares checked against them, labelled as the coach's reading.
+    Done (`feature/explain-settled`): `coachBrief` (tested) sends the explanation, its
+    evidence with each item's basis and the engine's lines in SAN; the system prompt in
+    `model.rs` asks for what they show (not a rewording), readings said as likely; the check
+    runs against the whole brief; "The coach's reading" above the text. Not yet tried with
+    a model (needs the owner's key).
 - [x] **F.38 PDF reader: a table of contents** to jump to chapters. From the PDF's outline
   where it has one (pdf.js `getOutline`); scanned books often have none, so perhaps the
   user's own bookmarks per book as a fallback. Done (`feature/coach-history-toc`): neither

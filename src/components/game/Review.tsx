@@ -438,7 +438,7 @@ const Review: Component = () => {
                                                     fens={() => momentFens(m)}
                                                 />
                                                 <CoachWords
-                                                    text={x().text.join(" ")}
+                                                    explanation={x()}
                                                     fens={() => momentFens(m)}
                                                 />
                                                 <ExplanationEvidence

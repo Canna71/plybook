@@ -36,6 +36,21 @@ release or Windows, below.
       went wrong on this screen" with Try again, and the sidebar still works. Tell me what
       the message says.
 
+## Explanations that explain, F.37 (branch feature/explain-settled)
+
+- [ ] **Your 1-0 game in History**, Game review, key moments: 9.Re1 says Black can trade
+      queens (Qxd4) while Black's king is in the centre and that e5 keeps them on; 12.e5 says
+      "After Qxe3 Bxe3 dxe5: Black wins material (+1)" and "Better was Qh3: it stops Qxe3";
+      none says "attacks the knight with a cheaper piece" for a pawn that is taken back at
+      once. Do these read as reasons now? Note any that is wrong.
+- [ ] **The coach, F.37d** (with a model set up, Settings → Explanations): "Say it as a
+      coach" on those moments gives a paragraph under "The coach's reading" that explains
+      (what the opponent gets, what the better move keeps), not the same sentences reworded.
+      Try claude-haiku-5-5 and a bigger model. Note when it is refused ("added things of its
+      own") and with what.
+- [ ] **Nothing worse elsewhere**: a blunder that hangs a piece still says so with the
+      material ("After Nxc5: White wins material (+3)").
+
 ## Coach in the review, History, Contents (branch feature/coach-history-toc)
 
 - [ ] **Coach in the review, F.36**: with an explanation model set up, open a key moment of a

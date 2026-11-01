@@ -75,9 +75,11 @@ Rules that keep it honest:
 - **History matters.** The engine searches with the game's moves, so it counts repetitions
   (P2.4e); a move that repeats the position a third time says so. Where the scores may come
   from a search without the game (an older review), a repeated position is noted.
-- **A model only rewords**, and its wording is dropped if it names a move or square, or makes a
-  claim (fork, pin, mate, wins, …), that the computed text does not. Grounding does not make a
-  model correct; the check only catches additions.
+- **A model speaks only from the evidence** (P2.4b; since F.37d it gets the evidence, not only
+  the sentences: `coachBrief` in `models/coach.ts`, the facts, the engine's lines in SAN, the
+  readings marked as not certain). Its text is dropped if it names a move or square, or makes a
+  claim (fork, pin, mate, wins, …), that none of that has, and it is shown as "The coach's
+  reading". Grounding does not make a model correct; the check only catches additions.
 
 ## Tests
 

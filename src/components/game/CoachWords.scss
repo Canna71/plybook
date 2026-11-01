@@ -4,6 +4,14 @@
     padding-left: 0.6em;
     border-left: 2px solid var(--rc-border);
     font-style: italic;
+
+    // a model's words, from the evidence (F.37d): said as such
+    .coach-words-label {
+        display: block;
+        font-style: normal;
+        font-size: var(--rc-text-xs);
+        color: var(--rc-text-muted);
+    }
 }
 
 .coach-words-button {
