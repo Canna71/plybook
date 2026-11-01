@@ -8,6 +8,18 @@ when it isn't, and remove ticked items once their roadmap entry says "confirmed 
 Everything listed before 2026-11-01 was confirmed by the owner that day, except what needs a
 release or Windows, below.
 
+## Owner feedback, round 3: bugs (branch feature/feedback-round-3)
+
+- [ ] **Moves in explanations, F.31**: in a review's key moment like "Bb5 is a blunder … Only
+      e5 … Better was e5", hovering either e5 draws the same side's arrow (the side that
+      played Bb5).
+- [ ] **Promotion, F.32**: promote in a puzzle where you play Black (board flipped), and in
+      Play: the four pieces stand over the promotion square, queen next to it; a click
+      promotes. (Seen in Analysis, flipped and not.)
+- [ ] **Review after a game, F.33**: finish a game against the engine, open Game review:
+      clicking a move in the moves list, a key moment or the graph goes to it. During a game,
+      clicks in the moves list still do nothing.
+
 ## App auto-update, X.1 (branch feature/auto-update)
 
 Needs the one-time setup in the README (Releases and updates): the key, the secrets, a public

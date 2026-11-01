@@ -221,10 +221,12 @@ const Moves: Component = () => {
         currentPathSignal: [, setCurrentPath],
         gameSignal: [game],
         playingEngine,
+        isPlayingOnSignal: [isPlayingOn],
     } = useContext(GameContext)!;
 
     const onClick = (e: Event) => {
-        if (playingEngine()) return;
+        // during a game against the engine; once it is over, its moves can be looked at
+        if (playingEngine() && isPlayingOn()) return;
         const target = e.target as HTMLElement;
 
         // find the closest anchestor with data-path attribute

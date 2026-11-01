@@ -133,6 +133,7 @@ const BoardArea: Component<BoardAreaProps> = (props) => {
                             <PiecesPopup
                                 chessBoardDiv={chessBoardDiv!}
                                 promotingCell={props.promotionCell}
+                                orientation={orientation}
                                 onSelected={props.onPromotionSelected}
                                 color={props.turn}
                             />

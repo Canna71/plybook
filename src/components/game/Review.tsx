@@ -73,6 +73,7 @@ const Review: Component = () => {
         currentPathSignal: [currentPath, setCurrentPath],
         gameSignal: [game],
         playingEngine,
+        isPlayingOnSignal: [isPlayingOn],
     } = useContext(GameContext)!;
 
     const nodes = createMemo(() => {
@@ -129,7 +130,7 @@ const Review: Component = () => {
     });
 
     const goTo = (path: Path) => {
-        if (!playingEngine()) setCurrentPath(path);
+        if (!(playingEngine() && isPlayingOn())) setCurrentPath(path);
     };
 
     const count = (color: Color, cls: MoveClass) =>

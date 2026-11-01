@@ -1054,19 +1054,27 @@ Second round, in the order given; bugs first when working through it.
 
 Third round, triaged: bugs first, then requests, then research.
 
-- [ ] **F.31 [Bug] A move in an explanation is read for the wrong side.** In a review's key
+- [x] **F.31 [Bug] A move in an explanation is read for the wrong side.** In a review's key
   moment ("5. Bb5 is a blunder … Only e5 kept the advantage … Better was e5"), the first e5
   is hovered as Black's e7–e5 and the second as White's e4–e5. Cause: `boardText`
   (`models/boardtext.ts`) reads each move after the last one found, to follow lines ("After
   Nxf7 Qe7"), so "e5" after "Bb5" is tried as Black's reply first. Fix: continue from the
   last move only when the moves follow each other in the text (a line), and otherwise read
-  them in the positions given; a test with this sentence.
-- [ ] **F.32 [Bug] The promotion chooser is offset from the promotion square** (seen in
-  puzzles; check Analysis, Play and the reader's notes too). `PiecesPopup` is placed in
-  `BoardArea`; probably a position computed against the wrong box (the board moved by the
-  layout, as in the chessground gotcha).
-- [ ] **F.33 [Bug] Game review: clicking a move does not go to it** (after a game against the
-  engine, maybe elsewhere); ← and → work. Check the review's moves and the move list.
+  them in the positions given; a test with this sentence. Done (`feature/feedback-round-3`):
+  a move continues a line only when nothing but spaces and move numbers stand before it.
+- [x] **F.32 [Bug] The promotion chooser is offset from the promotion square** (seen in
+  puzzles). `PiecesPopup` ignored the board's orientation (a board flipped for Black put it
+  on the mirrored file and the wrong edge) and measured the container, not chessground's
+  board. Done (`feature/feedback-round-3`): placed from `cg-board`'s box and the
+  orientation, a column over the square running into the board, queen next to the square,
+  without floating-ui. Seen in the dev app: White on g8, Black on b1, flipped and not.
+- [x] **F.33 [Bug] Game review: clicking a move does not go to it** (after a game against the
+  engine); ← and → work. The move list and the review ignored clicks on the whole Play
+  screen (`playingEngine`), while the keys checked for a game in progress. Done
+  (`feature/feedback-round-3`): clicks too are off only while the game is on.
+- [ ] **F.39 [Bug] The tablebase line keeps an earlier position's moves.** Seen in Analysis:
+  after pasting a new position and promoting, "About this position" still listed g8=Q, Kb1…
+  of the position pasted before.
 - [ ] **F.34 PDF reader: the starting-position editor fits without its own scrolling.** It sits
   in a box with its own scroll bar inside the scrolling notes panel, so the board is never
   wholly visible. While editing, the editor takes the height it needs and only the panel

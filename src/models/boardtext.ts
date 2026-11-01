@@ -39,6 +39,9 @@ export function boardText(text: string, fens: string[]): TextPiece[] {
         // "e4" inside a word or a number ("1e4") is not a square
         if (at > 0 && /[\w-]/.test(text[at - 1]) && !san?.startsWith("O-O"))
             continue;
+        // a line goes on only through moves next to each other ("Nxf7 Qe7", "5. e5 cxd4"):
+        // in "Bb5 is a blunder. Only e5 …" e5 is played instead of Bb5, not after it
+        if (!/^[\s\d.…]*$/.test(text.slice(last, at))) current = starts;
         if (at > last) pieces.push({ text: text.slice(last, at) });
         let move: NormalMove | undefined;
         let next: Position | undefined;

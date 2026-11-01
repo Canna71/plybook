@@ -9,81 +9,81 @@ import {
 } from "chessops";
 import { Piece } from "../common/Piece";
 import styles from "./PiecesPopup.module.scss";
-import { Accessor, createSignal } from "solid-js";
-import { flip, VirtualElement } from "@floating-ui/dom";
-import { useFloating } from "solid-floating-ui";
+import { Accessor, createMemo, For } from "solid-js";
 import { Key } from "chessground/types";
 
 export type PiecesPopupProps = {
     onSelected?: (role: Role, color: Color) => void;
     promotingCell: Accessor<Key | undefined>;
     color: Accessor<Color>;
+    /** The side at the bottom of the board */
+    orientation: Accessor<Color>;
+    /** The board's container (positioned), which holds the popup */
     chessBoardDiv: HTMLDivElement | null;
 };
 
+// the queen first: it is the one next to the promotion square
 const promotableRoles = ROLES.filter(
     (role) => role !== "pawn" && role !== "king",
-);
+).reverse();
 
+/**
+ * The promotion choice: a column of pieces over the promotion square, running into the board
+ * (as on Lichess), placed on the board as shown (flipped or not).
+ */
 export const PiecesPopup = (props: PiecesPopupProps) => {
-    const [floating, setFloating] = createSignal<HTMLElement>();
-
-    // calculates the virtual element for the promotion popup
-    const reference = () => {
+    const place = createMemo(() => {
         const key = props.promotingCell();
-        if (!key) return null;
-
-        // todo calculate the position of the cell, given the square in key and the chessboard div in chessBoardDiv
+        const container = props.chessBoardDiv;
+        // the squares are those of chessground's board, not of the container around it
+        const board = container?.querySelector("cg-board");
+        if (!key || !container || !board) return undefined;
         const square = parseSquare(key) as Square;
-        const sx = squareFile(square);
-        const sy = squareRank(square);
-        const chessboardwidth = props.chessBoardDiv!.clientWidth;
-        const chessboardPosition = props.chessBoardDiv!.getBoundingClientRect();
-        const squareSize = chessboardwidth / 8;
-
-        const x = chessboardPosition.x + sx * squareSize;
-        const y = chessboardPosition.y + (sy === 7 ? -1 : 8) * squareSize;
-
-        const rect = {
-            x: x,
-            y: y,
-            top: y,
-            left: x,
-            bottom: y + squareSize,
-            right: x + squareSize,
-            width: squareSize,
-            height: squareSize,
-        };
+        const white = props.orientation() === "white";
+        const column = white ? squareFile(square) : 7 - squareFile(square);
+        const row = white ? 7 - squareRank(square) : squareRank(square);
+        const outer = container.getBoundingClientRect();
+        const inner = board.getBoundingClientRect();
+        const size = inner.width / 8;
+        // from the top edge down, or from the bottom edge up
+        const top = row === 0 ? 0 : (row - 3) * size;
         return {
-            getBoundingClientRect() {
-                return rect;
-            },
-        } as VirtualElement;
-    };
-
-    const position = useFloating(reference, floating, {
-        placement: "bottom",
-        middleware: [flip()],
+            left: inner.left - outer.left + column * size,
+            top: inner.top - outer.top + top,
+            size,
+            down: row === 0,
+        };
     });
 
     return (
         <div
             class={styles.piecespopup}
-            ref={setFloating}
-            style={{
-                position: position.strategy,
-                top: `${position.y ?? 0}px`,
-                left: `${position.x ?? 0}px`,
-            }}
+            style={
+                place()
+                    ? {
+                          left: `${place()!.left}px`,
+                          top: `${place()!.top}px`,
+                          width: `${place()!.size}px`,
+                      }
+                    : { display: "none" }
+            }
         >
-            <div class="cg-wrap">
-                {promotableRoles.map((role) => (
-                    <button
-                        onClick={() => props.onSelected?.(role, props.color())}
-                    >
-                        <Piece role={role} color={props.color()} />
-                    </button>
-                ))}
+            {/* piece themes style pieces inside .cg-wrap */}
+            <div
+                class="cg-wrap"
+                classList={{ [styles.up]: place() && !place()!.down }}
+            >
+                <For each={promotableRoles}>
+                    {(role) => (
+                        <button
+                            onClick={() =>
+                                props.onSelected?.(role, props.color())
+                            }
+                        >
+                            <Piece role={role} color={props.color()} />
+                        </button>
+                    )}
+                </For>
             </div>
         </div>
     );
