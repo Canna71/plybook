@@ -126,3 +126,8 @@ repository.
 - [ ] **Icon, F.7**: the taskbar and Start menu icon.
 - [ ] **First CI run on Windows, O.7**: the `rust` job passes on `windows-latest` (a warning
       that only shows on Windows fails it).
+
+## Move list
+
+- [ ] **Hover tooltip**: hovering a move in the PGN viewer (also in variations) shows a small
+      board with the position after that move; it goes away when the mouse leaves.

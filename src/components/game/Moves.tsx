@@ -60,14 +60,14 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
                     </div>
                 </td>
                 <td>
-                    <Ply line={move} color="white" />
+                    <Ply tooltipEnabled line={move} color="white" />
                 </td>
                 <td>
                     <Show
                         when={!afterWhite.length}
-                        fallback={<Ply line={move} />}
+                        fallback={<Ply tooltipEnabled line={move} />}
                     >
-                        <Ply line={move} color="black" />
+                        <Ply tooltipEnabled line={move} color="black" />
                     </Show>
                 </td>
             </tr>
@@ -84,10 +84,10 @@ const MoveLine: Component<MoveProps> = ({ move }) => {
                         </div>
                     </td>
                     <td>
-                        <Ply line={move} />
+                        <Ply tooltipEnabled line={move} />
                     </td>
                     <td>
-                        <Ply line={move} color="black" />
+                        <Ply tooltipEnabled line={move} color="black" />
                     </td>
                 </tr>
             </Show>
@@ -150,7 +150,7 @@ const VariationText: Component<{ moves: HierarchicalMoveData[] }> = (props) => (
                             <span class="pgnviewer-movenumber">
                                 {move.number}.
                             </span>
-                            <Ply line={move} color="white" />
+                            <Ply tooltipEnabled line={move} color="white" />
                             <InlineComments
                                 comments={afterWhite}
                                 path={move.white!.path}
@@ -162,7 +162,7 @@ const VariationText: Component<{ moves: HierarchicalMoveData[] }> = (props) => (
                                     {move.number}…
                                 </span>
                             </Show>
-                            <Ply line={move} color="black" />
+                            <Ply tooltipEnabled line={move} color="black" />
                             <InlineComments
                                 comments={move.black!.comments || []}
                                 path={move.black!.path}
