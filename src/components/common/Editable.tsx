@@ -33,6 +33,16 @@ const Editable: Component<EditableProps> = (props) => {
         setValue(target.textContent || "");
     };
 
+    // only the text of what is pasted goes in, never its markup or styles
+    const handlePaste = (e: ClipboardEvent) => {
+        e.preventDefault();
+        const text = (e.clipboardData?.getData("text/plain") ?? "").replace(
+            /\s*[\r\n]+\s*/g,
+            " ",
+        );
+        if (text) document.execCommand("insertText", false, text);
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Enter") {
             e.preventDefault();
@@ -84,6 +94,8 @@ const Editable: Component<EditableProps> = (props) => {
             contentEditable={props.editable()}
             role={props.editable() ? "textbox" : undefined}
             onInput={handleInput}
+            onPaste={handlePaste}
+            onDrop={(e) => e.preventDefault()}
             onKeyDown={handleKeyDown}
             onBlur={save}
             style={{ "white-space": "nowrap", "overflow-x": "auto" }}

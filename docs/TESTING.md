@@ -131,3 +131,10 @@ repository.
 
 - [ ] **Hover tooltip**: hovering a move in the PGN viewer (also in variations) shows a small
       board with the position after that move; it goes away when the mouse leaves.
+
+## Game title
+
+- [ ] **Paste into the title**: copy styled text (bold or coloured, from a web page) and paste
+      it into a game's title while editing: it goes in as plain text, one line.
+- [ ] **Rename a pasted game**: paste a game from the clipboard, click its title, rename it and
+      press Enter; Save then creates the file with that name.

@@ -112,12 +112,15 @@ const GameView = () => {
               ? "Pasted"
               : undefined;
 
+    /** The name typed in the title of a game not yet saved: it names the file on Save */
+    const [chosenName, setChosenName] = createSignal<string>();
+
     const displayedName = () => {
         const path = searchParams.path;
         if (path && typeof path === "string") {
             return NameWithoutExtension(baseName(path));
         }
-        return historyName() ?? "Untitled";
+        return chosenName() ?? historyName() ?? "Untitled";
     };
 
     const filePath = () => {
@@ -328,7 +331,10 @@ const GameView = () => {
     /** The title renames the file (F.13); unsaved edits stay unsaved, at the new path */
     const onRename = async (text: string) => {
         const path = filePath();
-        if (!path) return;
+        if (!path) {
+            setChosenName(text.trim() || undefined);
+            return;
+        }
         try {
             const renamed = await renameDataFile(
                 path,
@@ -445,7 +451,10 @@ const GameView = () => {
                 <div class="game-name">
                     <BreadCrumb path={folderPath} />
                     <Editable
-                        editable={() => !!filePath() && !isPuzzleMode()}
+                        editable={() =>
+                            !isPuzzleMode() &&
+                            (!!filePath() || libraryCopyFolder() !== undefined)
+                        }
                         initialValue={displayedName() || ""}
                         onSave={onRename}
                     ></Editable>
